@@ -25,7 +25,11 @@ jobs:
         uses: stefanbuck/github-issue-praser@v3
         id: issue-parser
         with:
-          template-path: ".github/ISSUE_TEMPLATE/feat_issue_form.yml, .github/ISSUE_TEMPLATE/fix_issue_form.yml"
+          template-path: .github/ISSUE_TEMPLATE/feat_issue_form.yml
+
+      - name: Log Issue Parser
+        run: |
+          echo '${{ steps.issue-parser.outputs.jsonString }}'
 
       - name: Convert markdown to Jira Syntax
         uses: peter-evans/jira2md@v1
@@ -49,7 +53,7 @@ jobs:
           fields: |
             {
               "parent": {
-              "key": "${{ steps.issue-parser.outputs.issueparser_parentKey }}"
+                "key": "${{ steps.issue-parser.outputs.issueparser_parentKey }}"
               }
             }
 
