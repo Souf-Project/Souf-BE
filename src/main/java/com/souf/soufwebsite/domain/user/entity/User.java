@@ -1,6 +1,7 @@
 package com.souf.soufwebsite.domain.user.entity;
 
 import com.souf.soufwebsite.domain.feed.entity.Feed;
+import com.souf.soufwebsite.domain.file.entity.File;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -50,6 +51,10 @@ public class User extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private RoleType role;
+
+    @OneToOne
+    @JoinColumn(name = "fileId")
+    private File file;
 
     @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL)
     private List<Feed> feeds = new ArrayList<>();
