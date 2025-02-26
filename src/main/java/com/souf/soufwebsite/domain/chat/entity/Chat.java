@@ -17,10 +17,10 @@ public class Chat extends BaseEntity {
     private Long roomId;
 
     @ManyToOne
-    @JoinColumn(name = "sender_id")
+    @JoinColumn(name = "senderId")
     private User sender;
 
     @ManyToOne
-    @JoinColumn(name = "receiver_id")
+    @JoinColumn(name = "receiverId")
     private User receiver;
 }
