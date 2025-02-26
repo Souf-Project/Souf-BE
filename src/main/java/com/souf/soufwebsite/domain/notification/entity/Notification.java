@@ -26,4 +26,8 @@ public class Notification extends BaseEntity {
     @Column(nullable = false)
     @Size(min = 30, max = 500)
     private String content;
+
+    @Column(nullable = false)
+    private Boolean isRead;
+
 }
