@@ -1,18 +1,18 @@
 package com.souf.soufwebsite.domain.file.entity;
 
-import com.souf.soufwebsite.domain.user.entity.User;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
-import java.net.URL;
 
 @Entity
+@Table(name = "file")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class File extends BaseEntity {
 
     @Id
@@ -22,7 +22,10 @@ public class File extends BaseEntity {
 
     @NotNull
     @Column(nullable = false)
-    private URL fileURL;
+    private String fileUrl;
+
+    @NotNull
+    private String fileName;
 
     @Enumerated(EnumType.STRING)
     private FileType fileType;
