@@ -65,11 +65,11 @@ jobs:
         with:
           ref: main
 
-      - name: Create branch with Ticket number
-        run: |
-          BRANCH_NAME="${{ steps.issue-parser.outputs.issueparser_branchPrefix }}/#${{ steps.issue-parser.outputs.issueparser_parentKey }}-${{ steps.issue-parser.outputs.issueparser_branchName }}"
-          git checkout -b "$BRANCH_NAME"
-          git push origin "$BRANCH_NAME"
+#      - name: Create branch with Ticket number
+#        run: |
+#          BRANCH_NAME="${{ steps.issue-parser.outputs.issueparser_branchPrefix }}/#${{ steps.issue-parser.outputs.issueparser_parentKey }}-${{ steps.issue-parser.outputs.issueparser_branchName }}"
+#          git checkout -b "$BRANCH_NAME"
+#          git push origin "$BRANCH_NAME"
 
       - name: Update issue title
         uses: actions-cool/issues-helper@v3
