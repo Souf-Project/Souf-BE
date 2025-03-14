@@ -10,8 +10,10 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.format.datetime.DateFormatter;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Entity
 @Getter
@@ -83,6 +85,8 @@ public class Recruit extends BaseEntity {
     }
 
     private static LocalDateTime getDeadLine(String deadLine){
-        return LocalDateTime.parse(deadLine);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
+
+        return LocalDateTime.parse(deadLine, formatter);
     }
 }
