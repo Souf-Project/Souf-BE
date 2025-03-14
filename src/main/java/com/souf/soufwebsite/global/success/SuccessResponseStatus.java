@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum SuccessReponseStatus {
+public enum SuccessResponseStatus {
 
     SUCCESS(200, "요청에 성공하였습니다!");
 

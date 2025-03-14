@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Builder
 @ToString
 @JsonPropertyOrder({"time", "status", "code", "message", "result"})
-public class SuccessReponse<T> {
+public class SuccessResponse<T> {
 
     @JsonProperty("status")
     private int status;
@@ -28,36 +28,36 @@ public class SuccessReponse<T> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private T result;
 
-    public SuccessReponse(T result) {
+    public SuccessResponse(T result) {
         this.status = HttpStatus.OK.value();
         this.time = LocalDateTime.now();
-        this.code = SuccessReponseStatus.SUCCESS.getCode();
-        this.message = SuccessReponseStatus.SUCCESS.getMessage();
+        this.code = SuccessResponseStatus.SUCCESS.getCode();
+        this.message = SuccessResponseStatus.SUCCESS.getMessage();
         this.result = result;
     }
 
-    public SuccessReponse(T result, String msg){
+    public SuccessResponse(T result, String msg){
         this.status = HttpStatus.OK.value();
         this.time = LocalDateTime.now();
-        this.code = SuccessReponseStatus.SUCCESS.getCode();
+        this.code = SuccessResponseStatus.SUCCESS.getCode();
         this.message = msg;
         this.result = result;
     }
 
-    public static SuccessReponse ok(){
-        return SuccessReponse.builder()
+    public static SuccessResponse ok(){
+        return SuccessResponse.builder()
                 .status(HttpStatus.OK.value())
                 .time(LocalDateTime.now())
-                .code(SuccessReponseStatus.SUCCESS.getCode())
+                .code(SuccessResponseStatus.SUCCESS.getCode())
                 .message("SUCCESS")
                 .build();
     }
 
-    public static SuccessReponse ok(String msg){
-        return SuccessReponse.builder()
+    public static SuccessResponse ok(String msg){
+        return SuccessResponse.builder()
                 .status(HttpStatus.OK.value())
                 .time(LocalDateTime.now())
-                .code(SuccessReponseStatus.SUCCESS.getCode())
+                .code(SuccessResponseStatus.SUCCESS.getCode())
                 .message(msg)
                 .build();
     }
