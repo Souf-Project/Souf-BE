@@ -31,7 +31,7 @@ public class RecruitServiceImpl implements RecruitService {
     @Override
     public void createRecruit(RecruitReqDto reqDto) {
         User user = getCurrentUser();
-        Recruit recruit = Recruit.of(reqDto, convertDeadLine(reqDto.deadline()), user);
+        Recruit recruit = Recruit.of(reqDto, user);
         recruitRepository.save(recruit);
     }
 
@@ -71,14 +71,6 @@ public class RecruitServiceImpl implements RecruitService {
         verifyIfRecruitIsMine(recruit, user);
 
         recruitRepository.delete(recruit);
-    }
-
-    private LocalDateTime convertDeadLine(String deadline){
-        try{
-            return LocalDateTime.parse(deadline);
-        } catch (DateTimeParseException e){
-            throw new NotFoundRecruitException();
-        }
     }
 
     private void verifyIfRecruitIsMine(Recruit recruit, User user) {

@@ -1,6 +1,7 @@
 package com.souf.soufwebsite.domain.recruit.entity;
 
 import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
+import com.souf.soufwebsite.domain.recruit.exception.NotValidDeadLineException;
 import com.souf.soufwebsite.domain.user.entity.User;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import com.souf.soufwebsite.global.common.FirstCategory;
@@ -55,21 +56,20 @@ public class Recruit extends BaseEntity {
     private User user;
 
     @Builder
-    public Recruit(RecruitReqDto reqDto, LocalDateTime deadline, User user) {
+    public Recruit(RecruitReqDto reqDto, User user) {
         this.title = reqDto.title();
         this.content = reqDto.content();
         this.region = reqDto.region();
-        this.deadline = deadline;
+        this.deadline = getDeadLine(reqDto.deadline());
         this.payment = reqDto.payment();
         this.preferentialTreatment = reqDto.preferentialTreatment();
         this.firstCategory = reqDto.firstCategory();
         this.user = user;
     }
 
-    public static Recruit of(RecruitReqDto reqDto, LocalDateTime deadline, User user) {
+    public static Recruit of(RecruitReqDto reqDto, User user) {
         return Recruit.builder()
                 .reqDto(reqDto)
-                .deadline(deadline)
                 .user(user)
                 .build();
     }
@@ -85,8 +85,13 @@ public class Recruit extends BaseEntity {
     }
 
     private static LocalDateTime getDeadLine(String deadLine){
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
 
-        return LocalDateTime.parse(deadLine, formatter);
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
+
+            return LocalDateTime.parse(deadLine, formatter);
+        } catch (Exception e) {
+            throw new NotValidDeadLineException();
+        }
     }
 }
