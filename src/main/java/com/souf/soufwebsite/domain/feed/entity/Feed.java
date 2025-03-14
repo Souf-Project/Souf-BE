@@ -1,9 +1,11 @@
 package com.souf.soufwebsite.domain.feed.entity;
 
+import com.souf.soufwebsite.domain.feed.dto.FeedReqDto;
 import com.souf.soufwebsite.domain.user.entity.User;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -17,9 +19,28 @@ public class Feed extends BaseEntity {
     @Column(name = "feedId")
     private Long id;
 
+    @Lob
+    @Column(nullable = false)
     private String content;
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "userId", nullable = false)
     private User user;
+
+    @Builder
+    public Feed(FeedReqDto feedReqDto, User user) {
+        this.content = feedReqDto.content();
+        this.user = user;
+    }
+
+    public static Feed of(FeedReqDto feedReqDto, User user) {
+        return Feed.builder()
+                .feedReqDto(feedReqDto)
+                .user(user)
+                .build();
+    }
+
+    public void updateFeed(FeedReqDto feedReqDto) {
+        this.content = feedReqDto.content();
+    }
 }
