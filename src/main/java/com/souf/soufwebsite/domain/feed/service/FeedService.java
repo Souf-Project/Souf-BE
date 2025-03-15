@@ -7,13 +7,13 @@ import java.util.List;
 
 public interface FeedService {
 
-    void createFeed(FeedReqDto feedReqDto);
+    void createFeed(FeedReqDto reqDto);
 
     List<FeedResDto> getFeeds();
 
     FeedResDto getFeedById(Long feedId);
 
-    void updateFeed(Long feedId, FeedReqDto feedReqDto);
+    void updateFeed(Long feedId, FeedReqDto reqDto);
 
     void deleteFeed(Long feedId);
 }
