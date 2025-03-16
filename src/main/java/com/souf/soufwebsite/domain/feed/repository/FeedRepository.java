@@ -7,7 +7,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface FeedReposiotry extends JpaRepository<Feed, Long> {
+public interface FeedRepository extends JpaRepository<Feed, Long> {
 
     List<Feed> findAllByOrderByIdDesc();
 }
+

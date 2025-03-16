@@ -28,19 +28,19 @@ public class Feed extends BaseEntity {
     private User user;
 
     @Builder
-    public Feed(FeedReqDto feedReqDto, User user) {
-        this.content = feedReqDto.content();
+    public Feed(FeedReqDto reqDto, User user) {
+        this.content = reqDto.content();
         this.user = user;
     }
 
-    public static Feed of(FeedReqDto feedReqDto, User user) {
+    public static Feed of(FeedReqDto reqDto, User user) {
         return Feed.builder()
-                .feedReqDto(feedReqDto)
+                .reqDto(reqDto)
                 .user(user)
                 .build();
     }
 
-    public void updateFeed(FeedReqDto feedReqDto) {
-        this.content = feedReqDto.content();
+    public void updateFeed(FeedReqDto reqDto) {
+        this.content = reqDto.content();
     }
 }

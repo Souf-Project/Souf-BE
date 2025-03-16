@@ -17,8 +17,8 @@ public class FeedController {
     private final FeedService feedService;
 
     @PostMapping
-    public SuccessResponse<?> createFeed(FeedReqDto feedReqDto) {
-        feedService.createFeed(feedReqDto);
+    public SuccessResponse<?> createFeed(FeedReqDto reqDto) {
+        feedService.createFeed(reqDto);
 
         return new SuccessResponse<>("Feed created successfully");
     }
@@ -34,8 +34,8 @@ public class FeedController {
     }
 
     @PatchMapping("/{feedId}")
-    public SuccessResponse<?> updateFeed(@PathVariable(name = "feedId") Long feedId, FeedReqDto feedReqDto) {
-        feedService.updateFeed(feedId, feedReqDto);
+    public SuccessResponse<?> updateFeed(@PathVariable(name = "feedId") Long feedId, FeedReqDto reqDto) {
+        feedService.updateFeed(feedId, reqDto);
         return new SuccessResponse<>("Feed updated successfully");
     }
 
