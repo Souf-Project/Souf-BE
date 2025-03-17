@@ -22,5 +22,7 @@ public interface JwtService {
     boolean isTokenValid(String token);
 
 
+    long getExpiration(String token);
+
     void sendAccessToken(HttpServletResponse response, String newAccessToken);
 }

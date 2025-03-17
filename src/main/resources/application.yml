@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: soufwebsite
+
+jwt:
+  secret: # secret key
+  access:
+    expiration: 1800000  #30?
+    header: Authorization
+  refresh:
+    expiration: 3600000 #60?
+    header: Refresh
