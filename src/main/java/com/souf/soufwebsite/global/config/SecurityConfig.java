@@ -1,12 +1,16 @@
 package com.souf.soufwebsite.global.config;
 
+import com.souf.soufwebsite.domain.user.reposiotry.UserRepository;
 import com.souf.soufwebsite.global.jwt.JwtAuthenticationProcessingFilter;
 import com.souf.soufwebsite.global.jwt.JwtLogoutHandler;
+import com.souf.soufwebsite.global.jwt.JwtServiceImpl;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -39,6 +43,9 @@ public class SecurityConfig {
 //	}
     private final JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter;
     private final JwtLogoutHandler jwtLogoutHandler;
+    private final UserRepository userRepository;
+    private final JwtServiceImpl jwtService;
+    private final RedisTemplate<String, String> redisTemplate;
 
 
     @Bean
@@ -83,5 +90,16 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter(){
+
+        return new JwtAuthenticationProcessingFilter(jwtService, userRepository, redisTemplate);
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 }
