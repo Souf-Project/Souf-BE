@@ -1,10 +1,8 @@
 package com.souf.soufwebsite.domain.user.controller;
 
-import com.souf.soufwebsite.domain.user.dto.EditUserRequest;
 import com.souf.soufwebsite.domain.user.dto.ReqDto.EditReqDto;
 import com.souf.soufwebsite.domain.user.dto.ReqDto.SigninReqDto;
 import com.souf.soufwebsite.domain.user.dto.ReqDto.SignupReqDto;
-import com.souf.soufwebsite.domain.user.dto.SignUpRequest;
 import com.souf.soufwebsite.domain.user.dto.TokenDto;
 import com.souf.soufwebsite.domain.user.service.UserService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
@@ -46,14 +44,16 @@ public class UserController {
         return new SuccessResponse<>("비밀번호 재설정 성공");
     }
 
-    @GetMapping("/auth/school")
-    public SuccessResponse<Boolean> checkSchoolVerification(@RequestParam String schoolName) {
-        boolean verified = userService.checkSchoolVerification(schoolName);
-        return new SuccessResponse<>(verified);
+    // 인증번호 전송
+    @PostMapping("/auth/email/send")
+    public SuccessResponse<Boolean> sendEmailVerification(@RequestParam String email) {
+        boolean sent = userService.sendEmailVerification(email);
+        return new SuccessResponse<>(sent);
     }
 
-    @PostMapping("/auth/authentication/email")
-    public SuccessResponse<Boolean> verifyEmail(@RequestParam String email, @RequestParam String code) {
+    // 인증번호 검증
+    @PostMapping("/auth/email/verify")
+    public SuccessResponse<Boolean> verifyEmailCode(@RequestParam String email, @RequestParam String code) {
         boolean verified = userService.verifyEmail(email, code);
         return new SuccessResponse<>(verified);
     }

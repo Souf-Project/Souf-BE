@@ -14,7 +14,7 @@ public interface UserService {
 
     void resetPassword(EditReqDto reqDto);
 
-    boolean checkSchoolVerification(String schoolName);
+    boolean sendEmailVerification(String email);
 
     boolean verifyEmail(String email, String code);
 
@@ -23,4 +23,5 @@ public interface UserService {
     Object getMembers();
 
     Object getMemberById(Long id);
+
 }

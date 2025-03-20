@@ -2,6 +2,18 @@ spring:
   application:
     name: soufwebsite
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: tjdgud3488@gmail.com
+    password: gevnfpclieekkpif
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 jwt:
   secret: # secret key
   access:
