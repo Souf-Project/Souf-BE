@@ -2,10 +2,11 @@ package com.souf.soufwebsite.domain.user.service;
 
 import com.souf.soufwebsite.domain.user.dto.ReqDto.EditReqDto;
 import com.souf.soufwebsite.domain.user.dto.ReqDto.SigninReqDto;
+import com.souf.soufwebsite.domain.user.dto.ReqDto.SignupReqDto;
 import com.souf.soufwebsite.domain.user.dto.TokenDto;
 
 public interface UserService {
-    void signup(SignUpRequest reqDto);
+    void signup(SignupReqDto reqDto);
 
     TokenDto signin(SigninReqDto reqDto);
 

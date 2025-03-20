@@ -3,6 +3,7 @@ package com.souf.soufwebsite.domain.user.controller;
 import com.souf.soufwebsite.domain.user.dto.EditUserRequest;
 import com.souf.soufwebsite.domain.user.dto.ReqDto.EditReqDto;
 import com.souf.soufwebsite.domain.user.dto.ReqDto.SigninReqDto;
+import com.souf.soufwebsite.domain.user.dto.ReqDto.SignupReqDto;
 import com.souf.soufwebsite.domain.user.dto.SignUpRequest;
 import com.souf.soufwebsite.domain.user.dto.TokenDto;
 import com.souf.soufwebsite.domain.user.service.UserService;
@@ -19,7 +20,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/auth/signup")
-    public SuccessResponse<?> signup(@RequestBody SignUpRequest reqDto) {
+    public SuccessResponse<?> signup(@RequestBody SignupReqDto reqDto) {
         userService.signup(reqDto);
         return new SuccessResponse<>("회원가입 성공");
     }
