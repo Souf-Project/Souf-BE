@@ -9,8 +9,6 @@ public interface UserService {
 
     TokenDto signin(SigninReqDto reqDto);
 
-    void logout(String accessToken);
-
     TokenDto reissue(String refreshToken);
 
     void resetPassword(EditReqDto reqDto);

@@ -32,15 +32,10 @@ public class UserController {
         return new SuccessResponse<>(tokenDto);
     }
 
-    @PostMapping("/auth/logout")
-    public SuccessResponse<?> logout(@RequestHeader("Authorization") String accessToken) {
-        userService.logout(accessToken);
-        return new SuccessResponse<>("로그아웃 성공");
-    }
-
     @PostMapping("/auth/reissue")
-    public SuccessResponse<TokenDto> reissue(@RequestHeader("Refresh") String refreshToken) {
-        TokenDto newToken = userService.reissue(refreshToken);
+    public SuccessResponse<TokenDto> reissue(@RequestHeader("Refresh") String accessToken) {
+        String token = accessToken.replace("Bearer ", "");
+        TokenDto newToken = userService.reissue(token);
         return new SuccessResponse<>(newToken);
     }
 

@@ -46,11 +46,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void logout(String accessToken) {
-
-    }
-
-    @Override
     public TokenDto reissue(String refreshToken) {
         return null;
     }
