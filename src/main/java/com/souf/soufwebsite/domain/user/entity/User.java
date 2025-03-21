@@ -47,7 +47,7 @@ public class User extends BaseEntity {
     @Size(min = 2, max = 20)
     private String nickname;
 
-    private LocalDateTime birth;
+    private LocalDate birth;
 
     @Size(max = 100)
     private String intro;

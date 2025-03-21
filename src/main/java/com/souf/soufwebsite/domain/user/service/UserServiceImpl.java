@@ -3,6 +3,7 @@ package com.souf.soufwebsite.domain.user.service;
 import com.souf.soufwebsite.domain.user.dto.ReqDto.EditReqDto;
 import com.souf.soufwebsite.domain.user.dto.ReqDto.SigninReqDto;
 import com.souf.soufwebsite.domain.user.dto.ReqDto.SignupReqDto;
+import com.souf.soufwebsite.domain.user.dto.ResDto.UserResDto;
 import com.souf.soufwebsite.domain.user.dto.TokenDto;
 import com.souf.soufwebsite.domain.user.entity.User;
 import com.souf.soufwebsite.domain.user.reposiotry.UserRepository;
@@ -15,8 +16,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -106,13 +110,17 @@ public class UserServiceImpl implements UserService {
 
     //회원 목록 조회
     @Override
-    public Object getMembers() {
-        return null;
+    public List<UserResDto> getMembers() {
+        List<User> users = userRepository.findAll();
+        return users.stream()
+                .map(UserResDto::from)
+                .collect(Collectors.toList());
     }
 
     //회원 조회
     @Override
-    public Object getMemberById(Long id) {
-        return null;
+    public UserResDto getMemberById(Long id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+        return UserResDto.from(user);
     }
 }

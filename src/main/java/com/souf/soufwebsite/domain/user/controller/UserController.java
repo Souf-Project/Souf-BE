@@ -3,12 +3,15 @@ package com.souf.soufwebsite.domain.user.controller;
 import com.souf.soufwebsite.domain.user.dto.ReqDto.EditReqDto;
 import com.souf.soufwebsite.domain.user.dto.ReqDto.SigninReqDto;
 import com.souf.soufwebsite.domain.user.dto.ReqDto.SignupReqDto;
+import com.souf.soufwebsite.domain.user.dto.ResDto.UserResDto;
 import com.souf.soufwebsite.domain.user.dto.TokenDto;
 import com.souf.soufwebsite.domain.user.service.UserService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -65,12 +68,12 @@ public class UserController {
     }
 
     @GetMapping("/member")
-    public SuccessResponse<?> getMembers() {
+    public SuccessResponse<List<UserResDto>> getMembers() {
         return new SuccessResponse<>(userService.getMembers());
     }
 
     @GetMapping("/member/{id}")
-    public SuccessResponse<?> getMemberById(@PathVariable Long id) {
+    public SuccessResponse<UserResDto> getMemberById(@PathVariable Long id) {
         return new SuccessResponse<>(userService.getMemberById(id));
     }
 }
