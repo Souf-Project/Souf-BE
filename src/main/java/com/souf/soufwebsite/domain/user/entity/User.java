@@ -78,4 +78,8 @@ public class User extends BaseEntity {
         this.intro = dto.intro();
         // 필요 시 다른 필드도 업데이트
     }
+
+    public void updatePassword(String newPassword) {
+        this.password = newPassword;
+    }
 }
