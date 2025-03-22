@@ -8,6 +8,7 @@ import com.souf.soufwebsite.domain.user.entity.User;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FeedServiceImpl implements FeedService {
 
-    private FeedRepository feedRepository;
+    private final FeedRepository feedRepository;
 
     private User getCurrentUser() {
         return SecurityUtils.getCurrentMember();
@@ -28,6 +29,7 @@ public class FeedServiceImpl implements FeedService {
         feedRepository.save(feed);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<FeedResDto> getFeeds() {
         List<Feed> feeds = feedRepository.findAllByOrderByIdDesc();
@@ -37,6 +39,7 @@ public class FeedServiceImpl implements FeedService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public FeedResDto getFeedById(Long feedId) {
         Feed feed = feedRepository.findById(feedId).orElseThrow(() -> new IllegalArgumentException("Feed not found"));
@@ -44,6 +47,7 @@ public class FeedServiceImpl implements FeedService {
         return FeedResDto.from(feed, feed.getUser().getNickname());
     }
 
+    @Transactional
     @Override
     public void updateFeed(Long feedId, FeedReqDto reqDto) {
         User user = getCurrentUser();
