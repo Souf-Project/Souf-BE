@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.domain.user.service;
 
-import com.souf.soufwebsite.domain.user.dto.ReqDto.EditReqDto;
+import com.souf.soufwebsite.domain.user.dto.ReqDto.ResetReqDto;
 import com.souf.soufwebsite.domain.user.dto.ReqDto.SigninReqDto;
 import com.souf.soufwebsite.domain.user.dto.ReqDto.SignupReqDto;
 import com.souf.soufwebsite.domain.user.dto.ResDto.UserResDto;
@@ -13,11 +13,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -66,16 +66,18 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
-    //토큰 재발급
-    @Override
-    public TokenDto reissue(String refreshToken) {
-        return null;
-    }
-
     //비밀번호 초기화
     @Override
-    public void resetPassword(EditReqDto reqDto) {
+    public void resetPassword(ResetReqDto reqDto) {
+        if (!reqDto.newPassword().equals(reqDto.confirmPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
 
+        User user = userRepository.findByEmail(reqDto.email())
+                .orElseThrow(() -> new UsernameNotFoundException("해당 이메일을 찾을 수 없습니다."));
+
+        user.updatePassword(passwordEncoder.encode(reqDto.newPassword()));
+        userRepository.save(user);
     }
 
     //인증번호 전송
@@ -104,7 +106,7 @@ public class UserServiceImpl implements UserService {
 
     //회원정보 수정
     @Override
-    public void editUserInfo(EditReqDto reqDto) {
+    public void editUserInfo(ResetReqDto reqDto) {
 
     }
 

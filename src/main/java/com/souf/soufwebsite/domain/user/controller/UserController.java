@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.domain.user.controller;
 
-import com.souf.soufwebsite.domain.user.dto.ReqDto.EditReqDto;
+import com.souf.soufwebsite.domain.user.dto.ReqDto.ResetReqDto;
 import com.souf.soufwebsite.domain.user.dto.ReqDto.SigninReqDto;
 import com.souf.soufwebsite.domain.user.dto.ReqDto.SignupReqDto;
 import com.souf.soufwebsite.domain.user.dto.ResDto.UserResDto;
@@ -34,15 +34,8 @@ public class UserController {
         return new SuccessResponse<>(tokenDto);
     }
 
-    @PostMapping("/auth/reissue")
-    public SuccessResponse<TokenDto> reissue(@RequestHeader("Refresh") String accessToken) {
-        String token = accessToken.replace("Bearer ", "");
-        TokenDto newToken = userService.reissue(token);
-        return new SuccessResponse<>(newToken);
-    }
-
     @PatchMapping("/auth/reset/password")
-    public SuccessResponse<?> resetPassword(@RequestBody EditReqDto reqDto) {
+    public SuccessResponse<?> resetPassword(@RequestBody ResetReqDto reqDto) {
         userService.resetPassword(reqDto);
         return new SuccessResponse<>("비밀번호 재설정 성공");
     }
@@ -62,7 +55,7 @@ public class UserController {
     }
 
     @PutMapping("/auth/edit")
-    public SuccessResponse<?> editUserInfo(@RequestBody EditReqDto reqDto) {
+    public SuccessResponse<?> editUserInfo(@RequestBody ResetReqDto reqDto) {
         userService.editUserInfo(reqDto);
         return new SuccessResponse<>("회원정보 수정 성공");
     }
