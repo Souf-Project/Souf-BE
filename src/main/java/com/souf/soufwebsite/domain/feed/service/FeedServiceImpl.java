@@ -44,7 +44,7 @@ public class FeedServiceImpl implements FeedService {
     @Transactional(readOnly = true)
     @Override
     public FeedResDto getFeedById(Long feedId) {
-        Feed feed = feedRepository.findById(feedId).orElseThrow(() -> new IllegalArgumentException("Feed not found"));
+        Feed feed = findIfFeedExist(feedId);
 
         return FeedResDto.from(feed, feed.getUser().getNickname());
     }

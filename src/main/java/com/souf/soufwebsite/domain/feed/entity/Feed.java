@@ -16,7 +16,7 @@ public class Feed extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "feedId")
+    @Column(name = "feed_id")
     private Long id;
 
     @Lob
@@ -24,7 +24,7 @@ public class Feed extends BaseEntity {
     private String content;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "userId", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Builder
