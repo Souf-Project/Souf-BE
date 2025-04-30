@@ -71,9 +71,9 @@ jobs:
 #          git checkout -b "$BRANCH_NAME"
 #          git push origin "$BRANCH_NAME"
 
-      - name: Update issue title
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: "update-issue"
-          token: ${{ secrets.GITHUB_TOKEN }}
-          title: "${{ steps.create.outputs.issue }} ${{ github.event.issue.title }}"
+      # - name: Update issue title
+      #   uses: actions-cool/issues-helper@v3
+      #   with:
+      #     actions: "update-issue"
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     title: "${{ steps.create.outputs.issue }} ${{ github.event.issue.title }}"
