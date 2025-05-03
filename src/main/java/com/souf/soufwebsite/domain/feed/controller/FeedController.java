@@ -8,7 +8,9 @@ import com.souf.soufwebsite.global.success.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -20,8 +22,9 @@ public class FeedController {
 
     @PostMapping
     public SuccessResponse<?> createFeed(
-            @Valid @ModelAttribute FeedCreateReqDto reqDto) {
-        feedService.createFeed(reqDto);
+            @RequestPart("data") @Valid FeedCreateReqDto reqDto,
+            @RequestPart("files") List<MultipartFile> files) {
+        feedService.createFeed(reqDto, files);
 
         return new SuccessResponse<>("Feed created successfully");
     }
@@ -38,9 +41,10 @@ public class FeedController {
 
     @PatchMapping("/{feedId}")
     public SuccessResponse<?> updateFeed(
-            @PathVariable(name = "feedId") Long feedId,
-            @Valid @ModelAttribute FeedUpdateReqDto reqDto) {
-        feedService.updateFeed(feedId, reqDto);
+            @PathVariable Long feedId,
+            @RequestPart("data") @Valid FeedUpdateReqDto reqDto,
+            @RequestPart(name = "files", required = false) List<MultipartFile> newFiles) throws IOException {
+        feedService.updateFeed(feedId, reqDto, newFiles);
         return new SuccessResponse<>("Feed updated successfully");
     }
 

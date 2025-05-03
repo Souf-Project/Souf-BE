@@ -7,9 +7,7 @@ import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.exception.NotFoundFeedException;
 import com.souf.soufwebsite.domain.feed.exception.NotValidAuthenticationException;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
-import com.souf.soufwebsite.domain.file.dto.FileDto;
 import com.souf.soufwebsite.domain.file.entity.File;
-import com.souf.soufwebsite.domain.file.entity.FileType;
 import com.souf.soufwebsite.domain.file.repository.FileRepository;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.user.entity.User;
@@ -20,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -36,19 +33,18 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public void createFeed(FeedCreateReqDto reqDto) {
+    public void createFeed(FeedCreateReqDto reqDto, List<MultipartFile> files) {
         User user = getCurrentUser();
-        List<File> fileEntities = new ArrayList<>();
 
-        for (MultipartFile multipartFile : reqDto.files()) {
-            try {
-                // S3 업로드 + DB 저장 → File 엔티티 반환
-                File file = fileService.uploadFile(multipartFile);
-                fileEntities.add(file);
-            } catch (IOException e) {
-                throw new RuntimeException("파일 업로드 실패: " + multipartFile.getOriginalFilename(), e);
-            }
-        }
+        List<File> fileEntities = files.stream()
+                .map(file -> {
+                    try {
+                        return fileService.uploadFile(file);
+                    } catch (IOException e) {
+                        throw new RuntimeException("파일 업로드 실패: " + file.getOriginalFilename(), e);
+                    }
+                })
+                .toList();
 
         Feed feed = Feed.of(reqDto.content(), user, fileEntities);
         feedRepository.save(feed);
@@ -74,32 +70,31 @@ public class FeedServiceImpl implements FeedService {
 
     @Transactional
     @Override
-    public void updateFeed(Long feedId, FeedUpdateReqDto reqDto) {
+    public void updateFeed(Long feedId, FeedUpdateReqDto reqDto, List<MultipartFile> newFiles) throws IOException {
         User user = getCurrentUser();
         Feed feed = findIfFeedExist(feedId);
         verifyIfFeedIsMine(feed, user);
 
-        feed.updateContent(reqDto.content());
-
-        // 파일 삭제
-        List<File> filesToRemove = feed.getFiles().stream()
+        List<File> toRemove = feed.getFiles().stream()
                 .filter(file -> !reqDto.keepFileIds().contains(file.getId()))
                 .toList();
 
-        for (File file : filesToRemove) {
-            fileService.deleteFromS3(file.getFileUrl());
+        for (File file : toRemove) {
             feed.removeFile(file);
-            fileRepository.delete(file);
+            fileRepository.delete(file); // 실제 DB에서도 삭제
         }
 
-        for (MultipartFile mf : reqDto.newFiles()) {
-            try {
-                File file = fileService.uploadFile(mf);
+        // 2) 새로운 파일 추가
+        if (newFiles != null) {
+            for (MultipartFile multipartFile : newFiles) {
+                File file = fileService.uploadFile(multipartFile);
                 feed.addFile(file);
-            } catch (IOException e) {
-                throw new RuntimeException("파일 업로드 실패: " + mf.getOriginalFilename(), e);
             }
         }
+
+        // 3) 내용 업데이트
+        feed.updateContent(reqDto.content());
+
     }
 
     @Override
