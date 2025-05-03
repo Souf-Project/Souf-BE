@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.file.entity;
 
+import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -17,7 +18,7 @@ public class File extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "fileId")
+    @Column(name = "file_Id")
     private Long id;
 
     @NotNull
@@ -30,4 +31,20 @@ public class File extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private FileType fileType;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "feed_id")
+    private Feed feed;
+
+
+    public static File of(String url, String name, FileType type) {
+        return File.builder()
+                .fileUrl(url)
+                .fileName(name)
+                .fileType(type)
+                .build();
+    }
+
+    public void setFeed(Feed feed) {
+        this.feed = feed;
+    }
 }

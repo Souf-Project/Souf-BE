@@ -27,47 +27,42 @@ public class FileService {
 
     private final String bucketName = "iamsouf-bucket";
 
-    public FileDto uploadFile(MultipartFile multipartFile, FileType fileType) throws IOException {
-        // 1) 고유한 S3 Key(경로) 생성
+    public File uploadFile(MultipartFile multipartFile) throws IOException {
+        // 1. S3 Key 생성
         String originalFilename = multipartFile.getOriginalFilename();
         String ext = extractExtension(originalFilename);
         String s3Key = "uploads/" + UUID.randomUUID() + (ext.isEmpty() ? "" : "." + ext);
 
-        // 2) S3에 파일 업로드
+        // 2. 메타데이터 설정
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentType(multipartFile.getContentType());
         metadata.setContentLength(multipartFile.getSize());
 
+        // 3. S3에 업로드
         amazonS3.putObject(new PutObjectRequest(bucketName, s3Key, multipartFile.getInputStream(), metadata));
 
-        // 3) 업로드한 파일에 대해 프리사인드 URL 생성 (10분 유효)
-        Date expiration = new Date();
-        long expTimeMillis = expiration.getTime();
-        expTimeMillis += 1000 * 60 * 10; // 10분 후 만료
-        expiration.setTime(expTimeMillis);
-
+        // 4. 프리사인드 URL 생성 (10분 유효)
+        Date expiration = new Date(System.currentTimeMillis() + 1000 * 60 * 10);
         GeneratePresignedUrlRequest urlRequest = new GeneratePresignedUrlRequest(bucketName, s3Key)
                 .withMethod(HttpMethod.GET)
                 .withExpiration(expiration);
         URL presignedUrl = amazonS3.generatePresignedUrl(urlRequest);
         String fileUrl = presignedUrl.toString();
 
-        // 4) DB에 파일 정보 저장
-        File file = File.builder()
-                .fileUrl(fileUrl)
-                .fileName(originalFilename)
-                .fileType(fileType)
-                .build();
+        // 5. File 엔티티 생성 및 저장
+        FileType fileType = determineFileType(multipartFile);
+        if (fileType == null) {
+            throw new IllegalArgumentException("지원하지 않는 파일 확장자입니다.");
+        }
 
-        File savedFile = fileRepository.save(file);
+        File file = File.of(fileUrl, originalFilename, fileType);
+        return fileRepository.save(file);
+    }
 
-        // 5) DTO 변환 후 반환
-        return FileDto.builder()
-                .fileId(savedFile.getId())
-                .fileUrl(savedFile.getFileUrl())
-                .fileName(savedFile.getFileName())
-                .fileType(savedFile.getFileType())
-                .build();
+    public void deleteFromS3(String fileUrl) {
+        // URL에서 key 추출
+        String key = extractKeyFromUrl(fileUrl);
+        amazonS3.deleteObject(bucketName, key);
     }
 
     private String extractExtension(String filename) {
@@ -76,4 +71,22 @@ public class FileService {
         if (idx == -1) return "";
         return filename.substring(idx + 1); // 점 이후 문자열 반환 (확장자)
     }
+
+    private String extractKeyFromUrl(String url) {
+        return url.substring(url.indexOf("uploads/"));
+    }
+
+    private FileType determineFileType(MultipartFile file) {
+        String filename = file.getOriginalFilename();
+        if (filename == null || !filename.contains(".")) return null;
+
+        String ext = filename.substring(filename.lastIndexOf('.') + 1).toUpperCase();
+
+        try {
+            return FileType.valueOf(ext); // enum 상수와 일치하면 반환
+        } catch (IllegalArgumentException e) {
+            return null; // 또는 FileType.ETC처럼 예외 타입 정의 가능
+        }
+    }
+
 }
