@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.domain.feed.entity;
 
-import com.souf.soufwebsite.domain.feed.dto.FeedReqDto;
+import com.souf.soufwebsite.domain.file.entity.File;
 import com.souf.soufwebsite.domain.user.entity.User;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
@@ -8,6 +8,9 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -20,27 +23,47 @@ public class Feed extends BaseEntity {
     private Long id;
 
     @Lob
-    @Column(nullable = false)
     private String content;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @OneToMany
+    @JoinTable(name = "feed_files",
+            joinColumns = @JoinColumn(name = "feed_id"),
+            inverseJoinColumns = @JoinColumn(name = "file_id"))
+    private List<File> files = new ArrayList<>();
+
+
     @Builder
-    public Feed(FeedReqDto reqDto, User user) {
-        this.content = reqDto.content();
+    private Feed(String content, User user, List<File> files) {
+        if (files == null || files.isEmpty()) {
+            throw new IllegalArgumentException("파일이 최소 1개 이상 필요합니다.");
+        }
+        this.content = content;
         this.user = user;
+        this.files.addAll(files);
     }
 
-    public static Feed of(FeedReqDto reqDto, User user) {
+    public static Feed of(String content, User user, List<File> files) {
         return Feed.builder()
-                .reqDto(reqDto)
+                .content(content)
                 .user(user)
+                .files(files)
                 .build();
     }
 
-    public void updateFeed(FeedReqDto reqDto) {
-        this.content = reqDto.content();
+    public void updateContent(String content) {
+        this.content = content;
+    }
+
+    // 연관관계 편의 메서드
+    public void addFile(File file) {
+        files.add(file);
+    }
+
+    public void removeFile(File file) {
+        files.remove(file);
     }
 }

@@ -1,9 +1,11 @@
 package com.souf.soufwebsite.domain.feed.controller;
 
-import com.souf.soufwebsite.domain.feed.dto.FeedReqDto;
+import com.souf.soufwebsite.domain.feed.dto.FeedCreateReqDto;
 import com.souf.soufwebsite.domain.feed.dto.FeedResDto;
+import com.souf.soufwebsite.domain.feed.dto.FeedUpdateReqDto;
 import com.souf.soufwebsite.domain.feed.service.FeedService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +19,8 @@ public class FeedController {
     private final FeedService feedService;
 
     @PostMapping
-    public SuccessResponse<?> createFeed(FeedReqDto reqDto) {
+    public SuccessResponse<?> createFeed(
+            @Valid @ModelAttribute FeedCreateReqDto reqDto) {
         feedService.createFeed(reqDto);
 
         return new SuccessResponse<>("Feed created successfully");
@@ -34,7 +37,9 @@ public class FeedController {
     }
 
     @PatchMapping("/{feedId}")
-    public SuccessResponse<?> updateFeed(@PathVariable(name = "feedId") Long feedId, FeedReqDto reqDto) {
+    public SuccessResponse<?> updateFeed(
+            @PathVariable(name = "feedId") Long feedId,
+            @Valid @ModelAttribute FeedUpdateReqDto reqDto) {
         feedService.updateFeed(feedId, reqDto);
         return new SuccessResponse<>("Feed updated successfully");
     }

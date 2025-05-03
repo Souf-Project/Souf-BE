@@ -1,18 +1,19 @@
 package com.souf.soufwebsite.domain.file.dto;
 
-import com.souf.soufwebsite.domain.file.entity.FileType;
-import lombok.*;
+import com.souf.soufwebsite.domain.file.entity.File;
 
-
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class FileDto {
-
-    private Long fileId;
-    private String fileUrl;   // S3 경로/URL
-    private String fileName;   // 원본 파일명
-    private FileType fileType; // IMAGE, VIDEO 등
+public record FileDto(
+        Long fileId,
+        String fileUrl,
+        String fileName,
+        String fileType // IMAGE, VIDEO 등
+) {
+    public static FileDto from(File file) {
+        return new FileDto(
+                file.getId(),
+                file.getFileUrl(),
+                file.getFileName(),
+                file.getFileType().name()
+        );
+    }
 }
