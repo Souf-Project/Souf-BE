@@ -10,7 +10,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 @Slf4j
 @Configuration
 public class SecurityUtils {
-
     public static User getCurrentMember() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         log.info("Current user: {}", authentication.getPrincipal());
