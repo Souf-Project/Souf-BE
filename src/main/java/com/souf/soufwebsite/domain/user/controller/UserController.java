@@ -7,7 +7,6 @@ import com.souf.soufwebsite.domain.user.dto.ResDto.UserResDto;
 import com.souf.soufwebsite.domain.user.dto.TokenDto;
 import com.souf.soufwebsite.domain.user.service.UserService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,10 +26,8 @@ public class UserController {
     }
 
     @PostMapping("/auth/login")
-    public SuccessResponse<TokenDto> signin(@RequestBody SigninReqDto reqDto, HttpServletResponse response) {
+    public SuccessResponse<TokenDto> signin(@RequestBody SigninReqDto reqDto) {
         TokenDto tokenDto = userService.signin(reqDto);
-        response.setHeader("Authorization", "Bearer " + tokenDto.accessToken());
-        response.setHeader("Refresh", "Bearer " + tokenDto.refreshToken());
         return new SuccessResponse<>(tokenDto);
     }
 
@@ -43,8 +40,7 @@ public class UserController {
     // 인증번호 전송
     @PostMapping("/auth/email/send")
     public SuccessResponse<Boolean> sendEmailVerification(@RequestParam String email) {
-        boolean sent = userService.sendEmailVerification(email);
-        return new SuccessResponse<>(sent);
+        return new SuccessResponse<>(userService.sendEmailVerification(email));
     }
 
     // 인증번호 검증

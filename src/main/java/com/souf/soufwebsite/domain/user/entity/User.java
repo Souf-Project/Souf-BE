@@ -2,7 +2,7 @@ package com.souf.soufwebsite.domain.user.entity;
 
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.file.entity.File;
-import com.souf.soufwebsite.domain.user.dto.ReqDto.UserReqDto;
+import com.souf.soufwebsite.domain.user.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -13,7 +13,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,12 +70,11 @@ public class User extends BaseEntity {
     }
 
     // 회원 정보 업데이트 (업데이트 가능한 필드만 반영)
-    public void updateUser(UserReqDto dto) {
+    public void updateUser(UpdateReqDto dto) {
         this.username = dto.username();
         this.nickname = dto.nickname();
         this.birth = dto.birth();
         this.intro = dto.intro();
-        // 필요 시 다른 필드도 업데이트
     }
 
     public void updatePassword(String newPassword) {

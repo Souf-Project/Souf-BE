@@ -2,9 +2,7 @@ package com.souf.soufwebsite.domain.user.dto.ReqDto;
 
 import java.time.LocalDate;
 
-public record UserReqDto(
-        String email,
-        String password,
+public record UpdateReqDto(
         String username,
         String nickname,
         LocalDate birth,
