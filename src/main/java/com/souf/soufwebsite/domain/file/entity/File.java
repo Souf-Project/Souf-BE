@@ -31,11 +31,20 @@ public class File extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private FileType fileType;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "feed_id")
+    private Feed feed;
+
+
     public static File of(String url, String name, FileType type) {
         return File.builder()
                 .fileUrl(url)
                 .fileName(name)
                 .fileType(type)
                 .build();
+    }
+
+    public void setFeed(Feed feed) {
+        this.feed = feed;
     }
 }

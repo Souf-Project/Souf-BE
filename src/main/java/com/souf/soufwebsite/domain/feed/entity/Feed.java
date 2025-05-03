@@ -29,10 +29,7 @@ public class Feed extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany
-    @JoinTable(name = "feed_files",
-            joinColumns = @JoinColumn(name = "feed_id"),
-            inverseJoinColumns = @JoinColumn(name = "file_id"))
+    @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<File> files = new ArrayList<>();
 
 
@@ -43,7 +40,7 @@ public class Feed extends BaseEntity {
         }
         this.content = content;
         this.user = user;
-        this.files.addAll(files);
+        files.forEach(this::addFile);
     }
 
     public static Feed of(String content, User user, List<File> files) {
@@ -61,9 +58,11 @@ public class Feed extends BaseEntity {
     // 연관관계 편의 메서드
     public void addFile(File file) {
         files.add(file);
+        file.setFeed(this);
     }
 
     public void removeFile(File file) {
         files.remove(file);
+        file.setFeed(this);
     }
 }
