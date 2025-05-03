@@ -1,0 +1,39 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/souf_db?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: root
+    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+  application:
+    name: soufwebsite
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: tjdgud3488@gmail.com
+    password: gevnfpclieekkpif
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+jwt:
+  secret: "" # secret key는 여기에 입력
+  access:
+    expiration: 1800000
+    header: Authorization
+  refresh:
+    expiration: 3600000
+    header: Refresh

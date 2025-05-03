@@ -2,11 +2,13 @@ package com.souf.soufwebsite.domain.user.entity;
 
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.file.entity.File;
+import com.souf.soufwebsite.domain.user.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -58,4 +60,24 @@ public class User extends BaseEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Feed> feeds = new ArrayList<>();
+
+    @Builder
+    public User(String email, String password, String username, String nickname) {
+        this.email = email;
+        this.password = password;
+        this.username = username;
+        this.nickname = nickname;
+    }
+
+    // 회원 정보 업데이트 (업데이트 가능한 필드만 반영)
+    public void updateUser(UpdateReqDto dto) {
+        this.username = dto.username();
+        this.nickname = dto.nickname();
+        this.birth = dto.birth();
+        this.intro = dto.intro();
+    }
+
+    public void updatePassword(String newPassword) {
+        this.password = newPassword;
+    }
 }
