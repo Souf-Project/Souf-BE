@@ -1,12 +1,12 @@
-package com.souf.soufwebsite.domain.user.service;
+package com.souf.soufwebsite.domain.member.service;
 
-import com.souf.soufwebsite.domain.user.dto.ReqDto.ResetReqDto;
-import com.souf.soufwebsite.domain.user.dto.ReqDto.SigninReqDto;
-import com.souf.soufwebsite.domain.user.dto.ReqDto.SignupReqDto;
-import com.souf.soufwebsite.domain.user.dto.ResDto.UserResDto;
-import com.souf.soufwebsite.domain.user.dto.TokenDto;
-import com.souf.soufwebsite.domain.user.entity.User;
-import com.souf.soufwebsite.domain.user.reposiotry.UserRepository;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.ResetReqDto;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.SigninReqDto;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.SignupReqDto;
+import com.souf.soufwebsite.domain.member.dto.ResDto.UserResDto;
+import com.souf.soufwebsite.domain.member.dto.TokenDto;
+import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.global.email.EmailService;
 import com.souf.soufwebsite.global.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -25,26 +25,26 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class MemberServiceImpl implements MemberService {
     private final JwtService jwtService;
     private final EmailService emailService;
     private final AuthenticationManager authenticationManager;
     private final RedisTemplate<String, String> redisTemplate;
-    private final UserRepository userRepository;
+    private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
 
     //회원가입
     @Override
     public void signup(SignupReqDto reqDto) {
-        if (userRepository.findByEmail(reqDto.email()).isPresent()) {
+        if (memberRepository.findByEmail(reqDto.email()).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
 
         String encodedPassword = passwordEncoder.encode(reqDto.password());
 
-        User user = new User(reqDto.email(), encodedPassword, reqDto.username(), reqDto.nickname());
-        userRepository.save(user);
+        Member member = new Member(reqDto.email(), encodedPassword, reqDto.username(), reqDto.nickname());
+        memberRepository.save(member);
     }
 
     //로그인
@@ -74,11 +74,11 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
-        User user = userRepository.findByEmail(reqDto.email())
+        Member member = memberRepository.findByEmail(reqDto.email())
                 .orElseThrow(() -> new UsernameNotFoundException("해당 이메일을 찾을 수 없습니다."));
 
-        user.updatePassword(passwordEncoder.encode(reqDto.newPassword()));
-        userRepository.save(user);
+        member.updatePassword(passwordEncoder.encode(reqDto.newPassword()));
+        memberRepository.save(member);
     }
 
     //인증번호 전송
@@ -114,8 +114,8 @@ public class UserServiceImpl implements UserService {
     //회원 목록 조회
     @Override
     public List<UserResDto> getMembers() {
-        List<User> users = userRepository.findAll();
-        return users.stream()
+        List<Member> members = memberRepository.findAll();
+        return members.stream()
                 .map(UserResDto::from)
                 .collect(Collectors.toList());
     }
@@ -123,7 +123,7 @@ public class UserServiceImpl implements UserService {
     //회원 조회
     @Override
     public UserResDto getMemberById(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
-        return UserResDto.from(user);
+        Member member = memberRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+        return UserResDto.from(member);
     }
 }

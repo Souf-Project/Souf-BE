@@ -1,7 +1,7 @@
 package com.souf.soufwebsite.domain.feed.entity;
 
 import com.souf.soufwebsite.domain.file.entity.File;
-import com.souf.soufwebsite.domain.user.entity.User;
+import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -26,27 +26,27 @@ public class Feed extends BaseEntity {
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
     @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<File> files = new ArrayList<>();
 
 
     @Builder
-    private Feed(String content, User user, List<File> files) {
+    private Feed(String content, Member member, List<File> files) {
         if (files == null || files.isEmpty()) {
             throw new IllegalArgumentException("파일이 최소 1개 이상 필요합니다.");
         }
         this.content = content;
-        this.user = user;
+        this.member = member;
         files.forEach(this::addFile);
     }
 
-    public static Feed of(String content, User user, List<File> files) {
+    public static Feed of(String content, Member member, List<File> files) {
         return Feed.builder()
                 .content(content)
-                .user(user)
+                .member(member)
                 .files(files)
                 .build();
     }

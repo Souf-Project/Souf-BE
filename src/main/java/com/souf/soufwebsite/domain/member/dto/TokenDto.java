@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.user.dto;
+package com.souf.soufwebsite.domain.member.dto;
 
 import lombok.Builder;
 

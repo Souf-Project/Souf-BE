@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.domain.chat.entity;
 
-import com.souf.soufwebsite.domain.user.entity.User;
+import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -17,10 +17,10 @@ public class Chat extends BaseEntity {
     private Long roomId;
 
     @ManyToOne
-    @JoinColumn(name = "senderId")
-    private User sender;
+    @JoinColumn(name = "sender_id")
+    private Member sender;
 
     @ManyToOne
-    @JoinColumn(name = "receiverId")
-    private User receiver;
+    @JoinColumn(name = "receiver_id")
+    private Member receiver;
 }

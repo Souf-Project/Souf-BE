@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.global.security;
 
-import com.souf.soufwebsite.domain.user.entity.User;
+import com.souf.soufwebsite.domain.member.entity.Member;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -9,10 +9,10 @@ import java.util.List;
 
 public class UserDetailsImpl implements UserDetails {
 
-    private final User user;
+    private final Member member;
 
-    public UserDetailsImpl(User user) {
-        this.user = user;
+    public UserDetailsImpl(Member member) {
+        this.member = member;
     }
 
     @Override
@@ -22,11 +22,11 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return member.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return user.getUsername();
+        return member.getUsername();
     }
 }

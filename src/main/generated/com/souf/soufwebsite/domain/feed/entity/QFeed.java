@@ -36,7 +36,7 @@ public class QFeed extends EntityPathBase<Feed> {
     //inherited
     public final DateTimePath<java.time.LocalDateTime> lastModifiedTime = _super.lastModifiedTime;
 
-    public final com.souf.soufwebsite.domain.user.entity.QUser user;
+    public final com.souf.soufwebsite.domain.member.entity.QUser user;
 
     public QFeed(String variable) {
         this(Feed.class, forVariable(variable), INITS);
@@ -56,7 +56,7 @@ public class QFeed extends EntityPathBase<Feed> {
 
     public QFeed(Class<? extends Feed> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.user = inits.isInitialized("user") ? new com.souf.soufwebsite.domain.user.entity.QUser(forProperty("user"), inits.get("user")) : null;
+        this.user = inits.isInitialized("user") ? new com.souf.soufwebsite.domain.member.entity.QUser(forProperty("user"), inits.get("user")) : null;
     }
 
 }

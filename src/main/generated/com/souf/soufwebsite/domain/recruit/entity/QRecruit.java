@@ -46,7 +46,7 @@ public class QRecruit extends EntityPathBase<Recruit> {
 
     public final StringPath title = createString("title");
 
-    public final com.souf.soufwebsite.domain.user.entity.QUser user;
+    public final com.souf.soufwebsite.domain.member.entity.QUser user;
 
     public QRecruit(String variable) {
         this(Recruit.class, forVariable(variable), INITS);
@@ -66,7 +66,7 @@ public class QRecruit extends EntityPathBase<Recruit> {
 
     public QRecruit(Class<? extends Recruit> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.user = inits.isInitialized("user") ? new com.souf.soufwebsite.domain.user.entity.QUser(forProperty("user"), inits.get("user")) : null;
+        this.user = inits.isInitialized("user") ? new com.souf.soufwebsite.domain.member.entity.QUser(forProperty("user"), inits.get("user")) : null;
     }
 
 }

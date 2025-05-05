@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.user.entity;
+package com.souf.soufwebsite.domain.member.entity;
 
 public enum RoleType {
 

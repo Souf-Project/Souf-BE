@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.global.config;
 
-import com.souf.soufwebsite.domain.user.reposiotry.UserRepository;
+import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.global.jwt.JwtAuthenticationProcessingFilter;
 import com.souf.soufwebsite.global.jwt.JwtLogoutHandler;
 import com.souf.soufwebsite.global.jwt.JwtServiceImpl;
@@ -44,7 +44,7 @@ public class SecurityConfig {
 //	}
     private final JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter;
     private final JwtLogoutHandler jwtLogoutHandler;
-    private final UserRepository userRepository;
+    private final MemberRepository memberRepository;
     private final JwtServiceImpl jwtService;
     private final RedisTemplate<String, String> redisTemplate;
 
