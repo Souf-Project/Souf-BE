@@ -30,11 +30,11 @@ public class QChat extends EntityPathBase<Chat> {
     //inherited
     public final DateTimePath<java.time.LocalDateTime> lastModifiedTime = _super.lastModifiedTime;
 
-    public final com.souf.soufwebsite.domain.member.entity.QUser receiver;
+    public final com.souf.soufwebsite.domain.member.entity.QMember receiver;
 
     public final NumberPath<Long> roomId = createNumber("roomId", Long.class);
 
-    public final com.souf.soufwebsite.domain.member.entity.QUser sender;
+    public final com.souf.soufwebsite.domain.member.entity.QMember sender;
 
     public QChat(String variable) {
         this(Chat.class, forVariable(variable), INITS);
@@ -54,8 +54,8 @@ public class QChat extends EntityPathBase<Chat> {
 
     public QChat(Class<? extends Chat> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.receiver = inits.isInitialized("receiver") ? new com.souf.soufwebsite.domain.member.entity.QUser(forProperty("receiver"), inits.get("receiver")) : null;
-        this.sender = inits.isInitialized("sender") ? new com.souf.soufwebsite.domain.member.entity.QUser(forProperty("sender"), inits.get("sender")) : null;
+        this.receiver = inits.isInitialized("receiver") ? new com.souf.soufwebsite.domain.member.entity.QMember(forProperty("receiver"), inits.get("receiver")) : null;
+        this.sender = inits.isInitialized("sender") ? new com.souf.soufwebsite.domain.member.entity.QMember(forProperty("sender"), inits.get("sender")) : null;
     }
 
 }

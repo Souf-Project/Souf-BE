@@ -38,6 +38,8 @@ public class QRecruit extends EntityPathBase<Recruit> {
     //inherited
     public final DateTimePath<java.time.LocalDateTime> lastModifiedTime = _super.lastModifiedTime;
 
+    public final com.souf.soufwebsite.domain.member.entity.QMember member;
+
     public final StringPath payment = createString("payment");
 
     public final StringPath preferentialTreatment = createString("preferentialTreatment");
@@ -45,8 +47,6 @@ public class QRecruit extends EntityPathBase<Recruit> {
     public final StringPath region = createString("region");
 
     public final StringPath title = createString("title");
-
-    public final com.souf.soufwebsite.domain.member.entity.QUser user;
 
     public QRecruit(String variable) {
         this(Recruit.class, forVariable(variable), INITS);
@@ -66,7 +66,7 @@ public class QRecruit extends EntityPathBase<Recruit> {
 
     public QRecruit(Class<? extends Recruit> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.user = inits.isInitialized("user") ? new com.souf.soufwebsite.domain.member.entity.QUser(forProperty("user"), inits.get("user")) : null;
+        this.member = inits.isInitialized("member") ? new com.souf.soufwebsite.domain.member.entity.QMember(forProperty("member"), inits.get("member")) : null;
     }
 
 }
