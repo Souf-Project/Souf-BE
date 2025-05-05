@@ -58,7 +58,7 @@ public class Member extends BaseEntity {
     @JoinColumn(name = "file_id")
     private File file;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Feed> feeds = new ArrayList<>();
 
     @Builder
