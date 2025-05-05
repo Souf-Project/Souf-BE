@@ -1,7 +1,8 @@
 package com.souf.soufwebsite.global.email;
 
-import lombok.RequiredArgsConstructor;\
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
