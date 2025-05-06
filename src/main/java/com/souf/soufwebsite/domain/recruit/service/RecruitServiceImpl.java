@@ -6,7 +6,7 @@ import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.exception.NotFoundRecruitException;
 import com.souf.soufwebsite.domain.recruit.exception.NotValidAuthenticationException;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
-import com.souf.soufwebsite.domain.user.entity.User;
+import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.common.FirstCategory;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -21,14 +21,14 @@ public class RecruitServiceImpl implements RecruitService {
 
     private RecruitRepository recruitRepository;
 
-    private User getCurrentUser() {
+    private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
     }
 
     @Override
     public void createRecruit(RecruitReqDto reqDto) {
-        User user = getCurrentUser();
-        Recruit recruit = Recruit.of(reqDto, user);
+        Member member = getCurrentUser();
+        Recruit recruit = Recruit.of(reqDto, member);
         recruitRepository.save(recruit);
     }
 
@@ -40,7 +40,7 @@ public class RecruitServiceImpl implements RecruitService {
 
 
         return recruits.stream().map(
-                recruit -> RecruitResDto.from(recruit, recruit.getUser().getNickname()))
+                recruit -> RecruitResDto.from(recruit, recruit.getMember().getNickname()))
                 .toList();
     }
 
@@ -48,30 +48,30 @@ public class RecruitServiceImpl implements RecruitService {
     @Override
     public RecruitResDto getRecruitById(Long recruitId) {
         Recruit recruit = findIfRecruitExist(recruitId);
-        return RecruitResDto.from(recruit, recruit.getUser().getNickname());
+        return RecruitResDto.from(recruit, recruit.getMember().getNickname());
     }
 
     @Transactional
     @Override
     public void updateRecruit(Long recruitId, RecruitReqDto reqDto) {
-        User user = getCurrentUser();
+        Member member = getCurrentUser();
         Recruit recruit = findIfRecruitExist(recruitId);
-        verifyIfRecruitIsMine(recruit, user);
+        verifyIfRecruitIsMine(recruit, member);
 
         recruit.updateRecruit(reqDto);
     }
 
     @Override
     public void deleteRecruit(Long recruitId) {
-        User user = getCurrentUser();
+        Member member = getCurrentUser();
         Recruit recruit = findIfRecruitExist(recruitId);
-        verifyIfRecruitIsMine(recruit, user);
+        verifyIfRecruitIsMine(recruit, member);
 
         recruitRepository.delete(recruit);
     }
 
-    private void verifyIfRecruitIsMine(Recruit recruit, User user) {
-        if(!recruit.getUser().equals(user)){
+    private void verifyIfRecruitIsMine(Recruit recruit, Member member) {
+        if(!recruit.getMember().equals(member)){
             throw new NotValidAuthenticationException();
         }
     }

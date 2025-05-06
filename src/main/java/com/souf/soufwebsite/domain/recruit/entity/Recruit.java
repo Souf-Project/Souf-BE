@@ -2,7 +2,7 @@ package com.souf.soufwebsite.domain.recruit.entity;
 
 import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.exception.NotValidDeadLineException;
-import com.souf.soufwebsite.domain.user.entity.User;
+import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import com.souf.soufwebsite.global.common.FirstCategory;
 import jakarta.persistence.*;
@@ -11,7 +11,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.format.datetime.DateFormatter;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -22,7 +21,7 @@ import java.time.format.DateTimeFormatter;
 public class Recruit extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "recruitId")
+    @Column(name = "recruit_id")
     private Long id;
 
     @Column(nullable = false, columnDefinition = "VARCHAR(50)")
@@ -52,11 +51,11 @@ public class Recruit extends BaseEntity {
 
     // 작성자 (userId)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", nullable = false)
-    private User user;
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
     @Builder
-    public Recruit(RecruitReqDto reqDto, User user) {
+    public Recruit(RecruitReqDto reqDto, Member member) {
         this.title = reqDto.title();
         this.content = reqDto.content();
         this.region = reqDto.region();
@@ -64,13 +63,13 @@ public class Recruit extends BaseEntity {
         this.payment = reqDto.payment();
         this.preferentialTreatment = reqDto.preferentialTreatment();
         this.firstCategory = reqDto.firstCategory();
-        this.user = user;
+        this.member = member;
     }
 
-    public static Recruit of(RecruitReqDto reqDto, User user) {
+    public static Recruit of(RecruitReqDto reqDto, Member member) {
         return Recruit.builder()
                 .reqDto(reqDto)
-                .user(user)
+                .member(member)
                 .build();
     }
 

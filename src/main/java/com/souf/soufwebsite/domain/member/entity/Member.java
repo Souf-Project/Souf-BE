@@ -1,8 +1,8 @@
-package com.souf.soufwebsite.domain.user.entity;
+package com.souf.soufwebsite.domain.member.entity;
 
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.file.entity.File;
-import com.souf.soufwebsite.domain.user.dto.ReqDto.UpdateReqDto;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -19,11 +19,11 @@ import java.util.List;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User extends BaseEntity {
+public class Member extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "userId")
+    @Column(name = "member_id")
     private Long id;
 
     @NotNull
@@ -55,14 +55,14 @@ public class User extends BaseEntity {
     private RoleType role;
 
     @OneToOne
-    @JoinColumn(name = "fileId")
+    @JoinColumn(name = "file_id")
     private File file;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Feed> feeds = new ArrayList<>();
 
     @Builder
-    public User(String email, String password, String username, String nickname) {
+    public Member(String email, String password, String username, String nickname) {
         this.email = email;
         this.password = password;
         this.username = username;

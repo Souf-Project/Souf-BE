@@ -10,7 +10,7 @@ import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import com.souf.soufwebsite.domain.file.entity.File;
 import com.souf.soufwebsite.domain.file.repository.FileRepository;
 import com.souf.soufwebsite.domain.file.service.FileService;
-import com.souf.soufwebsite.domain.user.entity.User;
+import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,13 +28,13 @@ public class FeedServiceImpl implements FeedService {
     private final FileService fileService;
     private final FileRepository fileRepository;
 
-    private User getCurrentUser() {
+    private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
     }
 
     @Override
     public void createFeed(FeedCreateReqDto reqDto, List<MultipartFile> files) {
-        User user = getCurrentUser();
+        Member member = getCurrentUser();
 
         List<File> fileEntities = files.stream()
                 .map(file -> {
@@ -46,7 +46,7 @@ public class FeedServiceImpl implements FeedService {
                 })
                 .toList();
 
-        Feed feed = Feed.of(reqDto.content(), user, fileEntities);
+        Feed feed = Feed.of(reqDto.content(), member, fileEntities);
         feedRepository.save(feed);
     }
 
@@ -56,7 +56,7 @@ public class FeedServiceImpl implements FeedService {
         List<Feed> feeds = feedRepository.findAllByOrderByIdDesc();
 
         return feeds.stream()
-                .map(feed -> FeedResDto.from(feed, feed.getUser().getNickname()))
+                .map(feed -> FeedResDto.from(feed, feed.getMember().getNickname()))
                 .toList();
     }
 
@@ -65,15 +65,15 @@ public class FeedServiceImpl implements FeedService {
     public FeedResDto getFeedById(Long feedId) {
         Feed feed = findIfFeedExist(feedId);
 
-        return FeedResDto.from(feed, feed.getUser().getNickname());
+        return FeedResDto.from(feed, feed.getMember().getNickname());
     }
 
     @Transactional
     @Override
     public void updateFeed(Long feedId, FeedUpdateReqDto reqDto, List<MultipartFile> newFiles) throws IOException {
-        User user = getCurrentUser();
+        Member member = getCurrentUser();
         Feed feed = findIfFeedExist(feedId);
-        verifyIfFeedIsMine(feed, user);
+        verifyIfFeedIsMine(feed, member);
 
         List<File> toRemove = feed.getFiles().stream()
                 .filter(file -> !reqDto.keepFileIds().contains(file.getId()))
@@ -99,15 +99,15 @@ public class FeedServiceImpl implements FeedService {
 
     @Override
     public void deleteFeed(Long feedId) {
-        User user = getCurrentUser();
+        Member member = getCurrentUser();
         Feed feed = findIfFeedExist(feedId);
-        verifyIfFeedIsMine(feed, user);
+        verifyIfFeedIsMine(feed, member);
 
         feedRepository.delete(feed);
     }
 
-    private void verifyIfFeedIsMine(Feed feed, User user) {
-        if(!feed.getUser().equals(user)){
+    private void verifyIfFeedIsMine(Feed feed, Member member) {
+        if(!feed.getMember().equals(member)){
             throw new NotValidAuthenticationException();
         }
     }

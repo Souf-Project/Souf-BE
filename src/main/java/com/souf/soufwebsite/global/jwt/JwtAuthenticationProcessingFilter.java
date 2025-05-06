@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.global.jwt;
 
-import com.souf.soufwebsite.domain.user.reposiotry.UserRepository;
+import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.global.security.UserDetailsImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -8,20 +8,23 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
 @RequiredArgsConstructor
+@Component
 @Slf4j
 public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserRepository userRepository;
+    private final MemberRepository memberRepository;
     private final RedisTemplate<String, String> redisTemplate;
 
     private static final String LOGIN_URL = "/login";
@@ -77,7 +80,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     // 액세스 토큰으로 사용자 인증 처리
     private void authenticateUser(String accessToken) {
         jwtService.extractEmail(accessToken).ifPresent(
-                email -> userRepository.findByEmail(email).ifPresent(
+                email -> memberRepository.findByEmail(email).ifPresent(
                         user -> {
                             UserDetailsImpl userDetails = new UserDetailsImpl(user);
                             Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
