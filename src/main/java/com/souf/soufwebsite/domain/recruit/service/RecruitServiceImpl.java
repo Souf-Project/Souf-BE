@@ -19,7 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RecruitServiceImpl implements RecruitService {
 
-    private RecruitRepository recruitRepository;
+    private final RecruitRepository recruitRepository;
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
