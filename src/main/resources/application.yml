@@ -44,3 +44,9 @@ jwt:
   refresh:
     expiration: 3600000
     header: Refresh
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
