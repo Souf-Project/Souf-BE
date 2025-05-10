@@ -5,11 +5,11 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.souf.soufwebsite.domain.file.dto.FileDto;
 import com.souf.soufwebsite.domain.file.entity.File;
 import com.souf.soufwebsite.domain.file.entity.FileType;
 import com.souf.soufwebsite.domain.file.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,7 +25,28 @@ public class FileService {
     private final FileRepository fileRepository;
     private final AmazonS3 amazonS3;
 
-    private final String bucketName = "iamsouf-bucket";
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucketName;
+
+    public String generatePresingedUploadUrl(String originalFilename) {
+        String ext = extractExtension(originalFilename);
+        String fileName = "uploads/" + UUID.randomUUID() + (ext.isEmpty() ? "" : "." + ext);
+
+        GeneratePresignedUrlRequest urlRequest = getGeneratePresignedUrlRequest(fileName);
+
+        URL presignedUrl = amazonS3.generatePresignedUrl(urlRequest);
+
+        return presignedUrl.toString();
+    }
+
+    private GeneratePresignedUrlRequest getGeneratePresignedUrlRequest(String fileName) {
+        Date expiration = new Date(System.currentTimeMillis() + 1000 * 60 * 10);
+        GeneratePresignedUrlRequest urlRequest = new GeneratePresignedUrlRequest(bucketName, fileName)
+                .withMethod(HttpMethod.PUT)
+                .withExpiration(expiration);
+
+        return urlRequest;
+    }
 
     public File uploadFile(MultipartFile multipartFile) throws IOException {
         // 1. S3 Key 생성
@@ -41,13 +62,7 @@ public class FileService {
         // 3. S3에 업로드
         amazonS3.putObject(new PutObjectRequest(bucketName, s3Key, multipartFile.getInputStream(), metadata));
 
-        // 4. 프리사인드 URL 생성 (10분 유효)
-        Date expiration = new Date(System.currentTimeMillis() + 1000 * 60 * 10);
-        GeneratePresignedUrlRequest urlRequest = new GeneratePresignedUrlRequest(bucketName, s3Key)
-                .withMethod(HttpMethod.GET)
-                .withExpiration(expiration);
-        URL presignedUrl = amazonS3.generatePresignedUrl(urlRequest);
-        String fileUrl = presignedUrl.toString();
+        String fileUrl = generatePresingedUploadUrl(s3Key);
 
         // 5. File 엔티티 생성 및 저장
         FileType fileType = determineFileType(multipartFile);
