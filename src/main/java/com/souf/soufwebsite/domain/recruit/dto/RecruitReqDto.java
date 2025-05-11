@@ -4,6 +4,8 @@ import com.souf.soufwebsite.global.common.FirstCategory;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.util.List;
+
 public record RecruitReqDto(
         @NotNull
         @Size(min = 2)
@@ -19,6 +21,8 @@ public record RecruitReqDto(
         String payment,
         @Size(max = 300)
         String preferentialTreatment,
-        FirstCategory firstCategory
+        FirstCategory firstCategory,
+
+        List<String> originalFileNames
 ) {
 }

@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.recruit.controller;
 
+import com.souf.soufwebsite.domain.recruit.dto.RecruitCreateReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitResDto;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
@@ -21,10 +22,10 @@ public class RecruitController {
     private final RecruitService recruitService;
 
     @PostMapping
-    public SuccessResponse<?> createRecruit(RecruitReqDto recruitReqDto) {
-        recruitService.createRecruit(recruitReqDto);
+    public SuccessResponse<RecruitCreateReqDto> createRecruit(@RequestBody RecruitReqDto recruitReqDto) {
+        RecruitCreateReqDto recruitCreateReqDto = recruitService.createRecruit(recruitReqDto);
 
-        return new SuccessResponse<>(RECRUIT_CREATE.getMessage());
+        return new SuccessResponse<>(recruitCreateReqDto, RECRUIT_CREATE.getMessage());
     }
 
     @GetMapping
@@ -42,7 +43,7 @@ public class RecruitController {
     }
 
     @PatchMapping("/{recruitId}")
-    public SuccessResponse updateRecruit(@PathVariable(name = "recruitId") Long recruitId, RecruitReqDto recruitReqDto) {
+    public SuccessResponse updateRecruit(@PathVariable(name = "recruitId") Long recruitId, @RequestBody RecruitReqDto recruitReqDto) {
         recruitService.updateRecruit(recruitId, recruitReqDto);
 
         return new SuccessResponse(RECRUIT_UPDATE.getMessage());
