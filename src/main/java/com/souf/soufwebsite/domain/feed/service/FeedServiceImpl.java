@@ -9,7 +9,7 @@ import com.souf.soufwebsite.domain.feed.exception.NotValidAuthenticationExceptio
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import com.souf.soufwebsite.domain.file.entity.File;
 import com.souf.soufwebsite.domain.file.repository.FileRepository;
-import com.souf.soufwebsite.domain.file.service.FileService;
+import com.souf.soufwebsite.domain.file.service.S3UploaderService;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ import java.util.List;
 public class FeedServiceImpl implements FeedService {
 
     private final FeedRepository feedRepository;
-    private final FileService fileService;
+    private final S3UploaderService s3UploaderService;
     private final FileRepository fileRepository;
 
     private Member getCurrentUser() {
@@ -39,7 +39,7 @@ public class FeedServiceImpl implements FeedService {
         List<File> fileEntities = files.stream()
                 .map(file -> {
                     try {
-                        return fileService.uploadFile(file);
+                        return s3UploaderService.uploadFile(file);
                     } catch (IOException e) {
                         throw new RuntimeException("파일 업로드 실패: " + file.getOriginalFilename(), e);
                     }
@@ -87,7 +87,7 @@ public class FeedServiceImpl implements FeedService {
         // 2) 새로운 파일 추가
         if (newFiles != null) {
             for (MultipartFile multipartFile : newFiles) {
-                File file = fileService.uploadFile(multipartFile);
+                File file = s3UploaderService.uploadFile(multipartFile);
                 feed.addFile(file);
             }
         }
