@@ -1,6 +1,7 @@
 package com.souf.soufwebsite.domain.file.entity;
 
 import com.souf.soufwebsite.domain.feed.entity.Feed;
+import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -35,6 +36,10 @@ public class File extends BaseEntity {
     @JoinColumn(name = "feed_id")
     private Feed feed;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recruit_id")
+    private Recruit recruit;
+
 
     public static File of(String url, String name, FileType type) {
         return File.builder()
@@ -45,6 +50,14 @@ public class File extends BaseEntity {
     }
 
     public void setFeed(Feed feed) {
+        this.feed = feed;
+    }
+
+    public void assignToRecruit(Recruit recruit) {
+        this.recruit = recruit;
+    }
+
+    public void assignToFeed(Feed feed){
         this.feed = feed;
     }
 }

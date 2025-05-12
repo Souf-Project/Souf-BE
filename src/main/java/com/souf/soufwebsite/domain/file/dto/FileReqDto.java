@@ -2,18 +2,12 @@ package com.souf.soufwebsite.domain.file.dto;
 
 import com.souf.soufwebsite.domain.file.entity.File;
 
+import java.util.List;
+
 public record FileReqDto(
         Long postId,
-        String fileUrl,
-        String fileName,
-        String fileType // IMAGE, VIDEO 등
+        List<String> fileUrl,
+        List<String> fileName,
+        List<String> fileType // IMAGE, VIDEO 등
 ) {
-    public static FileReqDto from(File file) {
-        return new FileReqDto(
-                file.getId(),
-                file.getFileUrl(),
-                file.getFileName(),
-                file.getFileType().name()
-        );
-    }
 }

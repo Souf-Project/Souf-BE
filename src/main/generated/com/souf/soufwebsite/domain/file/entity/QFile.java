@@ -40,6 +40,8 @@ public class QFile extends EntityPathBase<File> {
     //inherited
     public final DateTimePath<java.time.LocalDateTime> lastModifiedTime = _super.lastModifiedTime;
 
+    public final com.souf.soufwebsite.domain.recruit.entity.QRecruit recruit;
+
     public QFile(String variable) {
         this(File.class, forVariable(variable), INITS);
     }
@@ -59,6 +61,7 @@ public class QFile extends EntityPathBase<File> {
     public QFile(Class<? extends File> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
         this.feed = inits.isInitialized("feed") ? new com.souf.soufwebsite.domain.feed.entity.QFeed(forProperty("feed"), inits.get("feed")) : null;
+        this.recruit = inits.isInitialized("recruit") ? new com.souf.soufwebsite.domain.recruit.entity.QRecruit(forProperty("recruit"), inits.get("recruit")) : null;
     }
 
 }

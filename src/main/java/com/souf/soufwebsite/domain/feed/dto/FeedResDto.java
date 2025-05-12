@@ -8,15 +8,11 @@ import java.util.List;
 public record FeedResDto (
         Long feedId,
         String content,
-        List<FileReqDto> files,
         String nickname
 ) {
     public static FeedResDto from(Feed feed, String nickname) {
         return new FeedResDto(feed.getId(),
                 feed.getContent(),
-                feed.getFiles().stream()
-                        .map(FileReqDto::from)
-                        .toList(),
                 nickname
         );
     }

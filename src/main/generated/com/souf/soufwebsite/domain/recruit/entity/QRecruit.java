@@ -31,6 +31,8 @@ public class QRecruit extends EntityPathBase<Recruit> {
 
     public final DateTimePath<java.time.LocalDateTime> deadline = createDateTime("deadline", java.time.LocalDateTime.class);
 
+    public final ListPath<com.souf.soufwebsite.domain.file.entity.File, com.souf.soufwebsite.domain.file.entity.QFile> files = this.<com.souf.soufwebsite.domain.file.entity.File, com.souf.soufwebsite.domain.file.entity.QFile>createList("files", com.souf.soufwebsite.domain.file.entity.File.class, com.souf.soufwebsite.domain.file.entity.QFile.class, PathInits.DIRECT2);
+
     public final EnumPath<com.souf.soufwebsite.global.common.FirstCategory> firstCategory = createEnum("firstCategory", com.souf.soufwebsite.global.common.FirstCategory.class);
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
