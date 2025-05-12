@@ -42,6 +42,7 @@ public class SecurityConfig {
 //				.requestMatchers("/h2-console/**")
 //		);
 //	}
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtLogoutHandler jwtLogoutHandler;
     private final MemberRepository memberRepository;
     private final JwtServiceImpl jwtService;
@@ -50,25 +51,23 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http    .csrf(AbstractHttpConfigurer::disable)
+        http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
-
-                .authorizeHttpRequests((authorize) -> authorize
-                        .anyRequest().permitAll())
-                        //.requestMatchers("/login").permitAll() // 로그인한 유저에게만 서비스 제공
-                        //.anyRequest().authenticated())
-
                 .logout((logout) -> logout
                         .addLogoutHandler(jwtLogoutHandler) // JwtLogoutHandler 추가
                         .logoutSuccessHandler((request, response, authentication) -> response.setStatus(HttpServletResponse.SC_OK)))
 
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .authorizeHttpRequests((authorize) -> authorize
+                        .anyRequest().permitAll());
+                        //.requestMatchers("/login").permitAll() // 로그인한 유저에게만 서비스 제공
+                        //.anyRequest().authenticated())
 
-        http
-                .addFilterBefore(new JwtAuthenticationProcessingFilter(jwtService, memberRepository, redisTemplate),
-                        UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
@@ -94,7 +93,7 @@ public class SecurityConfig {
 //    @Bean
 //    public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter(){
 //
-//        return new JwtAuthenticationProcessingFilter(jwtService, memberRepository, redisTemplate);
+//        return new JwtAuthenticationProcessingFilter(jwtService, userRepository, redisTemplate);
 //    }
 
     @Bean

@@ -55,24 +55,30 @@ public class Recruit extends BaseEntity {
     private Member member;
 
     @Builder
-    public Recruit(RecruitReqDto reqDto, Member member) {
-        this.title = reqDto.title();
-        this.content = reqDto.content();
-        this.region = reqDto.region();
-        this.deadline = getDeadLine(reqDto.deadline());
-        this.payment = reqDto.payment();
-        this.preferentialTreatment = reqDto.preferentialTreatment();
-        this.firstCategory = reqDto.firstCategory();
+    public Recruit(String title, String content, String region, LocalDateTime deadline, String payment,
+                   String preferentialTreatment, FirstCategory firstCategory, Member member) {
+        this.title = title;
+        this.content = content;
+        this.region = region;
+        this.deadline = deadline;
+        this.payment = payment;
+        this.preferentialTreatment = preferentialTreatment;
+        this.firstCategory = firstCategory;
         this.member = member;
     }
 
     public static Recruit of(RecruitReqDto reqDto, Member member) {
         return Recruit.builder()
-                .reqDto(reqDto)
+                .title(reqDto.title())
+                .content(reqDto.content())
+                .region(reqDto.region())
+                .deadline(getDeadLine(reqDto.deadline()))
+                .payment(reqDto.payment())
+                .preferentialTreatment(reqDto.preferentialTreatment())
+                .firstCategory(reqDto.firstCategory())
                 .member(member)
                 .build();
     }
-
     public void updateRecruit(RecruitReqDto reqDto) {
         this.title = reqDto.title();
         this.content = reqDto.content();
