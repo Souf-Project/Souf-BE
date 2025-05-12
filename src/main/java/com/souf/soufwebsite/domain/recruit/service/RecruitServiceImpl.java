@@ -1,6 +1,8 @@
 package com.souf.soufwebsite.domain.recruit.service;
 
+import com.souf.soufwebsite.domain.file.dto.FileReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
+import com.souf.soufwebsite.domain.file.entity.File;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitCreateReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
@@ -38,6 +40,17 @@ public class RecruitServiceImpl implements RecruitService {
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl(reqDto.originalFileNames());
 
         return new RecruitCreateReqDto(recruit.getId(), presignedUrlResDtos);
+    }
+
+    @Override
+    @Transactional
+    public void uploadRecruitMedia(FileReqDto reqDto) {
+        Recruit recruit = findIfRecruitExist(reqDto.postId());
+        List<File> fileList = fileService.uploadMetadata(reqDto);
+
+        for(File f : fileList){
+            recruit.addFileOnRecruit(f);
+        }
     }
 
     @Transactional(readOnly = true)

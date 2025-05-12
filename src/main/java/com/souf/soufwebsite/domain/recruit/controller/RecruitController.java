@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.recruit.controller;
 
+import com.souf.soufwebsite.domain.file.dto.FileReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitCreateReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitResDto;
@@ -26,6 +27,13 @@ public class RecruitController {
         RecruitCreateReqDto recruitCreateReqDto = recruitService.createRecruit(recruitReqDto);
 
         return new SuccessResponse<>(recruitCreateReqDto, RECRUIT_CREATE.getMessage());
+    }
+
+    @PostMapping("/upload")
+    public SuccessResponse uploadMetadata(@RequestBody FileReqDto fileReqDto){
+        recruitService.uploadRecruitMedia(fileReqDto);
+
+        return new SuccessResponse(RECRUIT_FILE_METADATA_CREATE.getMessage());
     }
 
     @GetMapping

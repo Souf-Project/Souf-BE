@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.recruit.entity;
 
+import com.souf.soufwebsite.domain.file.entity.File;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.exception.NotValidDeadLineException;
 import com.souf.soufwebsite.domain.member.entity.Member;
@@ -14,6 +15,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -54,6 +57,9 @@ public class Recruit extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
+    @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<File> files = new ArrayList<>();
+
     @Builder
     public Recruit(String title, String content, String region, LocalDateTime deadline, String payment,
                    String preferentialTreatment, FirstCategory firstCategory, Member member) {
@@ -72,7 +78,7 @@ public class Recruit extends BaseEntity {
                 .title(reqDto.title())
                 .content(reqDto.content())
                 .region(reqDto.region())
-                .deadline(getDeadLine(reqDto.deadline()))
+                .deadline(reqDto.deadline())
                 .payment(reqDto.payment())
                 .preferentialTreatment(reqDto.preferentialTreatment())
                 .firstCategory(reqDto.firstCategory())
@@ -83,20 +89,14 @@ public class Recruit extends BaseEntity {
         this.title = reqDto.title();
         this.content = reqDto.content();
         this.region = reqDto.region();
-        this.deadline = getDeadLine(reqDto.deadline());
+        this.deadline = reqDto.deadline();
         this.payment = reqDto.payment();
         this.preferentialTreatment = reqDto.preferentialTreatment();
         this.firstCategory = reqDto.firstCategory();
     }
 
-    private static LocalDateTime getDeadLine(String deadLine){
-
-        try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
-
-            return LocalDateTime.parse(deadLine, formatter);
-        } catch (Exception e) {
-            throw new NotValidDeadLineException();
-        }
+    public void addFileOnRecruit(File file){
+        this.files.add(file);
+        file.assignToRecruit(this);
     }
 }
