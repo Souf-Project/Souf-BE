@@ -13,13 +13,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
 @RequiredArgsConstructor
-@Component
 @Slf4j
 public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
@@ -27,7 +25,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     private final MemberRepository memberRepository;
     private final RedisTemplate<String, String> redisTemplate;
 
-    private static final String LOGIN_URL = "/login";
+    private static final String LOGIN_URL = "/api/v1/auth/login";
     private static final String LOGOUT_URL = "/logout";
 
     @Override
@@ -35,7 +33,9 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        if (request.getRequestURI().equals(LOGIN_URL) || request.getRequestURI().equals(LOGOUT_URL)) {
+
+
+        if (request.getRequestURI().startsWith(LOGIN_URL) || request.getRequestURI().equals(LOGOUT_URL)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -52,6 +52,11 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                 .filter(jwtService::isTokenValid)
                 .orElse(null);
 
+        log.info("Request URI: {}", request.getRequestURI());
+        log.info("AccessToken: {}", accessToken);
+        log.info("RefreshToken: {}", refreshToken);
+
+
         if (accessToken != null && refreshToken != null) {
             authenticateUser(accessToken);
             filterChain.doFilter(request, response);
@@ -59,7 +64,12 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         }
 
         if (accessToken == null && refreshToken != null) {
-            reIssueAccessToken(response, refreshToken);
+            String newAccessToken = reIssueAccessToken(refreshToken);
+            jwtService.sendAccessToken(response, newAccessToken);
+
+            // 응답 종료. 인증이나 체인 호출 없음 (프론트가 다음 요청을 새 토큰으로 해야 함)
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Access token re-issued. Please retry with new token.");
             return;
         }
 
@@ -74,7 +84,8 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
             authenticateUser(accessToken);
         }
 
-        filterChain.doFilter(request, response);
+
+        filterChain.doFilter(request,response);
     }
 
     // 액세스 토큰으로 사용자 인증 처리
@@ -94,10 +105,13 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     }
 
     // 리프레시 토큰을 사용하여 새로운 액세스 토큰 발급
-    private void reIssueAccessToken(HttpServletResponse response, String refreshToken) {
+    private String reIssueAccessToken(String refreshToken) {
         String email = redisTemplate.opsForValue().get("refresh:" + refreshToken);
-        String newAccessToken = jwtService.createAccessToken(email);
-        jwtService.sendAccessToken(response, newAccessToken);
-        log.info("AccessToken 재발급: {}", newAccessToken);
+        if (email != null) {
+            String newAccessToken = jwtService.createAccessToken(email);
+            log.info("AccessToken 재발급: {}", newAccessToken);
+            return newAccessToken;
+        }
+        throw new IllegalArgumentException("유효하지 않은 refresh token");
     }
 }

@@ -42,7 +42,6 @@ public class SecurityConfig {
 //				.requestMatchers("/h2-console/**")
 //		);
 //	}
-    private final JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter;
     private final JwtLogoutHandler jwtLogoutHandler;
     private final MemberRepository memberRepository;
     private final JwtServiceImpl jwtService;
@@ -68,7 +67,8 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http
-                .addFilterBefore(jwtAuthenticationProcessingFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthenticationProcessingFilter(jwtService, memberRepository, redisTemplate),
+                        UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
@@ -94,7 +94,7 @@ public class SecurityConfig {
 //    @Bean
 //    public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter(){
 //
-//        return new JwtAuthenticationProcessingFilter(jwtService, userRepository, redisTemplate);
+//        return new JwtAuthenticationProcessingFilter(jwtService, memberRepository, redisTemplate);
 //    }
 
     @Bean

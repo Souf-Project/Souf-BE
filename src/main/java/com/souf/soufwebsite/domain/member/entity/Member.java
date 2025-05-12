@@ -26,24 +26,16 @@ public class Member extends BaseEntity {
     @Column(name = "member_id")
     private Long id;
 
-    @NotNull
     @Column(nullable = false)
-    @Size(min = 5, max = 30)
     private String email;
 
-    @NotNull
     @Column(nullable = false)
-    @Size(min = 8, max = 20)
     private String password;
 
-    @NotNull
     @Column(nullable = false)
-    @Size(min = 2, max = 20)
     private String username;
 
-    @NotNull
     @Column(nullable = false)
-    @Size(min = 2, max = 20)
     private String nickname;
 
     private LocalDate birth;
