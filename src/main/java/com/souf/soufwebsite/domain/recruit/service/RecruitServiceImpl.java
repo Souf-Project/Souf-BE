@@ -1,5 +1,10 @@
 package com.souf.soufwebsite.domain.recruit.service;
 
+import com.souf.soufwebsite.domain.file.dto.FileReqDto;
+import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
+import com.souf.soufwebsite.domain.file.entity.File;
+import com.souf.soufwebsite.domain.file.service.FileService;
+import com.souf.soufwebsite.domain.recruit.dto.RecruitCreateReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitResDto;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
@@ -19,6 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RecruitServiceImpl implements RecruitService {
 
+    private final FileService fileService;
     private final RecruitRepository recruitRepository;
 
     private Member getCurrentUser() {
@@ -26,10 +32,25 @@ public class RecruitServiceImpl implements RecruitService {
     }
 
     @Override
-    public void createRecruit(RecruitReqDto reqDto) {
+    public RecruitCreateReqDto createRecruit(RecruitReqDto reqDto) {
         Member member = getCurrentUser();
         Recruit recruit = Recruit.of(reqDto, member);
-        recruitRepository.save(recruit);
+        recruit = recruitRepository.save(recruit);
+
+        List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl(reqDto.originalFileNames());
+
+        return new RecruitCreateReqDto(recruit.getId(), presignedUrlResDtos);
+    }
+
+    @Override
+    @Transactional
+    public void uploadRecruitMedia(FileReqDto reqDto) {
+        Recruit recruit = findIfRecruitExist(reqDto.postId());
+        List<File> fileList = fileService.uploadMetadata(reqDto);
+
+        for(File f : fileList){
+            recruit.addFileOnRecruit(f);
+        }
     }
 
     @Transactional(readOnly = true)
