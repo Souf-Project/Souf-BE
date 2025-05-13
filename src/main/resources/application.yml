@@ -19,7 +19,7 @@ spring:
       host: ${REDIS_HOST:localhost}
       password: ${REDIS_PASSWORD}
       ssl:
-        enabled: true
+        enabled: false
 
   application:
     name: soufwebsite
@@ -47,6 +47,8 @@ jwt:
 
 cloud:
   aws:
+#    region:
+#      static: ap-northeast-2
     credentials:
       access-key: ${AWS_ACCESS_KEY}
       secret-key: ${AWS_SECRET_KEY}

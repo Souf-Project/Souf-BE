@@ -1,7 +1,7 @@
 package com.souf.soufwebsite.global.config;
 
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
-import com.souf.soufwebsite.global.jwt.JwtAuthenticationProcessingFilter;
+import com.souf.soufwebsite.global.jwt.JwtAuthenticationFilter;
 import com.souf.soufwebsite.global.jwt.JwtLogoutHandler;
 import com.souf.soufwebsite.global.jwt.JwtServiceImpl;
 import jakarta.servlet.http.HttpServletResponse;
@@ -42,7 +42,6 @@ public class SecurityConfig {
 //				.requestMatchers("/h2-console/**")
 //		);
 //	}
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtLogoutHandler jwtLogoutHandler;
     private final MemberRepository memberRepository;
     private final JwtServiceImpl jwtService;
@@ -51,6 +50,10 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+        JwtAuthenticationFilter jwtAuthenticationFilter =
+                new JwtAuthenticationFilter(jwtService, memberRepository, redisTemplate);
+
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
@@ -90,11 +93,10 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-//    @Bean
-//    public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter(){
-//
-//        return new JwtAuthenticationProcessingFilter(jwtService, userRepository, redisTemplate);
-//    }
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(jwtService, memberRepository, redisTemplate);
+    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
