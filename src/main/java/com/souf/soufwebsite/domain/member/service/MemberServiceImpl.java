@@ -88,9 +88,7 @@ public class MemberServiceImpl implements MemberService {
         String redisKey = "email:verification:" + email;
         redisTemplate.opsForValue().set(redisKey, code, 5, TimeUnit.MINUTES);
 
-        boolean emailSent = emailService.sendEmail(email, "이메일 인증번호", "인증번호는: " + code + " 입니다.");
-
-        return emailSent;
+        return emailService.sendEmail(email, "이메일 인증번호", "인증번호는: " + code + " 입니다.");
     }
 
     //인증번호 확인
