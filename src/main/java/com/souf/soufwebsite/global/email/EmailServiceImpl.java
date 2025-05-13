@@ -22,13 +22,6 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public boolean sendEmail(String email, String title, String content) {
-        // 6자리 인증번호 생성
-        String code = String.format("%06d", new Random().nextInt(1000000));
-        String redisKey = "email:verification:" + email;
-
-        // Redis에 저장 (5분 동안 유효)
-        redisTemplate.opsForValue().set(redisKey, code, 5, TimeUnit.MINUTES);
-
         // 이메일 전송
         try {
             SimpleMailMessage message = new SimpleMailMessage();
