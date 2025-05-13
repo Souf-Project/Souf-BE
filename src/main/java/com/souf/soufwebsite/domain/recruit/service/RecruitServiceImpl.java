@@ -4,6 +4,7 @@ import com.souf.soufwebsite.domain.file.dto.FileReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.entity.File;
 import com.souf.soufwebsite.domain.file.service.FileService;
+import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitCreateReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitResDto;
@@ -26,12 +27,14 @@ public class RecruitServiceImpl implements RecruitService {
 
     private final FileService fileService;
     private final RecruitRepository recruitRepository;
+    private final MemberRepository memberRepository;
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
     }
 
     @Override
+    @Transactional
     public RecruitCreateReqDto createRecruit(RecruitReqDto reqDto) {
         Member member = getCurrentUser();
         Recruit recruit = Recruit.of(reqDto, member);
