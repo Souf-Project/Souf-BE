@@ -7,7 +7,9 @@ import com.souf.soufwebsite.domain.member.dto.ResDto.UserResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.service.MemberService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,19 +17,22 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
+@Slf4j
 public class MemberController {
 
     private final MemberService memberService;
 
     @PostMapping("/auth/signup")
-    public SuccessResponse<?> signup(@RequestBody SignupReqDto reqDto) {
+    public SuccessResponse<?> signup(@RequestBody @Valid SignupReqDto reqDto) {
         memberService.signup(reqDto);
         return new SuccessResponse<>("회원가입 성공");
     }
 
     @PostMapping("/auth/login")
-    public SuccessResponse<TokenDto> signin(@RequestBody SigninReqDto reqDto) {
+    public SuccessResponse<TokenDto> signin(@RequestBody @Valid SigninReqDto reqDto) {
+        log.info("로그인 요청: {}", reqDto);
         TokenDto tokenDto = memberService.signin(reqDto);
+        log.info("로그인 성공: {}", tokenDto);
         return new SuccessResponse<>(tokenDto);
     }
 
