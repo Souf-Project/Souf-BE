@@ -4,9 +4,8 @@ import com.souf.soufwebsite.domain.file.dto.FileReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitCreateReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitResDto;
-import com.souf.soufwebsite.domain.recruit.entity.Recruit;
+import com.souf.soufwebsite.domain.recruit.dto.RecruitSimpleResDto;
 import com.souf.soufwebsite.domain.recruit.service.RecruitService;
-import com.souf.soufwebsite.global.common.FirstCategory;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,9 +37,12 @@ public class RecruitController {
     }
 
     @GetMapping
-    public SuccessResponse<List<RecruitResDto>> getRecruits(@RequestParam(name = "category") FirstCategory category) {
+    public SuccessResponse<List<RecruitSimpleResDto>> getRecruits(@RequestParam(name = "firstCategory") Long first,
+                                                                  @RequestParam(name = "secondCategory") Long second,
+                                                                  @RequestParam(name = "thirdCategory") Long third
+                                                            ) {
         return new SuccessResponse<>(
-                recruitService.getRecruits(category),
+                recruitService.getRecruits(first, second, third),
                 RECRUIT_GET.getMessage());
     }
 

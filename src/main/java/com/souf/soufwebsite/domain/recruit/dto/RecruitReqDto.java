@@ -1,13 +1,12 @@
 package com.souf.soufwebsite.domain.recruit.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.souf.soufwebsite.global.common.FirstCategory;
+import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -33,7 +32,9 @@ public record RecruitReqDto(
         @NotNull(message = "우대사항은 옵션입니다.")
         @Size(max = 300)
         String preferentialTreatment,
-        FirstCategory firstCategory,
+
+        @NotNull(message = "적어도 한 개의 카테고리가 들어있어야 합니다.")
+        List<CategoryDto> categoryDtos,
 
         List<String> originalFileNames
 ) {
