@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Random;
@@ -60,6 +61,7 @@ public class MemberServiceImpl implements MemberService {
 
         Authentication authentication = authenticationManager.authenticate(token);
         String email = authentication.getName();
+        System.out.println("email = " + email);
 
         String accessToken = jwtService.createAccessToken(email);
         String refreshToken = jwtService.createRefreshToken(email);
@@ -110,8 +112,12 @@ public class MemberServiceImpl implements MemberService {
 
     //회원정보 수정
     @Override
+    @Transactional
     public void updateUserInfo(UpdateReqDto reqDto) {
-        Member member = getCurrentUser();
+        Long memberId = getCurrentUser().getId();
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("사용자 없음"));
 
         member.updateInfo(reqDto); // 도메인에 위임
     }
