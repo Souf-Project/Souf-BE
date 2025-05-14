@@ -39,8 +39,7 @@ public class RecruitController {
     @GetMapping
     public SuccessResponse<List<RecruitSimpleResDto>> getRecruits(@RequestParam(name = "firstCategory") Long first,
                                                                   @RequestParam(name = "secondCategory") Long second,
-                                                                  @RequestParam(name = "thirdCategory") Long third
-                                                            ) {
+                                                                  @RequestParam(name = "thirdCategory") Long third) {
         return new SuccessResponse<>(
                 recruitService.getRecruits(first, second, third),
                 RECRUIT_GET.getMessage());
