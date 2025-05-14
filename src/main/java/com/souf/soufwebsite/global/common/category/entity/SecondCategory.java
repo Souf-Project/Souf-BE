@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.global.common.category;
+package com.souf.soufwebsite.global.common.category.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
