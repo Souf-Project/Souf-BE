@@ -3,6 +3,7 @@ package com.souf.soufwebsite.domain.member.controller;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.ResetReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SigninReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SignupReqDto;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.UserResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.service.MemberService;
@@ -55,9 +56,9 @@ public class MemberController {
         return new SuccessResponse<>(verified);
     }
 
-    @PutMapping("/auth/edit")
-    public SuccessResponse<?> editUserInfo(@RequestBody ResetReqDto reqDto) {
-        memberService.editUserInfo(reqDto);
+    @PutMapping("/auth/update")
+    public SuccessResponse<?> updateUserInfo(@RequestBody UpdateReqDto reqDto) {
+        memberService.updateUserInfo(reqDto);
         return new SuccessResponse<>("회원정보 수정 성공");
     }
 

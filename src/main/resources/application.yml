@@ -43,7 +43,7 @@ jwt:
     header: Authorization
   refresh:
     expiration: 3600000
-    header: Refresh
+    header: RefreshToken
 
 cloud:
   aws:
