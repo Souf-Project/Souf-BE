@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.global.common.category.dto;
 
-public record CategoryReqDto(
+public record CategoryDto(
         Long firstCategory,
         Long secondCategory,
         Long thirdCategory) {
