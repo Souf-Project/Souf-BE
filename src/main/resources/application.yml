@@ -19,7 +19,7 @@ spring:
       host: ${REDIS_HOST:localhost}
       password: ${REDIS_PASSWORD}
       ssl:
-        enabled: false
+        enabled: true
 
   application:
     name: soufwebsite
@@ -43,7 +43,7 @@ jwt:
     header: Authorization
   refresh:
     expiration: 3600000
-    header: Refresh
+    header: RefreshToken
 
 cloud:
   aws:
