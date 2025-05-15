@@ -19,7 +19,7 @@ spring:
       host: ${REDIS_HOST:localhost}
       password: ${REDIS_PASSWORD}
       ssl:
-        enabled: false
+        enabled: true
 
   application:
     name: soufwebsite

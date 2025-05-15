@@ -2,7 +2,6 @@ package com.souf.soufwebsite.domain.recruit.entity;
 
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
-import com.souf.soufwebsite.global.common.FirstCategory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

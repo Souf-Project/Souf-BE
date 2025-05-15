@@ -2,10 +2,12 @@ package com.souf.soufwebsite.domain.recruit.entity;
 
 import com.souf.soufwebsite.domain.file.entity.File;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
-import com.souf.soufwebsite.domain.recruit.exception.NotValidDeadLineException;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.common.BaseEntity;
-import com.souf.soufwebsite.global.common.FirstCategory;
+import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
+import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
+import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
+import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
@@ -14,7 +16,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,9 +49,11 @@ public class Recruit extends BaseEntity {
     @Column
     private String preferentialTreatment;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private FirstCategory firstCategory;
+    @Column
+    private Long recruiter;
+
+    @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<RecruitCategoryMapping> categories = new ArrayList<>();
 
     // 작성자 (userId)
     @ManyToOne(fetch = FetchType.LAZY)
@@ -62,15 +65,15 @@ public class Recruit extends BaseEntity {
 
     @Builder
     public Recruit(String title, String content, String region, LocalDateTime deadline, String payment,
-                   String preferentialTreatment, FirstCategory firstCategory, Member member) {
+                   String preferentialTreatment, Member member, List<CategoryDto> categoryDtoList) {
         this.title = title;
         this.content = content;
         this.region = region;
         this.deadline = deadline;
         this.payment = payment;
         this.preferentialTreatment = preferentialTreatment;
-        this.firstCategory = firstCategory;
         this.member = member;
+        this.recruiter = 0L;
     }
 
     public static Recruit of(RecruitReqDto reqDto, Member member) {
@@ -81,7 +84,6 @@ public class Recruit extends BaseEntity {
                 .deadline(reqDto.deadline())
                 .payment(reqDto.payment())
                 .preferentialTreatment(reqDto.preferentialTreatment())
-                .firstCategory(reqDto.firstCategory())
                 .member(member)
                 .build();
     }
@@ -92,11 +94,21 @@ public class Recruit extends BaseEntity {
         this.deadline = reqDto.deadline();
         this.payment = reqDto.payment();
         this.preferentialTreatment = reqDto.preferentialTreatment();
-        this.firstCategory = reqDto.firstCategory();
     }
 
     public void addFileOnRecruit(File file){
         this.files.add(file);
         file.assignToRecruit(this);
+    }
+
+    public void addCategory(RecruitCategoryMapping recruitCategoryMapping){
+        this.categories.add(recruitCategoryMapping);
+    }
+
+    public void clearCategories() {
+        for (RecruitCategoryMapping mapping : categories) {
+            mapping.disconnectRecruit();
+        }
+        categories.clear();
     }
 }

@@ -1,30 +1,40 @@
 package com.souf.soufwebsite.domain.recruit.dto;
 
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
-import com.souf.soufwebsite.global.common.FirstCategory;
+import com.souf.soufwebsite.domain.recruit.entity.RecruitCategoryMapping;
+import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public record RecruitResDto(
         Long recruitId,
         String title,
         String content,
-        FirstCategory firstCategory,
         String region,
         LocalDateTime deadline,
         String payment,
         String preferentialTreatment,
-        String nickname
+        String nickname,
+        List<CategoryDto> categoryDtoList
 ) {
     public static RecruitResDto from(Recruit recruit, String nickname) {
         return new RecruitResDto(recruit.getId(),
                 recruit.getTitle(),
                 recruit.getContent(),
-                recruit.getFirstCategory(),
                 recruit.getRegion(),
                 recruit.getDeadline(),
                 recruit.getPayment(),
                 recruit.getPreferentialTreatment(),
-                nickname);
+                nickname,
+                convertToCategoryDto(recruit.getCategories())
+        );
+    }
+
+    private static List<CategoryDto> convertToCategoryDto(List<RecruitCategoryMapping> mappings){
+        return mappings.stream().map(
+                m -> new CategoryDto(m.getFirstCategory().getId(), m.getSecondCategory().getId(), m.getThirdCategory().getId())
+        ).collect(Collectors.toList());
     }
 }

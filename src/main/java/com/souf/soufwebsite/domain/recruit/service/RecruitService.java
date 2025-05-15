@@ -4,7 +4,7 @@ import com.souf.soufwebsite.domain.file.dto.FileReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitCreateReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitResDto;
-import com.souf.soufwebsite.global.common.FirstCategory;
+import com.souf.soufwebsite.domain.recruit.dto.RecruitSimpleResDto;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ public interface RecruitService {
 
     void uploadRecruitMedia(FileReqDto reqDto);
 
-    List<RecruitResDto> getRecruits(FirstCategory categoryName);
+    List<RecruitSimpleResDto> getRecruits(Long first, Long second, Long third);
 
     RecruitResDto getRecruitById(Long recruitId);
 
