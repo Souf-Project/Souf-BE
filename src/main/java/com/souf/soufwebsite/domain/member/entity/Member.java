@@ -5,6 +5,7 @@ import com.souf.soufwebsite.domain.file.entity.File;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
@@ -26,22 +27,22 @@ public class Member extends BaseEntity {
     @Column(name = "member_id")
     private Long id;
 
-    @NotNull
+    @NotEmpty
     @Column(nullable = false)
     @Size(min = 5, max = 30)
     private String email;
 
-    @NotNull
+    @NotEmpty
     @Column(nullable = false)
     @Size(min = 8, max = 255)
     private String password;
 
-    @NotNull
+    @NotEmpty
     @Column(nullable = false)
     @Size(min = 2, max = 20)
     private String username;
 
-    @NotNull
+    @NotEmpty
     @Column(nullable = false)
     @Size(min = 2, max = 20)
     private String nickname;
