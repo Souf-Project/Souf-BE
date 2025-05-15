@@ -60,6 +60,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 
         if (accessToken != null && refreshToken != null) {
+            if (redisTemplate.opsForValue().get("blacklist:" + accessToken) != null) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("this token is logout token");
+                return;
+            }
+
             authenticateUser(accessToken);
             filterChain.doFilter(request, response);
             return;
@@ -79,7 +85,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Redis 블랙리스트 확인 (로그아웃된 토큰인지 검사)
             if (redisTemplate.opsForValue().get("blacklist:" + accessToken) != null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("로그아웃된 토큰입니다.");
+                response.getWriter().write("this token is logout token");
                 return;
             }
             // 정상적인 토큰이면 인증 정보 저장
