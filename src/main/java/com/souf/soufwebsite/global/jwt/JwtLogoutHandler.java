@@ -41,9 +41,11 @@ public class JwtLogoutHandler implements LogoutHandler {
 
         // 리프레시 토큰 추출 및 삭제 처리
         jwtService.extractRefreshToken(request).ifPresent(refreshToken -> {
-            String redisKey = "refresh:" + refreshToken;
-            redisTemplate.delete(redisKey);
-            log.info("리프레시 토큰 {}이(가) Redis에서 삭제되었습니다.", refreshToken);
+            jwtService.extractEmail(refreshToken).ifPresent(email -> {
+                String redisKey = "refresh:" + email;
+                redisTemplate.delete(redisKey);
+                log.info("이메일 {}에 해당하는 리프레시 토큰이 Redis에서 삭제되었습니다.", email);
+            });
         });
     }
 }

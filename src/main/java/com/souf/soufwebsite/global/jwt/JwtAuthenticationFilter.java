@@ -108,12 +108,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     // 리프레시 토큰을 사용하여 새로운 액세스 토큰 발급
     private String reIssueAccessToken(String refreshToken) {
-        String email = redisTemplate.opsForValue().get("refresh:" + refreshToken);
-        if (email != null) {
+        String email = jwtService.extractEmail(refreshToken)
+                .orElseThrow(() -> new IllegalArgumentException("RefreshToken에서 이메일 추출 실패"));
+
+        String storedRefreshToken = redisTemplate.opsForValue().get("refresh:" + email);
+        if (refreshToken.equals(storedRefreshToken)) {
             String newAccessToken = jwtService.createAccessToken(email);
             log.info("AccessToken 재발급: {}", newAccessToken);
             return newAccessToken;
         }
+
         throw new IllegalArgumentException("유효하지 않은 refresh token");
     }
 }
