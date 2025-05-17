@@ -3,6 +3,7 @@ package com.souf.soufwebsite.domain.member.service;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.ResetReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SigninReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SignupReqDto;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.UserResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 
@@ -19,7 +20,7 @@ public interface MemberService {
 
     boolean verifyEmail(String email, String code);
 
-    void editUserInfo(ResetReqDto reqDto);
+    void updateUserInfo(UpdateReqDto reqDto);
 
     List<UserResDto> getMembers();
 

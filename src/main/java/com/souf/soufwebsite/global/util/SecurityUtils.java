@@ -2,6 +2,7 @@ package com.souf.soufwebsite.global.util;
 
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.exception.AuthorizedException;
+import com.souf.soufwebsite.global.security.UserDetailsImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.Authentication;
@@ -12,15 +13,24 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public class SecurityUtils {
     public static Member getCurrentMember() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        log.info("Current user: {}", authentication.getPrincipal());
-        log.info("Current username: {}", authentication.getName());
 
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new AuthorizedException();
+            throw new AuthorizedException(); // 인증되지 않은 사용자
         }
 
         Object principal = authentication.getPrincipal();
 
-        return (Member) principal;
+        // 예외 방지: principal이 Member인 경우에만 반환
+        if (principal instanceof Member member) {
+            return member;
+        }
+
+        // principal이 UserDetailsImpl 같은 커스텀 클래스인 경우
+        if (principal instanceof UserDetailsImpl userDetails) {
+            return userDetails.getMember();
+        }
+
+        // 그 외에는 예외 처리
+        throw new AuthorizedException();
     }
 }

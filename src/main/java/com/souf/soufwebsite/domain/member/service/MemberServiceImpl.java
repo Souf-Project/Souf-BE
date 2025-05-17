@@ -3,12 +3,14 @@ package com.souf.soufwebsite.domain.member.service;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.ResetReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SigninReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SignupReqDto;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.UserResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.global.email.EmailService;
 import com.souf.soufwebsite.global.jwt.JwtService;
+import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Random;
@@ -33,6 +36,9 @@ public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
+    private Member getCurrentUser() {
+        return SecurityUtils.getCurrentMember();
+    }
 
     //회원가입
     @Override
@@ -55,6 +61,7 @@ public class MemberServiceImpl implements MemberService {
 
         Authentication authentication = authenticationManager.authenticate(token);
         String email = authentication.getName();
+        System.out.println("email = " + email);
 
         String accessToken = jwtService.createAccessToken(email);
         String refreshToken = jwtService.createRefreshToken(email);
@@ -88,7 +95,7 @@ public class MemberServiceImpl implements MemberService {
         String redisKey = "email:verification:" + email;
         redisTemplate.opsForValue().set(redisKey, code, 5, TimeUnit.MINUTES);
 
-        return emailService.sendEmail(email, "이메일 인증번호", "인증번호는: " + code + " 입니다.");
+        return emailService.sendEmail(email, "이메일 인증번호", "인증번호는 " + code + " 입니다.");
     }
 
     //인증번호 확인
@@ -105,8 +112,14 @@ public class MemberServiceImpl implements MemberService {
 
     //회원정보 수정
     @Override
-    public void editUserInfo(ResetReqDto reqDto) {
+    @Transactional
+    public void updateUserInfo(UpdateReqDto reqDto) {
+        Long memberId = getCurrentUser().getId();
 
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("사용자 없음"));
+
+        member.updateInfo(reqDto); // 도메인에 위임
     }
 
     //회원 목록 조회

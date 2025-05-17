@@ -5,6 +5,7 @@ import com.souf.soufwebsite.domain.file.entity.File;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
@@ -26,22 +27,22 @@ public class Member extends BaseEntity {
     @Column(name = "member_id")
     private Long id;
 
-    @NotNull
+    @NotEmpty
     @Column(nullable = false)
     @Size(min = 5, max = 30)
     private String email;
 
-    @NotNull
+    @NotEmpty
     @Column(nullable = false)
     @Size(min = 8, max = 255)
     private String password;
 
-    @NotNull
+    @NotEmpty
     @Column(nullable = false)
     @Size(min = 2, max = 20)
     private String username;
 
-    @NotNull
+    @NotEmpty
     @Column(nullable = false)
     @Size(min = 2, max = 20)
     private String nickname;
@@ -70,11 +71,11 @@ public class Member extends BaseEntity {
     }
 
     // 회원 정보 업데이트 (업데이트 가능한 필드만 반영)
-    public void updateUser(UpdateReqDto dto) {
-        this.username = dto.username();
-        this.nickname = dto.nickname();
-        this.birth = dto.birth();
-        this.intro = dto.intro();
+    public void updateInfo(UpdateReqDto dto) {
+        if (dto.username() != null) this.username = dto.username();
+        if (dto.nickname() != null) this.nickname = dto.nickname();
+        if (dto.birth() != null) this.birth = dto.birth();
+        if (dto.intro() != null) this.intro = dto.intro();
     }
 
     public void updatePassword(String newPassword) {

@@ -60,6 +60,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 
         if (accessToken != null && refreshToken != null) {
+            if (redisTemplate.opsForValue().get("blacklist:" + accessToken) != null) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("this token is expired token");
+                return;
+            }
+
             authenticateUser(accessToken);
             filterChain.doFilter(request, response);
             return;
@@ -79,7 +85,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Redis 블랙리스트 확인 (로그아웃된 토큰인지 검사)
             if (redisTemplate.opsForValue().get("blacklist:" + accessToken) != null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("로그아웃된 토큰입니다.");
+                response.getWriter().write("this token is expired token");
                 return;
             }
             // 정상적인 토큰이면 인증 정보 저장
@@ -108,12 +114,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     // 리프레시 토큰을 사용하여 새로운 액세스 토큰 발급
     private String reIssueAccessToken(String refreshToken) {
-        String email = redisTemplate.opsForValue().get("refresh:" + refreshToken);
-        if (email != null) {
+        String email = jwtService.extractEmail(refreshToken)
+                .orElseThrow(() -> new IllegalArgumentException("RefreshToken에서 이메일 추출 실패"));
+
+        String storedRefreshToken = redisTemplate.opsForValue().get("refresh:" + email);
+        if (refreshToken.equals(storedRefreshToken)) {
             String newAccessToken = jwtService.createAccessToken(email);
             log.info("AccessToken 재발급: {}", newAccessToken);
             return newAccessToken;
         }
+
         throw new IllegalArgumentException("유효하지 않은 refresh token");
     }
 }
