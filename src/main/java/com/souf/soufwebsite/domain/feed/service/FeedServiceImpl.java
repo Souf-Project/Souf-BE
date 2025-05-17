@@ -1,16 +1,21 @@
 package com.souf.soufwebsite.domain.feed.service;
 
-import com.souf.soufwebsite.domain.feed.dto.FeedCreateReqDto;
+import com.souf.soufwebsite.domain.feed.dto.FeedCreateResDto;
+import com.souf.soufwebsite.domain.feed.dto.FeedReqDto;
 import com.souf.soufwebsite.domain.feed.dto.FeedResDto;
 import com.souf.soufwebsite.domain.feed.dto.FeedUpdateReqDto;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
+import com.souf.soufwebsite.domain.feed.entity.Tag;
 import com.souf.soufwebsite.domain.feed.exception.NotFoundFeedException;
 import com.souf.soufwebsite.domain.feed.exception.NotValidAuthenticationException;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
+import com.souf.soufwebsite.domain.file.dto.FileReqDto;
+import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.entity.File;
-import com.souf.soufwebsite.domain.file.repository.FileRepository;
-import com.souf.soufwebsite.domain.file.service.S3UploaderService;
+import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.recruit.entity.Recruit;
+import com.souf.soufwebsite.global.common.category.CategoryService;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,29 +30,35 @@ import java.util.List;
 public class FeedServiceImpl implements FeedService {
 
     private final FeedRepository feedRepository;
-    private final S3UploaderService s3UploaderService;
-    private final FileRepository fileRepository;
+    private final FileService fileService;
+    private final TagService tagService;
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
     }
 
     @Override
-    public void createFeed(FeedCreateReqDto reqDto, List<MultipartFile> files) {
+    @Transactional
+    public FeedCreateResDto createFeed(FeedReqDto reqDto) {
         Member member = getCurrentUser();
 
-        List<File> fileEntities = files.stream()
-                .map(file -> {
-                    try {
-                        return s3UploaderService.uploadFile(file);
-                    } catch (IOException e) {
-                        throw new RuntimeException("파일 업로드 실패: " + file.getOriginalFilename(), e);
-                    }
-                })
-                .toList();
+        Feed feed = Feed.of(reqDto, member);
+        feed = feedRepository.save(feed);
+        tagService.createFeedTag(feed, reqDto.tags());
 
-        Feed feed = Feed.of(reqDto.content(), member, fileEntities);
-        feedRepository.save(feed);
+        List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl(reqDto.originalFileNames());
+
+        return new FeedCreateResDto(feed.getId(), presignedUrlResDtos);
+    }
+
+    @Override
+    public void uploadFeedMedia(FileReqDto fileReqDto) {
+        Feed feed = findIfFeedExist(fileReqDto.postId());
+        List<File> fileList = fileService.uploadMetadata(fileReqDto);
+
+        for(File f : fileList){
+            feed.addFileOnFeed(f);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -79,21 +90,9 @@ public class FeedServiceImpl implements FeedService {
                 .filter(file -> !reqDto.keepFileIds().contains(file.getId()))
                 .toList();
 
-        for (File file : toRemove) {
-            feed.removeFile(file);
-            fileRepository.delete(file); // 실제 DB에서도 삭제
-        }
 
-        // 2) 새로운 파일 추가
-        if (newFiles != null) {
-            for (MultipartFile multipartFile : newFiles) {
-                File file = s3UploaderService.uploadFile(multipartFile);
-                feed.addFile(file);
-            }
-        }
 
-        // 3) 내용 업데이트
-        feed.updateContent(reqDto.content());
+
 
     }
 

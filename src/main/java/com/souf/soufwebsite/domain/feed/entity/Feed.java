@@ -1,9 +1,12 @@
 package com.souf.soufwebsite.domain.feed.entity;
 
+import com.souf.soufwebsite.domain.feed.dto.FeedReqDto;
 import com.souf.soufwebsite.domain.file.entity.File;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,8 +25,17 @@ public class Feed extends BaseEntity {
     @Column(name = "feed_id")
     private Long id;
 
+    @NotEmpty
+    @Column(nullable = false)
+    private String topic;
+
     @Lob
+    @NotNull
+    @Column(nullable = false)
     private String content;
+
+    @OneToMany(mappedBy = "tag", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FeedTag> feedTags = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
@@ -34,31 +46,33 @@ public class Feed extends BaseEntity {
 
 
     @Builder
-    private Feed(String content, Member member, List<File> files) {
-        if (files == null || files.isEmpty()) {
-            throw new IllegalArgumentException("파일이 최소 1개 이상 필요합니다.");
-        }
+    private Feed(String topic, String content, Member member) {
+        this.topic = topic;
         this.content = content;
         this.member = member;
-        files.forEach(this::addFile);
     }
 
-    public static Feed of(String content, Member member, List<File> files) {
+    public static Feed of(FeedReqDto createReqDto, Member member) {
         return Feed.builder()
-                .content(content)
+                .topic(createReqDto.topic())
+                .content(createReqDto.content())
                 .member(member)
-                .files(files)
                 .build();
     }
 
-    public void updateContent(String content) {
-        this.content = content;
+    public void updateContent(FeedReqDto reqDto) {
+        this.topic = reqDto.topic();
+        this.content = reqDto.content();
     }
 
     // 연관관계 편의 메서드
-    public void addFile(File file) {
-        files.add(file);
-        file.setFeed(this);
+    public void addFileOnFeed(File file){
+        this.files.add(file);
+        file.assignToFeed(this);
+    }
+
+    public void addFeedTagOnFeed(FeedTag feedTag){
+        this.feedTags.add(feedTag);
     }
 
     public void removeFile(File file) {
