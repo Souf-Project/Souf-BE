@@ -7,7 +7,7 @@ public record MediaResDto(
         String fileName,
         String fileUrl
 ) {
-    public static MediaResDto fromFeed(Feed feed) {
+    public static MediaResDto fromFeedThumbnail(Feed feed) {
         return new MediaResDto(
                 feed.getMedia().stream()
                         .findFirst()
@@ -17,6 +17,13 @@ public record MediaResDto(
                         .findFirst()
                         .map(Media::getOriginalUrl)
                         .orElse(null)
+        );
+    }
+
+    public static MediaResDto fromFeedDetail(Media media){
+        return new MediaResDto(
+                media.getFileName(),
+                media.getOriginalUrl()
         );
     }
 }

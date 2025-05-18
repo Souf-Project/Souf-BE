@@ -1,23 +1,22 @@
 package com.souf.soufwebsite.domain.feed.service;
 
-import com.souf.soufwebsite.domain.feed.dto.FeedCreateResDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedReqDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedResDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedUpdateReqDto;
+import com.souf.soufwebsite.domain.feed.dto.*;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
-import com.souf.soufwebsite.domain.feed.entity.Tag;
 import com.souf.soufwebsite.domain.feed.exception.NotFoundFeedException;
 import com.souf.soufwebsite.domain.feed.exception.NotValidAuthenticationException;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
-import com.souf.soufwebsite.domain.file.dto.FileReqDto;
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
-import com.souf.soufwebsite.domain.file.entity.File;
+import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.entity.Member;
-import com.souf.soufwebsite.domain.recruit.entity.Recruit;
-import com.souf.soufwebsite.global.common.category.CategoryService;
+import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,6 +29,7 @@ import java.util.List;
 public class FeedServiceImpl implements FeedService {
 
     private final FeedRepository feedRepository;
+    private final MemberRepository memberRepository;
     private final FileService fileService;
     private final TagService tagService;
 
@@ -46,37 +46,37 @@ public class FeedServiceImpl implements FeedService {
         feed = feedRepository.save(feed);
         tagService.createFeedTag(feed, reqDto.tags());
 
-        List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl(reqDto.originalFileNames());
+        List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
 
         return new FeedCreateResDto(feed.getId(), presignedUrlResDtos);
     }
 
     @Override
-    public void uploadFeedMedia(FileReqDto fileReqDto) {
-        Feed feed = findIfFeedExist(fileReqDto.postId());
-        List<File> fileList = fileService.uploadMetadata(fileReqDto);
+    public void uploadFeedMedia(MediaReqDto mediaReqDto) {
+        Feed feed = findIfFeedExist(mediaReqDto.postId());
+        List<Media> mediaList = fileService.uploadMetadata(mediaReqDto);
 
-        for(File f : fileList){
+        for(Media f : mediaList){
             feed.addFileOnFeed(f);
         }
     }
 
     @Transactional(readOnly = true)
     @Override
-    public List<FeedResDto> getFeeds() {
-        List<Feed> feeds = feedRepository.findAllByOrderByIdDesc();
-
-        return feeds.stream()
-                .map(feed -> FeedResDto.from(feed, feed.getMember().getNickname()))
-                .toList();
+    public Page<FeedSimpleResDto> getFeeds(Long memberId, Pageable pageable) {
+        Member member = findIfMemberExists(memberId);
+        return feedRepository.findAllByMemberOrderByIdDesc(member, pageable)
+                .map(feed -> FeedSimpleResDto.from(feed, MediaResDto.fromFeedThumbnail(feed)));
     }
 
     @Transactional(readOnly = true)
     @Override
-    public FeedResDto getFeedById(Long feedId) {
+    public FeedResDto getFeedById(Long memberId, Long feedId) {
+        Member member = findIfMemberExists(memberId);
         Feed feed = findIfFeedExist(feedId);
+        feed.addViewCount();
 
-        return FeedResDto.from(feed, feed.getMember().getNickname());
+        return FeedResDto.from(feed);
     }
 
     @Transactional
@@ -86,7 +86,7 @@ public class FeedServiceImpl implements FeedService {
         Feed feed = findIfFeedExist(feedId);
         verifyIfFeedIsMine(feed, member);
 
-        List<File> toRemove = feed.getFiles().stream()
+        List<Media> toRemove = feed.getMedia().stream()
                 .filter(file -> !reqDto.keepFileIds().contains(file.getId()))
                 .toList();
 
@@ -113,5 +113,9 @@ public class FeedServiceImpl implements FeedService {
 
     private Feed findIfFeedExist(Long id) {
         return feedRepository.findById(id).orElseThrow(NotFoundFeedException::new);
+    }
+
+    private Member findIfMemberExists(Long memberId) {
+        return memberRepository.findById(memberId).orElseThrow(NotFoundFeedException::new);
     }
 }

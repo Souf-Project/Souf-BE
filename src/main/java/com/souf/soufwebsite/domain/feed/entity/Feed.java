@@ -1,7 +1,7 @@
 package com.souf.soufwebsite.domain.feed.entity;
 
 import com.souf.soufwebsite.domain.feed.dto.FeedReqDto;
-import com.souf.soufwebsite.domain.file.entity.File;
+import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
@@ -34,6 +34,10 @@ public class Feed extends BaseEntity {
     @Column(nullable = false)
     private String content;
 
+    @NotNull
+    @Column(nullable = false)
+    private int viewCount;
+
     @OneToMany(mappedBy = "tag", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FeedTag> feedTags = new ArrayList<>();
 
@@ -42,7 +46,7 @@ public class Feed extends BaseEntity {
     private Member member;
 
     @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<File> files = new ArrayList<>();
+    private List<Media> media = new ArrayList<>();
 
 
     @Builder
@@ -50,6 +54,7 @@ public class Feed extends BaseEntity {
         this.topic = topic;
         this.content = content;
         this.member = member;
+        this.viewCount = 0;
     }
 
     public static Feed of(FeedReqDto createReqDto, Member member) {
@@ -66,17 +71,21 @@ public class Feed extends BaseEntity {
     }
 
     // 연관관계 편의 메서드
-    public void addFileOnFeed(File file){
-        this.files.add(file);
-        file.assignToFeed(this);
+    public void addFileOnFeed(Media media){
+        this.media.add(media);
+        media.assignToFeed(this);
     }
 
     public void addFeedTagOnFeed(FeedTag feedTag){
         this.feedTags.add(feedTag);
     }
 
-    public void removeFile(File file) {
-        files.remove(file);
-        file.setFeed(this);
+    public void removeMedia(Media media) {
+        this.media.remove(media);
+        media.setFeed(this);
+    }
+
+    public void addViewCount(){
+        this.viewCount += 1;
     }
 }

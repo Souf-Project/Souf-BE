@@ -1,13 +1,13 @@
 package com.souf.soufwebsite.domain.feed.controller;
 
-import com.souf.soufwebsite.domain.feed.dto.FeedCreateResDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedReqDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedResDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedUpdateReqDto;
+import com.souf.soufwebsite.domain.feed.dto.*;
 import com.souf.soufwebsite.domain.feed.service.FeedService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,14 +31,18 @@ public class FeedController {
         return new SuccessResponse<>(feedCreateResDto, FEED_CREATE.getMessage());
     }
 
-    @GetMapping
-    public SuccessResponse<List<FeedResDto>> getFeeds() {
-        return new SuccessResponse<>(feedService.getFeeds(), FEED_GET.getMessage());
+    @GetMapping("/{memberId}")
+    public SuccessResponse<Page<FeedSimpleResDto>> getFeeds(
+            @PathVariable(name = "memberId") Long memberId,
+            @PageableDefault(size = 12) Pageable pageable) {
+        return new SuccessResponse<>(feedService.getFeeds(memberId, pageable), FEED_GET.getMessage());
     }
 
-    @GetMapping("/{feedId}")
-    public SuccessResponse<FeedResDto> getFeed(@PathVariable(name = "feedId") Long feedId) {
-        return new SuccessResponse<>(feedService.getFeedById(feedId), FEED_GET.getMessage());
+    @GetMapping("/{memberId}/{feedId}")
+    public SuccessResponse<FeedResDto> getFeed(
+            @PathVariable(name = "memberId") Long memberId,
+            @PathVariable(name = "feedId") Long feedId) {
+        return new SuccessResponse<>(feedService.getFeedById(memberId, feedId), FEED_GET.getMessage());
     }
 
     @PatchMapping("/{feedId}")
