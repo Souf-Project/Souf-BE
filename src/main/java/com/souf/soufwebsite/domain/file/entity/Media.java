@@ -9,7 +9,7 @@ import lombok.*;
 
 
 @Entity
-@Table(name = "file")
+@Table(name = "media")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -18,7 +18,7 @@ public class Media extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "file_Id")
+    @Column(name = "media_Id")
     private Long id;
 
     @NotNull
