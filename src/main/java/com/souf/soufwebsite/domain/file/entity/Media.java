@@ -6,7 +6,6 @@ import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import lombok.experimental.SuperBuilder;
 
 
 @Entity
@@ -15,7 +14,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class File extends BaseEntity {
+public class Media extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,13 +23,20 @@ public class File extends BaseEntity {
 
     @NotNull
     @Column(nullable = false)
-    private String fileUrl;
+    private String originalUrl;
+
+    @NotNull
+    @Column
+    private String thumbnailUrl;
+
+    @NotNull
+    private String detailThumbnailUrl;
 
     @NotNull
     private String fileName;
 
     @Enumerated(EnumType.STRING)
-    private FileType fileType;
+    private MediaType mediaType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "feed_id")
@@ -41,11 +47,11 @@ public class File extends BaseEntity {
     private Recruit recruit;
 
 
-    public static File of(String url, String name, FileType type) {
-        return File.builder()
-                .fileUrl(url)
+    public static Media of(String url, String name, MediaType type) {
+        return Media.builder()
+                .originalUrl(url)
                 .fileName(name)
-                .fileType(type)
+                .mediaType(type)
                 .build();
     }
 

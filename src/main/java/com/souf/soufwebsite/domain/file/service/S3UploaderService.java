@@ -2,24 +2,32 @@ package com.souf.soufwebsite.domain.file.service;
 
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.Headers;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.sksamuel.scrimage.ImmutableImage;
+import com.sksamuel.scrimage.webp.WebpWriter;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
-import com.souf.soufwebsite.domain.file.entity.File;
-import com.souf.soufwebsite.domain.file.entity.FileType;
+import com.souf.soufwebsite.domain.file.entity.Media;
+import com.souf.soufwebsite.domain.file.entity.MediaType;
 import com.souf.soufwebsite.domain.file.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
 import java.util.UUID;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class S3UploaderService {
 
@@ -29,9 +37,9 @@ public class S3UploaderService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
 
-    public PresignedUrlResDto generatePresignedUploadUrl(String originalFilename) {
+    public PresignedUrlResDto generatePresignedUploadUrl(String prefix, String originalFilename) {
         String ext = extractExtension(originalFilename);
-        String fileName = "uploads/" + UUID.randomUUID() + (ext.isEmpty() ? "" : "." + ext);
+        String fileName = prefix + "/original/" + UUID.randomUUID() + (ext.isEmpty() ? "" : "." + ext);
 
         GeneratePresignedUrlRequest urlRequest = getGeneratePresignedUrlRequest(fileName);
 
@@ -45,11 +53,15 @@ public class S3UploaderService {
         GeneratePresignedUrlRequest urlRequest = new GeneratePresignedUrlRequest(bucketName, fileName)
                 .withMethod(HttpMethod.PUT)
                 .withExpiration(expiration);
+        urlRequest.addRequestParameter(
+                Headers.S3_CANNED_ACL,
+                CannedAccessControlList.PublicRead.toString()
+        );
 
         return urlRequest;
     }
 
-    public File uploadFile(MultipartFile multipartFile) throws IOException {
+    public void uploadFile(MultipartFile multipartFile) throws IOException {
         // 1. S3 Key 생성
         String originalFilename = multipartFile.getOriginalFilename();
         String ext = extractExtension(originalFilename);
@@ -63,16 +75,16 @@ public class S3UploaderService {
         // 3. S3에 업로드
         amazonS3.putObject(new PutObjectRequest(bucketName, s3Key, multipartFile.getInputStream(), metadata));
 
-        PresignedUrlResDto fileUrl = generatePresignedUploadUrl(s3Key);
+        PresignedUrlResDto fileUrl = generatePresignedUploadUrl("good", s3Key);
 
         // 5. File 엔티티 생성 및 저장
-        FileType fileType = determineFileType(multipartFile);
-        if (fileType == null) {
+        MediaType mediaType = determineFileType(multipartFile);
+        if (mediaType == null) {
             throw new IllegalArgumentException("지원하지 않는 파일 확장자입니다.");
         }
 
-        File file = File.of(fileUrl.fileUrl(), originalFilename, fileType);
-        return fileRepository.save(file);
+        Media media = Media.of(fileUrl.fileUrl(), originalFilename, mediaType);
+        //return fileRepository.save(media);
     }
 
     public void deleteFromS3(String fileUrl) {
@@ -92,14 +104,14 @@ public class S3UploaderService {
         return url.substring(url.indexOf("uploads/"));
     }
 
-    private FileType determineFileType(MultipartFile file) {
+    private MediaType determineFileType(MultipartFile file) {
         String filename = file.getOriginalFilename();
         if (filename == null || !filename.contains(".")) return null;
 
         String ext = filename.substring(filename.lastIndexOf('.') + 1).toUpperCase();
 
         try {
-            return FileType.valueOf(ext); // enum 상수와 일치하면 반환
+            return MediaType.valueOf(ext); // enum 상수와 일치하면 반환
         } catch (IllegalArgumentException e) {
             return null; // 또는 FileType.ETC처럼 예외 타입 정의 가능
         }
