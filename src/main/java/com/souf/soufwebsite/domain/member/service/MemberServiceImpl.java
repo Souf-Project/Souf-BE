@@ -4,7 +4,7 @@ import com.souf.soufwebsite.domain.member.dto.ReqDto.ResetReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SigninReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SignupReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
-import com.souf.soufwebsite.domain.member.dto.ResDto.UserResDto;
+import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
@@ -124,17 +124,17 @@ public class MemberServiceImpl implements MemberService {
 
     //회원 목록 조회
     @Override
-    public List<UserResDto> getMembers() {
+    public List<MemberResDto> getMembers() {
         List<Member> members = memberRepository.findAll();
         return members.stream()
-                .map(UserResDto::from)
+                .map(MemberResDto::from)
                 .collect(Collectors.toList());
     }
 
     //회원 조회
     @Override
-    public UserResDto getMemberById(Long id) {
+    public MemberResDto getMemberById(Long id) {
         Member member = memberRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
-        return UserResDto.from(member);
+        return MemberResDto.from(member);
     }
 }

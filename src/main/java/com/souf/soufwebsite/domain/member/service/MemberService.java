@@ -4,7 +4,7 @@ import com.souf.soufwebsite.domain.member.dto.ReqDto.ResetReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SigninReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SignupReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
-import com.souf.soufwebsite.domain.member.dto.ResDto.UserResDto;
+import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 
 import java.util.List;
@@ -22,8 +22,8 @@ public interface MemberService {
 
     void updateUserInfo(UpdateReqDto reqDto);
 
-    List<UserResDto> getMembers();
+    List<MemberResDto> getMembers();
 
-    UserResDto getMemberById(Long id);
+    MemberResDto getMemberById(Long id);
 
 }
