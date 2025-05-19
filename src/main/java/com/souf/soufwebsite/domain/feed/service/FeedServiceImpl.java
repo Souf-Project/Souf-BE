@@ -15,11 +15,9 @@ import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -39,7 +37,7 @@ public class FeedServiceImpl implements FeedService {
 
     @Override
     @Transactional
-    public FeedCreateResDto createFeed(FeedReqDto reqDto) {
+    public FeedResDto createFeed(FeedReqDto reqDto) {
         Member member = getCurrentUser();
 
         Feed feed = Feed.of(reqDto, member);
@@ -48,7 +46,7 @@ public class FeedServiceImpl implements FeedService {
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
 
-        return new FeedCreateResDto(feed.getId(), presignedUrlResDtos);
+        return new FeedResDto(feed.getId(), presignedUrlResDtos);
     }
 
     @Override
@@ -71,28 +69,22 @@ public class FeedServiceImpl implements FeedService {
 
     @Transactional(readOnly = true)
     @Override
-    public FeedResDto getFeedById(Long memberId, Long feedId) {
-        Member member = findIfMemberExists(memberId);
+    public FeedDetailResDto getFeedById(Long memberId, Long feedId) {
+        findIfMemberExists(memberId);
         Feed feed = findIfFeedExist(feedId);
         feed.addViewCount();
 
-        return FeedResDto.from(feed);
+        return FeedDetailResDto.from(feed);
     }
 
     @Transactional
     @Override
-    public void updateFeed(Long feedId, FeedUpdateReqDto reqDto, List<MultipartFile> newFiles) throws IOException {
+    public void updateFeed(Long feedId, FeedReqDto reqDto) {
         Member member = getCurrentUser();
         Feed feed = findIfFeedExist(feedId);
         verifyIfFeedIsMine(feed, member);
 
-        List<Media> toRemove = feed.getMedia().stream()
-                .filter(file -> !reqDto.keepFileIds().contains(file.getId()))
-                .toList();
-
-
-
-
+        feed.updateContent(reqDto);
 
     }
 
