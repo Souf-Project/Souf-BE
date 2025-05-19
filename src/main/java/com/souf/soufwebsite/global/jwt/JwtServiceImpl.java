@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.global.jwt;
 
+import com.souf.soufwebsite.domain.member.entity.RoleType;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -41,11 +42,12 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public String createAccessToken(String email) {
+    public String createAccessToken(String email, RoleType role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + accessTokenExpireTime);
         return Jwts.builder()
                 .setSubject(email)
+                .claim("role", role.name())
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(secretKey, SignatureAlgorithm.HS256)

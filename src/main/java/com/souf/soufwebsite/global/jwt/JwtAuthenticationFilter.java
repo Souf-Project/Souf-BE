@@ -1,5 +1,7 @@
 package com.souf.soufwebsite.global.jwt;
 
+import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.global.security.UserDetailsImpl;
 import jakarta.servlet.FilterChain;
@@ -14,7 +16,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -119,7 +120,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String storedRefreshToken = redisTemplate.opsForValue().get("refresh:" + email);
         if (refreshToken.equals(storedRefreshToken)) {
-            String newAccessToken = jwtService.createAccessToken(email);
+            RoleType role = memberRepository.findByEmail(email)
+                    .map(Member::getRole)
+                    .orElseThrow(() -> new IllegalArgumentException("유저 없음"));
+
+            String newAccessToken = jwtService.createAccessToken(email, role);
             log.info("AccessToken 재발급: {}", newAccessToken);
             return newAccessToken;
         }

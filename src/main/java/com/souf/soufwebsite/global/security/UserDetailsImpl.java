@@ -2,6 +2,7 @@ package com.souf.soufwebsite.global.security;
 
 import com.souf.soufwebsite.domain.member.entity.Member;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -17,7 +18,8 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        String roleName = "ROLE_" + member.getRole().name();
+        return List.of(new SimpleGrantedAuthority(roleName));
     }
 
     @Override
