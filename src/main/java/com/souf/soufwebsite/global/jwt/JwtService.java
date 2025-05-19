@@ -19,6 +19,7 @@ public interface JwtService {
 
     Optional<String> extractEmail(String accessToken);
 
+    Optional<RoleType> extractRoleType(String accessToken);
 
     boolean isTokenValid(String token);
 

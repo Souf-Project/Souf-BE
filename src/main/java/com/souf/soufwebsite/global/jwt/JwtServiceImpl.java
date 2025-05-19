@@ -99,6 +99,22 @@ public class JwtServiceImpl implements JwtService {
         }
     }
 
+    public Optional<RoleType> extractRoleType(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            String role = claims.get("role", String.class);
+            return Optional.of(RoleType.valueOf(role));
+        } catch (Exception e) {
+            log.error("권한 추출 실패: {}", e.getMessage());
+            return Optional.empty();
+        }
+    }
+
     @Override
     public boolean isTokenValid(String token) {
         try {
