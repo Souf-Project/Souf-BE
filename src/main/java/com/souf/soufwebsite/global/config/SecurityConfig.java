@@ -65,11 +65,18 @@ public class SecurityConfig {
 
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .authorizeHttpRequests((authorize) -> authorize
-                        .anyRequest().permitAll());
-                        //.requestMatchers("/login").permitAll() // 로그인한 유저에게만 서비스 제공
-                        //.anyRequest().authenticated())
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        http
+                .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
+                        authorizationManagerRequestMatcherRegistry
+                                .requestMatchers(
+                                        "/favicon.ico"
+                                        ,"/swagger-ui/**"
+                                        ,"/v3/api-docs/**"
+                                        ,"/error"
+                                ).permitAll()
+                );
 
         return http.build();
     }
