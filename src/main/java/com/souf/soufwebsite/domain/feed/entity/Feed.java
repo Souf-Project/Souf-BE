@@ -38,7 +38,7 @@ public class Feed extends BaseEntity {
     @Column(nullable = false)
     private int viewCount;
 
-    @OneToMany(mappedBy = "tag", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FeedTag> feedTags = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
