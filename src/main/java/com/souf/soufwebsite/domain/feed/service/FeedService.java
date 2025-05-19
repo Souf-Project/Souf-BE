@@ -17,7 +17,7 @@ public interface FeedService {
 
     FeedDetailResDto getFeedById(Long memberId, Long feedId);
 
-    void updateFeed(Long feedId, FeedReqDto reqDto);
+    FeedResDto updateFeed(Long feedId, FeedReqDto reqDto);
 
     void deleteFeed(Long feedId);
 }

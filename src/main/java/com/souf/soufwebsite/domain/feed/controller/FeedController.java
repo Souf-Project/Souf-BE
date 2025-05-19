@@ -2,6 +2,7 @@ package com.souf.soufwebsite.domain.feed.controller;
 
 import com.souf.soufwebsite.domain.feed.dto.*;
 import com.souf.soufwebsite.domain.feed.service.FeedService;
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 
 import static com.souf.soufwebsite.domain.feed.controller.FeedSuccessMessage.*;
+import static com.souf.soufwebsite.domain.recruit.controller.RecruitSuccessMessage.RECRUIT_FILE_METADATA_CREATE;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,6 +29,13 @@ public class FeedController {
         FeedResDto feedResDto = feedService.createFeed(feedReqDto);
 
         return new SuccessResponse<>(feedResDto, FEED_CREATE.getMessage());
+    }
+
+    @PostMapping("/upload")
+    public SuccessResponse uploadMetadata(@Valid @RequestBody MediaReqDto mediaReqDto){
+        feedService.uploadFeedMedia(mediaReqDto);
+
+        return new SuccessResponse(RECRUIT_FILE_METADATA_CREATE.getMessage());
     }
 
     @GetMapping("/{memberId}")
@@ -44,11 +53,11 @@ public class FeedController {
     }
 
     @PatchMapping("/{feedId}")
-    public SuccessResponse<?> updateFeed(
-            @PathVariable Long feedId,
-            @RequestBody @Valid FeedReqDto reqDto) throws IOException {
-        feedService.updateFeed(feedId, reqDto);
-        return new SuccessResponse<>(FEED_UPDATE.getMessage());
+    public SuccessResponse<FeedResDto> updateFeed(
+            @PathVariable(name = "feedId") Long feedId,
+            @RequestBody @Valid FeedReqDto reqDto) {
+        FeedResDto feedResDto = feedService.updateFeed(feedId, reqDto);
+        return new SuccessResponse<>(feedResDto, FEED_UPDATE.getMessage());
     }
 
     @DeleteMapping("/{feedId}")

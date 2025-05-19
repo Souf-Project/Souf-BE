@@ -14,6 +14,7 @@ import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class FeedServiceImpl implements FeedService {
 
@@ -79,13 +81,16 @@ public class FeedServiceImpl implements FeedService {
 
     @Transactional
     @Override
-    public void updateFeed(Long feedId, FeedReqDto reqDto) {
+    public FeedResDto updateFeed(Long feedId, FeedReqDto reqDto) {
         Member member = getCurrentUser();
         Feed feed = findIfFeedExist(feedId);
         verifyIfFeedIsMine(feed, member);
 
         feed.updateContent(reqDto);
+        tagService.createFeedTag(feed, reqDto.tags());
+        List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
 
+        return new FeedResDto(feed.getId(), presignedUrlResDtos);
     }
 
     @Override
@@ -98,7 +103,8 @@ public class FeedServiceImpl implements FeedService {
     }
 
     private void verifyIfFeedIsMine(Feed feed, Member member) {
-        if(!feed.getMember().equals(member)){
+        log.info("currentMember: {}, feedMember: {}", member, feed.getMember());
+        if(!feed.getMember().getId().equals(member.getId())){
             throw new NotValidAuthenticationException();
         }
     }

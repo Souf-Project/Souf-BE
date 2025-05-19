@@ -68,6 +68,8 @@ public class Feed extends BaseEntity {
     public void updateContent(FeedReqDto reqDto) {
         this.topic = reqDto.topic();
         this.content = reqDto.content();
+        this.feedTags.clear();
+        this.media.clear();
     }
 
     // 연관관계 편의 메서드
