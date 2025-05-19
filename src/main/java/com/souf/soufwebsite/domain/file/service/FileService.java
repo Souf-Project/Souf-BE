@@ -1,10 +1,10 @@
 package com.souf.soufwebsite.domain.file.service;
 
-import com.souf.soufwebsite.domain.file.dto.FileReqDto;
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
-import com.souf.soufwebsite.domain.file.entity.File;
-import com.souf.soufwebsite.domain.file.entity.FileType;
-import com.souf.soufwebsite.domain.file.repository.FileRepository;
+import com.souf.soufwebsite.domain.file.entity.Media;
+import com.souf.soufwebsite.domain.file.entity.MediaType;
+import com.souf.soufwebsite.domain.file.repository.MediaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,25 +15,25 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class FileService {
-    private final FileRepository fileRepository;
+    private final MediaRepository mediaRepository;
 
     private final S3UploaderService s3UploaderService;
 
-    public List<PresignedUrlResDto> generatePresignedUrl(List<String> fileNames){
+    public List<PresignedUrlResDto> generatePresignedUrl(String path, List<String> fileNames){
         List<PresignedUrlResDto> presignedUrlList = fileNames.stream().map(f ->
-                        s3UploaderService.generatePresignedUploadUrl(f))
+                        s3UploaderService.generatePresignedUploadUrl(path, f))
                 .collect(Collectors.toList());
         return presignedUrlList;
     }
 
-    public List<File> uploadMetadata(FileReqDto files){
-        List<File> fileList = new ArrayList<>();
+    public List<Media> uploadMetadata(MediaReqDto files){
+        List<Media> mediaList = new ArrayList<>();
         for(int i=0;i<files.fileUrl().size();i++){
-            File file = File.of(files.fileUrl().get(i), files.fileName().get(i), FileType.valueOf(files.fileType().get(i)));
-            fileRepository.save(file);
-            fileList.add(file);
+            Media media = Media.of(files.fileUrl().get(i), files.fileName().get(i), MediaType.valueOf(files.fileType().get(i)));
+            mediaRepository.save(media);
+            mediaList.add(media);
         }
 
-        return fileList;
+        return mediaList;
     }
 }

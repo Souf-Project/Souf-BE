@@ -1,22 +1,23 @@
 package com.souf.soufwebsite.domain.feed.service;
 
-import com.souf.soufwebsite.domain.feed.dto.FeedCreateReqDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedResDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedUpdateReqDto;
-import org.springframework.web.multipart.MultipartFile;
+import com.souf.soufwebsite.domain.feed.dto.*;
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
-import java.util.List;
 
 public interface FeedService {
 
-    void createFeed(FeedCreateReqDto reqDto, List<MultipartFile> files);
+    FeedResDto createFeed(FeedReqDto reqDto);
 
-    List<FeedResDto> getFeeds();
+    void uploadFeedMedia(MediaReqDto mediaReqDto);
 
-    FeedResDto getFeedById(Long feedId);
+    Page<FeedSimpleResDto> getFeeds(Long memberId, Pageable pageable);
 
-    void updateFeed(Long feedId, FeedUpdateReqDto reqDto, List<MultipartFile> newFiles) throws IOException;
+    FeedDetailResDto getFeedById(Long memberId, Long feedId);
+
+    FeedResDto updateFeed(Long feedId, FeedReqDto reqDto);
 
     void deleteFeed(Long feedId);
 }

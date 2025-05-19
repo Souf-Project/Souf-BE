@@ -1,17 +1,20 @@
 package com.souf.soufwebsite.domain.feed.controller;
 
-import com.souf.soufwebsite.domain.feed.dto.FeedCreateReqDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedResDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedUpdateReqDto;
+import com.souf.soufwebsite.domain.feed.dto.*;
 import com.souf.soufwebsite.domain.feed.service.FeedService;
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
+
+import static com.souf.soufwebsite.domain.feed.controller.FeedSuccessMessage.*;
+import static com.souf.soufwebsite.domain.recruit.controller.RecruitSuccessMessage.RECRUIT_FILE_METADATA_CREATE;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,37 +24,46 @@ public class FeedController {
     private final FeedService feedService;
 
     @PostMapping
-    public SuccessResponse<?> createFeed(
-            @RequestPart("data") @Valid FeedCreateReqDto reqDto,
-            @RequestPart("files") List<MultipartFile> files) {
-        feedService.createFeed(reqDto, files);
+    public SuccessResponse<FeedResDto> createFeed(
+            @RequestBody @Valid FeedReqDto feedReqDto) {
+        FeedResDto feedResDto = feedService.createFeed(feedReqDto);
 
-        return new SuccessResponse<>("Feed created successfully");
+        return new SuccessResponse<>(feedResDto, FEED_CREATE.getMessage());
     }
 
-    @GetMapping
-    public SuccessResponse<List<FeedResDto>> getFeeds() {
-        return new SuccessResponse<>(feedService.getFeeds());
+    @PostMapping("/upload")
+    public SuccessResponse uploadMetadata(@Valid @RequestBody MediaReqDto mediaReqDto){
+        feedService.uploadFeedMedia(mediaReqDto);
+
+        return new SuccessResponse(RECRUIT_FILE_METADATA_CREATE.getMessage());
     }
 
-    @GetMapping("/{feedId}")
-    public SuccessResponse<FeedResDto> getFeed(@PathVariable(name = "feedId") Long feedId) {
-        return new SuccessResponse<>(feedService.getFeedById(feedId));
+    @GetMapping("/{memberId}")
+    public SuccessResponse<Page<FeedSimpleResDto>> getFeeds(
+            @PathVariable(name = "memberId") Long memberId,
+            @PageableDefault(size = 12) Pageable pageable) {
+        return new SuccessResponse<>(feedService.getFeeds(memberId, pageable), FEED_GET.getMessage());
+    }
+
+    @GetMapping("/{memberId}/{feedId}")
+    public SuccessResponse<FeedDetailResDto> getFeed(
+            @PathVariable(name = "memberId") Long memberId,
+            @PathVariable(name = "feedId") Long feedId) {
+        return new SuccessResponse<>(feedService.getFeedById(memberId, feedId), FEED_GET.getMessage());
     }
 
     @PatchMapping("/{feedId}")
-    public SuccessResponse<?> updateFeed(
-            @PathVariable Long feedId,
-            @RequestPart("data") @Valid FeedUpdateReqDto reqDto,
-            @RequestPart(name = "files", required = false) List<MultipartFile> newFiles) throws IOException {
-        feedService.updateFeed(feedId, reqDto, newFiles);
-        return new SuccessResponse<>("Feed updated successfully");
+    public SuccessResponse<FeedResDto> updateFeed(
+            @PathVariable(name = "feedId") Long feedId,
+            @RequestBody @Valid FeedReqDto reqDto) {
+        FeedResDto feedResDto = feedService.updateFeed(feedId, reqDto);
+        return new SuccessResponse<>(feedResDto, FEED_UPDATE.getMessage());
     }
 
     @DeleteMapping("/{feedId}")
     public SuccessResponse<?> deleteFeed(@PathVariable(name = "feedId") Long feedId) {
         feedService.deleteFeed(feedId);
-        return new SuccessResponse<>("Feed deleted successfully");
+        return new SuccessResponse<>(FEED_DELETE.getMessage());
     }
 
 }

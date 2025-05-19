@@ -1,19 +1,12 @@
 package com.souf.soufwebsite.domain.feed.dto;
 
-import com.souf.soufwebsite.domain.feed.entity.Feed;
-import com.souf.soufwebsite.domain.file.dto.FileReqDto;
+import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 
 import java.util.List;
 
-public record FeedResDto (
+public record FeedResDto(
         Long feedId,
-        String content,
-        String nickname
+        List<PresignedUrlResDto> dtoList
 ) {
-    public static FeedResDto from(Feed feed, String nickname) {
-        return new FeedResDto(feed.getId(),
-                feed.getContent(),
-                nickname
-        );
-    }
+
 }

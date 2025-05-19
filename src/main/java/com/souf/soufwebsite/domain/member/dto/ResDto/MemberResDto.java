@@ -5,7 +5,7 @@ import com.souf.soufwebsite.domain.member.entity.Member;
 
 import java.time.LocalDate;
 
-public record UserResDto(
+public record MemberResDto(
         Long id,
         String email,
         String username,
@@ -15,8 +15,8 @@ public record UserResDto(
         RoleType role
 
 ) {
-    public static UserResDto from(Member member) {
-        return new UserResDto(
+    public static MemberResDto from(Member member) {
+        return new MemberResDto(
                 member.getId(),
                 member.getEmail(),
                 member.getUsername(),
