@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
-    List<ChatMessage> findByChatRoomIdOrderByCreatedAtAsc(Long chatRoomId); // 채팅방 ID로 이전의 메시지 조회
+    List<ChatMessage> findByChatRoomIdOrderByCreatedTimeAsc(Long chatRoomId); // 채팅방 ID로 이전의 메시지 조회
 
-    Optional<ChatMessage> findTopByChatRoomOrderByCreatedAtDesc(ChatRoom chatRoom); // 채팅방 ID로 마지막 메시지 조회
+    Optional<ChatMessage> findTopByChatRoomOrderByCreatedTimeDesc(ChatRoom chatRoom); // 채팅방 ID로 마지막 메시지 조회
 
     int countByChatRoomAndSenderNotAndIsReadFalse(ChatRoom chatRoom, Member reader); // 안 읽은 메시지 수 조회
 

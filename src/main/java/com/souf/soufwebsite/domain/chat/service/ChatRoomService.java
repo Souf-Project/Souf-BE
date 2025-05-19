@@ -35,7 +35,7 @@ public class ChatRoomService {
 
                     // 마지막 메시지 가져오기
                     ChatMessage lastMessage = chatMessageRepository
-                            .findTopByChatRoomOrderByCreatedAtDesc(room)
+                            .findTopByChatRoomOrderByCreatedTimeDesc(room)
                             .orElse(null);
 
                     String lastContent = lastMessage != null ? lastMessage.getContent() : "";

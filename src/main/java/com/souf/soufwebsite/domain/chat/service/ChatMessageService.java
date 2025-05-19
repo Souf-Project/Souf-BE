@@ -29,7 +29,7 @@ public class ChatMessageService {
     }
 
     public List<ChatMessage> getMessages(Long chatRoomId) {
-        return chatMessageRepository.findByChatRoomIdOrderByCreatedAtAsc(chatRoomId);
+        return chatMessageRepository.findByChatRoomIdOrderByCreatedTimeAsc(chatRoomId);
     }
 
     @Transactional
