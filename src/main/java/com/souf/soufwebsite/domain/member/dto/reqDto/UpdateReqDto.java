@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.member.dto.ReqDto;
+package com.souf.soufwebsite.domain.member.dto.reqDto;
 
 import java.time.LocalDate;
 

@@ -1,10 +1,10 @@
 package com.souf.soufwebsite.domain.member.service;
 
-import com.souf.soufwebsite.domain.member.dto.ReqDto.ResetReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.SigninReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.SignupReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
-import com.souf.soufwebsite.domain.member.dto.ResDto.UserResDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.ResetReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.SigninReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.SignupReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.UpdateReqDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.UserResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 
 import java.util.List;
