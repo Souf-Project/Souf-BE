@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.member.service;
 
+import com.souf.soufwebsite.domain.member.dto.*;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.ResetReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SigninReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SignupReqDto;
@@ -7,6 +8,7 @@ import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.global.email.EmailService;
 import com.souf.soufwebsite.global.jwt.JwtService;
@@ -61,9 +63,12 @@ public class MemberServiceImpl implements MemberService {
 
         Authentication authentication = authenticationManager.authenticate(token);
         String email = authentication.getName();
-        System.out.println("email = " + email);
 
-        String accessToken = jwtService.createAccessToken(email);
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+        RoleType role = member.getRole();
+
+        String accessToken = jwtService.createAccessToken(email, role);
         String refreshToken = jwtService.createRefreshToken(email);
 
         redisTemplate.opsForValue().set("refresh:" + email, refreshToken, jwtService.getExpiration(refreshToken), TimeUnit.MILLISECONDS);

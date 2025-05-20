@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.global.jwt;
 
+import com.souf.soufwebsite.domain.member.entity.RoleType;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -41,11 +42,12 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public String createAccessToken(String email) {
+    public String createAccessToken(String email, RoleType role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + accessTokenExpireTime);
         return Jwts.builder()
                 .setSubject(email)
+                .claim("role", role.name())
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(secretKey, SignatureAlgorithm.HS256)
@@ -93,6 +95,22 @@ public class JwtServiceImpl implements JwtService {
             return Optional.ofNullable(claims.getSubject());
         } catch (JwtException e) {
             log.error("토큰에서 이메일 추출 실패: {}", e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    public Optional<RoleType> extractRoleType(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            String role = claims.get("role", String.class);
+            return Optional.of(RoleType.valueOf(role));
+        } catch (Exception e) {
+            log.error("권한 추출 실패: {}", e.getMessage());
             return Optional.empty();
         }
     }
