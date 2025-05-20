@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -76,6 +77,24 @@ public class SecurityConfig {
                                         ,"/v3/api-docs/**"
                                         ,"/error"
                                 ).permitAll()
+
+                                //기업 사용자
+                                .requestMatchers(
+                                        "/api/v1/recruit/**"
+                                ).hasRole("MEMBER")
+
+                                //학생 사용자
+                                .requestMatchers(
+                                        "/api/v1/feed/**"
+                                ).hasRole("STUDENT")
+
+                                // 모든 스프 사용자
+                                .requestMatchers(HttpMethod.GET, "/api/v1/feed/**").hasAnyRole("STUDENT", "MEMBER", "ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/recruit/**").hasAnyRole("STUDENT", "MEMBER", "ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/member/**").hasAnyRole("STUDENT", "MEMBER", "ADMIN")
+
+                                //외부 사용자
+                                .requestMatchers("/api/v1/auth/**").permitAll()
                 );
 
         return http.build();

@@ -6,13 +6,6 @@ services:
     ports:
       - "8080:8080"
     env_file:
-      - ./iamsouf.env
+      - .env
     environment:
       - TZ=Asia/Seoul
-    depends_on:
-      - redis
-
-  redis:
-    image: "redis:latest"
-    ports:
-      - "6379:6379"
