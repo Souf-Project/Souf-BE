@@ -4,7 +4,7 @@ import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 
 import java.util.List;
 
-public record RecruitCreateReqDto(
+public record RecruitCreateResDto(
         Long recruitId,
         List<PresignedUrlResDto> dtoList
 ) {

@@ -1,10 +1,8 @@
 package com.souf.soufwebsite.domain.file.dto;
 
-import com.souf.soufwebsite.domain.file.entity.File;
-
 import java.util.List;
 
-public record FileReqDto(
+public record MediaReqDto(
         Long postId,
         List<String> fileUrl,
         List<String> fileName,
