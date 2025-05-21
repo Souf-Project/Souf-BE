@@ -71,8 +71,6 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
                         authorizationManagerRequestMatcherRegistry
-                                // ADMIN은 모든 요청 허용
-                                .requestMatchers("/**").hasRole("ADMIN")
 
                                 // 공용 리소스는 누구나 접근 가능
                                 .requestMatchers(
@@ -83,9 +81,9 @@ public class SecurityConfig {
                                 ).permitAll()
 
                                 // GET 요청은 STUDENT, MEMBER, ADMIN 모두 접근 가능
-                                .requestMatchers(HttpMethod.GET, "/api/v1/feed/**").hasAnyRole("STUDENT", "MEMBER", "ADMIN")
-                                .requestMatchers(HttpMethod.GET, "/api/v1/recruit/**").hasAnyRole("STUDENT", "MEMBER", "ADMIN")
-                                .requestMatchers(HttpMethod.GET, "/api/v1/member/**").hasAnyRole("STUDENT", "MEMBER", "ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/feed/**").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/recruit/**").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/member/**").authenticated()
 
                                 // 기업 사용자 권한
                                 .requestMatchers("/api/v1/recruit/**").hasRole("MEMBER")
@@ -95,6 +93,7 @@ public class SecurityConfig {
 
                                 // 인증, 회원가입은 모두 허용
                                 .requestMatchers("/api/v1/auth/**").permitAll()
+                                .anyRequest().authenticated()
                 );
 
         return http.build();
@@ -103,7 +102,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("/"));
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // 허용할 HTTP 메서드
         configuration.setAllowedHeaders(Arrays.asList("*")); // 모든 헤더 허용
         configuration.setExposedHeaders(Arrays.asList("Authorization"));
