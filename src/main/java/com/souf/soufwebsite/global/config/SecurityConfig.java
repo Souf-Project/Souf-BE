@@ -71,29 +71,29 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
                         authorizationManagerRequestMatcherRegistry
+                                // ADMIN은 모든 요청 허용
+                                .requestMatchers("/**").hasRole("ADMIN")
+
+                                // 공용 리소스는 누구나 접근 가능
                                 .requestMatchers(
-                                        "/favicon.ico"
-                                        ,"/swagger-ui/**"
-                                        ,"/v3/api-docs/**"
-                                        ,"/error"
+                                        "/favicon.ico",
+                                        "/swagger-ui/**",
+                                        "/v3/api-docs/**",
+                                        "/error"
                                 ).permitAll()
 
-                                //기업 사용자
-                                .requestMatchers(
-                                        "/api/v1/recruit/**"
-                                ).hasRole("MEMBER")
-
-                                //학생 사용자
-                                .requestMatchers(
-                                        "/api/v1/feed/**"
-                                ).hasRole("STUDENT")
-
-                                // 모든 스프 사용자
+                                // GET 요청은 STUDENT, MEMBER, ADMIN 모두 접근 가능
                                 .requestMatchers(HttpMethod.GET, "/api/v1/feed/**").hasAnyRole("STUDENT", "MEMBER", "ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/recruit/**").hasAnyRole("STUDENT", "MEMBER", "ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/member/**").hasAnyRole("STUDENT", "MEMBER", "ADMIN")
 
-                                //외부 사용자
+                                // 기업 사용자 권한
+                                .requestMatchers("/api/v1/recruit/**").hasRole("MEMBER")
+
+                                // 학생 사용자 권한
+                                .requestMatchers("/api/v1/feed/**").hasRole("STUDENT")
+
+                                // 인증, 회원가입은 모두 허용
                                 .requestMatchers("/api/v1/auth/**").permitAll()
                 );
 
