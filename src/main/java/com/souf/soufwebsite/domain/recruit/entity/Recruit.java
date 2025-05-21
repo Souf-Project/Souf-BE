@@ -11,6 +11,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Recruit extends BaseEntity {
     @Id
@@ -47,7 +49,10 @@ public class Recruit extends BaseEntity {
     private String preferentialTreatment;
 
     @Column
-    private Long recruiter;
+    private Long recruitCount;
+
+    @Column
+    private Long viewCount;
 
     @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
     List<RecruitCategoryMapping> categories = new ArrayList<>();
@@ -60,19 +65,6 @@ public class Recruit extends BaseEntity {
     @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Media> media = new ArrayList<>();
 
-    @Builder
-    public Recruit(String title, String content, String region, LocalDateTime deadline, String payment,
-                   String preferentialTreatment, Member member, List<CategoryDto> categoryDtoList) {
-        this.title = title;
-        this.content = content;
-        this.region = region;
-        this.deadline = deadline;
-        this.payment = payment;
-        this.preferentialTreatment = preferentialTreatment;
-        this.member = member;
-        this.recruiter = 0L;
-    }
-
     public static Recruit of(RecruitReqDto reqDto, Member member) {
         return Recruit.builder()
                 .title(reqDto.title())
@@ -81,6 +73,8 @@ public class Recruit extends BaseEntity {
                 .deadline(reqDto.deadline())
                 .payment(reqDto.payment())
                 .preferentialTreatment(reqDto.preferentialTreatment())
+                .recruitCount(0L)
+                .viewCount(0L)
                 .member(member)
                 .build();
     }

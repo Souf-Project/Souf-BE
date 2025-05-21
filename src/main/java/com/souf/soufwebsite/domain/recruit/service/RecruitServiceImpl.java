@@ -20,6 +20,7 @@ import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
 import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
+import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,7 @@ public class RecruitServiceImpl implements RecruitService {
     private final RecruitRepository recruitRepository;
     private final RecruitCategoryMappingRepository recruitCategoryMappingRepository;
     private final CategoryService categoryService;
+    private final RedisUtil redisUtil;
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
@@ -47,6 +49,9 @@ public class RecruitServiceImpl implements RecruitService {
         Recruit recruit = Recruit.of(reqDto, member);
         recruit = recruitRepository.save(recruit);
         injectCategories(reqDto, recruit);
+
+        String recruitViewKey = getRecruitViewKey(recruit.getId());
+        redisUtil.set(recruitViewKey);
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("recruit", reqDto.originalFileNames());
 
@@ -76,6 +81,9 @@ public class RecruitServiceImpl implements RecruitService {
     public RecruitResDto getRecruitById(Long recruitId) {
         Member member = getCurrentUser();
         Recruit recruit = findIfRecruitExist(recruitId);
+
+        String recruitViewKey = getRecruitViewKey(recruit.getId());
+        redisUtil.increaseCount(recruitViewKey);
 
         return RecruitResDto.from(recruit, member.getNickname());
     }
@@ -120,5 +128,9 @@ public class RecruitServiceImpl implements RecruitService {
             recruitCategoryMappingRepository.save(recruitCategoryMapping);
             recruit.addCategory(recruitCategoryMapping);
         }
+    }
+
+    private String getRecruitViewKey(Long recruitId) {
+        return "recruit:view:" + recruitId;
     }
 }
