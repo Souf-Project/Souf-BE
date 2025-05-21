@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  app:
+    image: wjd4204/github-actions-iamsouf:latest
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Seoul
