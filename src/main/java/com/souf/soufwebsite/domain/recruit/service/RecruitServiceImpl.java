@@ -106,6 +106,9 @@ public class RecruitServiceImpl implements RecruitService {
         Recruit recruit = findIfRecruitExist(recruitId);
         verifyIfRecruitIsMine(recruit, member);
 
+        String recruitViewKey = getRecruitViewKey(recruit.getId());
+        redisUtil.deleteKey(recruitViewKey);
+
         recruitRepository.delete(recruit);
     }
 

@@ -107,6 +107,9 @@ public class FeedServiceImpl implements FeedService {
         Feed feed = findIfFeedExist(feedId);
         verifyIfFeedIsMine(feed, member);
 
+        String feedViewKey = getFeedViewKey(feed.getId());
+        redisUtil.deleteKey(feedViewKey);
+
         feedRepository.delete(feed);
     }
 
