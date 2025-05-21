@@ -58,10 +58,10 @@ public class StompHandler implements ChannelInterceptor {
                     UserDetailsImpl userDetails = new UserDetailsImpl(member);
                     Authentication authentication = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
-                    System.out.println("authentication = " + authentication);
 
-                    accessor.setUser(authentication);
                     accessor.setLeaveMutable(true);
+                    accessor.setUser(authentication);
+                    accessor.getSessionAttributes().put("user", authentication);
                     log.info("[STOMP][CONNECT] 인증 객체 설정 완료 - memberId: {}", member.getId());
                 } else {
                     throw new IllegalArgumentException("유효하지 않은 JWT 토큰");
@@ -77,6 +77,14 @@ public class StompHandler implements ChannelInterceptor {
 
             String destination = accessor.getDestination();
             Principal principal = accessor.getUser();
+            if (principal == null) {
+                Object sessionUser = accessor.getSessionAttributes().get("user");
+                if (sessionUser instanceof Authentication) {
+                    accessor.setUser((Authentication) sessionUser); // 다시 설정
+                    principal = (Authentication) sessionUser;
+                }
+            }
+
 
             log.info("[DEBUG] principal = {}", principal);
             log.info("[DEBUG] principal instanceof Authentication = {}", principal instanceof Authentication);
@@ -99,7 +107,7 @@ public class StompHandler implements ChannelInterceptor {
         }
 
         log.info("[STOMP] ◀ preSend 종료");
-        return message;
+        return MessageBuilder.createMessage(message.getPayload(), accessor.getMessageHeaders());
     }
 
 

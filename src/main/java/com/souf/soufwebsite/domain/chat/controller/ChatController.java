@@ -9,8 +9,10 @@ import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.security.Principal;
 
 @Controller
-@RequestMapping("/api/v1/chat")
 @RequiredArgsConstructor
 @Slf4j
 public class ChatController {
@@ -28,9 +29,15 @@ public class ChatController {
     private final ChatMessageService chatMessageService;
 
     @MessageMapping("/chat.sendMessage")
-    public void sendMessage(ChatMessageReqDto request, Principal principal) {
-        log.info("sendMessage() 메서드 호출");
-        UserDetailsImpl userDetails = (UserDetailsImpl) ((Authentication) principal).getPrincipal();
+    public void sendMessage(ChatMessageReqDto request, Message<?> message) {
+        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
+        Authentication auth = (Authentication) accessor.getSessionAttributes().get("user");
+
+        if (auth == null || !(auth.getPrincipal() instanceof UserDetailsImpl userDetails)) {
+            log.warn("인증되지 않은 사용자입니다.");
+            return;
+        }
+
         Member sender = userDetails.getMember();
 
         ChatRoom room = chatRoomService.getRoomById(request.roomId());
