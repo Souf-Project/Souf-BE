@@ -115,7 +115,7 @@ public class MemberServiceImpl implements MemberService {
     @Transactional
     public void updateUserInfo(UpdateReqDto reqDto) {
         Long memberId = getCurrentUser().getId();
-
+        System.out.println("memberId = " + memberId);
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("사용자 없음"));
 

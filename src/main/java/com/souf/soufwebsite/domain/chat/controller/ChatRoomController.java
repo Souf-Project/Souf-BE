@@ -13,6 +13,7 @@ import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.domain.member.service.MemberService;
 import com.souf.soufwebsite.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/chatrooms")
 @RequiredArgsConstructor
+@Slf4j
 public class ChatRoomController {
     private final ChatRoomService chatRoomService;
     private final ChatMessageService chatMessageService;
@@ -32,6 +34,8 @@ public class ChatRoomController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestBody ChatRoomCreateReqDto request
     ) {
+        log.info("userDetails: {}", userDetails);
+
         Member sender = userDetails.getMember();
         Member receiver = memberRepository.findById(request.receiverId())
                 .orElseThrow(() -> new IllegalArgumentException("상대방을 찾을 수 없습니다"));
