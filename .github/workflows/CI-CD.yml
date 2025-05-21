@@ -65,18 +65,18 @@ jobs:
 
       # Docker 이미지를 빌드합니다.
       - name: docker image build
-        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/github-actions-iamsouf .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/github-actions-iamsouf .
 
       # Docker Hub에 로그인합니다. 로그인 정보는 GitHub Secrets를 통해 안전하게 관리됩니다.
       - name: docker login
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }} # Docker Hub 사용자 이름
-          password: ${{ secrets.DOCKERHUB_PASSWORD }} # Docker Hub 비밀번호
+          username: ${{ secrets.DOCKER_USERNAME }} # Docker Hub 사용자 이름
+          password: ${{ secrets.DOCKER_PASSWORD }} # Docker Hub 비밀번호
 
       # 빌드된 Docker 이미지를 Docker Hub에 푸시합니다.
       - name: docker Hub push
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/github-actions-iamsouf
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/github-actions-iamsouf
 
     # 새로 빌드된 Docker 이미지를 EC2 서버에 배포하는 작업을 정의
   deploy:
