@@ -63,7 +63,9 @@ public class MemberController {
     }
 
     @GetMapping("/member")
-    public SuccessResponse<List<MemberResDto>> getMembers() {
+    public SuccessResponse<List<MemberResDto>> getMembers(
+            @RequestParam(name = "search") String search
+    ) {
         return new SuccessResponse<>(memberService.getMembers());
     }
 

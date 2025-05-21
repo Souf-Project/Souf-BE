@@ -12,6 +12,7 @@ import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
+import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,7 @@ public class FeedServiceImpl implements FeedService {
     private final MemberRepository memberRepository;
     private final FileService fileService;
     private final TagService tagService;
+    private final RedisUtil redisUtil;
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
@@ -45,6 +47,9 @@ public class FeedServiceImpl implements FeedService {
         Feed feed = Feed.of(reqDto, member);
         feed = feedRepository.save(feed);
         tagService.createFeedTag(feed, reqDto.tags());
+
+        String feedViewKey = getFeedViewKey(feed.getId());
+        redisUtil.set(feedViewKey);
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
 
@@ -74,9 +79,12 @@ public class FeedServiceImpl implements FeedService {
     public FeedDetailResDto getFeedById(Long memberId, Long feedId) {
         findIfMemberExists(memberId);
         Feed feed = findIfFeedExist(feedId);
-        feed.addViewCount();
 
-        return FeedDetailResDto.from(feed);
+        String feedViewKey = getFeedViewKey(feed.getId());
+        redisUtil.increaseCount(feedViewKey);
+        Long viewCountFromRedis = redisUtil.get(feedViewKey);
+
+        return FeedDetailResDto.from(feed, viewCountFromRedis);
     }
 
     @Transactional
@@ -115,5 +123,9 @@ public class FeedServiceImpl implements FeedService {
 
     private Member findIfMemberExists(Long memberId) {
         return memberRepository.findById(memberId).orElseThrow(NotFoundFeedException::new);
+    }
+
+    private String getFeedViewKey(Long feedId) {
+        return "feed:view:" + feedId;
     }
 }
