@@ -85,6 +85,10 @@ public class Member extends BaseEntity {
         if (dto.intro() != null) this.intro = dto.intro();
     }
 
+    public void updateRole(RoleType newRole) {
+        this.role = newRole;
+    }
+
     public void updatePassword(String newPassword) {
         this.password = newPassword;
     }

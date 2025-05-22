@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -116,6 +117,16 @@ public class MemberServiceImpl implements MemberService {
         String storedCode = redisTemplate.opsForValue().get(emailKey);
         if (storedCode != null && storedCode.equals(code)) {
             redisTemplate.delete(emailKey);
+
+            if (email.endsWith(".ac.kr")) {
+                Optional<Member> optionalMember = memberRepository.findByEmail(email);
+                optionalMember.ifPresent(member -> {
+                    if (member.getRole() != RoleType.STUDENT) {
+                        member.updateRole(RoleType.STUDENT);
+                    }
+                });
+            }
+
             return true;
         }
         return false;
