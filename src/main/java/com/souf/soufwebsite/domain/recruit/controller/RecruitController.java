@@ -18,7 +18,7 @@ import static com.souf.soufwebsite.domain.recruit.controller.RecruitSuccessMessa
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/recruit")
-public class RecruitController {
+public class RecruitController implements RecruitApiSpecification{
 
     private final RecruitService recruitService;
 
