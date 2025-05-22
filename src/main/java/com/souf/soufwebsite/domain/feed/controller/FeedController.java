@@ -19,7 +19,7 @@ import static com.souf.soufwebsite.domain.recruit.controller.RecruitSuccessMessa
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/feed")
-public class FeedController {
+public class FeedController implements FeedApiSpecification{
 
     private final FeedService feedService;
 
