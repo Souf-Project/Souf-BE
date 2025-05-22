@@ -69,11 +69,12 @@ public class Member extends BaseEntity {
     private List<Feed> feeds = new ArrayList<>();
 
     @Builder
-    public Member(String email, String password, String username, String nickname) {
+    public Member(String email, String password, String username, String nickname, RoleType role) {
         this.email = email;
         this.password = password;
         this.username = username;
         this.nickname = nickname;
+        this.role = role;
     }
 
     // 회원 정보 업데이트 (업데이트 가능한 필드만 반영)

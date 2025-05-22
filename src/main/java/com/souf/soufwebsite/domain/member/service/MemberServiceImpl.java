@@ -57,7 +57,7 @@ public class MemberServiceImpl implements MemberService {
 
         String encodedPassword = passwordEncoder.encode(reqDto.password());
 
-        Member member = new Member(reqDto.email(), encodedPassword, reqDto.username(), reqDto.nickname());
+        Member member = new Member(reqDto.email(), encodedPassword, reqDto.username(), reqDto.nickname(), RoleType.MEMBER);
         memberRepository.save(member);
     }
 
