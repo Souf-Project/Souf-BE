@@ -1,0 +1,80 @@
+package com.souf.soufwebsite.domain.member.service;
+
+import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
+import com.souf.soufwebsite.domain.member.reposiotry.MemberCategoryMappingRepository;
+import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
+import com.souf.soufwebsite.global.common.category.CategoryService;
+import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
+import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
+import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
+import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class MemberCategoryServiceImpl implements MemberCategoryService {
+
+    private final MemberRepository memberRepository;
+    private final MemberCategoryMappingRepository mappingRepository;
+    private final CategoryService categoryService;
+
+    @Override
+    @Transactional
+    public void addCategory(Long memberId, CategoryDto dto) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("멤버를 찾을 수 없습니다."));
+
+        FirstCategory first = categoryService.findIfFirstIdExists(dto.firstCategory());
+        SecondCategory second = categoryService.findIfSecondIdExists(dto.secondCategory());
+        ThirdCategory third = categoryService.findIfThirdIdExists(dto.thirdCategory());
+
+        MemberCategoryMapping mapping = MemberCategoryMapping.of(member, first, second, third);
+        member.addCategory(mapping);
+        mappingRepository.save(mapping);
+    }
+
+    @Override
+    @Transactional
+    public void removeCategory(Long memberId, CategoryDto dto) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("멤버를 찾을 수 없습니다."));
+
+        member.removeCategory(dto);
+        memberRepository.save(member);
+    }
+
+    @Override
+    @Transactional
+    public void updateCategory(Long memberId, CategoryDto oldDto, CategoryDto newDto) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("멤버를 찾을 수 없습니다."));
+
+        FirstCategory first = categoryService.findIfFirstIdExists(newDto.firstCategory());
+        SecondCategory second = categoryService.findIfSecondIdExists(newDto.secondCategory());
+        ThirdCategory third = categoryService.findIfThirdIdExists(newDto.thirdCategory());
+
+        MemberCategoryMapping newMapping = MemberCategoryMapping.of(member, first, second, third);
+        member.updateCategory(oldDto, newMapping);
+        mappingRepository.save(newMapping);
+    }
+
+    @Override
+    @Transactional
+    public List<CategoryDto> getCategoriesOfMember(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 멤버를 찾을 수 없습니다."));
+
+        return member.getCategories().stream()
+                .map(mapping -> new CategoryDto(
+                        mapping.getFirstCategory().getId(),
+                        mapping.getSecondCategory().getId(),
+                        mapping.getThirdCategory().getId()
+                ))
+                .toList();
+    }
+}

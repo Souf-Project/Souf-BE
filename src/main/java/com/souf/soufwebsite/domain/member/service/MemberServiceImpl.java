@@ -14,6 +14,8 @@ import com.souf.soufwebsite.global.email.EmailService;
 import com.souf.soufwebsite.global.jwt.JwtService;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -47,6 +49,10 @@ public class MemberServiceImpl implements MemberService {
     public void signup(SignupReqDto reqDto) {
         if (memberRepository.findByEmail(reqDto.email()).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+        }
+
+        if (!reqDto.password().equals(reqDto.passwordCheck())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
         String encodedPassword = passwordEncoder.encode(reqDto.password());
@@ -129,7 +135,7 @@ public class MemberServiceImpl implements MemberService {
 
     //회원 목록 조회
     @Override
-    public List<MemberResDto> getMembers() {
+    public List<MemberResDto> getMembers(Pageable pageable) {
         List<Member> members = memberRepository.findAll();
         return members.stream()
                 .map(MemberResDto::from)
@@ -141,5 +147,11 @@ public class MemberServiceImpl implements MemberService {
     public MemberResDto getMemberById(Long id) {
         Member member = memberRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
         return MemberResDto.from(member);
+    }
+
+    @Override
+    public Page<MemberResDto> searchMembers(String keyword, Pageable pageable) {
+        Page<Member> result = memberRepository.searchMembers(keyword, pageable);
+        return result.map(MemberResDto::from);
     }
 }

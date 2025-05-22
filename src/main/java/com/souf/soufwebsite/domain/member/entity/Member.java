@@ -4,6 +4,10 @@ import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.global.common.BaseEntity;
+import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
+import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
+import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
+import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
@@ -54,6 +58,9 @@ public class Member extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private RoleType role;
 
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MemberCategoryMapping> categories = new ArrayList<>();
+
     @OneToOne
     @JoinColumn(name = "media_id")
     private Media media;
@@ -79,5 +86,33 @@ public class Member extends BaseEntity {
 
     public void updatePassword(String newPassword) {
         this.password = newPassword;
+    }
+
+    public void addCategory(MemberCategoryMapping mapping) {
+        for (MemberCategoryMapping existing : this.categories) {
+            if (existing.isSameCategorySet(mapping)) {
+                throw new IllegalArgumentException("이미 존재하는 카테고리 세트입니다.");
+            }
+        }
+
+        if (this.categories.size() >= 3) {
+            throw new IllegalStateException("카테고리는 최대 3개까지만 등록할 수 있습니다.");
+        }
+
+        this.categories.add(mapping);
+        mapping.setMember(this);
+    }
+
+    public void updateCategory(CategoryDto oldDto, MemberCategoryMapping newMapping) {
+        removeCategory(oldDto);
+        addCategory(newMapping);
+    }
+
+    public void removeCategory(CategoryDto dto) {
+        categories.removeIf(mapping ->
+                mapping.getFirstCategory().getId().equals(dto.firstCategory()) &&
+                        mapping.getSecondCategory().getId().equals(dto.secondCategory()) &&
+                        mapping.getThirdCategory().getId().equals(dto.thirdCategory())
+        );
     }
 }

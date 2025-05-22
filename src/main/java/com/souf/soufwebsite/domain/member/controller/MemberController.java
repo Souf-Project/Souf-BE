@@ -11,6 +11,9 @@ import com.souf.soufwebsite.global.success.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -63,12 +66,22 @@ public class MemberController {
     }
 
     @GetMapping("/member")
-    public SuccessResponse<List<MemberResDto>> getMembers() {
-        return new SuccessResponse<>(memberService.getMembers());
+    public SuccessResponse<List<MemberResDto>> getMembers(
+            @PageableDefault(size = 6) Pageable pageable
+    ) {
+        return new SuccessResponse<>(memberService.getMembers(pageable));
     }
 
     @GetMapping("/member/{id}")
     public SuccessResponse<MemberResDto> getMemberById(@PathVariable Long id) {
         return new SuccessResponse<>(memberService.getMemberById(id));
+    }
+
+    @GetMapping("/member/search")
+    public SuccessResponse<Page<MemberResDto>> searchMembers(
+            @RequestParam(defaultValue = "") String keyword,
+            @PageableDefault(size = 6) Pageable pageable
+    ) {
+        return new SuccessResponse<>(memberService.searchMembers(keyword, pageable));
     }
 }
