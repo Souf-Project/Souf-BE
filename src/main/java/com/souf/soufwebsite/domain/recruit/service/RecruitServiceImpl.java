@@ -72,6 +72,7 @@ public class RecruitServiceImpl implements RecruitService {
     @Transactional(readOnly = true)
     @Override
     public List<RecruitSimpleResDto> getRecruits(Long first, Long second, Long third) {
+        categoryService.validate(first, second, third);
 
         return recruitRepository.getRecruitList(first, second, third);
     }
