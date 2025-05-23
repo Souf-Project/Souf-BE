@@ -4,6 +4,9 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitSimpleResDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,8 +22,10 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
 
 
     @Override
-    public List<RecruitSimpleResDto> getRecruitList(Long first, Long second, Long third) {
-        return queryFactory
+    public Page<RecruitSimpleResDto> getRecruitList(Long first, Long second, Long third, Pageable pageable) {
+
+
+        List<RecruitSimpleResDto> recruitList = queryFactory
                 .select(Projections.constructor(
                         RecruitSimpleResDto.class,
                         recruit.id,
@@ -40,6 +45,10 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         third != null ? recruitCategoryMapping.thirdCategory.id.eq(third) : null
                 )
                 .orderBy(recruit.lastModifiedTime.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
+
+        return new PageImpl<>(recruitList, pageable, recruitList.size());
     }
 }

@@ -9,9 +9,10 @@ import com.souf.soufwebsite.global.success.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 public interface RecruitApiSpecification {
 
@@ -28,9 +29,10 @@ public interface RecruitApiSpecification {
     @Tag(name = "Recruit", description = "공고문 관련 API")
     @Operation(summary = "공고문 리스트 조회", description = "카테고리에 걸맞는 공고문 리스트를 조회합니다.")
     @GetMapping
-    SuccessResponse<List<RecruitSimpleResDto>> getRecruits(@RequestParam(name = "firstCategory") Long first,
-                                                                  @RequestParam(name = "secondCategory") Long second,
-                                                                  @RequestParam(name = "thirdCategory") Long third);
+    SuccessResponse<Page<RecruitSimpleResDto>> getRecruits(@RequestParam(name = "firstCategory") Long first,
+                                                           @RequestParam(name = "secondCategory") Long second,
+                                                           @RequestParam(name = "thirdCategory") Long third,
+                                                           @PageableDefault(size = 12) Pageable pageable);
 
     @Tag(name = "Recruit", description = "공고문 관련 API")
     @Operation(summary = "특정 공고문 상세 조회", description = "특정 공고문에 대한 상세 정보를 조회합니다.")

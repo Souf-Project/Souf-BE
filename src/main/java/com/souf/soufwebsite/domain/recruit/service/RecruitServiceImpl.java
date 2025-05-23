@@ -24,6 +24,8 @@ import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -73,10 +75,11 @@ public class RecruitServiceImpl implements RecruitService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<RecruitSimpleResDto> getRecruits(Long first, Long second, Long third) {
+    public Page<RecruitSimpleResDto> getRecruits(Long first, Long second, Long third,
+                                                 Pageable pageable) {
         categoryService.validate(first, second, third);
 
-        return recruitRepository.getRecruitList(first, second, third);
+        return recruitRepository.getRecruitList(first, second, third, pageable);
     }
 
     @Transactional(readOnly = true)

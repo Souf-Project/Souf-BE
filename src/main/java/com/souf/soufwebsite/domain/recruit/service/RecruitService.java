@@ -5,8 +5,8 @@ import com.souf.soufwebsite.domain.recruit.dto.RecruitCreateResDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitResDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitSimpleResDto;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface RecruitService {
 
@@ -14,7 +14,7 @@ public interface RecruitService {
 
     void uploadRecruitMedia(MediaReqDto reqDto);
 
-    List<RecruitSimpleResDto> getRecruits(Long first, Long second, Long third);
+    Page<RecruitSimpleResDto> getRecruits(Long first, Long second, Long third, Pageable pageable);
 
     RecruitResDto getRecruitById(Long recruitId);
 
