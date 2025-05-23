@@ -78,10 +78,15 @@ public class MemberController {
     }
 
     @GetMapping("/member/search")
-    public SuccessResponse<Page<MemberResDto>> searchMembers(
-            @RequestParam(defaultValue = "") String keyword,
+    public SuccessResponse<Page<MemberResDto>> findByCategory(
+            @RequestParam(required = false) Long first,
+            @RequestParam(required = false) Long second,
+            @RequestParam(required = false) Long third,
             @PageableDefault(size = 6) Pageable pageable
     ) {
-        return new SuccessResponse<>(memberService.searchMembers(keyword, pageable));
+        return new SuccessResponse<>(
+                memberService.getMembersByCategory(first, second, third, pageable),
+                "카테고리로 검색한 멤버 목록입니다."
+        );
     }
 }

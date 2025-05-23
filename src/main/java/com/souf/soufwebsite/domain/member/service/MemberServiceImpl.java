@@ -161,8 +161,8 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Page<MemberResDto> searchMembers(String keyword, Pageable pageable) {
-        Page<Member> result = memberRepository.searchMembers(keyword, pageable);
+    public Page<MemberResDto> getMembersByCategory(Long first, Long second, Long third, Pageable pageable) {
+        Page<Member> result = memberRepository.findByCategories(first, second, third, pageable);
         return result.map(MemberResDto::from);
     }
 }

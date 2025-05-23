@@ -28,6 +28,6 @@ public interface MemberService {
 
     MemberResDto getMemberById(Long id);
 
-    Page<MemberResDto> searchMembers(String keyword, Pageable pageable);
+    Page<MemberResDto> getMembersByCategory(Long first, Long second, Long third, Pageable pageable);
 
 }

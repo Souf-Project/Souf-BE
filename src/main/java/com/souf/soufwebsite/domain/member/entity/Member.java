@@ -5,9 +5,6 @@ import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
-import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
-import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
-import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
@@ -16,7 +13,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,13 +46,14 @@ public class Member extends BaseEntity {
     @Size(min = 2, max = 20)
     private String nickname;
 
-    private LocalDate birth;
-
     @Size(max = 100)
     private String intro;
 
     @Enumerated(EnumType.STRING)
     private RoleType role;
+
+    @Column(length = 300)
+    private String personalUrl;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberCategoryMapping> categories = new ArrayList<>();
@@ -81,7 +78,6 @@ public class Member extends BaseEntity {
     public void updateInfo(UpdateReqDto dto) {
         if (dto.username() != null) this.username = dto.username();
         if (dto.nickname() != null) this.nickname = dto.nickname();
-        if (dto.birth() != null) this.birth = dto.birth();
         if (dto.intro() != null) this.intro = dto.intro();
     }
 

@@ -12,34 +12,50 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
+import static com.souf.soufwebsite.domain.member.entity.QMember.member;
+import static com.souf.soufwebsite.domain.member.entity.QMemberCategoryMapping.memberCategoryMapping;
+import static com.souf.soufwebsite.global.common.category.entity.QFirstCategory.firstCategory;
+import static com.souf.soufwebsite.global.common.category.entity.QSecondCategory.secondCategory;
+import static com.souf.soufwebsite.global.common.category.entity.QThirdCategory.thirdCategory;
+
 @RequiredArgsConstructor
 public class MemberCustomRepositoryImpl implements MemberCustomRepository {
 
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<Member> searchMembers(String keyword, Pageable pageable) {
-        QMember member = QMember.member;
-
-        BooleanExpression condition = member.role.eq(RoleType.MEMBER)
-                .and(
-                        member.username.containsIgnoreCase(keyword)
-                                .or(member.email.containsIgnoreCase(keyword))
-                );
-
+    public Page<Member> findByCategories(Long first, Long second, Long third, Pageable pageable) {
         List<Member> members = queryFactory
-                .selectFrom(member)
-                .where(condition)
+                .selectDistinct(member)
+                .from(member)
+                .join(member.categories, memberCategoryMapping)
+                .join(memberCategoryMapping.firstCategory, firstCategory)
+                .join(memberCategoryMapping.secondCategory, secondCategory)
+                .join(memberCategoryMapping.thirdCategory, thirdCategory)
+                .where(
+                        first != null ? memberCategoryMapping.firstCategory.id.eq(first) : null,
+                        second != null ? memberCategoryMapping.secondCategory.id.eq(second) : null,
+                        third != null ? memberCategoryMapping.thirdCategory.id.eq(third) : null
+                )
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
+                .orderBy(member.lastModifiedTime.desc())
                 .fetch();
 
-        long total = queryFactory
-                .select(member.count())
+        Long total = queryFactory
+                .select(member.countDistinct())
                 .from(member)
-                .where(condition)
+                .join(member.categories, memberCategoryMapping)
+                .join(memberCategoryMapping.firstCategory, firstCategory)
+                .join(memberCategoryMapping.secondCategory, secondCategory)
+                .join(memberCategoryMapping.thirdCategory, thirdCategory)
+                .where(
+                        first != null ? memberCategoryMapping.firstCategory.id.eq(first) : null,
+                        second != null ? memberCategoryMapping.secondCategory.id.eq(second) : null,
+                        third != null ? memberCategoryMapping.thirdCategory.id.eq(third) : null
+                )
                 .fetchOne();
 
-        return new PageImpl<>(members, pageable, total);
+        return new PageImpl<>(members, pageable, total != null ? total : 0L);
     }
 }
