@@ -165,4 +165,10 @@ public class MemberServiceImpl implements MemberService {
         Page<Member> result = memberRepository.findByCategories(first, second, third, pageable);
         return result.map(MemberResDto::from);
     }
+
+    @Override
+    public Page<MemberResDto> getMembersByNickname(String nickname, Pageable pageable) {
+        Page<Member> result = memberRepository.findByNicknameContainingIgnoreCase(nickname, pageable);
+        return result.map(MemberResDto::from);
+    }
 }

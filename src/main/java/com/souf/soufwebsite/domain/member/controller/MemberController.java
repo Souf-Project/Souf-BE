@@ -89,4 +89,15 @@ public class MemberController {
                 "카테고리로 검색한 멤버 목록입니다."
         );
     }
+
+    @GetMapping("/member/search/nickname")
+    public SuccessResponse<Page<MemberResDto>> findByNickname(
+            @RequestParam String keyword,
+            @PageableDefault(size = 6) Pageable pageable
+    ) {
+        return new SuccessResponse<>(
+                memberService.getMembersByNickname(keyword, pageable),
+                "닉네임으로 검색한 멤버 목록입니다."
+        );
+    }
 }
