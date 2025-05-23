@@ -2,7 +2,6 @@ package com.souf.soufwebsite.domain.recruit.repository;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitResDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitSimpleResDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -31,7 +30,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         recruit.payment,
                         recruit.region,
                         recruit.deadline,
-                        recruit.recruiter
+                        recruit.recruitCount
                         )
                 ).from(recruit)
                 .join(recruit.categories, recruitCategoryMapping)
