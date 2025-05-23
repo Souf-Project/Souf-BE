@@ -1,10 +1,9 @@
 package com.souf.soufwebsite.domain.recruit.entity;
 
 import com.souf.soufwebsite.domain.file.entity.Media;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
 import com.souf.soufwebsite.global.common.BaseEntity;
-import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
@@ -54,6 +53,7 @@ public class Recruit extends BaseEntity {
     @Column
     private Long viewCount;
 
+    @Builder.Default
     @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
     List<RecruitCategoryMapping> categories = new ArrayList<>();
 
@@ -62,6 +62,7 @@ public class Recruit extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
+    @Builder.Default
     @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Media> media = new ArrayList<>();
 

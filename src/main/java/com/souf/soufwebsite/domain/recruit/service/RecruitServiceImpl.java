@@ -23,11 +23,13 @@ import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RecruitServiceImpl implements RecruitService {
@@ -128,9 +130,12 @@ public class RecruitServiceImpl implements RecruitService {
             FirstCategory firstCategory = categoryService.findIfFirstIdExists(dto.firstCategory());
             SecondCategory secondCategory = categoryService.findIfSecondIdExists(dto.secondCategory());
             ThirdCategory thirdCategory = categoryService.findIfThirdIdExists(dto.thirdCategory());
+            log.info("f: {}, s: {}, t: {}", firstCategory.getName(), secondCategory.getName(), thirdCategory.getName());
+
+            categoryService.validate(firstCategory.getId(), secondCategory.getId(), thirdCategory.getId());
             RecruitCategoryMapping recruitCategoryMapping = RecruitCategoryMapping.of(recruit, firstCategory, secondCategory, thirdCategory);
-            recruitCategoryMappingRepository.save(recruitCategoryMapping);
             recruit.addCategory(recruitCategoryMapping);
+            recruitCategoryMappingRepository.save(recruitCategoryMapping);
         }
     }
 
