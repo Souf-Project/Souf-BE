@@ -74,6 +74,7 @@ public class SecurityConfig {
 
                                 // 공용 리소스는 누구나 접근 가능
                                 .requestMatchers(
+                                        "/ws/**",
                                         "/favicon.ico",
                                         "/swagger-ui/**",
                                         "/v3/api-docs/**",

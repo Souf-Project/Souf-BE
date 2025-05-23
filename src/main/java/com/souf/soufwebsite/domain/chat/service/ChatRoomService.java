@@ -6,7 +6,6 @@ import com.souf.soufwebsite.domain.chat.entity.ChatRoom;
 import com.souf.soufwebsite.domain.chat.repository.ChatMessageRepository;
 import com.souf.soufwebsite.domain.chat.repository.ChatRoomRepository;
 import com.souf.soufwebsite.domain.member.entity.Member;
-import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,13 +20,13 @@ public class ChatRoomService {
 
     public ChatRoom findOrCreateRoom(Member sender, Member receiver) {
         return chatRoomRepository.findBySenderAndReceiver(sender, receiver)
+                .or(() -> chatRoomRepository.findBySenderAndReceiver(receiver, sender))
                 .orElseGet(() -> chatRoomRepository.save(new ChatRoom(sender, receiver)));
     }
 
     public List<ChatRoomSummaryDto> getChatRoomsForUser(Member member) {
-        List<ChatRoom> rooms = chatRoomRepository.findAll().stream()
-                .filter(room -> room.getSender().equals(member) || room.getReceiver().equals(member))
-                .toList();
+        List<ChatRoom> rooms = chatRoomRepository
+                .findBySenderOrReceiverOrderByCreatedTimeDesc(member, member);
 
         return rooms.stream()
                 .map(room -> {

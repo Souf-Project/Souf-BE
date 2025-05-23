@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.member.dto.resDto;
+package com.souf.soufwebsite.domain.member.dto.ResDto;
 
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.entity.Member;
