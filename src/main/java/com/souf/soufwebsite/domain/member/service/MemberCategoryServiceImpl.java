@@ -32,6 +32,7 @@ public class MemberCategoryServiceImpl implements MemberCategoryService {
         FirstCategory first = categoryService.findIfFirstIdExists(dto.firstCategory());
         SecondCategory second = categoryService.findIfSecondIdExists(dto.secondCategory());
         ThirdCategory third = categoryService.findIfThirdIdExists(dto.thirdCategory());
+        validateCategoryHierarchy(first, second, third);
 
         MemberCategoryMapping mapping = MemberCategoryMapping.of(member, first, second, third);
         member.addCategory(mapping);
@@ -57,6 +58,7 @@ public class MemberCategoryServiceImpl implements MemberCategoryService {
         FirstCategory first = categoryService.findIfFirstIdExists(newDto.firstCategory());
         SecondCategory second = categoryService.findIfSecondIdExists(newDto.secondCategory());
         ThirdCategory third = categoryService.findIfThirdIdExists(newDto.thirdCategory());
+        validateCategoryHierarchy(first, second, third);
 
         MemberCategoryMapping newMapping = MemberCategoryMapping.of(member, first, second, third);
         member.updateCategory(oldDto, newMapping);
@@ -77,4 +79,14 @@ public class MemberCategoryServiceImpl implements MemberCategoryService {
                 ))
                 .toList();
     }
+
+    private void validateCategoryHierarchy(FirstCategory first, SecondCategory second, ThirdCategory third) {
+        if (!second.getFirstCategory().getId().equals(first.getId())) {
+            throw new IllegalArgumentException("해당 SecondCategory는 FirstCategory의 하위가 아닙니다.");
+        }
+        if (!third.getSecondCategory().getId().equals(second.getId())) {
+            throw new IllegalArgumentException("해당 ThirdCategory는 SecondCategory의 하위가 아닙니다.");
+        }
+    }
+
 }
