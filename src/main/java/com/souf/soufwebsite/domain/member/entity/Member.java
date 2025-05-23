@@ -46,11 +46,11 @@ public class Member extends BaseEntity {
     @Size(min = 2, max = 20)
     private String nickname;
 
-    @Size(max = 100)
-    private String intro;
-
     @Enumerated(EnumType.STRING)
     private RoleType role;
+
+    @Size(max = 100)
+    private String intro;
 
     @Column(length = 300)
     private String personalUrl;
@@ -79,6 +79,7 @@ public class Member extends BaseEntity {
         if (dto.username() != null) this.username = dto.username();
         if (dto.nickname() != null) this.nickname = dto.nickname();
         if (dto.intro() != null) this.intro = dto.intro();
+        if (dto.personalUrl() != null) this.personalUrl = dto.personalUrl();
     }
 
     public void updateRole(RoleType newRole) {
