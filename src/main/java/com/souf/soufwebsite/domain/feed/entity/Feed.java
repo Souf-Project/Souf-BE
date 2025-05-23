@@ -1,9 +1,12 @@
 package com.souf.soufwebsite.domain.feed.entity;
 
-import com.souf.soufwebsite.domain.file.entity.File;
+import com.souf.soufwebsite.domain.feed.dto.FeedReqDto;
+import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,47 +25,69 @@ public class Feed extends BaseEntity {
     @Column(name = "feed_id")
     private Long id;
 
+    @NotEmpty
+    @Column(nullable = false)
+    private String topic;
+
     @Lob
+    @NotNull
+    @Column(nullable = false)
     private String content;
+
+    @NotNull
+    @Column(nullable = false)
+    private int viewCount;
+
+    @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FeedTag> feedTags = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
     @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<File> files = new ArrayList<>();
+    private List<Media> media = new ArrayList<>();
 
 
     @Builder
-    private Feed(String content, Member member, List<File> files) {
-        if (files == null || files.isEmpty()) {
-            throw new IllegalArgumentException("파일이 최소 1개 이상 필요합니다.");
-        }
+    private Feed(String topic, String content, Member member) {
+        this.topic = topic;
         this.content = content;
         this.member = member;
-        files.forEach(this::addFile);
+        this.viewCount = 0;
     }
 
-    public static Feed of(String content, Member member, List<File> files) {
+    public static Feed of(FeedReqDto createReqDto, Member member) {
         return Feed.builder()
-                .content(content)
+                .topic(createReqDto.topic())
+                .content(createReqDto.content())
                 .member(member)
-                .files(files)
                 .build();
     }
 
-    public void updateContent(String content) {
-        this.content = content;
+    public void updateContent(FeedReqDto reqDto) {
+        this.topic = reqDto.topic();
+        this.content = reqDto.content();
+        this.feedTags.clear();
+        this.media.clear();
     }
 
     // 연관관계 편의 메서드
-    public void addFile(File file) {
-        files.add(file);
-        file.setFeed(this);
+    public void addFileOnFeed(Media media){
+        this.media.add(media);
+        media.assignToFeed(this);
     }
 
-    public void removeFile(File file) {
-        files.remove(file);
-        file.setFeed(this);
+    public void addFeedTagOnFeed(FeedTag feedTag){
+        this.feedTags.add(feedTag);
+    }
+
+    public void removeMedia(Media media) {
+        this.media.remove(media);
+        media.setFeed(this);
+    }
+
+    public void addViewCount(){
+        this.viewCount += 1;
     }
 }

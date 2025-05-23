@@ -1,8 +1,8 @@
 package com.souf.soufwebsite.domain.member.entity;
 
 import com.souf.soufwebsite.domain.feed.entity.Feed;
-import com.souf.soufwebsite.domain.file.entity.File;
-import com.souf.soufwebsite.domain.member.dto.reqDto.UpdateReqDto;
+import com.souf.soufwebsite.domain.file.entity.Media;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
@@ -55,8 +55,8 @@ public class Member extends BaseEntity {
     private RoleType role;
 
     @OneToOne
-    @JoinColumn(name = "file_id")
-    private File file;
+    @JoinColumn(name = "media_id")
+    private Media media;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Feed> feeds = new ArrayList<>();

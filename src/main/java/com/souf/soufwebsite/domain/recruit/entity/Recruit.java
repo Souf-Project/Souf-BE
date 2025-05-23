@@ -1,13 +1,10 @@
 package com.souf.soufwebsite.domain.recruit.entity;
 
-import com.souf.soufwebsite.domain.file.entity.File;
+import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
-import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
-import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
-import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
@@ -61,7 +58,7 @@ public class Recruit extends BaseEntity {
     private Member member;
 
     @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<File> files = new ArrayList<>();
+    private List<Media> media = new ArrayList<>();
 
     @Builder
     public Recruit(String title, String content, String region, LocalDateTime deadline, String payment,
@@ -96,9 +93,9 @@ public class Recruit extends BaseEntity {
         this.preferentialTreatment = reqDto.preferentialTreatment();
     }
 
-    public void addFileOnRecruit(File file){
-        this.files.add(file);
-        file.assignToRecruit(this);
+    public void addMediaOnRecruit(Media media){
+        this.media.add(media);
+        media.assignToRecruit(this);
     }
 
     public void addCategory(RecruitCategoryMapping recruitCategoryMapping){

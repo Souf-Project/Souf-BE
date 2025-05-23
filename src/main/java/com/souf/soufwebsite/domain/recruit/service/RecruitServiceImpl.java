@@ -1,11 +1,10 @@
 package com.souf.soufwebsite.domain.recruit.service;
 
-import com.souf.soufwebsite.domain.file.dto.FileReqDto;
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
-import com.souf.soufwebsite.domain.file.entity.File;
+import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.service.FileService;
-import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitCreateReqDto;
+import com.souf.soufwebsite.domain.recruit.dto.RecruitCreateResDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitResDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitSimpleResDto;
@@ -43,25 +42,25 @@ public class RecruitServiceImpl implements RecruitService {
 
     @Override
     @Transactional
-    public RecruitCreateReqDto createRecruit(RecruitReqDto reqDto) {
+    public RecruitCreateResDto createRecruit(RecruitReqDto reqDto) {
         Member member = getCurrentUser();
         Recruit recruit = Recruit.of(reqDto, member);
         recruit = recruitRepository.save(recruit);
         injectCategories(reqDto, recruit);
 
-        List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl(reqDto.originalFileNames());
+        List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("recruit", reqDto.originalFileNames());
 
-        return new RecruitCreateReqDto(recruit.getId(), presignedUrlResDtos);
+        return new RecruitCreateResDto(recruit.getId(), presignedUrlResDtos);
     }
 
     @Override
     @Transactional
-    public void uploadRecruitMedia(FileReqDto reqDto) {
+    public void uploadRecruitMedia(MediaReqDto reqDto) {
         Recruit recruit = findIfRecruitExist(reqDto.postId());
-        List<File> fileList = fileService.uploadMetadata(reqDto);
+        List<Media> mediaList = fileService.uploadMetadata(reqDto);
 
-        for(File f : fileList){
-            recruit.addFileOnRecruit(f);
+        for(Media f : mediaList){
+            recruit.addMediaOnRecruit(f);
         }
     }
 

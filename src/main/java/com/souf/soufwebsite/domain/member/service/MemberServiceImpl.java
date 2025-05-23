@@ -1,12 +1,14 @@
 package com.souf.soufwebsite.domain.member.service;
 
-import com.souf.soufwebsite.domain.member.dto.reqDto.ResetReqDto;
-import com.souf.soufwebsite.domain.member.dto.reqDto.SigninReqDto;
-import com.souf.soufwebsite.domain.member.dto.reqDto.SignupReqDto;
-import com.souf.soufwebsite.domain.member.dto.reqDto.UpdateReqDto;
-import com.souf.soufwebsite.domain.member.dto.resDto.UserResDto;
+import com.souf.soufwebsite.domain.member.dto.*;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.ResetReqDto;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.SigninReqDto;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.SignupReqDto;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
+import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.global.email.EmailService;
 import com.souf.soufwebsite.global.jwt.JwtService;
@@ -61,9 +63,12 @@ public class MemberServiceImpl implements MemberService {
 
         Authentication authentication = authenticationManager.authenticate(token);
         String email = authentication.getName();
-        System.out.println("email = " + email);
 
-        String accessToken = jwtService.createAccessToken(email);
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+        RoleType role = member.getRole();
+
+        String accessToken = jwtService.createAccessToken(email, role);
         String refreshToken = jwtService.createRefreshToken(email);
 
         redisTemplate.opsForValue().set("refresh:" + email, refreshToken, jwtService.getExpiration(refreshToken), TimeUnit.MILLISECONDS);
@@ -115,7 +120,7 @@ public class MemberServiceImpl implements MemberService {
     @Transactional
     public void updateUserInfo(UpdateReqDto reqDto) {
         Long memberId = getCurrentUser().getId();
-        System.out.println("memberId = " + memberId);
+
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("사용자 없음"));
 
@@ -124,17 +129,17 @@ public class MemberServiceImpl implements MemberService {
 
     //회원 목록 조회
     @Override
-    public List<UserResDto> getMembers() {
+    public List<MemberResDto> getMembers() {
         List<Member> members = memberRepository.findAll();
         return members.stream()
-                .map(UserResDto::from)
+                .map(MemberResDto::from)
                 .collect(Collectors.toList());
     }
 
     //회원 조회
     @Override
-    public UserResDto getMemberById(Long id) {
+    public MemberResDto getMemberById(Long id) {
         Member member = memberRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
-        return UserResDto.from(member);
+        return MemberResDto.from(member);
     }
 }

@@ -1,7 +1,7 @@
 package com.souf.soufwebsite.domain.recruit.controller;
 
-import com.souf.soufwebsite.domain.file.dto.FileReqDto;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitCreateReqDto;
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.recruit.dto.RecruitCreateResDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitResDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitSimpleResDto;
@@ -18,20 +18,20 @@ import static com.souf.soufwebsite.domain.recruit.controller.RecruitSuccessMessa
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/recruit")
-public class RecruitController {
+public class RecruitController implements RecruitApiSpecification{
 
     private final RecruitService recruitService;
 
     @PostMapping
-    public SuccessResponse<RecruitCreateReqDto> createRecruit(@Valid @RequestBody RecruitReqDto recruitReqDto) {
-        RecruitCreateReqDto recruitCreateReqDto = recruitService.createRecruit(recruitReqDto);
+    public SuccessResponse<RecruitCreateResDto> createRecruit(@Valid @RequestBody RecruitReqDto recruitReqDto) {
+        RecruitCreateResDto recruitCreateResDto = recruitService.createRecruit(recruitReqDto);
 
-        return new SuccessResponse<>(recruitCreateReqDto, RECRUIT_CREATE.getMessage());
+        return new SuccessResponse<>(recruitCreateResDto, RECRUIT_CREATE.getMessage());
     }
 
     @PostMapping("/upload")
-    public SuccessResponse uploadMetadata(@Valid @RequestBody FileReqDto fileReqDto){
-        recruitService.uploadRecruitMedia(fileReqDto);
+    public SuccessResponse uploadMetadata(@Valid @RequestBody MediaReqDto mediaReqDto){
+        recruitService.uploadRecruitMedia(mediaReqDto);
 
         return new SuccessResponse(RECRUIT_FILE_METADATA_CREATE.getMessage());
     }

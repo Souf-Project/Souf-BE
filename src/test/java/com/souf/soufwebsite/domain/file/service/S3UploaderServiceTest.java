@@ -35,7 +35,7 @@ class S3UploaderServiceTest {
                 .thenReturn(presignedUrl);
 
         //when
-        PresignedUrlResDto fileName = s3UploaderService.generatePresignedUploadUrl("originalFileName");
+        PresignedUrlResDto fileName = s3UploaderService.generatePresignedUploadUrl("recruit", "originalFileName");
         System.out.println(fileName);
 
 

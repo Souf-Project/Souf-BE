@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -65,11 +66,35 @@ public class SecurityConfig {
 
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .authorizeHttpRequests((authorize) -> authorize
-                        .anyRequest().permitAll());
-                        //.requestMatchers("/login").permitAll() // 로그인한 유저에게만 서비스 제공
-                        //.anyRequest().authenticated())
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        http
+                .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
+                        authorizationManagerRequestMatcherRegistry
+
+                                // 공용 리소스는 누구나 접근 가능
+                                .requestMatchers(
+                                        "/favicon.ico",
+                                        "/swagger-ui/**",
+                                        "/v3/api-docs/**",
+                                        "/error"
+                                ).permitAll()
+
+                                // GET 요청은 STUDENT, MEMBER, ADMIN 모두 접근 가능
+                                .requestMatchers(HttpMethod.GET, "/api/v1/feed/**").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/recruit/**").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/member/**").authenticated()
+
+                                // 기업 사용자 권한
+                                .requestMatchers("/api/v1/recruit/**").hasRole("MEMBER")
+
+                                // 학생 사용자 권한
+                                .requestMatchers("/api/v1/feed/**").hasRole("STUDENT")
+
+                                // 인증, 회원가입은 모두 허용
+                                .requestMatchers("/api/v1/auth/**").permitAll()
+                                .anyRequest().authenticated()
+                );
 
         return http.build();
     }

@@ -1,10 +1,10 @@
 package com.souf.soufwebsite.domain.member.controller;
 
-import com.souf.soufwebsite.domain.member.dto.reqDto.ResetReqDto;
-import com.souf.soufwebsite.domain.member.dto.reqDto.SigninReqDto;
-import com.souf.soufwebsite.domain.member.dto.reqDto.SignupReqDto;
-import com.souf.soufwebsite.domain.member.dto.reqDto.UpdateReqDto;
-import com.souf.soufwebsite.domain.member.dto.resDto.UserResDto;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.ResetReqDto;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.SigninReqDto;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.SignupReqDto;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
+import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.service.MemberService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
@@ -63,12 +63,12 @@ public class MemberController {
     }
 
     @GetMapping("/member")
-    public SuccessResponse<List<UserResDto>> getMembers() {
+    public SuccessResponse<List<MemberResDto>> getMembers() {
         return new SuccessResponse<>(memberService.getMembers());
     }
 
     @GetMapping("/member/{id}")
-    public SuccessResponse<UserResDto> getMemberById(@PathVariable Long id) {
+    public SuccessResponse<MemberResDto> getMemberById(@PathVariable Long id) {
         return new SuccessResponse<>(memberService.getMemberById(id));
     }
 }
