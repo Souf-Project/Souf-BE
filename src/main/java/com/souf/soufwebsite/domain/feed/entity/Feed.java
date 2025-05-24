@@ -31,7 +31,7 @@ public class Feed extends BaseEntity {
 
     @Lob
     @NotNull
-    @Column(nullable = false)
+    @Column(length = 300, nullable = false)
     private String content;
 
     @NotNull
@@ -48,6 +48,10 @@ public class Feed extends BaseEntity {
     @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Media> media = new ArrayList<>();
 
+    @NotNull
+    @Column(nullable = false)
+    private Boolean recruitable;
+
 
     @Builder
     private Feed(String topic, String content, Member member) {
@@ -55,6 +59,7 @@ public class Feed extends BaseEntity {
         this.content = content;
         this.member = member;
         this.viewCount = 0L;
+        this.recruitable = false;
     }
 
     public static Feed of(FeedReqDto createReqDto, Member member) {

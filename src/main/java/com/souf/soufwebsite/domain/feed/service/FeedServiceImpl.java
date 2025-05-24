@@ -1,6 +1,9 @@
 package com.souf.soufwebsite.domain.feed.service;
 
-import com.souf.soufwebsite.domain.feed.dto.*;
+import com.souf.soufwebsite.domain.feed.dto.FeedDetailResDto;
+import com.souf.soufwebsite.domain.feed.dto.FeedReqDto;
+import com.souf.soufwebsite.domain.feed.dto.FeedResDto;
+import com.souf.soufwebsite.domain.feed.dto.FeedSimpleResDto;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.exception.NotFoundFeedException;
 import com.souf.soufwebsite.domain.feed.exception.NotValidAuthenticationException;
@@ -21,7 +24,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -111,6 +113,15 @@ public class FeedServiceImpl implements FeedService {
         redisUtil.deleteKey(feedViewKey);
 
         feedRepository.delete(feed);
+    }
+
+    @Override
+    public Page<FeedSimpleResDto> getPopularFeeds(Pageable pageable) {
+        Page<Feed> popularFeeds = feedRepository.findByOrderByViewCountDesc(pageable);
+
+         return popularFeeds.map(
+                feed -> FeedSimpleResDto.from(feed, MediaResDto.fromFeedThumbnail(feed))
+        );
     }
 
     private void verifyIfFeedIsMine(Feed feed, Member member) {

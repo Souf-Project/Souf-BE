@@ -1,6 +1,9 @@
 package com.souf.soufwebsite.domain.feed.controller;
 
-import com.souf.soufwebsite.domain.feed.dto.*;
+import com.souf.soufwebsite.domain.feed.dto.FeedDetailResDto;
+import com.souf.soufwebsite.domain.feed.dto.FeedReqDto;
+import com.souf.soufwebsite.domain.feed.dto.FeedResDto;
+import com.souf.soufwebsite.domain.feed.dto.FeedSimpleResDto;
 import com.souf.soufwebsite.domain.feed.service.FeedService;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
@@ -11,10 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-
 import static com.souf.soufwebsite.domain.feed.controller.FeedSuccessMessage.*;
-import static com.souf.soufwebsite.domain.recruit.controller.RecruitSuccessMessage.RECRUIT_FILE_METADATA_CREATE;
 
 @RestController
 @RequiredArgsConstructor
@@ -35,7 +35,7 @@ public class FeedController implements FeedApiSpecification{
     public SuccessResponse uploadMetadata(@Valid @RequestBody MediaReqDto mediaReqDto){
         feedService.uploadFeedMedia(mediaReqDto);
 
-        return new SuccessResponse(RECRUIT_FILE_METADATA_CREATE.getMessage());
+        return new SuccessResponse(FEED_FILE_METADATA_CREATE.getMessage());
     }
 
     @GetMapping("/{memberId}")
@@ -66,5 +66,10 @@ public class FeedController implements FeedApiSpecification{
         return new SuccessResponse<>(FEED_DELETE.getMessage());
     }
 
-    
+    @GetMapping("/popular")
+    public SuccessResponse<Page<FeedSimpleResDto>> getPopularFeeds(
+            @PageableDefault(size = 12) Pageable pageable){
+        return new SuccessResponse<>(feedService.getPopularFeeds(pageable),
+                FEED_GET_POPULATION.getMessage());
+    }
 }
