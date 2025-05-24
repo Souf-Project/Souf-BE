@@ -4,6 +4,7 @@ import com.souf.soufwebsite.domain.chat.dto.ChatRoomSummaryDto;
 import com.souf.soufwebsite.domain.chat.entity.ChatMessage;
 import com.souf.soufwebsite.domain.chat.entity.ChatRoom;
 import com.souf.soufwebsite.domain.chat.repository.ChatMessageRepository;
+import com.souf.soufwebsite.domain.chat.repository.ChatRoomNativeRepository;
 import com.souf.soufwebsite.domain.chat.repository.ChatRoomRepository;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import lombok.RequiredArgsConstructor;
@@ -16,41 +17,20 @@ import java.util.List;
 public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
-    private final ChatMessageRepository chatMessageRepository;
+    private final ChatRoomNativeRepository chatRoomNativeRepository;
 
     public ChatRoom findOrCreateRoom(Member sender, Member receiver) {
+        if (sender.equals(receiver)) {
+            throw new IllegalArgumentException("자기 자신과는 채팅할 수 없습니다.");
+        }
+
         return chatRoomRepository.findBySenderAndReceiver(sender, receiver)
                 .or(() -> chatRoomRepository.findBySenderAndReceiver(receiver, sender))
                 .orElseGet(() -> chatRoomRepository.save(new ChatRoom(sender, receiver)));
     }
 
     public List<ChatRoomSummaryDto> getChatRoomsForUser(Member member) {
-        List<ChatRoom> rooms = chatRoomRepository
-                .findBySenderOrReceiverOrderByCreatedTimeDesc(member, member);
-
-        return rooms.stream()
-                .map(room -> {
-                    Member opponent = room.getSender().equals(member) ? room.getReceiver() : room.getSender();
-
-                    // 마지막 메시지 가져오기
-                    ChatMessage lastMessage = chatMessageRepository
-                            .findTopByChatRoomOrderByCreatedTimeDesc(room)
-                            .orElse(null);
-
-                    String lastContent = lastMessage != null ? lastMessage.getContent() : "";
-
-                    // 안 읽은 메시지 수
-                    int unreadCount = chatMessageRepository
-                            .countByChatRoomAndSenderNotAndIsReadFalse(room, member);
-
-                    return new ChatRoomSummaryDto(
-                            room.getId(),
-                            opponent.getNickname(),
-                            lastContent,
-                            unreadCount
-                    );
-                })
-                .toList();
+        return chatRoomNativeRepository.getChatRoomSummaries(member.getId());
     }
 
     public ChatRoom getRoomById(Long roomId) {

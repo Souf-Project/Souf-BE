@@ -13,6 +13,7 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -38,15 +39,21 @@ public class ChatController {
         Member sender = userDetails.getMember();
         ChatRoom room = chatRoomService.getRoomById(request.roomId());
 
+        if (!room.hasParticipant(sender)) {
+            throw new AccessDeniedException("채팅방에 참여하지 않은 유저입니다.");
+        }
+
         chatMessageService.saveMessage(room, sender, request.content(), request.type());
 
         ChatMessageResDto response = new ChatMessageResDto(
                 room.getId(),
                 sender.getNickname(),
                 request.type(),
-                request.content()
+                request.content(),
+                false
         );
 
-        messagingTemplate.convertAndSend("/topic/chatroom/" + room.getId(), response);
+        messagingTemplate.convertAndSend("/topic/chatroom." + room.getId(), response);
+
     }
 }

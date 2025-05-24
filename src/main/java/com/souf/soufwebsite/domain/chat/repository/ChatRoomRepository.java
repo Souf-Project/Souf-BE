@@ -9,6 +9,4 @@ import java.util.Optional;
 
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     Optional<ChatRoom> findBySenderAndReceiver(Member sender, Member receiver);
-
-    List<ChatRoom> findBySenderOrReceiverOrderByCreatedTimeDesc(Member sender, Member receiver);
 }

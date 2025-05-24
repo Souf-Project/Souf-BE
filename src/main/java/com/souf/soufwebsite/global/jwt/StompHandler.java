@@ -14,6 +14,7 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -66,7 +67,6 @@ public class StompHandler implements ChannelInterceptor {
                     principal = (Authentication) sessionUser;
                 }
             }
-
             if (principal instanceof Authentication auth &&
                     auth.getPrincipal() instanceof UserDetailsImpl userDetails) {
 
@@ -75,6 +75,10 @@ public class StompHandler implements ChannelInterceptor {
                     Member member = userDetails.getMember();
                     Long roomId = extractRoomId(destination);
                     ChatRoom room = chatRoomService.getRoomById(roomId);
+
+                    if (!room.hasParticipant(member)) {
+                        throw new AccessDeniedException("채팅방에 참여하지 않은 유저입니다.");
+                    }
                     chatMessageService.markMessagesAsRead(room, member);
                 }
             }

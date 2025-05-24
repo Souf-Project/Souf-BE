@@ -4,6 +4,7 @@ public record ChatMessageResDto(
         Long roomId,
         String sender,
         MessageType type,
-        String content
+        String content,
+        boolean isRead
 ) {
 }

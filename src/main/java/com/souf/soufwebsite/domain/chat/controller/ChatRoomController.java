@@ -65,7 +65,8 @@ public class ChatRoomController {
                         msg.getChatRoom().getId(),
                         msg.getSender().getNickname(),
                         msg.getType(),
-                        msg.getContent()
+                        msg.getContent(),
+                        msg.isRead()
                 ))
                 .toList();
         return ResponseEntity.ok(result);

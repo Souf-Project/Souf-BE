@@ -2,6 +2,7 @@ package com.souf.soufwebsite.global.config;
 
 import com.souf.soufwebsite.global.jwt.StompHandler;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -16,10 +17,24 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final StompHandler stompHandler;
 
+    @Value("${websocket.relay.host}")
+    private String relayHost;
+    @Value("${websocket.relay.port}")
+    private int relayPort;
+    @Value("${websocket.relay.username}")
+    private String relayUsername;
+    @Value("${websocket.relay.password}")
+    private String relayPassword;
+
+
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic"); // 구독 prefix
         registry.setApplicationDestinationPrefixes("/app"); // 발행 prefix
+        registry.enableStompBrokerRelay("/topic", "/queue")
+                .setRelayHost(relayHost)
+                .setRelayPort(relayPort)
+                .setClientLogin(relayUsername)
+                .setClientPasscode(relayPassword);
     }
 
     @Override

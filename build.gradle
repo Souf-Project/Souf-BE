@@ -67,6 +67,9 @@ dependencies {
 
     // Image Processing
     implementation "com.sksamuel.scrimage:scrimage-webp:4.3.0"
+
+    // stomp
+    implementation 'io.projectreactor.netty:reactor-netty:1.1.12'
 }
 
 tasks.named('test') {
