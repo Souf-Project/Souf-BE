@@ -1,10 +1,7 @@
 package com.souf.soufwebsite.domain.recruit.controller;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitCreateResDto;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitResDto;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitSimpleResDto;
+import com.souf.soufwebsite.domain.recruit.dto.*;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -48,4 +45,8 @@ public interface RecruitApiSpecification {
     @Operation(summary = "특정 공고문 삭제", description = "사용자 본인이 소유한 공고문에 대해 삭제합니다.")
     @DeleteMapping("/{recruitId}")
     SuccessResponse deleteRecruit(@PathVariable(name = "recruitId") Long recruitId);
+
+    @GetMapping("/popular")
+    SuccessResponse<Page<RecruitPopularityResDto>> getPopularRecruits(
+            @PageableDefault(size = 6) Pageable pageable);
 }

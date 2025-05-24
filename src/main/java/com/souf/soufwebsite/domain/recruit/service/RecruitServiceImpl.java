@@ -5,10 +5,7 @@ import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.entity.Member;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitCreateResDto;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitResDto;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitSimpleResDto;
+import com.souf.soufwebsite.domain.recruit.dto.*;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.entity.RecruitCategoryMapping;
 import com.souf.soufwebsite.domain.recruit.exception.NotFoundRecruitException;
@@ -116,6 +113,15 @@ public class RecruitServiceImpl implements RecruitService {
         redisUtil.deleteKey(recruitViewKey);
 
         recruitRepository.delete(recruit);
+    }
+
+    @Override
+    public Page<RecruitPopularityResDto> getPopularRecruits(Pageable pageable) {
+        Page<Recruit> popularRecruits = recruitRepository.findByOrderByViewCountDesc(pageable);
+
+        return popularRecruits.map(
+                RecruitPopularityResDto::of
+        );
     }
 
     private void verifyIfRecruitIsMine(Recruit recruit, Member member) {
