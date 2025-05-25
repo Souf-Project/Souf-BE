@@ -149,11 +149,9 @@ public class MemberServiceImpl implements MemberService {
 
     //회원 목록 조회
     @Override
-    public List<MemberResDto> getMembers(Pageable pageable) {
-        List<Member> members = memberRepository.findAll();
-        return members.stream()
-                .map(MemberResDto::from)
-                .collect(Collectors.toList());
+    public Page<MemberResDto> getMembers(Pageable pageable) {
+        return memberRepository.findAll(pageable)
+                .map(MemberResDto::from);
     }
 
     //회원 조회
