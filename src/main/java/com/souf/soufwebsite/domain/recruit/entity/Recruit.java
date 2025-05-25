@@ -108,4 +108,8 @@ public class Recruit extends BaseEntity {
         }
         categories.clear();
     }
+
+    public void increaseRecruitCount() {
+        this.recruitCount++;
+    }
 }

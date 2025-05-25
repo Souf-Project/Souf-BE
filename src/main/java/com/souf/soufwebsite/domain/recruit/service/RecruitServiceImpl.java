@@ -89,6 +89,14 @@ public class RecruitServiceImpl implements RecruitService {
         return RecruitResDto.from(recruit, member.getNickname());
     }
 
+    @Transactional(readOnly = true)
+    public Page<RecruitSimpleResDto> getMyRecruits(Pageable pageable) {
+        Member me = getCurrentUser();
+        Page<Recruit> page = recruitRepository.findByMember(me, pageable);
+        
+    }
+
+
     @Transactional
     @Override
     public void updateRecruit(Long recruitId, RecruitReqDto reqDto) {

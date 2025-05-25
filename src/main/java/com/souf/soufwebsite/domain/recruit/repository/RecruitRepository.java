@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.recruit.repository;
 
+import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,4 +16,6 @@ public interface RecruitRepository extends JpaRepository<Recruit, Long>, Recruit
     void increaseViewCount(@Param("recruitId") Long recruitId, @Param("count") Long count);
 
     Page<Recruit> findByOrderByViewCountDesc(Pageable pageable);
+
+    Page<Recruit> findByMember(Member member, Pageable pageable);
 }
