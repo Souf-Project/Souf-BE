@@ -1,16 +1,17 @@
 package com.souf.soufwebsite.domain.recruit.entity;
 
 import com.souf.soufwebsite.domain.file.entity.Media;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
 import com.souf.soufwebsite.global.common.BaseEntity;
-import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Recruit extends BaseEntity {
     @Id
@@ -28,7 +30,6 @@ public class Recruit extends BaseEntity {
     @Column(nullable = false, columnDefinition = "VARCHAR(50)")
     private String title;
 
-    @Lob
     @Column(nullable = false)
     private String content;
 
@@ -46,9 +47,17 @@ public class Recruit extends BaseEntity {
     @Column
     private String preferentialTreatment;
 
-    @Column
-    private Long recruiter;
+    @Column(nullable = false)
+    private Long recruitCount;
 
+    @Column
+    private Long viewCount;
+
+    @NotNull
+    @Column(nullable = false)
+    private boolean recruitable;
+
+    @Builder.Default
     @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
     List<RecruitCategoryMapping> categories = new ArrayList<>();
 
@@ -57,21 +66,9 @@ public class Recruit extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
+    @Builder.Default
     @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Media> media = new ArrayList<>();
-
-    @Builder
-    public Recruit(String title, String content, String region, LocalDateTime deadline, String payment,
-                   String preferentialTreatment, Member member, List<CategoryDto> categoryDtoList) {
-        this.title = title;
-        this.content = content;
-        this.region = region;
-        this.deadline = deadline;
-        this.payment = payment;
-        this.preferentialTreatment = preferentialTreatment;
-        this.member = member;
-        this.recruiter = 0L;
-    }
 
     public static Recruit of(RecruitReqDto reqDto, Member member) {
         return Recruit.builder()
@@ -81,6 +78,9 @@ public class Recruit extends BaseEntity {
                 .deadline(reqDto.deadline())
                 .payment(reqDto.payment())
                 .preferentialTreatment(reqDto.preferentialTreatment())
+                .recruitCount(0L)
+                .viewCount(0L)
+                .recruitable(true)
                 .member(member)
                 .build();
     }

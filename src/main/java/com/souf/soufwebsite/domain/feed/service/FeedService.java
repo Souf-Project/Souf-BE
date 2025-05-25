@@ -1,11 +1,12 @@
 package com.souf.soufwebsite.domain.feed.service;
 
-import com.souf.soufwebsite.domain.feed.dto.*;
+import com.souf.soufwebsite.domain.feed.dto.FeedDetailResDto;
+import com.souf.soufwebsite.domain.feed.dto.FeedReqDto;
+import com.souf.soufwebsite.domain.feed.dto.FeedResDto;
+import com.souf.soufwebsite.domain.feed.dto.FeedSimpleResDto;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import java.io.IOException;
 
 public interface FeedService {
 
@@ -20,4 +21,6 @@ public interface FeedService {
     FeedResDto updateFeed(Long feedId, FeedReqDto reqDto);
 
     void deleteFeed(Long feedId);
+
+    Page<FeedSimpleResDto> getPopularFeeds(Pageable pageable);
 }

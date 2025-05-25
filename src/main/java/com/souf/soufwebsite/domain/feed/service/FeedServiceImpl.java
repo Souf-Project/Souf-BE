@@ -1,6 +1,9 @@
 package com.souf.soufwebsite.domain.feed.service;
 
-import com.souf.soufwebsite.domain.feed.dto.*;
+import com.souf.soufwebsite.domain.feed.dto.FeedDetailResDto;
+import com.souf.soufwebsite.domain.feed.dto.FeedReqDto;
+import com.souf.soufwebsite.domain.feed.dto.FeedResDto;
+import com.souf.soufwebsite.domain.feed.dto.FeedSimpleResDto;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.exception.NotFoundFeedException;
 import com.souf.soufwebsite.domain.feed.exception.NotValidAuthenticationException;
@@ -12,6 +15,7 @@ import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
+import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +24,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -32,6 +35,7 @@ public class FeedServiceImpl implements FeedService {
     private final MemberRepository memberRepository;
     private final FileService fileService;
     private final TagService tagService;
+    private final RedisUtil redisUtil;
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
@@ -45,6 +49,9 @@ public class FeedServiceImpl implements FeedService {
         Feed feed = Feed.of(reqDto, member);
         feed = feedRepository.save(feed);
         tagService.createFeedTag(feed, reqDto.tags());
+
+        String feedViewKey = getFeedViewKey(feed.getId());
+        redisUtil.set(feedViewKey);
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
 
@@ -74,9 +81,12 @@ public class FeedServiceImpl implements FeedService {
     public FeedDetailResDto getFeedById(Long memberId, Long feedId) {
         findIfMemberExists(memberId);
         Feed feed = findIfFeedExist(feedId);
-        feed.addViewCount();
 
-        return FeedDetailResDto.from(feed);
+        String feedViewKey = getFeedViewKey(feed.getId());
+        redisUtil.increaseCount(feedViewKey);
+        Long viewCountFromRedis = redisUtil.get(feedViewKey);
+
+        return FeedDetailResDto.from(feed, viewCountFromRedis);
     }
 
     @Transactional
@@ -99,7 +109,19 @@ public class FeedServiceImpl implements FeedService {
         Feed feed = findIfFeedExist(feedId);
         verifyIfFeedIsMine(feed, member);
 
+        String feedViewKey = getFeedViewKey(feed.getId());
+        redisUtil.deleteKey(feedViewKey);
+
         feedRepository.delete(feed);
+    }
+
+    @Override
+    public Page<FeedSimpleResDto> getPopularFeeds(Pageable pageable) {
+        Page<Feed> popularFeeds = feedRepository.findByOrderByViewCountDesc(pageable);
+
+         return popularFeeds.map(
+                feed -> FeedSimpleResDto.from(feed, MediaResDto.fromFeedThumbnail(feed))
+        );
     }
 
     private void verifyIfFeedIsMine(Feed feed, Member member) {
@@ -115,5 +137,9 @@ public class FeedServiceImpl implements FeedService {
 
     private Member findIfMemberExists(Long memberId) {
         return memberRepository.findById(memberId).orElseThrow(NotFoundFeedException::new);
+    }
+
+    private String getFeedViewKey(Long feedId) {
+        return "feed:view:" + feedId;
     }
 }
