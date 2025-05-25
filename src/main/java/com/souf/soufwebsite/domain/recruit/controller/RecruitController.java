@@ -1,17 +1,15 @@
 package com.souf.soufwebsite.domain.recruit.controller;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitCreateResDto;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitResDto;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitSimpleResDto;
+import com.souf.soufwebsite.domain.recruit.dto.*;
 import com.souf.soufwebsite.domain.recruit.service.RecruitService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 import static com.souf.soufwebsite.domain.recruit.controller.RecruitSuccessMessage.*;
 
@@ -37,11 +35,13 @@ public class RecruitController implements RecruitApiSpecification{
     }
 
     @GetMapping
-    public SuccessResponse<List<RecruitSimpleResDto>> getRecruits(@RequestParam(name = "firstCategory") Long first,
-                                                                  @RequestParam(name = "secondCategory") Long second,
-                                                                  @RequestParam(name = "thirdCategory") Long third) {
+    public SuccessResponse<Page<RecruitSimpleResDto>> getRecruits(
+            @RequestParam(name = "firstCategory") Long first,
+            @RequestParam(name = "secondCategory") Long second,
+            @RequestParam(name = "thirdCategory") Long third,
+            @PageableDefault(size = 12) Pageable pageable) {
         return new SuccessResponse<>(
-                recruitService.getRecruits(first, second, third),
+                recruitService.getRecruits(first, second, third, pageable),
                 RECRUIT_GET.getMessage());
     }
 
@@ -63,5 +63,14 @@ public class RecruitController implements RecruitApiSpecification{
     public SuccessResponse deleteRecruit(@PathVariable(name = "recruitId") Long recruitId) {
         recruitService.deleteRecruit(recruitId);
         return new SuccessResponse(RECRUIT_DELETE.getMessage());
+    }
+
+    @GetMapping("/popular")
+    public SuccessResponse<Page<RecruitPopularityResDto>> getPopularRecruits(
+            @PageableDefault(size = 6) Pageable pageable
+    ) {
+        return new SuccessResponse<>(
+                recruitService.getPopularRecruits(pageable),
+                RECRUIT_GET_POPULATION.getMessage());
     }
 }

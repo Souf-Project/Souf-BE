@@ -54,4 +54,7 @@ public interface FeedApiSpecification {
     SuccessResponse<?> deleteFeed(@PathVariable(name = "feedId") Long feedId);
 
 
+    @GetMapping("/popular")
+    SuccessResponse<Page<FeedSimpleResDto>> getPopularFeeds(
+            @PageableDefault(size = 12) Pageable pageable);
 }

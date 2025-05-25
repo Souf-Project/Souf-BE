@@ -11,15 +11,15 @@ import java.util.stream.Collectors;
 public record FeedDetailResDto(
         String topic,
         String content,
-        int view,
+        Long view,
         List<MediaResDto> mediaResDtos,
         LocalDateTime lastModifiedTime
 ) {
-    public static FeedDetailResDto from(Feed feed){
+    public static FeedDetailResDto from(Feed feed, Long feedViewCount){
         return new FeedDetailResDto(
                 feed.getTopic(),
             feed.getContent(),
-            feed.getViewCount(),
+            feed.getViewCount() + feedViewCount,
             convertToMediaResDto(feed.getMedia()),
             feed.getLastModifiedTime());
     }

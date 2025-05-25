@@ -80,6 +80,9 @@ public class SecurityConfig {
                                         "/error"
                                 ).permitAll()
 
+                                .requestMatchers("/api/v1/recruit/popular").permitAll()
+                                .requestMatchers("/api/v1/feed/popular").permitAll()
+
                                 // GET 요청은 STUDENT, MEMBER, ADMIN 모두 접근 가능
                                 .requestMatchers(HttpMethod.GET, "/api/v1/feed/**").authenticated()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/recruit/**").authenticated()
