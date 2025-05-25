@@ -10,7 +10,6 @@ public record MemberResDto(
         String email,
         String username,
         String nickname,
-        LocalDate birth,
         String intro,
         RoleType role
 
@@ -21,7 +20,6 @@ public record MemberResDto(
                 member.getEmail(),
                 member.getUsername(),
                 member.getNickname(),
-                member.getBirth(),
                 member.getIntro(),
                 member.getRole()
         );

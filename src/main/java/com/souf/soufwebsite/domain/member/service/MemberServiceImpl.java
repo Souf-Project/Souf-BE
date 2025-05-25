@@ -9,11 +9,16 @@ import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
+import com.souf.soufwebsite.domain.member.exception.NotAvailableEmailException;
+import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
+import com.souf.soufwebsite.domain.member.exception.NotMatchPasswordException;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.global.email.EmailService;
 import com.souf.soufwebsite.global.jwt.JwtService;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -46,12 +52,16 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void signup(SignupReqDto reqDto) {
         if (memberRepository.findByEmail(reqDto.email()).isPresent()) {
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+            throw new NotAvailableEmailException();
+        }
+
+        if (!reqDto.password().equals(reqDto.passwordCheck())) {
+            throw new NotMatchPasswordException();
         }
 
         String encodedPassword = passwordEncoder.encode(reqDto.password());
 
-        Member member = new Member(reqDto.email(), encodedPassword, reqDto.username(), reqDto.nickname());
+        Member member = new Member(reqDto.email(), encodedPassword, reqDto.username(), reqDto.nickname(), RoleType.MEMBER);
         memberRepository.save(member);
     }
 
@@ -65,7 +75,7 @@ public class MemberServiceImpl implements MemberService {
         String email = authentication.getName();
 
         Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+                .orElseThrow(NotFoundMemberException::new);
         RoleType role = member.getRole();
 
         String accessToken = jwtService.createAccessToken(email, role);
@@ -83,11 +93,11 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void resetPassword(ResetReqDto reqDto) {
         if (!reqDto.newPassword().equals(reqDto.confirmPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            throw new NotMatchPasswordException();
         }
 
         Member member = memberRepository.findByEmail(reqDto.email())
-                .orElseThrow(() -> new UsernameNotFoundException("해당 이메일을 찾을 수 없습니다."));
+                .orElseThrow(NotFoundMemberException::new);
 
         member.updatePassword(passwordEncoder.encode(reqDto.newPassword()));
         memberRepository.save(member);
@@ -110,6 +120,16 @@ public class MemberServiceImpl implements MemberService {
         String storedCode = redisTemplate.opsForValue().get(emailKey);
         if (storedCode != null && storedCode.equals(code)) {
             redisTemplate.delete(emailKey);
+
+            if (email.endsWith(".ac.kr")) {
+                Optional<Member> optionalMember = memberRepository.findByEmail(email);
+                optionalMember.ifPresent(member -> {
+                    if (member.getRole() != RoleType.STUDENT) {
+                        member.updateRole(RoleType.STUDENT);
+                    }
+                });
+            }
+
             return true;
         }
         return false;
@@ -122,14 +142,14 @@ public class MemberServiceImpl implements MemberService {
         Long memberId = getCurrentUser().getId();
 
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("사용자 없음"));
+                .orElseThrow(NotFoundMemberException::new);
 
         member.updateInfo(reqDto); // 도메인에 위임
     }
 
     //회원 목록 조회
     @Override
-    public List<MemberResDto> getMembers() {
+    public List<MemberResDto> getMembers(Pageable pageable) {
         List<Member> members = memberRepository.findAll();
         return members.stream()
                 .map(MemberResDto::from)
@@ -139,7 +159,19 @@ public class MemberServiceImpl implements MemberService {
     //회원 조회
     @Override
     public MemberResDto getMemberById(Long id) {
-        Member member = memberRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+        Member member = memberRepository.findById(id).orElseThrow(NotFoundMemberException::new);
         return MemberResDto.from(member);
+    }
+
+    @Override
+    public Page<MemberResDto> getMembersByCategory(Long first, Long second, Long third, Pageable pageable) {
+        Page<Member> result = memberRepository.findByCategories(first, second, third, pageable);
+        return result.map(MemberResDto::from);
+    }
+
+    @Override
+    public Page<MemberResDto> getMembersByNickname(String nickname, Pageable pageable) {
+        Page<Member> result = memberRepository.findByNicknameContainingIgnoreCase(nickname, pageable);
+        return result.map(MemberResDto::from);
     }
 }
