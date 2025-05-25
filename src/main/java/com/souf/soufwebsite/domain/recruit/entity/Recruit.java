@@ -5,6 +5,7 @@ import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -29,7 +30,6 @@ public class Recruit extends BaseEntity {
     @Column(nullable = false, columnDefinition = "VARCHAR(50)")
     private String title;
 
-    @Lob
     @Column(nullable = false)
     private String content;
 
@@ -47,11 +47,15 @@ public class Recruit extends BaseEntity {
     @Column
     private String preferentialTreatment;
 
-    @Column
+    @Column(nullable = false)
     private Long recruitCount;
 
     @Column
     private Long viewCount;
+
+    @NotNull
+    @Column(nullable = false)
+    private boolean recruitable;
 
     @Builder.Default
     @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -76,6 +80,7 @@ public class Recruit extends BaseEntity {
                 .preferentialTreatment(reqDto.preferentialTreatment())
                 .recruitCount(0L)
                 .viewCount(0L)
+                .recruitable(true)
                 .member(member)
                 .build();
     }

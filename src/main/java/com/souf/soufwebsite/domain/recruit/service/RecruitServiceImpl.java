@@ -10,7 +10,6 @@ import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.entity.RecruitCategoryMapping;
 import com.souf.soufwebsite.domain.recruit.exception.NotFoundRecruitException;
 import com.souf.soufwebsite.domain.recruit.exception.NotValidAuthenticationException;
-import com.souf.soufwebsite.domain.recruit.repository.RecruitCategoryMappingRepository;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
@@ -35,7 +34,6 @@ public class RecruitServiceImpl implements RecruitService {
 
     private final FileService fileService;
     private final RecruitRepository recruitRepository;
-    private final RecruitCategoryMappingRepository recruitCategoryMappingRepository;
     private final CategoryService categoryService;
     private final RedisUtil redisUtil;
 
@@ -48,8 +46,8 @@ public class RecruitServiceImpl implements RecruitService {
     public RecruitCreateResDto createRecruit(RecruitReqDto reqDto) {
         Member member = getCurrentUser();
         Recruit recruit = Recruit.of(reqDto, member);
-        recruit = recruitRepository.save(recruit);
         injectCategories(reqDto, recruit);
+        recruit = recruitRepository.save(recruit);
 
         String recruitViewKey = getRecruitViewKey(recruit.getId());
         redisUtil.set(recruitViewKey);
@@ -144,7 +142,6 @@ public class RecruitServiceImpl implements RecruitService {
             categoryService.validate(firstCategory.getId(), secondCategory.getId(), thirdCategory.getId());
             RecruitCategoryMapping recruitCategoryMapping = RecruitCategoryMapping.of(recruit, firstCategory, secondCategory, thirdCategory);
             recruit.addCategory(recruitCategoryMapping);
-            recruitCategoryMappingRepository.save(recruitCategoryMapping);
         }
     }
 
