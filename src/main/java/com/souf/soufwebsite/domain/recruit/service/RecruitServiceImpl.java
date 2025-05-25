@@ -15,7 +15,7 @@ import com.souf.soufwebsite.domain.recruit.exception.NotValidAuthenticationExcep
 import com.souf.soufwebsite.domain.recruit.repository.RecruitCategoryMappingRepository;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
 import com.souf.soufwebsite.domain.member.entity.Member;
-import com.souf.soufwebsite.global.common.category.CategoryService;
+import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
