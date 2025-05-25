@@ -2,6 +2,7 @@ package com.souf.soufwebsite.domain.member.service;
 
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
+import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberCategoryMappingRepository;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
@@ -27,7 +28,7 @@ public class MemberCategoryServiceImpl implements MemberCategoryService {
     @Transactional
     public void addCategory(Long memberId, CategoryDto dto) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("멤버를 찾을 수 없습니다."));
+                .orElseThrow(NotFoundMemberException::new);
 
         FirstCategory first = categoryService.findIfFirstIdExists(dto.firstCategory());
         SecondCategory second = categoryService.findIfSecondIdExists(dto.secondCategory());
@@ -43,7 +44,7 @@ public class MemberCategoryServiceImpl implements MemberCategoryService {
     @Transactional
     public void removeCategory(Long memberId, CategoryDto dto) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("멤버를 찾을 수 없습니다."));
+                .orElseThrow(NotFoundMemberException::new);
 
         member.removeCategory(dto);
         memberRepository.save(member);
@@ -53,7 +54,7 @@ public class MemberCategoryServiceImpl implements MemberCategoryService {
     @Transactional
     public void updateCategory(Long memberId, CategoryDto oldDto, CategoryDto newDto) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("멤버를 찾을 수 없습니다."));
+                .orElseThrow(NotFoundMemberException::new);
 
         FirstCategory first = categoryService.findIfFirstIdExists(newDto.firstCategory());
         SecondCategory second = categoryService.findIfSecondIdExists(newDto.secondCategory());
@@ -69,7 +70,7 @@ public class MemberCategoryServiceImpl implements MemberCategoryService {
     @Transactional
     public List<CategoryDto> getCategoriesOfMember(Long memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 멤버를 찾을 수 없습니다."));
+                .orElseThrow(NotFoundMemberException::new);
 
         return member.getCategories().stream()
                 .map(mapping -> new CategoryDto(

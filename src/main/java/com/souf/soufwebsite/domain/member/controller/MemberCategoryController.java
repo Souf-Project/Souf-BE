@@ -4,6 +4,7 @@ import com.souf.soufwebsite.domain.member.service.MemberCategoryService;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.dto.UpdateReqDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,19 +20,19 @@ public class MemberCategoryController {
     private final MemberCategoryService memberCategoryService;
 
     @PostMapping("/{memberId}")
-    public SuccessResponse addCategory(@PathVariable Long memberId, @RequestBody CategoryDto dto) {
+    public SuccessResponse addCategory(@PathVariable Long memberId, @Valid @RequestBody CategoryDto dto) {
         memberCategoryService.addCategory(memberId, dto);
         return new SuccessResponse(CATEGORY_ADD_SUCCESS.getMessage());
     }
 
     @DeleteMapping("/{memberId}")
-    public SuccessResponse removeCategory(@PathVariable Long memberId, @RequestBody CategoryDto dto) {
+    public SuccessResponse removeCategory(@PathVariable Long memberId, @Valid @RequestBody CategoryDto dto) {
         memberCategoryService.removeCategory(memberId, dto);
         return new SuccessResponse(CATEGORY_REMOVE_SUCCESS.getMessage());
     }
 
     @PutMapping("/{memberId}")
-    public SuccessResponse updateCategory(@PathVariable Long memberId, @RequestBody UpdateReqDto dto) {
+    public SuccessResponse updateCategory(@PathVariable Long memberId, @Valid @RequestBody UpdateReqDto dto) {
         memberCategoryService.updateCategory(memberId, dto.oldCategory(), dto.newCategory());
         return new SuccessResponse(CATEGORY_UPDATE_SUCCESS.getMessage());
     }
