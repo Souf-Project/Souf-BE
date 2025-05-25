@@ -2,6 +2,7 @@ package com.souf.soufwebsite.domain.member.controller;
 
 import com.souf.soufwebsite.domain.member.service.MemberCategoryService;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
+import com.souf.soufwebsite.global.common.category.dto.UpdateReqDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -30,8 +31,8 @@ public class MemberCategoryController {
     }
 
     @PutMapping("/{memberId}")
-    public SuccessResponse updateCategory(@PathVariable Long memberId, @RequestBody CategoryUpdateRequest request) {
-        memberCategoryService.updateCategory(memberId, request.oldCategory(), request.newCategory());
+    public SuccessResponse updateCategory(@PathVariable Long memberId, @RequestBody UpdateReqDto dto) {
+        memberCategoryService.updateCategory(memberId, dto.oldCategory(), dto.newCategory());
         return new SuccessResponse(CATEGORY_UPDATE_SUCCESS.getMessage());
     }
 
@@ -40,6 +41,4 @@ public class MemberCategoryController {
         List<CategoryDto> categoryList = memberCategoryService.getCategoriesOfMember(memberId);
         return new SuccessResponse<>(categoryList, CATEGORY_GET_SUCCESS.getMessage());
     }
-
-    public record CategoryUpdateRequest(CategoryDto oldCategory, CategoryDto newCategory) {}
 }
