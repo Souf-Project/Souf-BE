@@ -106,6 +106,8 @@ public class MemberServiceImpl implements MemberService {
     //인증번호 전송
     @Override
     public boolean sendEmailVerification(String email) {
+        String emailKey = "email:verification:" + email;
+        redisTemplate.delete(emailKey);
         String code = String.format("%06d", new Random().nextInt(1000000));
         String redisKey = "email:verification:" + email;
         redisTemplate.opsForValue().set(redisKey, code, 5, TimeUnit.MINUTES);
@@ -115,12 +117,11 @@ public class MemberServiceImpl implements MemberService {
 
     //인증번호 확인
     @Override
+    @Transactional
     public boolean verifyEmail(String email, String code) {
         String emailKey = "email:verification:" + email;
         String storedCode = redisTemplate.opsForValue().get(emailKey);
         if (storedCode != null && storedCode.equals(code)) {
-            redisTemplate.delete(emailKey);
-
             if (email.endsWith(".ac.kr")) {
                 Optional<Member> optionalMember = memberRepository.findByEmail(email);
                 optionalMember.ifPresent(member -> {
