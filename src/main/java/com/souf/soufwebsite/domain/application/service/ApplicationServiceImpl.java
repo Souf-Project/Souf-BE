@@ -45,6 +45,10 @@ public class ApplicationServiceImpl implements ApplicationService {
         Recruit recruit = recruitRepository.findById(recruitId)
                 .orElseThrow(NotFoundRecruitException::new);
 
+        if (recruit.getMember().getId().equals(member.getId())) {
+            throw new NotApplyMyRecruitException();
+        }
+
         if (!recruit.isRecruitable()) {
             throw new NotRecruitableException();
         }
