@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 
 public interface ApplicationService {
     void apply(ApplicationReqDto reqDto);
-    Page<ApplicationResDto> getApplications(Pageable pageable);
+    Page<ApplicationResDto> getMyApplications(Pageable pageable);
     Page<ApplicationResDto> getApplicationForRecruit(Long recruitId, Pageable pageable);
+
+    void deleteApplication(ApplicationReqDto reqDto);
 }

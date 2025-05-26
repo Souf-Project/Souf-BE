@@ -46,7 +46,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ApplicationResDto> getApplications(Pageable pageable) {
+    public Page<ApplicationResDto> getMyApplications(Pageable pageable) {
         Member member = getCurrentUser();
         return applicationRepository.findByMember(member, pageable)
                 .map(app -> new ApplicationResDto(
@@ -69,5 +69,20 @@ public class ApplicationServiceImpl implements ApplicationService {
                         app.getMember().getId(),
                         app.getAppliedAt().toString()
                 ));
+    }
+
+
+    @Override
+    @Transactional
+    public void deleteApplication(ApplicationReqDto reqDto) {
+        Member member = getCurrentUser();
+        Recruit recruit = recruitRepository.findById(reqDto.recruitId())
+                .orElseThrow(NotFoundRecruitException::new);
+
+        Application application = applicationRepository.findByMemberAndRecruit(member, recruit)
+                .orElseThrow(NotFoundRecruitException::new);
+
+        applicationRepository.delete(application);
+        recruit.decreaseRecruitCount();
     }
 }

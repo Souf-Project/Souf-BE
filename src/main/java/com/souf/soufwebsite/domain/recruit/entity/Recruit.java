@@ -112,4 +112,8 @@ public class Recruit extends BaseEntity {
     public void increaseRecruitCount() {
         this.recruitCount++;
     }
+
+    public void decreaseRecruitCount() {
+        this.recruitCount--;
+    }
 }

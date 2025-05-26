@@ -9,6 +9,6 @@ public record ApplicationResDto(
         Long recruitId,
         @Schema(description = "회원 ID", example = "1")
         Long memberId,
-        @Schema(description = "지원일시", example = "2025-06-01T12:00:00")
+        @Schema(description = "지원 시간", example = "2025-06-01T12:00:00")
         String appliedAt
 ) {}

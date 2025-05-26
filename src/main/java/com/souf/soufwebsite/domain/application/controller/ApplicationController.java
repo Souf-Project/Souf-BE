@@ -27,7 +27,7 @@ public class ApplicationController {
     public SuccessResponse<Page<ApplicationResDto>> getMyApplications(
             Pageable pageable
     ) {
-        return new SuccessResponse<>(applicationService.getApplications(pageable));
+        return new SuccessResponse<>(applicationService.getMyApplications(pageable));
     }
 
     @GetMapping("/recruits/{recruitId}/applications")
@@ -36,5 +36,14 @@ public class ApplicationController {
             Pageable pageable
     ) {
         return new SuccessResponse<>(applicationService.getApplicationForRecruit(recruitId, pageable));
+    }
+
+    @DeleteMapping("/recruits/{recruitId}/apply")
+    public SuccessResponse<?> deleteApplication(
+            @PathVariable Long recruitId
+    ) {
+        ApplicationReqDto reqDto = new ApplicationReqDto(recruitId);
+        applicationService.deleteApplication(reqDto);
+        return new SuccessResponse<>("지원이 취소되었습니다.");
     }
 }
