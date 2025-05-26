@@ -6,6 +6,7 @@ import com.souf.soufwebsite.domain.application.entity.Application;
 import com.souf.soufwebsite.domain.application.exception.AlreadyAppliedException;
 import com.souf.soufwebsite.domain.application.exception.NotFoundApplicationException;
 import com.souf.soufwebsite.domain.application.exception.NotFoundRecruitException;
+import com.souf.soufwebsite.domain.application.exception.NotRecruitableException;
 import com.souf.soufwebsite.domain.application.repository.ApplicationRepository;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
@@ -40,6 +41,10 @@ public class ApplicationServiceImpl implements ApplicationService {
         Member member = getCurrentUser();
         Recruit recruit = recruitRepository.findById(recruitId)
                 .orElseThrow(NotFoundRecruitException::new);
+
+        if (!recruit.isRecruitable()) {
+            throw new NotRecruitableException();
+        }
 
         if (applicationRepository.existsByMemberAndRecruit(member, recruit)) {
             throw new AlreadyAppliedException();

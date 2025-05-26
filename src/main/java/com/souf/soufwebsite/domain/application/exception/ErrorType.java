@@ -7,6 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ErrorType {
 
+    NOT_RECRUITABLE(400, "해당 공고는 지원이 종료되었습니다."),
     ALREADY_APPLIED      (409, "이미 지원한 공고입니다."),
     NOT_FOUND_RECRUIT    (404, "해당 공고를 찾을 수 없습니다."),
     NOT_FOUND_APPLICATION(404, "해당 지원서를 찾을 수 없습니다.");
