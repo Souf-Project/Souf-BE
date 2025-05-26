@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.application.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -22,7 +23,8 @@ public record MyApplicationResDto(
         @Schema(description = "지원 상태", example = "PENDING")
         String status,
 
-        @Schema(description = "지원일시", example = "2025-03-23T10:15:30")
+        @Schema(description = "지원일시", example = "2025-03-23")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd")
         LocalDateTime appliedAt
 ) {
 }
