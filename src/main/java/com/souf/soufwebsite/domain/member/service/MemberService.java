@@ -24,7 +24,7 @@ public interface MemberService {
 
     void updateUserInfo(UpdateReqDto reqDto);
 
-    List<MemberResDto> getMembers(Pageable pageable);
+    Page<MemberResDto> getMembers(Pageable pageable);
 
     MemberResDto getMemberById(Long id);
 

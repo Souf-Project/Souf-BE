@@ -15,7 +15,7 @@ import static com.souf.soufwebsite.domain.member.controller.MemberCategorySucces
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/member/category")
-public class MemberCategoryController {
+public class MemberCategoryController implements MemberCategoryApiSpecification{
 
     private final MemberCategoryService memberCategoryService;
 
