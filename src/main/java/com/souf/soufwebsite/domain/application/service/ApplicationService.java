@@ -10,5 +10,5 @@ public interface ApplicationService {
     void deleteApplication(Long recruitId);
     Page<MyApplicationResDto> getMyApplications(Pageable pageable);
     Page<ApplicantResDto> getApplicantsByRecruit(Long recruitId, Pageable pageable);
-    void reviewApplication(Long recruitId, Long applicationId, boolean approve);
+    void reviewApplication(Long applicationId, boolean approve);
 }

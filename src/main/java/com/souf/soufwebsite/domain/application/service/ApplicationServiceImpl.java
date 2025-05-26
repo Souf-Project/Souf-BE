@@ -124,15 +124,13 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public void reviewApplication(Long recruitId, Long applicationId, boolean approve) {
+    public void reviewApplication(Long applicationId, boolean approve) {
         Member me = getCurrentUser();
-        Recruit recruit = recruitRepository.findById(recruitId)
-                .orElseThrow(NotFoundRecruitException::new);
-        verifyOwner(recruit, me);
 
-        Application app = applicationRepository
-                .findByIdAndRecruit_Id(applicationId, recruitId)
+        Application app = applicationRepository.findById(applicationId)
                 .orElseThrow(NotFoundApplicationException::new);
+        Recruit recruit = app.getRecruit();
+        verifyOwner(recruit, me);
 
         if (approve) app.accept();
         else        app.reject();
