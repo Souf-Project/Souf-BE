@@ -53,9 +53,8 @@ public class RecruitController implements RecruitApiSpecification{
     }
 
     @GetMapping("/my")
-    public SuccessResponse<Page<MyRecruitResDto>> getMyRecruits(
-            @PageableDefault(size = 10) Pageable pageable // 페이징 10으로 설정, 추후 검토 후 수정 필요
-    ) {
+    public SuccessResponse<Page<MyRecruitResDto>> getMyRecruits(@PageableDefault(size = 10) Pageable pageable) {
+        // 페이징 10으로 설정, 추후 검토 후 수정 필요
         return new SuccessResponse<>(recruitService.getMyRecruits(pageable), RECRUIT_GET.getMessage());
     }
 

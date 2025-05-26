@@ -37,6 +37,11 @@ public interface RecruitApiSpecification {
     SuccessResponse<RecruitResDto> getRecruitById(@PathVariable(name = "recruitId") Long recruitId);
 
     @Tag(name = "Recruit", description = "공고문 관련 API")
+    @Operation(summary = "내 공고문 리스트 조회", description = "사용자 본인이 작성한 공고문 리스트를 조회합니다.")
+    @GetMapping("/my")
+    SuccessResponse<Page<MyRecruitResDto>> getMyRecruits(@PageableDefault(size = 10) Pageable pageable);
+
+    @Tag(name = "Recruit", description = "공고문 관련 API")
     @Operation(summary = "특정 공고문 수정", description = "사용자 본인이 소유한 공고문에 대해 수정합니다.")
     @PatchMapping("/{recruitId}")
     SuccessResponse updateRecruit(@PathVariable(name = "recruitId") Long recruitId, @Valid @RequestBody RecruitReqDto recruitReqDto);

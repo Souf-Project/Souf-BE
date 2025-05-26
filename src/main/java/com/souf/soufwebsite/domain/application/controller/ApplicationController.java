@@ -14,21 +14,18 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/applications")
-public class ApplicationController {
+public class ApplicationController implements ApplicationApiSpecification {
 
     private final ApplicationService applicationService;
 
     @PostMapping("/{recruitId}/apply")
-    public SuccessResponse<?> apply(
-            @PathVariable Long recruitId) {
+    public SuccessResponse<?> apply(@PathVariable Long recruitId) {
         applicationService.apply(recruitId);
         return new SuccessResponse<>("지원이 완료되었습니다.");
     }
 
     @DeleteMapping("/{recruitId}/apply")
-    public SuccessResponse<?> deleteApplication(
-            @PathVariable Long recruitId
-    ) {
+    public SuccessResponse<?> deleteApplication(@PathVariable Long recruitId) {
         applicationService.deleteApplication(recruitId);
         return new SuccessResponse<>("지원이 취소되었습니다.");
     }
@@ -49,17 +46,13 @@ public class ApplicationController {
     }
 
     @PostMapping("/{applicationId}/approve")
-    public SuccessResponse<?> reviewApplication(
-            @PathVariable Long applicationId
-    ) {
+    public SuccessResponse<?> reviewApplication(@PathVariable Long applicationId) {
         applicationService.reviewApplication(applicationId, true);
         return new SuccessResponse<>("지원이 수락되었습니다.");
     }
 
     @PostMapping("/{applicationId}/reject")
-    public SuccessResponse<?> rejectApplication(
-            @PathVariable Long applicationId
-    ) {
+    public SuccessResponse<?> rejectApplication(@PathVariable Long applicationId) {
         applicationService.reviewApplication(applicationId, false);
         return new SuccessResponse<>("지원이 거절되었습니다.");
     }
