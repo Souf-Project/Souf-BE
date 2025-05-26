@@ -22,7 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
 @Slf4j
-public class MemberController {
+public class MemberController implements MemberApiSpecification {
 
     private final MemberService memberService;
 
@@ -66,7 +66,7 @@ public class MemberController {
     }
 
     @GetMapping("/member")
-    public SuccessResponse<List<MemberResDto>> getMembers(
+    public SuccessResponse<Page<MemberResDto>> getMembers(
             @PageableDefault(size = 6) Pageable pageable
     ) {
         return new SuccessResponse<>(memberService.getMembers(pageable));
