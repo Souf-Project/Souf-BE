@@ -13,6 +13,8 @@ public interface RecruitService {
 
     Page<RecruitSimpleResDto> getRecruits(Long first, Long second, Long third, Pageable pageable);
 
+    Page<MyRecruitResDto> getMyRecruits(Pageable pageable);
+
     RecruitResDto getRecruitById(Long recruitId);
 
     void updateRecruit(Long recruitId, RecruitReqDto reqDto);

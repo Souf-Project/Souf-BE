@@ -25,7 +25,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -90,12 +92,31 @@ public class RecruitServiceImpl implements RecruitService {
     }
 
     @Transactional(readOnly = true)
-    public Page<RecruitSimpleResDto> getMyRecruits(Pageable pageable) {
+    @Override
+    public Page<MyRecruitResDto> getMyRecruits(Pageable pageable) {
         Member me = getCurrentUser();
-        Page<Recruit> page = recruitRepository.findByMember(me, pageable);
-        
-    }
+        return recruitRepository.findByMember(me, pageable)
+                .map(r -> {
+                    String status = r.isRecruitable() ? "모집 중" : "마감";
 
+                    List<CategoryDto> categories = r.getCategories().stream()
+                            .map(m -> new CategoryDto(
+                                    m.getFirstCategory().getId(),
+                                    m.getSecondCategory().getId(),
+                                    m.getThirdCategory().getId()
+                            ))
+                            .collect(Collectors.toList());
+
+                    return new MyRecruitResDto(
+                            r.getId(),
+                            r.getTitle(),
+                            r.getDeadline(),
+                            categories,
+                            status,
+                            r.getRecruitCount()
+                    );
+                });
+    }
 
     @Transactional
     @Override

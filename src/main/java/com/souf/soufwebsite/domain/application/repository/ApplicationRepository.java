@@ -16,5 +16,5 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     Page<Application> findByRecruit(Recruit recruit, Pageable pageable);
 
     Optional<Application> findByMemberAndRecruit(Member member, Recruit recruit);
-    void deleteByMemberAndRecruit(Member member, Recruit recruit);
+    Optional<Application> findByIdAndRecruit_Id(Long applicationId, Long recruitId);
 }

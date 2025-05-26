@@ -27,19 +27,29 @@ public class Application extends BaseEntity {
     private Recruit recruit;
 
     @Column(nullable = false)
-    private LocalDateTime appliedAt = LocalDateTime.now();
+    private LocalDateTime appliedAt;
 
-    // 상태 관리가 필요하면 enum 추가
-    // @Enumerated(EnumType.STRING)
-    // private ApplicationStatus status;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ApplicationStatus status;
 
     @Builder
     private Application(Member member, Recruit recruit) {
         this.member = member;
         this.recruit = recruit;
+        this.status = ApplicationStatus.PENDING;
+        this.appliedAt = LocalDateTime.now();
     }
 
     public static Application of(Member member, Recruit recruit) {
         return new Application(member, recruit);
+    }
+
+    public void accept() {
+        this.status = ApplicationStatus.ACCEPTED;
+    }
+
+    public void reject() {
+        this.status = ApplicationStatus.REJECTED;
     }
 }
