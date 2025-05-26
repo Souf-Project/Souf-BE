@@ -3,10 +3,7 @@ package com.souf.soufwebsite.domain.application.service;
 import com.souf.soufwebsite.domain.application.dto.ApplicantResDto;
 import com.souf.soufwebsite.domain.application.dto.MyApplicationResDto;
 import com.souf.soufwebsite.domain.application.entity.Application;
-import com.souf.soufwebsite.domain.application.exception.AlreadyAppliedException;
-import com.souf.soufwebsite.domain.application.exception.NotFoundApplicationException;
-import com.souf.soufwebsite.domain.application.exception.NotFoundRecruitException;
-import com.souf.soufwebsite.domain.application.exception.NotRecruitableException;
+import com.souf.soufwebsite.domain.application.exception.*;
 import com.souf.soufwebsite.domain.application.repository.ApplicationRepository;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
@@ -33,6 +30,12 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
+    }
+
+    private void verifyOwner(Recruit recruit, Member member) {
+        if (!recruit.getMember().equals(member)) {
+            throw new NotValidAuthenticationException();
+        }
     }
 
     @Override
@@ -86,7 +89,6 @@ public class ApplicationServiceImpl implements ApplicationService {
                             .toList();
 
                     String status = recruit.isRecruitable() ? "모집 중" : "마감";
-                    String company = recruit.getMember().getNickname();
                     return new MyApplicationResDto(
                             recruit.getId(),
                             recruit.getTitle(),
@@ -101,9 +103,10 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Transactional(readOnly = true)
     public Page<ApplicantResDto> getApplicantsByRecruit(Long recruitId, Pageable pageable) {
+        Member me = getCurrentUser();
         Recruit recruit = recruitRepository.findById(recruitId)
                 .orElseThrow(NotFoundRecruitException::new);
-        Page<Application> apps = applicationRepository.findByRecruit(recruit, pageable);
+        verifyOwner(recruit, me);
 
         return applicationRepository
                 .findByRecruit(recruit, pageable)
@@ -118,6 +121,11 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Transactional
     public void reviewApplication(Long recruitId, Long applicationId, boolean approve) {
+        Member me = getCurrentUser();
+        Recruit recruit = recruitRepository.findById(recruitId)
+                .orElseThrow(NotFoundRecruitException::new);
+        verifyOwner(recruit, me);
+
         Application app = applicationRepository
                 .findByIdAndRecruit_Id(applicationId, recruitId)
                 .orElseThrow(NotFoundApplicationException::new);

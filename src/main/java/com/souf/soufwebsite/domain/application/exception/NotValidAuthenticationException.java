@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.feed.exception;
+package com.souf.soufwebsite.domain.application.exception;
 
 import com.souf.soufwebsite.global.exception.BaseErrorException;
 
