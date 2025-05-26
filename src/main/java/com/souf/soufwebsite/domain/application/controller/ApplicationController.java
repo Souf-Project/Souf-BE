@@ -54,7 +54,7 @@ public class ApplicationController {
             @PathVariable Long applicationId
     ) {
         applicationService.reviewApplication(recruitId, applicationId, true);
-        return new SuccessResponse<>("지원이 승인되었습니다.");
+        return new SuccessResponse<>("지원이 수락되었습니다.");
     }
 
     @PostMapping("/recruits/{recruitId}/applications/{applicationId}/reject")

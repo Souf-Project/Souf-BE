@@ -12,6 +12,7 @@ import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
+import com.souf.soufwebsite.global.email.EmailService;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,6 +30,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private final ApplicationRepository applicationRepository;
     private final RecruitRepository recruitRepository;
+    private final EmailService emailService;
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
@@ -119,7 +121,18 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         if (approve) app.accept();
         else        app.reject();
+
+        String to = app.getMember().getEmail();
+        String title = app.getRecruit().getTitle();
+        String subject = "[Souf] “" + title + "” 지원 " + (approve ? "수락" : "거절") + " 안내";
+        String body = new StringBuilder()
+                .append(app.getMember().getNickname()).append("님,\n\n")
+                .append("“").append(title).append("” 공고에 대한 귀하의 지원이 ")
+                .append(approve ? "수락" : "거절").append("되었습니다.\n")
+                .append("자세한 사항은 홈페이지에서 확인해 주세요.\n\n")
+                .append("감사합니다.")
+                .toString();
+
+        emailService.sendEmail(to, subject, body);
     }
-
-
 }
