@@ -33,7 +33,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     private void verifyOwner(Recruit recruit, Member member) {
-        if (!recruit.getMember().equals(member)) {
+        if (!recruit.getMember().getId().equals(member.getId())) {
             throw new NotValidAuthenticationException();
         }
     }
