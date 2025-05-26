@@ -9,6 +9,7 @@ import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.service.MemberService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -99,5 +100,12 @@ public class MemberController {
                 memberService.getMembersByNickname(keyword, pageable),
                 "닉네임으로 검색한 멤버 목록입니다."
         );
+    }
+
+    @GetMapping("/member/nickname/available")
+    public SuccessResponse<Boolean> isNicknameAvailable(
+            @RequestParam @NotEmpty String nickname) {
+        boolean available = memberService.isNicknameAvailable(nickname);
+        return new SuccessResponse<>(available, "닉네임 사용 가능 여부");
     }
 }

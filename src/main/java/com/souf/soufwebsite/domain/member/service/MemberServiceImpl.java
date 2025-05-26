@@ -174,4 +174,9 @@ public class MemberServiceImpl implements MemberService {
         Page<Member> result = memberRepository.findByNicknameContainingIgnoreCase(nickname, pageable);
         return result.map(MemberResDto::from);
     }
+
+    @Override
+    public boolean isNicknameAvailable(String nickname) {
+        return !memberRepository.existsByNickname(nickname);
+    }
 }
