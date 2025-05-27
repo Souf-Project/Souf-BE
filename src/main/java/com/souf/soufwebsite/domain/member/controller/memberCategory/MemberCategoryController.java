@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.member.controller;
+package com.souf.soufwebsite.domain.member.controller.memberCategory;
 
 import com.souf.soufwebsite.domain.member.service.MemberCategoryService;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static com.souf.soufwebsite.domain.member.controller.MemberCategorySuccessMessage.*;
+import static com.souf.soufwebsite.domain.member.controller.memberCategory.MemberCategorySuccessMessage.*;
 
 @RestController
 @RequiredArgsConstructor

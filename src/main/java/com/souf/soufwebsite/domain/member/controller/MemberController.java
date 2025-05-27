@@ -21,64 +21,25 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/member")
 @Slf4j
-public class MemberController implements MemberApiSpecification {
+public class MemberController implements MemberApiSpecification{
 
     private final MemberService memberService;
 
-    @PostMapping("/auth/signup")
-    public SuccessResponse<?> signup(@RequestBody @Valid SignupReqDto reqDto) {
-        memberService.signup(reqDto);
-        return new SuccessResponse<>("회원가입 성공");
-    }
-
-    @PostMapping("/auth/login")
-    public SuccessResponse<TokenDto> signin(@RequestBody @Valid SigninReqDto reqDto) {
-        log.info("로그인 요청: {}", reqDto);
-        TokenDto tokenDto = memberService.signin(reqDto);
-        log.info("로그인 성공: {}", tokenDto);
-        return new SuccessResponse<>(tokenDto);
-    }
-
-    @PatchMapping("/auth/reset/password")
-    public SuccessResponse<?> resetPassword(@RequestBody ResetReqDto reqDto) {
-        memberService.resetPassword(reqDto);
-        return new SuccessResponse<>("비밀번호 재설정 성공");
-    }
-
-    // 인증번호 전송
-    @PostMapping("/auth/email/send")
-    public SuccessResponse<Boolean> sendEmailVerification(@RequestParam String email) {
-        return new SuccessResponse<>(memberService.sendEmailVerification(email));
-    }
-
-    // 인증번호 검증
-    @PostMapping("/auth/email/verify")
-    public SuccessResponse<Boolean> verifyEmailCode(@RequestParam String email, @RequestParam String code) {
-        boolean verified = memberService.verifyEmail(email, code);
-        return new SuccessResponse<>(verified);
-    }
-
-    @PutMapping("/auth/update")
-    public SuccessResponse<?> updateUserInfo(@RequestBody UpdateReqDto reqDto) {
-        memberService.updateUserInfo(reqDto);
-        return new SuccessResponse<>("회원정보 수정 성공");
-    }
-
-    @GetMapping("/member")
+    @GetMapping
     public SuccessResponse<Page<MemberResDto>> getMembers(
             @PageableDefault(size = 6) Pageable pageable
     ) {
         return new SuccessResponse<>(memberService.getMembers(pageable));
     }
 
-    @GetMapping("/member/{id}")
+    @GetMapping("/{id}")
     public SuccessResponse<MemberResDto> getMemberById(@PathVariable Long id) {
         return new SuccessResponse<>(memberService.getMemberById(id));
     }
 
-    @GetMapping("/member/search")
+    @GetMapping("/search")
     public SuccessResponse<Page<MemberResDto>> findByCategory(
             @RequestParam(required = false) Long first,
             @RequestParam(required = false) Long second,
@@ -91,7 +52,7 @@ public class MemberController implements MemberApiSpecification {
         );
     }
 
-    @GetMapping("/member/search/nickname")
+    @GetMapping("/search/nickname")
     public SuccessResponse<Page<MemberResDto>> findByNickname(
             @RequestParam String keyword,
             @PageableDefault(size = 6) Pageable pageable
@@ -102,10 +63,9 @@ public class MemberController implements MemberApiSpecification {
         );
     }
 
-    @GetMapping("/member/nickname/available")
-    public SuccessResponse<Boolean> isNicknameAvailable(
-            @RequestParam @NotEmpty String nickname) {
-        boolean available = memberService.isNicknameAvailable(nickname);
-        return new SuccessResponse<>(available, "닉네임 사용 가능 여부");
+    @PutMapping("/update")
+    public SuccessResponse<?> updateUserInfo(@RequestBody UpdateReqDto reqDto) {
+        memberService.updateUserInfo(reqDto);
+        return new SuccessResponse<>("회원정보 수정 성공");
     }
 }
