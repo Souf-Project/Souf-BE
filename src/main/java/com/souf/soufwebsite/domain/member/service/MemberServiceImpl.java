@@ -8,11 +8,17 @@ import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.exception.NotAvailableEmailException;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.exception.NotMatchPasswordException;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
+import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
+import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
+import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
+import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
+import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.email.EmailService;
 import com.souf.soufwebsite.global.jwt.JwtService;
 import com.souf.soufwebsite.global.util.SecurityUtils;
@@ -32,6 +38,8 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import static com.souf.soufwebsite.domain.member.entity.QMember.member;
+
 @Service
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
@@ -45,6 +53,7 @@ public class MemberServiceImpl implements MemberService {
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
     }
+    private final CategoryService categoryService;
 
     //회원가입
     @Override
@@ -60,6 +69,17 @@ public class MemberServiceImpl implements MemberService {
         String encodedPassword = passwordEncoder.encode(reqDto.password());
 
         Member member = new Member(reqDto.email(), encodedPassword, reqDto.username(), reqDto.nickname(), RoleType.MEMBER);
+
+        for (CategoryDto dto : reqDto.categoryDtos()) {
+            FirstCategory first = categoryService.findIfFirstIdExists(dto.firstCategory());
+            SecondCategory second = categoryService.findIfSecondIdExists(dto.secondCategory());
+            ThirdCategory third = categoryService.findIfThirdIdExists(dto.thirdCategory());
+            categoryService.validate(first.getId(), second.getId(), third.getId());
+
+            MemberCategoryMapping mapping = MemberCategoryMapping.of(member, first, second, third);
+            member.addCategory(mapping);
+        }
+
         memberRepository.save(member);
     }
 
