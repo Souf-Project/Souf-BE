@@ -120,11 +120,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String storedRefreshToken = redisTemplate.opsForValue().get("refresh:" + email);
         if (refreshToken.equals(storedRefreshToken)) {
-            RoleType role = memberRepository.findByEmail(email)
-                    .map(Member::getRole)
-                    .orElseThrow(() -> new IllegalArgumentException("유저 없음"));
+            Member member = memberRepository.findByEmail(email)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 이메일의 회원을 찾을 수 없습니다."));
 
-            String newAccessToken = jwtService.createAccessToken(email, role);
+            String newAccessToken = jwtService.createAccessToken(member);
             log.info("AccessToken 재발급: {}", newAccessToken);
             return newAccessToken;
         }

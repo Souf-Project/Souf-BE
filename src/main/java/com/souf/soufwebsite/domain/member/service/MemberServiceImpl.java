@@ -96,8 +96,8 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(NotFoundMemberException::new);
         RoleType role = member.getRole();
 
-        String accessToken = jwtService.createAccessToken(email, role);
-        String refreshToken = jwtService.createRefreshToken(email);
+        String accessToken = jwtService.createAccessToken(member);
+        String refreshToken = jwtService.createRefreshToken(member);
 
         redisTemplate.opsForValue().set("refresh:" + email, refreshToken, jwtService.getExpiration(refreshToken), TimeUnit.MILLISECONDS);
 
