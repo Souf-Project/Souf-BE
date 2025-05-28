@@ -1,6 +1,5 @@
 package com.souf.soufwebsite.domain.member.service;
 
-import com.souf.soufwebsite.domain.member.dto.*;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.ResetReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SigninReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SignupReqDto;
@@ -15,6 +14,7 @@ import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.exception.NotMatchPasswordException;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
+import com.souf.soufwebsite.global.common.category.dto.CategoryUpdateReqDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
 import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
@@ -29,10 +29,10 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.Optional;
 import java.util.Random;
@@ -54,6 +54,7 @@ public class MemberServiceImpl implements MemberService {
         return SecurityUtils.getCurrentMember();
     }
     private final CategoryService categoryService;
+    private final MemberCategoryService memberCategoryService;
 
     //회원가입
     @Override
@@ -94,7 +95,6 @@ public class MemberServiceImpl implements MemberService {
 
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(NotFoundMemberException::new);
-        RoleType role = member.getRole();
 
         String accessToken = jwtService.createAccessToken(member);
         String refreshToken = jwtService.createRefreshToken(member);
@@ -163,7 +163,13 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(NotFoundMemberException::new);
 
-        member.updateInfo(reqDto); // 도메인에 위임
+        member.updateInfo(reqDto);
+
+        if (!CollectionUtils.isEmpty(reqDto.categoryUpdates())) { // null, 빈 리스트 체크
+            for (CategoryUpdateReqDto cats : reqDto.categoryUpdates()) {
+                memberCategoryService.updateCategory(memberId, cats.oldCategory(), cats.newCategory());
+            }
+        }
     }
 
     //회원 목록 조회

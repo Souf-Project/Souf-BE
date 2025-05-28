@@ -5,6 +5,7 @@ import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberCategoryMappingRepository;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
+import com.souf.soufwebsite.global.common.category.exception.NotFoundCategoryMappingException;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
@@ -60,6 +61,16 @@ public class MemberCategoryServiceImpl implements MemberCategoryService {
         SecondCategory second = categoryService.findIfSecondIdExists(newDto.secondCategory());
         ThirdCategory third = categoryService.findIfThirdIdExists(newDto.thirdCategory());
         categoryService.validate(first.getId(), second.getId(), third.getId());
+
+        boolean exists = member.getCategories().stream()
+                .anyMatch(mapping ->
+                        mapping.getFirstCategory().getId().equals(oldDto.firstCategory()) &&
+                                mapping.getSecondCategory().getId().equals(oldDto.secondCategory()) &&
+                                mapping.getThirdCategory().getId().equals(oldDto.thirdCategory())
+                );
+        if (!exists) {
+            throw new NotFoundCategoryMappingException();
+        }
 
         MemberCategoryMapping newMapping = MemberCategoryMapping.of(member, first, second, third);
         member.updateCategory(oldDto, newMapping);
