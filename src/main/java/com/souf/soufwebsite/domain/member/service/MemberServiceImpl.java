@@ -14,7 +14,6 @@ import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.exception.NotMatchPasswordException;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
-import com.souf.soufwebsite.global.common.category.dto.CategoryUpdateReqDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
 import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
@@ -32,13 +31,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-
-import static com.souf.soufwebsite.domain.member.entity.QMember.member;
 
 @Service
 @RequiredArgsConstructor
@@ -159,16 +155,21 @@ public class MemberServiceImpl implements MemberService {
     @Transactional
     public void updateUserInfo(UpdateReqDto reqDto) {
         Long memberId = getCurrentUser().getId();
-
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(NotFoundMemberException::new);
 
         member.updateInfo(reqDto);
+        member.clearCategories();
 
-        if (!CollectionUtils.isEmpty(reqDto.categoryUpdates())) { // null, 빈 리스트 체크
-            for (CategoryUpdateReqDto cats : reqDto.categoryUpdates()) {
-                memberCategoryService.updateCategory(memberId, cats.oldCategory(), cats.newCategory());
-            }
+        for (CategoryDto cat : reqDto.newCategories()) {
+            FirstCategory first  = categoryService.findIfFirstIdExists(cat.firstCategory());
+            SecondCategory second = categoryService.findIfSecondIdExists(cat.secondCategory());
+            ThirdCategory third  = categoryService.findIfThirdIdExists(cat.thirdCategory());
+            categoryService.validate(first.getId(), second.getId(), third.getId());
+            MemberCategoryMapping mapping = MemberCategoryMapping.of(member, first, second, third);
+            System.out.println("mapping = " + mapping);
+            member.addCategory(mapping);
+            System.out.println("member.getCategories().size() = " + member.getCategories().size());
         }
     }
 

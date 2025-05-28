@@ -99,10 +99,9 @@ public class Member extends BaseEntity {
             }
         }
 
-        if (this.categories.size() >= 3) {
+        if (this.categories.size() > 3) {
             throw new NotExceedCategoryLimitException();
         }
-
         this.categories.add(mapping);
         mapping.setMember(this);
     }
@@ -118,5 +117,12 @@ public class Member extends BaseEntity {
                         mapping.getSecondCategory().getId().equals(dto.secondCategory()) &&
                         mapping.getThirdCategory().getId().equals(dto.thirdCategory())
         );
+    }
+
+    public void clearCategories() {
+        for (MemberCategoryMapping mapping : categories) {
+            mapping.disconnectMember();
+        }
+        categories.clear();
     }
 }
