@@ -5,6 +5,8 @@ import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
+import com.souf.soufwebsite.global.common.category.exception.NotDuplicateCategoryException;
+import com.souf.soufwebsite.global.common.category.exception.NotExceedCategoryLimitException;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
@@ -93,14 +95,13 @@ public class Member extends BaseEntity {
     public void addCategory(MemberCategoryMapping mapping) {
         for (MemberCategoryMapping existing : this.categories) {
             if (existing.isSameCategorySet(mapping)) {
-                throw new IllegalArgumentException("이미 존재하는 카테고리 세트입니다.");
+                throw new NotDuplicateCategoryException();
             }
         }
 
-        if (this.categories.size() >= 3) {
-            throw new IllegalStateException("카테고리는 최대 3개까지만 등록할 수 있습니다.");
+        if (this.categories.size() > 3) {
+            throw new NotExceedCategoryLimitException();
         }
-
         this.categories.add(mapping);
         mapping.setMember(this);
     }
@@ -116,5 +117,12 @@ public class Member extends BaseEntity {
                         mapping.getSecondCategory().getId().equals(dto.secondCategory()) &&
                         mapping.getThirdCategory().getId().equals(dto.thirdCategory())
         );
+    }
+
+    public void clearCategories() {
+        for (MemberCategoryMapping mapping : categories) {
+            mapping.disconnectMember();
+        }
+        categories.clear();
     }
 }

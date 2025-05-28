@@ -1,7 +1,10 @@
 package com.souf.soufwebsite.domain.member.dto.ReqDto;
 
+import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
+
+import java.util.List;
 
 public record SignupReqDto(
 
@@ -23,6 +26,9 @@ public record SignupReqDto(
         @NotEmpty String password,
 
         @Schema(description = "비밀번호 확인", example = "Passw0rd!")
-        @NotEmpty String passwordCheck
+        @NotEmpty String passwordCheck,
+
+        @Schema(description = "카테고리 목록", example = "[{\"firstCategory\": 1, \"secondCategory\": 1}, {\"thirdCategory\": 1}]")
+        List<CategoryDto> categoryDtos
 ) {
 }

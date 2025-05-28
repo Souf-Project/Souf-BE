@@ -45,6 +45,9 @@ public class MemberCategoryMapping {
 
     public void setMember(Member member) {
         this.member = member;
-        member.getCategories().add(this);
+    }
+
+    public void disconnectMember() {
+        this.member = null;
     }
 }

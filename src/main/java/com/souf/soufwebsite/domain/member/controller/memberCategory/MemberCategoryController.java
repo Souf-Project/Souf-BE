@@ -1,8 +1,8 @@
-package com.souf.soufwebsite.domain.member.controller;
+package com.souf.soufwebsite.domain.member.controller.memberCategory;
 
 import com.souf.soufwebsite.domain.member.service.MemberCategoryService;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
-import com.souf.soufwebsite.global.common.category.dto.UpdateReqDto;
+import com.souf.soufwebsite.global.common.category.dto.CategoryUpdateReqDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static com.souf.soufwebsite.domain.member.controller.MemberCategorySuccessMessage.*;
+import static com.souf.soufwebsite.domain.member.controller.memberCategory.MemberCategorySuccessMessage.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,7 +32,7 @@ public class MemberCategoryController implements MemberCategoryApiSpecification{
     }
 
     @PutMapping("/{memberId}")
-    public SuccessResponse updateCategory(@PathVariable Long memberId, @Valid @RequestBody UpdateReqDto dto) {
+    public SuccessResponse updateCategory(@PathVariable Long memberId, @Valid @RequestBody CategoryUpdateReqDto dto) {
         memberCategoryService.updateCategory(memberId, dto.oldCategory(), dto.newCategory());
         return new SuccessResponse(CATEGORY_UPDATE_SUCCESS.getMessage());
     }

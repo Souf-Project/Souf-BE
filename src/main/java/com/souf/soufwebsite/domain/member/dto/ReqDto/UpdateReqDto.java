@@ -1,6 +1,9 @@
 package com.souf.soufwebsite.domain.member.dto.ReqDto;
 
+import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.List;
 
 public record UpdateReqDto(
 
@@ -14,6 +17,19 @@ public record UpdateReqDto(
         String intro,
 
         @Schema(description = "개인 URL", example = "https://github.com/username")
-        String personalUrl
+        String personalUrl,
+
+        @Schema(
+                description = "수정 후 카테고리 리스트",
+                implementation = CategoryDto.class,
+                example = """
+        [
+          { "firstCategory": 1, "secondCategory": 1, "thirdCategory": 1 },
+          { "firstCategory": 1, "secondCategory": 1, "thirdCategory": 2 },
+          { "firstCategory": 1, "secondCategory": 1, "thirdCategory": 4 }
+        ]
+        """
+        )
+        List<CategoryDto> newCategories
 ) {
 }

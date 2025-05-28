@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.global.jwt;
 
+import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -42,7 +43,10 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public String createAccessToken(String email, RoleType role) {
+    public String createAccessToken(Member member) {
+        String email = member.getEmail();
+        RoleType role = member.getRole();
+
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + accessTokenExpireTime);
         return Jwts.builder()
@@ -55,7 +59,9 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public String createRefreshToken(String email) {
+    public String createRefreshToken(Member member) {
+        String email = member.getEmail();
+
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + refreshTokenExpireTime);
         return Jwts.builder()
@@ -95,22 +101,6 @@ public class JwtServiceImpl implements JwtService {
             return Optional.ofNullable(claims.getSubject());
         } catch (JwtException e) {
             log.error("토큰에서 이메일 추출 실패: {}", e.getMessage());
-            return Optional.empty();
-        }
-    }
-
-    public Optional<RoleType> extractRoleType(String token) {
-        try {
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
-
-            String role = claims.get("role", String.class);
-            return Optional.of(RoleType.valueOf(role));
-        } catch (Exception e) {
-            log.error("권한 추출 실패: {}", e.getMessage());
             return Optional.empty();
         }
     }

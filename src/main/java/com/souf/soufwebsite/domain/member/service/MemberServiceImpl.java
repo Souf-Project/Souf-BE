@@ -1,6 +1,5 @@
 package com.souf.soufwebsite.domain.member.service;
 
-import com.souf.soufwebsite.domain.member.dto.*;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.ResetReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SigninReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SignupReqDto;
@@ -8,11 +7,17 @@ import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.exception.NotAvailableEmailException;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.exception.NotMatchPasswordException;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
+import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
+import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
+import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
+import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
+import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.email.EmailService;
 import com.souf.soufwebsite.global.jwt.JwtService;
 import com.souf.soufwebsite.global.util.SecurityUtils;
@@ -23,7 +28,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +49,8 @@ public class MemberServiceImpl implements MemberService {
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
     }
+    private final CategoryService categoryService;
+    private final MemberCategoryService memberCategoryService;
 
     //회원가입
     @Override
@@ -60,6 +66,17 @@ public class MemberServiceImpl implements MemberService {
         String encodedPassword = passwordEncoder.encode(reqDto.password());
 
         Member member = new Member(reqDto.email(), encodedPassword, reqDto.username(), reqDto.nickname(), RoleType.MEMBER);
+
+        for (CategoryDto dto : reqDto.categoryDtos()) {
+            FirstCategory first = categoryService.findIfFirstIdExists(dto.firstCategory());
+            SecondCategory second = categoryService.findIfSecondIdExists(dto.secondCategory());
+            ThirdCategory third = categoryService.findIfThirdIdExists(dto.thirdCategory());
+            categoryService.validate(first.getId(), second.getId(), third.getId());
+
+            MemberCategoryMapping mapping = MemberCategoryMapping.of(member, first, second, third);
+            member.addCategory(mapping);
+        }
+
         memberRepository.save(member);
     }
 
@@ -74,10 +91,9 @@ public class MemberServiceImpl implements MemberService {
 
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(NotFoundMemberException::new);
-        RoleType role = member.getRole();
 
-        String accessToken = jwtService.createAccessToken(email, role);
-        String refreshToken = jwtService.createRefreshToken(email);
+        String accessToken = jwtService.createAccessToken(member);
+        String refreshToken = jwtService.createRefreshToken(member);
 
         redisTemplate.opsForValue().set("refresh:" + email, refreshToken, jwtService.getExpiration(refreshToken), TimeUnit.MILLISECONDS);
 
@@ -139,11 +155,22 @@ public class MemberServiceImpl implements MemberService {
     @Transactional
     public void updateUserInfo(UpdateReqDto reqDto) {
         Long memberId = getCurrentUser().getId();
-
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(NotFoundMemberException::new);
 
-        member.updateInfo(reqDto); // 도메인에 위임
+        member.updateInfo(reqDto);
+        member.clearCategories();
+
+        for (CategoryDto cat : reqDto.newCategories()) {
+            FirstCategory first  = categoryService.findIfFirstIdExists(cat.firstCategory());
+            SecondCategory second = categoryService.findIfSecondIdExists(cat.secondCategory());
+            ThirdCategory third  = categoryService.findIfThirdIdExists(cat.thirdCategory());
+            categoryService.validate(first.getId(), second.getId(), third.getId());
+            MemberCategoryMapping mapping = MemberCategoryMapping.of(member, first, second, third);
+            System.out.println("mapping = " + mapping);
+            member.addCategory(mapping);
+            System.out.println("member.getCategories().size() = " + member.getCategories().size());
+        }
     }
 
     //회원 목록 조회
