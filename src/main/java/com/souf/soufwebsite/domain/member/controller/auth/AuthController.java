@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
 @Slf4j
-public class AuthController {
+public class AuthController implements AuthApiSpecification{
     private final MemberService memberService;
 
     @PostMapping("/signup")

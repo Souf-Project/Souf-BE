@@ -1,22 +1,13 @@
 package com.souf.soufwebsite.domain.member.service;
 
-import com.souf.soufwebsite.domain.member.dto.ReqDto.ResetReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.SigninReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.SignupReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.*;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
-import com.souf.soufwebsite.domain.member.entity.Member;
-import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
-import com.souf.soufwebsite.domain.member.entity.RoleType;
-import com.souf.soufwebsite.domain.member.exception.NotAvailableEmailException;
-import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
-import com.souf.soufwebsite.domain.member.exception.NotMatchPasswordException;
+import com.souf.soufwebsite.domain.member.entity.*;
+import com.souf.soufwebsite.domain.member.exception.*;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
-import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
-import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
-import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
+import com.souf.soufwebsite.global.common.category.entity.*;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.email.EmailService;
 import com.souf.soufwebsite.global.jwt.JwtService;
@@ -100,6 +91,9 @@ public class MemberServiceImpl implements MemberService {
         return TokenDto.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                .memberId(member.getId())
+                .username(member.getUsername())
+                .roleType(member.getRole())
                 .build();
     }
 
