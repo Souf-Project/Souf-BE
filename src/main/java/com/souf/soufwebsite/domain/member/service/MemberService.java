@@ -16,7 +16,9 @@ public interface MemberService {
 
     void resetPassword(ResetReqDto reqDto);
 
-    boolean sendEmailVerification(String email);
+    boolean sendSignupEmailVerification(String email);
+
+    boolean sendResetEmailVerification(String email);
 
     boolean verifyEmail(String email, String code);
 

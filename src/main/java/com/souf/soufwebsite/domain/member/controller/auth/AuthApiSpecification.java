@@ -33,9 +33,15 @@ public interface AuthApiSpecification {
             @RequestBody @Valid ResetReqDto reqDto
     );
 
-    @Operation(summary = "이메일 인증번호 전송", description = "입력된 이메일로 인증번호를 전송합니다.")
-    @PostMapping("/email/send")
-    SuccessResponse<Boolean> sendEmailVerification(
+    @Operation(summary = "이메일 인증번호 전송", description = "회원가입 시 입력된 이메일로 인증번호를 전송합니다.")
+    @PostMapping("/signup/email/send")
+    SuccessResponse<Boolean> sendSignupEmailVerification(
+            @RequestParam String email
+    );
+
+    @Operation(summary = "이메일 인증번호 전송", description = "비밀번호 재설정 시 입력된 이메일로 인증번호를 전송합니다.")
+    @PostMapping("/reset/email/send")
+    SuccessResponse<Boolean> sendResetEmailVerification(
             @RequestParam String email
     );
 
