@@ -16,7 +16,9 @@ public interface MemberService {
 
     void resetPassword(ResetReqDto reqDto);
 
-    boolean sendEmailVerification(String email);
+    boolean sendSignupEmailVerification(String email);
+
+    boolean sendResetEmailVerification(String email);
 
     boolean verifyEmail(String email, String code);
 
@@ -26,7 +28,7 @@ public interface MemberService {
 
     MemberResDto getMemberById(Long id);
 
-    Page<MemberResDto> getMembersByCategory(Long first, Long second, Long third, Pageable pageable);
+    Page<MemberResDto> getMembersByCategory(Long first, Pageable pageable);
 
     Page<MemberResDto> getMembersByNickname(String nickname, Pageable pageable);
 

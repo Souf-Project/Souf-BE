@@ -5,5 +5,5 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface MemberCustomRepository {
-    Page<Member> findByCategories(Long first, Long second, Long third, Pageable pageable);
+    Page<Member> findByCategory(Long first, Pageable pageable);
 }

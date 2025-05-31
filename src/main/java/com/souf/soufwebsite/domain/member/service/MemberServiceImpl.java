@@ -41,7 +41,6 @@ public class MemberServiceImpl implements MemberService {
         return SecurityUtils.getCurrentMember();
     }
     private final CategoryService categoryService;
-    private final MemberCategoryService memberCategoryService;
 
     //회원가입
     @Override
@@ -113,11 +112,26 @@ public class MemberServiceImpl implements MemberService {
 
     //인증번호 전송
     @Override
-    public boolean sendEmailVerification(String email) {
-        String emailKey = "email:verification:" + email;
-        redisTemplate.delete(emailKey);
-        String code = String.format("%06d", new Random().nextInt(1000000));
+    public boolean sendSignupEmailVerification(String email) {
+        if (memberRepository.existsByEmail(email)) {
+            throw new NotAvailableEmailException();
+        }
+        return sendEmailCode(email);
+    }
+
+    @Override
+    public boolean sendResetEmailVerification(String email) {
+        if (!memberRepository.existsByEmail(email)) {
+            throw new NotFoundMemberException();
+        }
+        return sendEmailCode(email);
+    }
+
+    private boolean sendEmailCode(String email) {
         String redisKey = "email:verification:" + email;
+
+        redisTemplate.delete(redisKey);
+        String code = String.format("%06d", new Random().nextInt(1000000));
         redisTemplate.opsForValue().set(redisKey, code, 5, TimeUnit.MINUTES);
 
         return emailService.sendEmail(email, "이메일 인증번호", "인증번호는 " + code + " 입니다.");
@@ -182,8 +196,8 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Page<MemberResDto> getMembersByCategory(Long first, Long second, Long third, Pageable pageable) {
-        Page<Member> result = memberRepository.findByCategories(first, second, third, pageable);
+    public Page<MemberResDto> getMembersByCategory(Long first, Pageable pageable) {
+        Page<Member> result = memberRepository.findByCategory(first, pageable);
         return result.map(MemberResDto::from);
     }
 

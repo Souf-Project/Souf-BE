@@ -1,10 +1,8 @@
 package com.souf.soufwebsite.domain.member.reposiotry;
 
-import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.souf.soufwebsite.domain.member.entity.Member;
-import com.souf.soufwebsite.domain.member.entity.QMember;
-import com.souf.soufwebsite.domain.member.entity.RoleType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -15,8 +13,6 @@ import java.util.List;
 import static com.souf.soufwebsite.domain.member.entity.QMember.member;
 import static com.souf.soufwebsite.domain.member.entity.QMemberCategoryMapping.memberCategoryMapping;
 import static com.souf.soufwebsite.global.common.category.entity.QFirstCategory.firstCategory;
-import static com.souf.soufwebsite.global.common.category.entity.QSecondCategory.secondCategory;
-import static com.souf.soufwebsite.global.common.category.entity.QThirdCategory.thirdCategory;
 
 @RequiredArgsConstructor
 public class MemberCustomRepositoryImpl implements MemberCustomRepository {
@@ -24,38 +20,38 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<Member> findByCategories(Long first, Long second, Long third, Pageable pageable) {
-        List<Member> members = queryFactory
+    public Page<Member> findByCategory(Long first, Pageable pageable) {
+        // 1) BooleanBuilder 를 사용해 동적 where 절 구성
+        BooleanBuilder builder = new BooleanBuilder();
+        if (first != null) {
+            builder.and(memberCategoryMapping.firstCategory.id.eq(first));
+        }
+
+        // 2) 페이징된 회원 목록 조회 (1차 카테고리만 join 및 필터)
+        List<Member> content = queryFactory
                 .selectDistinct(member)
                 .from(member)
                 .join(member.categories, memberCategoryMapping)
                 .join(memberCategoryMapping.firstCategory, firstCategory)
-                .join(memberCategoryMapping.secondCategory, secondCategory)
-                .join(memberCategoryMapping.thirdCategory, thirdCategory)
-                .where(
-                        first != null ? memberCategoryMapping.firstCategory.id.eq(first) : null,
-                        second != null ? memberCategoryMapping.secondCategory.id.eq(second) : null,
-                        third != null ? memberCategoryMapping.thirdCategory.id.eq(third) : null
-                )
+                .where(builder)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(member.lastModifiedTime.desc())
                 .fetch();
 
+        // 3) 전체 개수(count)를 위한 쿼리
         Long total = queryFactory
                 .select(member.countDistinct())
                 .from(member)
                 .join(member.categories, memberCategoryMapping)
-                .join(memberCategoryMapping.firstCategory, firstCategory)
-                .join(memberCategoryMapping.secondCategory, secondCategory)
-                .join(memberCategoryMapping.thirdCategory, thirdCategory)
-                .where(
-                        first != null ? memberCategoryMapping.firstCategory.id.eq(first) : null,
-                        second != null ? memberCategoryMapping.secondCategory.id.eq(second) : null,
-                        third != null ? memberCategoryMapping.thirdCategory.id.eq(third) : null
-                )
+                .where(builder)
                 .fetchOne();
 
-        return new PageImpl<>(members, pageable, total != null ? total : 0L);
+        return new PageImpl<>(
+                content,
+                pageable,
+                total != null ? total : 0L
+        );
     }
+
 }

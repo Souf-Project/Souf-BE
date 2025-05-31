@@ -34,12 +34,10 @@ public class MemberController implements MemberApiSpecification{
     @GetMapping("/search")
     public SuccessResponse<Page<MemberResDto>> findByCategory(
             @RequestParam(required = false) Long first,
-            @RequestParam(required = false) Long second,
-            @RequestParam(required = false) Long third,
             @PageableDefault(size = 6) Pageable pageable
     ) {
         return new SuccessResponse<>(
-                memberService.getMembersByCategory(first, second, third, pageable),
+                memberService.getMembersByCategory(first, pageable),
                 "카테고리로 검색한 멤버 목록입니다."
         );
     }
