@@ -32,8 +32,6 @@ public interface MemberApiSpecification {
     @GetMapping("/member/search")
     SuccessResponse<Page<MemberResDto>> findByCategory(
             @RequestParam(required = false) Long first,
-            @RequestParam(required = false) Long second,
-            @RequestParam(required = false) Long third,
             @PageableDefault(size = 6)
             Pageable pageable
     );
