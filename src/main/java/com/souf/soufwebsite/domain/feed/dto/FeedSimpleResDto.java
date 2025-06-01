@@ -5,7 +5,6 @@ import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 
 public record FeedSimpleResDto(
         Long feedId,
-
         MediaResDto mediaResDto
 ) {
     public static FeedSimpleResDto from(Feed feed , MediaResDto mediaResDto) {

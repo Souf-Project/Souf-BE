@@ -20,5 +20,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
     void increaseViewCount(@Param("feedId") Long feedId, @Param("count") Long count);
 
     Page<Feed> findByOrderByViewCountDesc(Pageable pageable);
+
+    Page<Feed> findByOrderByCreatedTimeDesc(Pageable pageable);
 }
 

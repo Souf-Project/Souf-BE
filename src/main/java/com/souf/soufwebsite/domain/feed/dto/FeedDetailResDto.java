@@ -9,14 +9,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public record FeedDetailResDto(
+
+        Long memberId,
         String topic,
         String content,
         Long view,
         List<MediaResDto> mediaResDtos,
         LocalDateTime lastModifiedTime
 ) {
-    public static FeedDetailResDto from(Feed feed, Long feedViewCount){
+    public static FeedDetailResDto from(Long memberId, Feed feed, Long feedViewCount){
         return new FeedDetailResDto(
+                memberId,
                 feed.getTopic(),
             feed.getContent(),
             feed.getViewCount() + feedViewCount,

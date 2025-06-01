@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,14 +40,14 @@ public class FeedController implements FeedApiSpecification{
     }
 
     @GetMapping("/{memberId}")
-    public SuccessResponse<Page<FeedSimpleResDto>> getFeeds(
+    public SuccessResponse<Page<FeedSimpleResDto>> getStudentFeeds(
             @PathVariable(name = "memberId") Long memberId,
             @PageableDefault(size = 12) Pageable pageable) {
-        return new SuccessResponse<>(feedService.getFeeds(memberId, pageable), FEED_GET.getMessage());
+        return new SuccessResponse<>(feedService.getStudentFeeds(memberId, pageable), FEED_GET.getMessage());
     }
 
     @GetMapping("/{memberId}/{feedId}")
-    public SuccessResponse<FeedDetailResDto> getFeed(
+    public SuccessResponse<FeedDetailResDto> getDetailedFeed(
             @PathVariable(name = "memberId") Long memberId,
             @PathVariable(name = "feedId") Long feedId) {
         return new SuccessResponse<>(feedService.getFeedById(memberId, feedId), FEED_GET.getMessage());
@@ -71,5 +72,15 @@ public class FeedController implements FeedApiSpecification{
             @PageableDefault(size = 12) Pageable pageable){
         return new SuccessResponse<>(feedService.getPopularFeeds(pageable),
                 FEED_GET_POPULATION.getMessage());
+    }
+
+    @GetMapping
+    public SuccessResponse<Slice<FeedDetailResDto>> getFeedList(
+            @RequestParam(name = "firstCategory") Long first,
+            @PageableDefault(size = 12) Pageable pageable) {
+        return new SuccessResponse<>(
+                feedService.getFeeds(first, pageable),
+                FEED_GET.getMessage()
+        );
     }
 }

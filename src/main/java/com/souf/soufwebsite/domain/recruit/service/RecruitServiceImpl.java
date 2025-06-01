@@ -15,8 +15,6 @@ import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
 import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
-import com.souf.soufwebsite.global.common.category.exception.NotFoundFirstCategoryException;
-import com.souf.soufwebsite.global.common.category.repository.FirstCategoryRepository;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import com.souf.soufwebsite.global.util.SecurityUtils;
@@ -39,7 +37,6 @@ public class RecruitServiceImpl implements RecruitService {
     private final RecruitRepository recruitRepository;
     private final CategoryService categoryService;
     private final RedisUtil redisUtil;
-    private final FirstCategoryRepository firstCategoryRepository;
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
@@ -75,10 +72,13 @@ public class RecruitServiceImpl implements RecruitService {
     @Transactional(readOnly = true)
     @Override
     public Page<RecruitSimpleResDto> getRecruits(Long first,
+                                                 Long second,
+                                                 Long third,
+                                                 RecruitSearchReqDto reqDto,
                                                  Pageable pageable) {
-        firstCategoryRepository.findById(first).orElseThrow(NotFoundFirstCategoryException::new);
+        categoryService.validate(first, second, third);
 
-        return recruitRepository.getRecruitList(first, pageable);
+        return recruitRepository.getRecruitList(first, second, third, reqDto, pageable);
     }
 
     @Transactional(readOnly = true)

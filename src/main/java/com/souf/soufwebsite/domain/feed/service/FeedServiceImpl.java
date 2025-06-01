@@ -5,6 +5,7 @@ import com.souf.soufwebsite.domain.feed.dto.FeedReqDto;
 import com.souf.soufwebsite.domain.feed.dto.FeedResDto;
 import com.souf.soufwebsite.domain.feed.dto.FeedSimpleResDto;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
+import com.souf.soufwebsite.domain.feed.entity.FeedCategoryMapping;
 import com.souf.soufwebsite.domain.feed.exception.NotFoundFeedException;
 import com.souf.soufwebsite.domain.feed.exception.NotValidAuthenticationException;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
@@ -15,12 +16,18 @@ import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
+import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
+import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
+import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
+import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
+import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +40,7 @@ public class FeedServiceImpl implements FeedService {
 
     private final FeedRepository feedRepository;
     private final MemberRepository memberRepository;
+    private final CategoryService categoryService;
     private final FileService fileService;
     private final TagService tagService;
     private final RedisUtil redisUtil;
@@ -47,6 +55,7 @@ public class FeedServiceImpl implements FeedService {
         Member member = getCurrentUser();
 
         Feed feed = Feed.of(reqDto, member);
+        injectCategories(reqDto, feed);
         feed = feedRepository.save(feed);
         tagService.createFeedTag(feed, reqDto.tags());
 
@@ -70,7 +79,7 @@ public class FeedServiceImpl implements FeedService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<FeedSimpleResDto> getFeeds(Long memberId, Pageable pageable) {
+    public Page<FeedSimpleResDto> getStudentFeeds(Long memberId, Pageable pageable) {
         Member member = findIfMemberExists(memberId);
         return feedRepository.findAllByMemberOrderByIdDesc(member, pageable)
                 .map(feed -> FeedSimpleResDto.from(feed, MediaResDto.fromFeedThumbnail(feed)));
@@ -86,7 +95,7 @@ public class FeedServiceImpl implements FeedService {
         redisUtil.increaseCount(feedViewKey);
         Long viewCountFromRedis = redisUtil.get(feedViewKey);
 
-        return FeedDetailResDto.from(feed, viewCountFromRedis);
+        return FeedDetailResDto.from(memberId, feed, viewCountFromRedis);
     }
 
     @Transactional
@@ -124,6 +133,20 @@ public class FeedServiceImpl implements FeedService {
         );
     }
 
+    @Override
+    public Slice<FeedDetailResDto> getFeeds(Long first, Pageable pageable) {
+        Slice<Feed> feeds = feedRepository.findByOrderByCreatedTimeDesc(pageable);
+
+        return feeds.map(
+                feed -> {
+                    String feedViewKey = getFeedViewKey(feed.getId());
+                    Long viewCountFromRedis = redisUtil.get(feedViewKey);
+
+                    return FeedDetailResDto.from(feed.getMember().getId(), feed, viewCountFromRedis);
+                }
+        );
+    }
+
     private void verifyIfFeedIsMine(Feed feed, Member member) {
         log.info("currentMember: {}, feedMember: {}", member, feed.getMember());
         if(!feed.getMember().getId().equals(member.getId())){
@@ -141,5 +164,18 @@ public class FeedServiceImpl implements FeedService {
 
     private String getFeedViewKey(Long feedId) {
         return "feed:view:" + feedId;
+    }
+
+    private void injectCategories(FeedReqDto reqDto, Feed feed) {
+        for(CategoryDto dto : reqDto.categoryDtos()){
+            FirstCategory firstCategory = categoryService.findIfFirstIdExists(dto.firstCategory());
+            SecondCategory secondCategory = categoryService.findIfSecondIdExists(dto.secondCategory());
+            ThirdCategory thirdCategory = categoryService.findIfThirdIdExists(dto.thirdCategory());
+            log.info("f: {}, s: {}, t: {}", firstCategory.getName(), secondCategory.getName(), thirdCategory.getName());
+
+            categoryService.validate(firstCategory.getId(), secondCategory.getId(), thirdCategory.getId());
+            FeedCategoryMapping recruitCategoryMapping = FeedCategoryMapping.of(feed, firstCategory, secondCategory, thirdCategory);
+            feed.addCategory(recruitCategoryMapping);
+        }
     }
 }
