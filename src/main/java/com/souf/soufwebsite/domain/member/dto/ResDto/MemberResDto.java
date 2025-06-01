@@ -21,6 +21,9 @@ public record MemberResDto(
         @Schema(description = "자기소개", example = "안녕하세요, 디자인 전공자입니다.")
         String intro,
 
+        @Schema(description = "개인 URL", example = "https://github.com/username")
+        String personalUrl,
+
         @Schema(description = "회원 권한", example = "MEMBER")
         RoleType role
 
@@ -32,6 +35,7 @@ public record MemberResDto(
                 member.getUsername(),
                 member.getNickname(),
                 member.getIntro(),
+                member.getPersonalUrl(),
                 member.getRole()
         );
     }

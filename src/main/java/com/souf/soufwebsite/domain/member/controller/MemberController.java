@@ -26,6 +26,12 @@ public class MemberController implements MemberApiSpecification{
         return new SuccessResponse<>(memberService.getMembers(pageable));
     }
 
+    @GetMapping("/myinfo")
+    public SuccessResponse<MemberResDto> getMyInfo() {
+        MemberResDto meDto = memberService.getMyInfo();
+        return new SuccessResponse<>(meDto);
+    }
+
     @GetMapping("/{id}")
     public SuccessResponse<MemberResDto> getMemberById(@PathVariable Long id) {
         return new SuccessResponse<>(memberService.getMemberById(id));

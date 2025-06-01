@@ -26,6 +26,8 @@ public interface MemberService {
 
     Page<MemberResDto> getMembers(Pageable pageable);
 
+    MemberResDto getMyInfo();
+
     MemberResDto getMemberById(Long id);
 
     Page<MemberResDto> getMembersByCategory(Long first, Pageable pageable);

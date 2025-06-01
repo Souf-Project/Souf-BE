@@ -188,6 +188,13 @@ public class MemberServiceImpl implements MemberService {
                 .map(MemberResDto::from);
     }
 
+    //내 정보 조회
+    @Override
+    public MemberResDto getMyInfo() {
+        Member member = getCurrentUser();
+        return MemberResDto.from(member);
+    }
+
     //회원 조회
     @Override
     public MemberResDto getMemberById(Long id) {
