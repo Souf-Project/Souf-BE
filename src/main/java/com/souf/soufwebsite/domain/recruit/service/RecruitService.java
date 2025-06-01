@@ -11,7 +11,7 @@ public interface RecruitService {
 
     void uploadRecruitMedia(MediaReqDto reqDto);
 
-    Page<RecruitSimpleResDto> getRecruits(Long first, Long second, Long third, Pageable pageable);
+    Page<RecruitSimpleResDto> getRecruits(Long first, Pageable pageable);
 
     Page<MyRecruitResDto> getMyRecruits(Pageable pageable);
 

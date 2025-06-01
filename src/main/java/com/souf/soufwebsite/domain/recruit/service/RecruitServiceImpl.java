@@ -15,6 +15,8 @@ import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
 import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
+import com.souf.soufwebsite.global.common.category.exception.NotFoundFirstCategoryException;
+import com.souf.soufwebsite.global.common.category.repository.FirstCategoryRepository;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import com.souf.soufwebsite.global.util.SecurityUtils;
@@ -25,7 +27,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,6 +39,7 @@ public class RecruitServiceImpl implements RecruitService {
     private final RecruitRepository recruitRepository;
     private final CategoryService categoryService;
     private final RedisUtil redisUtil;
+    private final FirstCategoryRepository firstCategoryRepository;
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
@@ -72,11 +74,11 @@ public class RecruitServiceImpl implements RecruitService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<RecruitSimpleResDto> getRecruits(Long first, Long second, Long third,
+    public Page<RecruitSimpleResDto> getRecruits(Long first,
                                                  Pageable pageable) {
-        categoryService.validate(first, second, third);
+        firstCategoryRepository.findById(first).orElseThrow(NotFoundFirstCategoryException::new);
 
-        return recruitRepository.getRecruitList(first, second, third, pageable);
+        return recruitRepository.getRecruitList(first, pageable);
     }
 
     @Transactional(readOnly = true)

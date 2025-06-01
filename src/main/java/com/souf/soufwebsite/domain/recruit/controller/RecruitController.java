@@ -37,11 +37,9 @@ public class RecruitController implements RecruitApiSpecification{
     @GetMapping
     public SuccessResponse<Page<RecruitSimpleResDto>> getRecruits(
             @RequestParam(name = "firstCategory") Long first,
-            @RequestParam(name = "secondCategory") Long second,
-            @RequestParam(name = "thirdCategory") Long third,
             @PageableDefault(size = 12) Pageable pageable) {
         return new SuccessResponse<>(
-                recruitService.getRecruits(first, second, third, pageable),
+                recruitService.getRecruits(first, pageable),
                 RECRUIT_GET.getMessage());
     }
 

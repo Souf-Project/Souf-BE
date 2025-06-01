@@ -22,9 +22,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
 
 
     @Override
-    public Page<RecruitSimpleResDto> getRecruitList(Long first, Long second, Long third, Pageable pageable) {
-
-
+    public Page<RecruitSimpleResDto> getRecruitList(Long first, Pageable pageable) {
         List<RecruitSimpleResDto> recruitList = queryFactory
                 .select(Projections.constructor(
                         RecruitSimpleResDto.class,
@@ -40,9 +38,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                 ).from(recruit)
                 .join(recruit.categories, recruitCategoryMapping)
                 .where(
-                        first != null ? recruitCategoryMapping.firstCategory.id.eq(first) : null,
-                        second != null ? recruitCategoryMapping.secondCategory.id.eq(second) : null,
-                        third != null ? recruitCategoryMapping.thirdCategory.id.eq(third) : null
+                        first != null ? recruitCategoryMapping.firstCategory.id.eq(first) : null
                 )
                 .orderBy(recruit.lastModifiedTime.desc())
                 .offset(pageable.getOffset())

@@ -6,5 +6,5 @@ import org.springframework.data.domain.Pageable;
 
 public interface RecruitCustomRepository {
 
-    Page<RecruitSimpleResDto> getRecruitList(Long first, Long second, Long third, Pageable pageable);
+    Page<RecruitSimpleResDto> getRecruitList(Long first, Pageable pageable);
 }

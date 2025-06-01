@@ -27,8 +27,6 @@ public interface RecruitApiSpecification {
     @Operation(summary = "공고문 리스트 조회", description = "카테고리에 걸맞는 공고문 리스트를 조회합니다.")
     @GetMapping
     SuccessResponse<Page<RecruitSimpleResDto>> getRecruits(@RequestParam(name = "firstCategory") Long first,
-                                                           @RequestParam(name = "secondCategory") Long second,
-                                                           @RequestParam(name = "thirdCategory") Long third,
                                                            @PageableDefault(size = 12) Pageable pageable);
 
     @Tag(name = "Recruit", description = "공고문 관련 API")
@@ -51,6 +49,8 @@ public interface RecruitApiSpecification {
     @DeleteMapping("/{recruitId}")
     SuccessResponse deleteRecruit(@PathVariable(name = "recruitId") Long recruitId);
 
+    @Tag(name = "Recruit", description = "공고문 관련 API")
+    @Operation(summary = "인기있는 공고문 조회", description = "사용자 조회 수 별로 인기있는 공고문을 조회합니다.")
     @GetMapping("/popular")
     SuccessResponse<Page<RecruitPopularityResDto>> getPopularRecruits(
             @PageableDefault(size = 6) Pageable pageable);
