@@ -25,8 +25,9 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
     @Override
     public Page<RecruitSimpleResDto> getRecruitList(Long first, Long second, Long third,
                                                     RecruitSearchReqDto searchReqDto, Pageable pageable) {
+
         List<RecruitSimpleResDto> recruitList = queryFactory
-                .select(Projections.constructor(
+                .selectDistinct(Projections.constructor(
                         RecruitSimpleResDto.class,
                         recruit.id,
                         recruit.title,
@@ -35,7 +36,8 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         recruit.payment,
                         recruit.region,
                         recruit.deadline,
-                        recruit.recruitCount
+                        recruit.recruitCount,
+                        recruit.lastModifiedTime
                         )
                 ).from(recruit)
                 .join(recruit.categories, recruitCategoryMapping)

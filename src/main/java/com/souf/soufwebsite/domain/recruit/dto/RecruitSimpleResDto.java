@@ -11,6 +11,7 @@ public record RecruitSimpleResDto(
         String payment,
         String region,
         LocalDateTime deadLine,
-        Long recruitCount
+        Long recruitCount,
+        LocalDateTime lastModified
 ) {
 }
