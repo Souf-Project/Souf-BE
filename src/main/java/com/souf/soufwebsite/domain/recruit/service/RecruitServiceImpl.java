@@ -25,7 +25,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,11 +71,14 @@ public class RecruitServiceImpl implements RecruitService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<RecruitSimpleResDto> getRecruits(Long first, Long second, Long third,
+    public Page<RecruitSimpleResDto> getRecruits(Long first,
+                                                 Long second,
+                                                 Long third,
+                                                 RecruitSearchReqDto reqDto,
                                                  Pageable pageable) {
         categoryService.validate(first, second, third);
 
-        return recruitRepository.getRecruitList(first, second, third, pageable);
+        return recruitRepository.getRecruitList(first, second, third, reqDto, pageable);
     }
 
     @Transactional(readOnly = true)
@@ -152,7 +154,7 @@ public class RecruitServiceImpl implements RecruitService {
     }
 
     private void verifyIfRecruitIsMine(Recruit recruit, Member member) {
-        if(!recruit.getMember().equals(member)){
+        if(!recruit.getMember().getId().equals(member.getId())){
             throw new NotValidAuthenticationException();
         }
     }

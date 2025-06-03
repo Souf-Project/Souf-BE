@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.recruit.entity;
+package com.souf.soufwebsite.domain.feed.entity;
 
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
@@ -11,17 +11,19 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class RecruitCategoryMapping {
+public class FeedCategoryMapping {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "feed_category_maaping_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "recruit_id")
-    private Recruit recruit;
+    @JoinColumn(name = "feed_id")
+    private Feed feed;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "firstCategory_id")
     private FirstCategory firstCategory;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -30,17 +32,12 @@ public class RecruitCategoryMapping {
     @ManyToOne(fetch = FetchType.LAZY)
     private ThirdCategory thirdCategory;
 
-    public static RecruitCategoryMapping of(Recruit recruit, FirstCategory firstCategory, SecondCategory secondCategory, ThirdCategory thirdCategory) {
-        RecruitCategoryMapping mapping = new RecruitCategoryMapping();
-        mapping.recruit = recruit;
+    public static FeedCategoryMapping of(Feed feed, FirstCategory firstCategory, SecondCategory secondCategory, ThirdCategory thirdCategory) {
+        FeedCategoryMapping mapping = new FeedCategoryMapping();
+        mapping.feed = feed;
         mapping.firstCategory = firstCategory;
         mapping.secondCategory = secondCategory;
         mapping.thirdCategory = thirdCategory;
         return mapping;
     }
-
-    public void disconnectRecruit(){
-        this.recruit = null;
-    }
-
 }

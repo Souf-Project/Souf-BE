@@ -40,13 +40,15 @@ public class Feed extends BaseEntity {
     @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FeedTag> feedTags = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
-    private Member member;
-
     @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Media> media = new ArrayList<>();
 
+    @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FeedCategoryMapping> categories = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
     @Builder
     private Feed(String topic, String content, Member member) {
@@ -88,5 +90,9 @@ public class Feed extends BaseEntity {
 
     public void addViewCount(Long count){
         this.viewCount += count;
+    }
+
+    public void addCategory(FeedCategoryMapping feedCategoryMapping){
+        this.categories.add(feedCategoryMapping);
     }
 }

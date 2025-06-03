@@ -80,6 +80,7 @@ public class SecurityConfig {
                                         "/error"
                                 ).permitAll()
 
+                                .requestMatchers("/v1/normal/check").permitAll()
                                 .requestMatchers("/api/v1/auth/**").permitAll()
                                 .requestMatchers("/api/v1/recruit/popular", "/api/v1/feed/popular")
                                 .permitAll()
@@ -107,8 +108,8 @@ public class SecurityConfig {
                                 ).authenticated()
 
                                 // 5) POST/PUT/DELETE 등 기타 공고·피드 엔드포인트
-                                .requestMatchers("/api/v1/recruit/**").hasRole("MEMBER")
-                                .requestMatchers("/api/v1/feed/**").hasRole("STUDENT")
+                                .requestMatchers("/api/v1/recruit/**").hasAnyRole("MEMBER", "ADMIN")
+                                .requestMatchers("/api/v1/feed/**").hasAnyRole("STUDENT", "ADMIN")
 
                                 .anyRequest().authenticated()
                 );

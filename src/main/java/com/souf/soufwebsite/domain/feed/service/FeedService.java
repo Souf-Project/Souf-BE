@@ -7,6 +7,7 @@ import com.souf.soufwebsite.domain.feed.dto.FeedSimpleResDto;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 
 public interface FeedService {
 
@@ -14,7 +15,7 @@ public interface FeedService {
 
     void uploadFeedMedia(MediaReqDto mediaReqDto);
 
-    Page<FeedSimpleResDto> getFeeds(Long memberId, Pageable pageable);
+    Page<FeedSimpleResDto> getStudentFeeds(Long memberId, Pageable pageable);
 
     FeedDetailResDto getFeedById(Long memberId, Long feedId);
 
@@ -23,4 +24,6 @@ public interface FeedService {
     void deleteFeed(Long feedId);
 
     Page<FeedSimpleResDto> getPopularFeeds(Pageable pageable);
+
+    Slice<FeedDetailResDto> getFeeds(Long first, Pageable pageable);
 }

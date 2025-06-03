@@ -6,6 +6,7 @@ public record RecruitPopularityResDto(
         Long recruitId,
         String title,
         String content,
+        Long firstCategory,
         Long secondCategory
 ) {
     public static RecruitPopularityResDto of(Recruit recruit) {
@@ -13,6 +14,7 @@ public record RecruitPopularityResDto(
                 recruit.getId(),
                 recruit.getTitle(),
                 recruit.getContent(),
+                recruit.getCategories().get(0).getFirstCategory().getId(),
                 recruit.getCategories().get(0).getSecondCategory().getId()
         );
     }

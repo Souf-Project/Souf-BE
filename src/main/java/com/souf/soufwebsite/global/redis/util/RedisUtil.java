@@ -17,7 +17,10 @@ public class RedisUtil {
     }
 
     public Long get(String key) {
-        return (Long) redisTemplate.opsForValue().get(key);
+        Object value = redisTemplate.opsForValue().get(key);
+        if (value instanceof Long) return (Long) value;
+        if (value instanceof Integer) return ((Integer) value).longValue();
+        return 0L;
     }
 
     public Set<String> getKeys(String key){

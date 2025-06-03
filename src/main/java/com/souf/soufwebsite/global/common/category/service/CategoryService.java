@@ -35,8 +35,7 @@ public class CategoryService {
             if (secondId == null) {
                 throw new NotIncludedSecondCategoryException();
             }
-            ThirdCategory third = thirdCategoryRepository.findById(thirdId)
-                    .orElseThrow(NotFoundThirdCategoryException::new);
+            ThirdCategory third = findIfThirdIdExists(thirdId);
             if (!third.getSecondCategory().getId().equals(secondId)) {
                 throw new NotMatchedCategoryException("소분류와 중분류의 조합이 유효하지 않습니다.");
             }
@@ -46,8 +45,7 @@ public class CategoryService {
             if (firstId == null) {
                 throw new NotIncludedFirstCategoryException();
             }
-            SecondCategory second = secondCategoryRepository.findById(secondId)
-                    .orElseThrow(NotFoundSecondCategoryException::new);
+            SecondCategory second = findIfSecondIdExists(secondId);
             if (!second.getFirstCategory().getId().equals(firstId)) {
                 throw new NotMatchedCategoryException("중분류와 대분류의 조합이 유효하지 않습니다.");
             }

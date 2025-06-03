@@ -2,6 +2,7 @@ package com.souf.soufwebsite.domain.recruit.repository;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.souf.soufwebsite.domain.recruit.dto.RecruitSearchReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitSimpleResDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,11 +23,11 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
 
 
     @Override
-    public Page<RecruitSimpleResDto> getRecruitList(Long first, Long second, Long third, Pageable pageable) {
-
+    public Page<RecruitSimpleResDto> getRecruitList(Long first, Long second, Long third,
+                                                    RecruitSearchReqDto searchReqDto, Pageable pageable) {
 
         List<RecruitSimpleResDto> recruitList = queryFactory
-                .select(Projections.constructor(
+                .selectDistinct(Projections.constructor(
                         RecruitSimpleResDto.class,
                         recruit.id,
                         recruit.title,
@@ -35,20 +36,36 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         recruit.payment,
                         recruit.region,
                         recruit.deadline,
-                        recruit.recruitCount
+                        recruit.recruitCount,
+                        recruit.lastModifiedTime
                         )
                 ).from(recruit)
                 .join(recruit.categories, recruitCategoryMapping)
                 .where(
                         first != null ? recruitCategoryMapping.firstCategory.id.eq(first) : null,
                         second != null ? recruitCategoryMapping.secondCategory.id.eq(second) : null,
-                        third != null ? recruitCategoryMapping.thirdCategory.id.eq(third) : null
+                        third != null ? recruitCategoryMapping.thirdCategory.id.eq(third) : null,
+                        searchReqDto.title() != null ? recruit.title.eq(searchReqDto.title()) : null,
+                        searchReqDto.content() != null ? recruit.content.eq(searchReqDto.content()) : null
                 )
                 .orderBy(recruit.lastModifiedTime.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        return new PageImpl<>(recruitList, pageable, recruitList.size());
+        long total = queryFactory
+                .select(recruit.id.countDistinct())
+                .from(recruit)
+                .join(recruit.categories, recruitCategoryMapping)
+                .where(
+                        first != null ? recruitCategoryMapping.firstCategory.id.eq(first) : null,
+                        second != null ? recruitCategoryMapping.secondCategory.id.eq(second) : null,
+                        third != null ? recruitCategoryMapping.thirdCategory.id.eq(third) : null,
+                        searchReqDto.title() != null ? recruit.title.eq(searchReqDto.title()) : null,
+                        searchReqDto.content() != null ? recruit.content.eq(searchReqDto.content()) : null
+                )
+                .fetchOne();
+
+        return new PageImpl<>(recruitList, pageable, total);
     }
 }

@@ -34,7 +34,7 @@ public class AuthController implements AuthApiSpecification{
     }
 
     @PatchMapping("/reset/password")
-    public SuccessResponse<?> resetPassword(@RequestBody ResetReqDto reqDto) {
+    public SuccessResponse<?> resetPassword(@RequestBody @Valid ResetReqDto reqDto) {
         memberService.resetPassword(reqDto);
         return new SuccessResponse<>("비밀번호 재설정 성공");
     }
