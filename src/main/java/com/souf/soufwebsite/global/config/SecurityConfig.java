@@ -80,6 +80,7 @@ public class SecurityConfig {
                                         "/error"
                                 ).permitAll()
 
+                                .requestMatchers("/v1/normal/check").permitAll()
                                 .requestMatchers("/api/v1/auth/**").permitAll()
                                 .requestMatchers("/api/v1/recruit/popular", "/api/v1/feed/popular")
                                 .permitAll()
