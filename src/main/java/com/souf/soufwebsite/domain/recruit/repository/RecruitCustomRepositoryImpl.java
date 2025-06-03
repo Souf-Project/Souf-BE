@@ -53,6 +53,19 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        return new PageImpl<>(recruitList, pageable, recruitList.size());
+        long total = queryFactory
+                .select(recruit.id.countDistinct())
+                .from(recruit)
+                .join(recruit.categories, recruitCategoryMapping)
+                .where(
+                        first != null ? recruitCategoryMapping.firstCategory.id.eq(first) : null,
+                        second != null ? recruitCategoryMapping.secondCategory.id.eq(second) : null,
+                        third != null ? recruitCategoryMapping.thirdCategory.id.eq(third) : null,
+                        searchReqDto.title() != null ? recruit.title.eq(searchReqDto.title()) : null,
+                        searchReqDto.content() != null ? recruit.content.eq(searchReqDto.content()) : null
+                )
+                .fetchOne();
+
+        return new PageImpl<>(recruitList, pageable, total);
     }
 }
