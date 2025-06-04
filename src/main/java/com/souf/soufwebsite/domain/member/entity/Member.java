@@ -57,6 +57,8 @@ public class Member extends BaseEntity {
     @Column(length = 300)
     private String personalUrl;
 
+    private String profileImageUrl;
+
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberCategoryMapping> categories = new ArrayList<>();
 

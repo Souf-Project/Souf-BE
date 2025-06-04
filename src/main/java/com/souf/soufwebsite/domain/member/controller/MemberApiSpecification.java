@@ -32,21 +32,21 @@ public interface MemberApiSpecification {
             @PathVariable Long id
     );
 
-    @Operation(summary = "카테고리로 회원 검색", description = "1~3차 카테고리 필터에 해당하는 회원 목록을 페이징하여 조회합니다.")
-    @GetMapping("/member/search")
-    SuccessResponse<Page<MemberResDto>> findByCategory(
-            @RequestParam(required = false) Long first,
-            @PageableDefault(size = 6)
-            Pageable pageable
-    );
-
-    @Operation(summary = "닉네임으로 회원 검색", description = "닉네임에 키워드(검색어)가 포함된 회원 목록을 페이징하여 조회합니다.")
-    @GetMapping("/member/search/nickname")
-    SuccessResponse<Page<MemberResDto>> findByNickname(
-            @RequestParam String keyword,
-            @PageableDefault(size = 6)
-            Pageable pageable
-    );
+//    @Operation(summary = "카테고리로 회원 검색", description = "1~3차 카테고리 필터에 해당하는 회원 목록을 페이징하여 조회합니다.")
+//    @GetMapping("/member/search")
+//    SuccessResponse<Page<MemberResDto>> findByCategory(
+//            @RequestParam(required = false) Long first,
+//            @PageableDefault(size = 6)
+//            Pageable pageable
+//    );
+//
+//    @Operation(summary = "닉네임으로 회원 검색", description = "닉네임에 키워드(검색어)가 포함된 회원 목록을 페이징하여 조회합니다.")
+//    @GetMapping("/member/search/nickname")
+//    SuccessResponse<Page<MemberResDto>> findByNickname(
+//            @RequestParam String keyword,
+//            @PageableDefault(size = 6)
+//            Pageable pageable
+//    );
 
     @Operation(summary = "회원정보 수정", description = "로그인된 사용자의 회원정보를 업데이트합니다.")
     @PutMapping("/update")

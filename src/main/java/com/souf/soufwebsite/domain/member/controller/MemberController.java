@@ -37,27 +37,27 @@ public class MemberController implements MemberApiSpecification{
         return new SuccessResponse<>(memberService.getMemberById(id));
     }
 
-    @GetMapping("/search")
-    public SuccessResponse<Page<MemberResDto>> findByCategory(
-            @RequestParam(required = false) Long first,
-            @PageableDefault(size = 6) Pageable pageable
-    ) {
-        return new SuccessResponse<>(
-                memberService.getMembersByCategory(first, pageable),
-                "카테고리로 검색한 멤버 목록입니다."
-        );
-    }
-
-    @GetMapping("/search/nickname")
-    public SuccessResponse<Page<MemberResDto>> findByNickname(
-            @RequestParam String keyword,
-            @PageableDefault(size = 6) Pageable pageable
-    ) {
-        return new SuccessResponse<>(
-                memberService.getMembersByNickname(keyword, pageable),
-                "닉네임으로 검색한 멤버 목록입니다."
-        );
-    }
+//    @GetMapping("/search")
+//    public SuccessResponse<Page<MemberResDto>> findByCategory(
+//            @RequestParam(required = false) Long first,
+//            @PageableDefault(size = 6) Pageable pageable
+//    ) {
+//        return new SuccessResponse<>(
+//                memberService.getMembersByCategory(first, pageable),
+//                "카테고리로 검색한 멤버 목록입니다."
+//        );
+//    }
+//
+//    @GetMapping("/search/nickname")
+//    public SuccessResponse<Page<MemberResDto>> findByNickname(
+//            @RequestParam String keyword,
+//            @PageableDefault(size = 6) Pageable pageable
+//    ) {
+//        return new SuccessResponse<>(
+//                memberService.getMembersByNickname(keyword, pageable),
+//                "닉네임으로 검색한 멤버 목록입니다."
+//        );
+//    }
 
     @PutMapping("/update")
     public SuccessResponse<?> updateUserInfo(@RequestBody UpdateReqDto reqDto) {

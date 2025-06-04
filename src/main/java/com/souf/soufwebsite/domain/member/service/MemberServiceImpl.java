@@ -202,17 +202,17 @@ public class MemberServiceImpl implements MemberService {
         return MemberResDto.from(member);
     }
 
-    @Override
-    public Page<MemberResDto> getMembersByCategory(Long first, Pageable pageable) {
-        Page<Member> result = memberRepository.findByCategory(first, pageable);
-        return result.map(MemberResDto::from);
-    }
-
-    @Override
-    public Page<MemberResDto> getMembersByNickname(String nickname, Pageable pageable) {
-        Page<Member> result = memberRepository.findByNicknameContainingIgnoreCase(nickname, pageable);
-        return result.map(MemberResDto::from);
-    }
+//    @Override
+//    public Page<MemberResDto> getMembersByCategory(Long first, Pageable pageable) {
+//        Page<Member> result = memberRepository.findByCategory(first, pageable);
+//        return result.map(MemberResDto::from);
+//    }
+//
+//    @Override
+//    public Page<MemberResDto> getMembersByNickname(String nickname, Pageable pageable) {
+//        Page<Member> result = memberRepository.findByNicknameContainingIgnoreCase(nickname, pageable);
+//        return result.map(MemberResDto::from);
+//    }
 
     @Override
     public boolean isNicknameAvailable(String nickname) {

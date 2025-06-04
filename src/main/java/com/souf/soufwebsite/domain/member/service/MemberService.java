@@ -30,9 +30,9 @@ public interface MemberService {
 
     MemberResDto getMemberById(Long id);
 
-    Page<MemberResDto> getMembersByCategory(Long first, Pageable pageable);
-
-    Page<MemberResDto> getMembersByNickname(String nickname, Pageable pageable);
+//    Page<MemberResDto> getMembersByCategory(Long first, Pageable pageable);
+//
+//    Page<MemberResDto> getMembersByNickname(String nickname, Pageable pageable);
 
     boolean isNicknameAvailable(String nickname);
 }
