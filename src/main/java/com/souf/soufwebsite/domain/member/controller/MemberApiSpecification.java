@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/member")
 public interface MemberApiSpecification {
 
-    @Operation(summary = "회원 목록 조회", description = "모든 회원의 정보를 페이징하여 조회합니다.")
+    @Operation(summary = "회원 목록 조회", description = "카테고리와 검색어로 필터링한 회원 목록을 페이징하여 조회합니다.")
     @GetMapping("/member")
     SuccessResponse<Page<MemberSimpleResDto>> getMembers(
             @RequestParam(name = "firstCategory") Long first,
