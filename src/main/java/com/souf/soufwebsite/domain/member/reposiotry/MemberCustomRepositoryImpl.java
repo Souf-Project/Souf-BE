@@ -1,13 +1,9 @@
 package com.souf.soufwebsite.domain.member.reposiotry;
 
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
-import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
-import com.souf.soufwebsite.domain.member.controller.MemberController;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberSearchReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
@@ -21,7 +17,6 @@ import java.util.Objects;
 
 import static com.souf.soufwebsite.domain.member.entity.QMember.member;
 import static com.souf.soufwebsite.domain.member.entity.QMemberCategoryMapping.memberCategoryMapping;
-import static com.souf.soufwebsite.global.common.category.entity.QFirstCategory.firstCategory;
 
 @RequiredArgsConstructor
 public class MemberCustomRepositoryImpl implements MemberCustomRepository {
