@@ -6,6 +6,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaResDto;
+import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.member.controller.MemberController;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberSearchReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Objects;
 
 import static com.souf.soufwebsite.domain.member.entity.QMember.member;
 import static com.souf.soufwebsite.domain.member.entity.QMemberCategoryMapping.memberCategoryMapping;
@@ -62,71 +64,63 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
 //        );
 //    }
 
-//    @Override
-//    public Page<MemberSimpleResDto> getMemberList(Long first, Long second, Long third,
-//                                                  MemberSearchReqDto searchReqDto, Pageable pageable) {
-//
-//        // 1. 기본 조회
-//        List<MemberSimpleResDto> userList = queryFactory
-//                .selectDistinct(Projections.constructor(
-//                        MemberSimpleResDto.class,
-//                        member.profileImageUrl,
-//                        member.nickname,
-//                        member.intro
-//                ))
-//                .from(member)
-//                .leftJoin(member.categories, memberCategoryMapping)
-//                .where(
-//                        first != null ? memberCategoryMapping.firstCategory.id.eq(first) : null,
-//                        second != null ? memberCategoryMapping.secondCategory.id.eq(second) : null,
-//                        third != null ? memberCategoryMapping.thirdCategory.id.eq(third) : null,
-//                        searchReqDto.keyword() != null ? (
-//                                member.nickname.contains(searchReqDto.keyword())
-//                                        .or(member.intro.contains(searchReqDto.keyword()))
-//                        ) : null
-//                )
-//                .orderBy(member.lastModifiedTime.desc())
-//                .offset(pageable.getOffset())
-//                .limit(pageable.getPageSize())
-//                .fetch();
-//
-//        Long total = queryFactory
-//                .select(member.countDistinct())
-//                .from(member)
-//                .leftJoin(member.categories, memberCategoryMapping)
-//                .where(
-//                        first != null ? memberCategoryMapping.firstCategory.id.eq(first) : null,
-//                        second != null ? memberCategoryMapping.secondCategory.id.eq(second) : null,
-//                        third != null ? memberCategoryMapping.thirdCategory.id.eq(third) : null,
-//                        searchReqDto.keyword() != null ? (
-//                                member.nickname.contains(searchReqDto.keyword())
-//                                        .or(member.intro.contains(searchReqDto.keyword()))
-//                        ) : null
-//                )
-//                .fetchOne();
-//
-//        List<MemberSimpleResDto> finalizedList = userList.stream()
-//                .map(dto -> {
-//                    String presignedProfile = fileService.getPresignedUrl(dto.profileImageUrl());
-//
-//                    Member member = memberRepository.findByNickname(dto.nickname())
-//                            .orElseThrow();
-//
-//                    List<Feed> feeds = feedRepository.findTop3ByMemberOrderByViewCountDesc(member);
-//
-//                    //각 피드의 썸네일 → presigned URL 변환
-//                    List<MemberSimpleResDto.PopularFeedDto> feedDtos = feeds.stream()
-//                            .map(feed -> {
-//                                MediaResDto thumbnail = MediaResDto.fromFeedThumbnail(feed);
-//                                String presignedImageUrl = fileService.getPresignedUrl(thumbnail.fileUrl());
-//                                return new MemberSimpleResDto.PopularFeedDto(presignedImageUrl);
-//                            })
-//                            .toList();
-//
-//                    return new MemberSimpleResDto(presignedProfile, dto.nickname(), dto.intro(), feedDtos);
-//                })
-//                .toList();
-//
-//        return new PageImpl<>(finalizedList, pageable, total == null ? 0L : total);
-//    }
+    @Override
+    public Page<MemberSimpleResDto> getMemberList(Long first, Long second, Long third,
+                                                  MemberSearchReqDto searchReqDto, Pageable pageable) {
+
+        List<Long> memberIds = queryFactory
+                .select(member.id)
+                .from(member)
+                .leftJoin(member.categories, memberCategoryMapping)
+                .where(
+                        first != null ? memberCategoryMapping.firstCategory.id.eq(first) : null,
+                        second != null ? memberCategoryMapping.secondCategory.id.eq(second) : null,
+                        third != null ? memberCategoryMapping.thirdCategory.id.eq(third) : null,
+                        searchReqDto.keyword() != null ? (
+                                member.nickname.contains(searchReqDto.keyword()).or(member.intro.contains(searchReqDto.keyword()))
+                        ) : null
+                )
+                .groupBy(member.id)
+                .orderBy(member.lastModifiedTime.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+
+        // 수동 페이징 처리
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), memberIds.size());
+        List<Long> pagedIds = memberIds.subList(start, end);
+
+        // 2. 실제 멤버 정보 조회
+        List<Member> members = queryFactory
+                .selectFrom(member)
+                .where(member.id.in(pagedIds))
+                .orderBy(member.lastModifiedTime.desc())
+                .fetch();
+
+        // 3. DTO 변환
+        List<MemberSimpleResDto> result = members.stream()
+                .map(m -> {
+                    String profileUrl = m.getProfileImageUrl();
+                    List<Feed> feeds = feedRepository.findTop3ByMemberOrderByViewCountDesc(m);
+                    List<MemberSimpleResDto.PopularFeedDto> feedDtos = feeds.stream()
+                            .map(feed -> {
+                                List<Media> mediaList = feed.getMedia();
+                                if (mediaList.isEmpty()) {
+                                    return null; // 썸네일이 없는 경우 처리
+                                }
+                                String originalUrl = mediaList.get(0).getOriginalUrl(); // 썸네일은 첫 번째 media로 가정
+                                return new MemberSimpleResDto.PopularFeedDto(originalUrl);
+                            })
+                            .filter(Objects::nonNull)
+                            .toList();
+
+                    return new MemberSimpleResDto(profileUrl, m.getNickname(), m.getIntro(), feedDtos);
+                })
+                .toList();
+
+        return new PageImpl<>(result, pageable, memberIds.size());
+    }
+
 }

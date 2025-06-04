@@ -2,6 +2,7 @@ package com.souf.soufwebsite.domain.member.service;
 
 import com.souf.soufwebsite.domain.member.dto.ReqDto.*;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
+import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.entity.*;
 import com.souf.soufwebsite.domain.member.exception.*;
@@ -181,15 +182,21 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
-    //회원 목록 조회
     @Override
-    public Page<MemberResDto> getMembers(Pageable pageable) {
-        return memberRepository.findAll(pageable)
-                .map(MemberResDto::from);
+    @Transactional(readOnly = true)
+    public Page<MemberSimpleResDto> getMembers(
+            Long first, Long second, Long third,
+            MemberSearchReqDto searchReqDto,
+            Pageable pageable) {
+        categoryService.validate(first, second, third);
+
+        return memberRepository.getMemberList(first, second, third, searchReqDto, pageable);
     }
+
 
     //내 정보 조회
     @Override
+    @Transactional(readOnly = true)
     public MemberResDto getMyInfo() {
         Member member = getCurrentUser();
         return MemberResDto.from(member);
@@ -197,6 +204,7 @@ public class MemberServiceImpl implements MemberService {
 
     //회원 조회
     @Override
+    @Transactional(readOnly = true)
     public MemberResDto getMemberById(Long id) {
         Member member = memberRepository.findById(id).orElseThrow(NotFoundMemberException::new);
         return MemberResDto.from(member);

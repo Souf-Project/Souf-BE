@@ -1,10 +1,8 @@
 package com.souf.soufwebsite.domain.member.service;
 
-import com.souf.soufwebsite.domain.member.dto.ReqDto.ResetReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.SigninReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.SignupReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.*;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
+import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +22,7 @@ public interface MemberService {
 
     void updateUserInfo(UpdateReqDto reqDto);
 
-    Page<MemberResDto> getMembers(Pageable pageable);
+    Page<MemberSimpleResDto> getMembers(Long first, Long second, Long third, MemberSearchReqDto searchReqDto, Pageable pageable);
 
     MemberResDto getMyInfo();
 

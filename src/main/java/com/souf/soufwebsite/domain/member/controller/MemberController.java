@@ -1,7 +1,9 @@
 package com.souf.soufwebsite.domain.member.controller;
 
+import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberSearchReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
+import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.service.MemberService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import lombok.RequiredArgsConstructor;
@@ -20,10 +22,16 @@ public class MemberController implements MemberApiSpecification{
     private final MemberService memberService;
 
     @GetMapping
-    public SuccessResponse<Page<MemberResDto>> getMembers(
-            @PageableDefault(size = 6) Pageable pageable
-    ) {
-        return new SuccessResponse<>(memberService.getMembers(pageable));
+    public SuccessResponse<Page<MemberSimpleResDto>> getMembers(
+            @RequestParam(name = "firstCategory") Long first,
+            @RequestParam(name = "secondCategory", required = false) Long second,
+            @RequestParam(name = "thirdCategory", required = false) Long third,
+            @RequestParam(name = "keyword", required = false) String keyword,
+            @PageableDefault(size = 6) Pageable pageable) {
+
+        MemberSearchReqDto reqDto = new MemberSearchReqDto(keyword);
+        return new SuccessResponse<>(memberService.getMembers(first, second, third, reqDto, pageable),
+                "멤버 목록을 조회했습니다.");
     }
 
     @GetMapping("/myinfo")

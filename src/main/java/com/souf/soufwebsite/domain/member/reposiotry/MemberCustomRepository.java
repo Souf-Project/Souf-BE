@@ -9,6 +9,6 @@ import org.springframework.data.domain.Pageable;
 public interface MemberCustomRepository {
 //    Page<Member> findByCategory(Long first, Pageable pageable);
 
-//    Page<MemberSimpleResDto> getMemberList(Long first, Long second, Long third,
-//                                           MemberSearchReqDto searchReqDto, Pageable pageable);
+    Page<MemberSimpleResDto> getMemberList(Long first, Long second, Long third,
+                                           MemberSearchReqDto searchReqDto, Pageable pageable);
 }
