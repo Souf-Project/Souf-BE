@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface FeedRepository extends JpaRepository<Feed, Long>, FeedCustomRepository {
 
     Page<Feed> findAllByMemberOrderByIdDesc(Member member, Pageable pageable);
@@ -20,5 +22,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, FeedCustomRep
     void increaseViewCount(@Param("feedId") Long feedId, @Param("count") Long count);
 
     Page<Feed> findByOrderByViewCountDesc(Pageable pageable);
+
+    List<Feed> findTop3ByMemberOrderByViewCountDesc(Member member);
 }
 

@@ -8,7 +8,7 @@ public record MediaReqDto(
         @Schema(description = "해당 공고문/피드의 아이디", example = "1")
         Long postId,
 
-        @Schema(description = "해당 파일에 접근할 수 있는 url", example = "[s3://sjekfjla.., s3://sfefnk, s3://asfe, s3://fweop]" )
+        @Schema(description = "해당 파일에 접근할 수 있는 url", example = "https://iamsouf.s3.amazonaws.com/feed/original/example.jpg" )
         List<String> fileUrl,
 
         @Schema(description = "해당 공고문/피드의 원래 파일 이름", example = "[fileName, pictureName, spring, hihi]")

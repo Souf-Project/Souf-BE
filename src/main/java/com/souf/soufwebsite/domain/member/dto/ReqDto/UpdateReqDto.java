@@ -7,6 +7,9 @@ import java.util.List;
 
 public record UpdateReqDto(
 
+        @Schema(description = "프로필 이미지", example = "https://iamsouf.s3.amazonaws.com/profile/original/profile.jpg")
+        String profileImageUrl,
+
         @Schema(description = "사용자 실명", example = "홍길동")
         String username,
 
