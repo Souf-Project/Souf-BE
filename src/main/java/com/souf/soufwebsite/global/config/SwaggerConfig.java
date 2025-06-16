@@ -19,7 +19,7 @@ public class SwaggerConfig {
                 .description("SouF API 명세서입니다.")
                 .version("v1.0.0");
 
-        String jwtSchemeName = "JWT TOKEN";
+        String jwtSchemeName = "JWT";
 
         SecurityRequirement securityRequirement = new SecurityRequirement().addList(jwtSchemeName);
 
@@ -27,7 +27,7 @@ public class SwaggerConfig {
                 .addSecuritySchemes(jwtSchemeName, new SecurityScheme()
                         .name(jwtSchemeName)
                         .type(SecurityScheme.Type.HTTP)
-                        .scheme("Bearer")
+                        .scheme("bearer")
                         .bearerFormat("JWT")
                         .description("JWT 토큰을 입력하세요. ex) Bearer eyaskdjfo3oi23b..."));
 
