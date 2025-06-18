@@ -35,7 +35,8 @@ public class Recruit extends BaseEntity {
 
     @Column(nullable = false, columnDefinition = "VARCHAR(30)")
     @Size(max = 50)
-    private String region;
+    @Enumerated(EnumType.STRING)
+    private RegionType region;
 
     // 마감일자
     @Column
@@ -56,6 +57,10 @@ public class Recruit extends BaseEntity {
     @NotNull
     @Column(nullable = false)
     private boolean recruitable;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private WorkType workType;
 
     @Builder.Default
     @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -81,6 +86,7 @@ public class Recruit extends BaseEntity {
                 .recruitCount(0L)
                 .viewCount(0L)
                 .recruitable(true)
+                .workType(reqDto.workType())
                 .member(member)
                 .build();
     }
@@ -90,6 +96,7 @@ public class Recruit extends BaseEntity {
         this.region = reqDto.region();
         this.deadline = reqDto.deadline();
         this.payment = reqDto.payment();
+        this.workType = reqDto.workType();
         this.preferentialTreatment = reqDto.preferentialTreatment();
     }
 

@@ -1,6 +1,8 @@
 package com.souf.soufwebsite.domain.recruit.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.souf.soufwebsite.domain.recruit.entity.RegionType;
+import com.souf.soufwebsite.domain.recruit.entity.WorkType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Future;
@@ -22,10 +24,10 @@ public record RecruitReqDto(
         @Size(max = 300)
         String content,
 
-        @Schema(description = "지역", example = "광진구 화양동")
+        @Schema(description = "지역", example = "광진구")
         @NotNull(message = "진행 지역은 필수입니다.")
         @Size(max = 30)
-        String region,
+        RegionType region,
 
         @Schema(description = "마감 기한", example = "2025-06-23T13:29")
         @Future
@@ -47,6 +49,10 @@ public record RecruitReqDto(
         List<CategoryDto> categoryDtos,
 
         @Schema(description = "원본 파일 이름 리스트, 없으면 [] 이렇게 빈 리스트로 반환해주세요.", example = "[\"fileName.jpg\", \"dog.jpg\"]")
-        List<String> originalFileNames
+        List<String> originalFileNames,
+
+        @Schema(description = "업무 형태를 넣어주세요.", example = "OFFLINE or ONLINE")
+        @NotNull(message = "업무 형태를 반드시 지정해주세요.")
+        WorkType workType
 ) {
 }
