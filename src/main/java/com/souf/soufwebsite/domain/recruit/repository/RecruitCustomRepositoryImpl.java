@@ -1,7 +1,6 @@
 package com.souf.soufwebsite.domain.recruit.repository;
 
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitSearchReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitSimpleResDto;
@@ -11,7 +10,10 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.souf.soufwebsite.domain.recruit.entity.QRecruit.recruit;
 import static com.souf.soufwebsite.domain.recruit.entity.QRecruitCategoryMapping.recruitCategoryMapping;
@@ -33,7 +35,8 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         recruit.title,
                         recruitCategoryMapping.secondCategory.id,
                         recruit.content,
-                        recruit.payment,
+                        recruit.minPayment,
+                        recruit.maxPayment,
                         recruit.region,
                         recruit.deadline,
                         recruit.recruitCount,
@@ -64,7 +67,8 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         t.get(recruit.title),
                         secondCatId,
                         t.get(recruit.content),
-                        t.get(recruit.payment),
+                        t.get(recruit.minPayment),
+                        t.get(recruit.maxPayment),
                         t.get(recruit.region),
                         t.get(recruit.deadline),
                         t.get(recruit.recruitCount),

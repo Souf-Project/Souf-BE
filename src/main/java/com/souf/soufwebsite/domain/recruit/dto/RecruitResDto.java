@@ -2,6 +2,7 @@ package com.souf.soufwebsite.domain.recruit.dto;
 
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.entity.RecruitCategoryMapping;
+import com.souf.soufwebsite.domain.recruit.entity.RegionType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 
 import java.time.LocalDateTime;
@@ -12,9 +13,10 @@ public record RecruitResDto(
         Long recruitId,
         String title,
         String content,
-        String region,
+        RegionType region,
         LocalDateTime deadline,
-        String payment,
+        String minPayment,
+        String maxPayment,
         String preferentialTreatment,
         String nickname,
         List<CategoryDto> categoryDtoList
@@ -25,7 +27,8 @@ public record RecruitResDto(
                 recruit.getContent(),
                 recruit.getRegion(),
                 recruit.getDeadline(),
-                recruit.getPayment(),
+                recruit.getMinPayment(),
+                recruit.getMaxPayment(),
                 recruit.getPreferentialTreatment(),
                 nickname,
                 convertToCategoryDto(recruit.getCategories())
