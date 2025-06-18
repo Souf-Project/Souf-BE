@@ -43,7 +43,10 @@ public class Recruit extends BaseEntity {
     private LocalDateTime deadline;
 
     @Column(nullable = false)
-    private String payment;
+    private String minPayment;
+
+    @Column(nullable = false)
+    private String maxPayment;
 
     @Column
     private String preferentialTreatment;
@@ -81,7 +84,8 @@ public class Recruit extends BaseEntity {
                 .content(reqDto.content())
                 .region(reqDto.region())
                 .deadline(reqDto.deadline())
-                .payment(reqDto.payment())
+                .minPayment(reqDto.minPayment())
+                .maxPayment(reqDto.maxPayment())
                 .preferentialTreatment(reqDto.preferentialTreatment())
                 .recruitCount(0L)
                 .viewCount(0L)
@@ -95,7 +99,8 @@ public class Recruit extends BaseEntity {
         this.content = reqDto.content();
         this.region = reqDto.region();
         this.deadline = reqDto.deadline();
-        this.payment = reqDto.payment();
+        this.minPayment = reqDto.minPayment();
+        this.maxPayment = reqDto.maxPayment();
         this.workType = reqDto.workType();
         this.preferentialTreatment = reqDto.preferentialTreatment();
     }

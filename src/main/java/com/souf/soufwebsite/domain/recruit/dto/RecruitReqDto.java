@@ -35,9 +35,13 @@ public record RecruitReqDto(
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm")
         LocalDateTime deadline,
 
-        @Schema(description = "제시 금액", example = "100만원")
-        @NotEmpty(message = "제시 금액은 필수입니다.")
-        String payment,
+        @Schema(description = "최소 제시 금액", example = "100만원")
+        @NotEmpty(message = "최소 제시 금액은 필수입니다.")
+        String minPayment,
+
+        @Schema(description = "최대 제시 금액", example = "100만원")
+        @NotEmpty(message = "최대 제시 금액은 필수입니다.")
+        String maxPayment,
 
         @Schema(description = "우대사항", example = "1. 전공자 우대\n2. 군필자 우대\n3. Powerpoint를 다루어 본 자")
         @NotNull(message = "우대사항은 옵션입니다.")
