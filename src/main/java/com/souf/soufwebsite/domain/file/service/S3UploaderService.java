@@ -49,7 +49,6 @@ public class S3UploaderService {
         GeneratePresignedUrlRequest urlRequest = new GeneratePresignedUrlRequest(bucketName, fileName)
                 .withMethod(HttpMethod.PUT)
                 .withExpiration(expiration);
-        );
 
         return urlRequest;
     }
