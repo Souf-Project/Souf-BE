@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.region.entity;
+package com.souf.soufwebsite.domain.citydetail.entity;
 
 import com.souf.soufwebsite.domain.city.entity.City;
 import jakarta.persistence.*;
@@ -9,10 +9,10 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Region {
+public class CityDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "region_id")
+    @Column(name = "cityDetail_id")
     private Long id;
 
     private String name;

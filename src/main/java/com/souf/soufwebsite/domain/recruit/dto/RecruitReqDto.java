@@ -28,7 +28,7 @@ public record RecruitReqDto(
         Long cityId,
 
         @Schema(description = "세부 지역 ID", example = "1")
-        Long regionId,
+        Long cityDetailId,
 
         @Schema(description = "마감 기한", example = "2025-06-23T13:29")
         @Future

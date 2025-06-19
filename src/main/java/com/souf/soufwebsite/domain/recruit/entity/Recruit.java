@@ -4,11 +4,10 @@ import com.souf.soufwebsite.domain.city.entity.City;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
-import com.souf.soufwebsite.domain.region.entity.Region;
+import com.souf.soufwebsite.domain.citydetail.entity.CityDetail;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -40,8 +39,8 @@ public class Recruit extends BaseEntity {
     private City city;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "region_id", nullable = true)
-    private Region region;
+    @JoinColumn(name = "cityDetail_id", nullable = true)
+    private CityDetail cityDetail;
 
 
     // 마감일자
@@ -84,12 +83,12 @@ public class Recruit extends BaseEntity {
     @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Media> media = new ArrayList<>();
 
-    public static Recruit of(RecruitReqDto reqDto, Member member, City city, Region region) {
+    public static Recruit of(RecruitReqDto reqDto, Member member, City city, CityDetail cityDetail) {
         return Recruit.builder()
                 .title(reqDto.title())
                 .content(reqDto.content())
                 .city(city)
-                .region(region)
+                .cityDetail(cityDetail)
                 .deadline(reqDto.deadline())
                 .minPayment(reqDto.minPayment())
                 .maxPayment(reqDto.maxPayment())
@@ -101,11 +100,11 @@ public class Recruit extends BaseEntity {
                 .member(member)
                 .build();
     }
-    public void updateRecruit(RecruitReqDto reqDto, City city, Region region) {
+    public void updateRecruit(RecruitReqDto reqDto, City city, CityDetail cityDetail) {
         this.title = reqDto.title();
         this.content = reqDto.content();
         this.city = city;
-        this.region = region;
+        this.cityDetail = cityDetail;
         this.deadline = reqDto.deadline();
         this.minPayment = reqDto.minPayment();
         this.maxPayment = reqDto.maxPayment();

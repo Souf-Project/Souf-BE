@@ -4,17 +4,13 @@ import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitSearchReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitSimpleResDto;
-import com.souf.soufwebsite.domain.region.entity.QRegion;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.souf.soufwebsite.domain.recruit.entity.QRecruit.recruit;
 import static com.souf.soufwebsite.domain.recruit.entity.QRecruitCategoryMapping.recruitCategoryMapping;
@@ -30,8 +26,6 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
     public Page<RecruitSimpleResDto> getRecruitList(Long first, Long second, Long third,
                                                     RecruitSearchReqDto searchReqDto, Pageable pageable) {
 
-        QRegion region = QRegion.region;
-
         List<Tuple> tuples = queryFactory
                 .select(
                         recruit.id,
@@ -41,14 +35,14 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         recruit.minPayment,
                         recruit.maxPayment,
                         recruit.city.name,
-                        recruit.region.name,
+                        recruit.cityDetail.name,
                         recruit.deadline,
                         recruit.recruitCount,
                         recruit.lastModifiedTime
                 )
                 .from(recruit)
                 .join(recruit.categories, recruitCategoryMapping)
-                .leftJoin(recruit.region)
+                .leftJoin(recruit.cityDetail)
                 .where(
                         first != null ? recruitCategoryMapping.firstCategory.id.eq(first) : null,
                         second != null ? recruitCategoryMapping.secondCategory.id.eq(second) : null,
@@ -67,6 +61,8 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
             Long secondCatId = t.get(recruitCategoryMapping.secondCategory.id);
 
             if (!mergedMap.containsKey(recruitId)) {
+                String cityDetailName = Optional.ofNullable(t.get(recruit.cityDetail.name)).orElse("");
+
                 RecruitSimpleResDto dto = RecruitSimpleResDto.of(
                         recruitId,
                         t.get(recruit.title),
@@ -75,7 +71,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         t.get(recruit.minPayment),
                         t.get(recruit.maxPayment),
                         t.get(recruit.city.name),
-                        t.get(recruit.region.name),
+                        cityDetailName,
                         t.get(recruit.deadline),
                         t.get(recruit.recruitCount),
                         t.get(recruit.lastModifiedTime)

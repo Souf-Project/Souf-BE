@@ -13,18 +13,18 @@ public record RecruitSimpleResDto(
         String minPayment,
         String maxPayment,
         String cityName,
-        String regionName,
+        String cityDetailName,
         LocalDateTime deadLine,
         Long recruitCount,
         LocalDateTime lastModified
 ) {
     public static RecruitSimpleResDto of(Long recruitId, String title, Long secondCategoryId, String content,
-                                         String minPayment, String maxPayment, String cityName, String regionName,
+                                         String minPayment, String maxPayment, String cityName, String cityDetailName,
                                          LocalDateTime deadLine, Long recruitCount, LocalDateTime lastModified) {
         return new RecruitSimpleResDto(
                 recruitId, title,
                 new ArrayList<>(List.of(secondCategoryId)), // 초기 리스트
-                content, minPayment, maxPayment, cityName, regionName, deadLine, recruitCount, lastModified
+                content, minPayment, maxPayment, cityName, cityDetailName, deadLine, recruitCount, lastModified
         );
     }
 
