@@ -37,7 +37,8 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         recruit.content,
                         recruit.minPayment,
                         recruit.maxPayment,
-                        recruit.region,
+                        recruit.city.name,
+                        recruit.region.name,
                         recruit.deadline,
                         recruit.recruitCount,
                         recruit.lastModifiedTime
@@ -69,7 +70,8 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         t.get(recruit.content),
                         t.get(recruit.minPayment),
                         t.get(recruit.maxPayment),
-                        t.get(recruit.region),
+                        t.get(recruit.city.name),
+                        t.get(recruit.region.name),
                         t.get(recruit.deadline),
                         t.get(recruit.recruitCount),
                         t.get(recruit.lastModifiedTime)

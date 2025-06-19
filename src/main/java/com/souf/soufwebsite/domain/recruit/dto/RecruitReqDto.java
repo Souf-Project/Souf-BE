@@ -1,7 +1,6 @@
 package com.souf.soufwebsite.domain.recruit.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.souf.soufwebsite.domain.recruit.entity.RegionType;
 import com.souf.soufwebsite.domain.recruit.entity.WorkType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -24,10 +23,12 @@ public record RecruitReqDto(
         @Size(max = 300)
         String content,
 
-        @Schema(description = "지역", example = "광진구")
-        @NotNull(message = "진행 지역은 필수입니다.")
-        @Size(max = 30)
-        RegionType region,
+        @Schema(description = "지역 ID", example = "1")
+        @NotNull(message = "지역은 필수입니다.")
+        Long cityId,
+
+        @Schema(description = "세부 지역 ID", example = "1")
+        Long regionId,
 
         @Schema(description = "마감 기한", example = "2025-06-23T13:29")
         @Future

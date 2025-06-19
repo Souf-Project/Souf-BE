@@ -1,5 +1,7 @@
 package com.souf.soufwebsite.domain.recruit.service;
 
+import com.souf.soufwebsite.domain.city.entity.City;
+import com.souf.soufwebsite.domain.city.repository.CityRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
@@ -11,6 +13,8 @@ import com.souf.soufwebsite.domain.recruit.entity.RecruitCategoryMapping;
 import com.souf.soufwebsite.domain.recruit.exception.NotFoundRecruitException;
 import com.souf.soufwebsite.domain.recruit.exception.NotValidAuthenticationException;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
+import com.souf.soufwebsite.domain.region.entity.Region;
+import com.souf.soufwebsite.domain.region.repository.RegionRepository;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
@@ -35,6 +39,8 @@ public class RecruitServiceImpl implements RecruitService {
 
     private final FileService fileService;
     private final RecruitRepository recruitRepository;
+    private final CityRepository cityRepository;
+    private final RegionRepository regionRepository;
     private final CategoryService categoryService;
     private final RedisUtil redisUtil;
 
@@ -46,7 +52,14 @@ public class RecruitServiceImpl implements RecruitService {
     @Transactional
     public RecruitCreateResDto createRecruit(RecruitReqDto reqDto) {
         Member member = getCurrentUser();
-        Recruit recruit = Recruit.of(reqDto, member);
+
+        City city = cityRepository.findById(reqDto.cityId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 City ID입니다."));
+        Region region = regionRepository.findById(reqDto.regionId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 Region ID입니다."));
+
+
+        Recruit recruit = Recruit.of(reqDto, member, city, region);
         injectCategories(reqDto, recruit);
         recruit = recruitRepository.save(recruit);
 
@@ -127,7 +140,13 @@ public class RecruitServiceImpl implements RecruitService {
         Recruit recruit = findIfRecruitExist(recruitId);
         verifyIfRecruitIsMine(recruit, member);
 
-        recruit.updateRecruit(reqDto);
+        City city = cityRepository.findById(reqDto.cityId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 City ID입니다."));
+        Region region = regionRepository.findById(reqDto.regionId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 Region ID입니다."));
+
+
+        recruit.updateRecruit(reqDto, city, region);
         recruit.clearCategories();
         injectCategories(reqDto, recruit);
     }
