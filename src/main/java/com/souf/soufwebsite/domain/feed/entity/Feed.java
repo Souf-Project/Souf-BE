@@ -1,7 +1,6 @@
 package com.souf.soufwebsite.domain.feed.entity;
 
 import com.souf.soufwebsite.domain.feed.dto.FeedReqDto;
-import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
@@ -38,12 +37,6 @@ public class Feed extends BaseEntity {
     private Long viewCount;
 
     @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FeedTag> feedTags = new ArrayList<>();
-
-    @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Media> media = new ArrayList<>();
-
-    @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FeedCategoryMapping> categories = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -69,23 +62,6 @@ public class Feed extends BaseEntity {
     public void updateContent(FeedReqDto reqDto) {
         this.topic = reqDto.topic();
         this.content = reqDto.content();
-        this.feedTags.clear();
-        this.media.clear();
-    }
-
-    // 연관관계 편의 메서드
-    public void addFileOnFeed(Media media){
-        this.media.add(media);
-        media.assignToFeed(this);
-    }
-
-    public void addFeedTagOnFeed(FeedTag feedTag){
-        this.feedTags.add(feedTag);
-    }
-
-    public void removeMedia(Media media) {
-        this.media.remove(media);
-        media.setFeed(this);
     }
 
     public void addViewCount(Long count){
