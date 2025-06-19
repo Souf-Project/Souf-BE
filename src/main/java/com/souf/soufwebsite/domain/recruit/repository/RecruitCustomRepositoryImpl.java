@@ -4,6 +4,7 @@ import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitSearchReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitSimpleResDto;
+import com.souf.soufwebsite.domain.region.entity.QRegion;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -29,6 +30,8 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
     public Page<RecruitSimpleResDto> getRecruitList(Long first, Long second, Long third,
                                                     RecruitSearchReqDto searchReqDto, Pageable pageable) {
 
+        QRegion region = QRegion.region;
+
         List<Tuple> tuples = queryFactory
                 .select(
                         recruit.id,
@@ -45,6 +48,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                 )
                 .from(recruit)
                 .join(recruit.categories, recruitCategoryMapping)
+                .leftJoin(recruit.region)
                 .where(
                         first != null ? recruitCategoryMapping.firstCategory.id.eq(first) : null,
                         second != null ? recruitCategoryMapping.secondCategory.id.eq(second) : null,

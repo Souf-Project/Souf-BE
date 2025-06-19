@@ -26,7 +26,7 @@ public record RecruitResDto(
                 recruit.getTitle(),
                 recruit.getContent(),
                 recruit.getCity().getName(),
-                recruit.getRegion().getName(),
+                recruit.getRegion() != null ? recruit.getRegion().getName() : null,
                 recruit.getDeadline(),
                 recruit.getMinPayment(),
                 recruit.getMaxPayment(),

@@ -55,9 +55,7 @@ public class RecruitServiceImpl implements RecruitService {
 
         City city = cityRepository.findById(reqDto.cityId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 City ID입니다."));
-        Region region = regionRepository.findById(reqDto.regionId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 Region ID입니다."));
-
+        Region region = validateRegionOrThrow(city, reqDto.regionId());
 
         Recruit recruit = Recruit.of(reqDto, member, city, region);
         injectCategories(reqDto, recruit);
@@ -142,9 +140,7 @@ public class RecruitServiceImpl implements RecruitService {
 
         City city = cityRepository.findById(reqDto.cityId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 City ID입니다."));
-        Region region = regionRepository.findById(reqDto.regionId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 Region ID입니다."));
-
+        Region region = validateRegionOrThrow(city, reqDto.regionId());
 
         recruit.updateRecruit(reqDto, city, region);
         recruit.clearCategories();
@@ -198,4 +194,16 @@ public class RecruitServiceImpl implements RecruitService {
     private String getRecruitViewKey(Long recruitId) {
         return "recruit:view:" + recruitId;
     }
+
+    private Region validateRegionOrThrow(City city, Long regionId) {
+        if ("지역 무관".equals(city.getName())) {
+            return null;
+        }
+        if (regionId == null) {
+            throw new IllegalArgumentException("세부 지역은 필수입니다.");
+        }
+        return regionRepository.findById(regionId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 Region ID입니다."));
+    }
+
 }
