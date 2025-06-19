@@ -1,5 +1,7 @@
 package com.souf.soufwebsite.domain.recruit.service;
 
+import com.souf.soufwebsite.domain.city.entity.City;
+import com.souf.soufwebsite.domain.city.repository.CityRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
@@ -11,6 +13,8 @@ import com.souf.soufwebsite.domain.recruit.entity.RecruitCategoryMapping;
 import com.souf.soufwebsite.domain.recruit.exception.NotFoundRecruitException;
 import com.souf.soufwebsite.domain.recruit.exception.NotValidAuthenticationException;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
+import com.souf.soufwebsite.domain.citydetail.entity.CityDetail;
+import com.souf.soufwebsite.domain.citydetail.repository.CityDetailRepository;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
@@ -35,6 +39,8 @@ public class RecruitServiceImpl implements RecruitService {
 
     private final FileService fileService;
     private final RecruitRepository recruitRepository;
+    private final CityRepository cityRepository;
+    private final CityDetailRepository cityDetailRepository;
     private final CategoryService categoryService;
     private final RedisUtil redisUtil;
 
@@ -46,7 +52,12 @@ public class RecruitServiceImpl implements RecruitService {
     @Transactional
     public RecruitCreateResDto createRecruit(RecruitReqDto reqDto) {
         Member member = getCurrentUser();
-        Recruit recruit = Recruit.of(reqDto, member);
+
+        City city = cityRepository.findById(reqDto.cityId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 City ID입니다."));
+        CityDetail cityDetail = validateCityOrThrow(city, reqDto.cityDetailId());
+
+        Recruit recruit = Recruit.of(reqDto, member, city, cityDetail);
         injectCategories(reqDto, recruit);
         recruit = recruitRepository.save(recruit);
 
@@ -127,7 +138,11 @@ public class RecruitServiceImpl implements RecruitService {
         Recruit recruit = findIfRecruitExist(recruitId);
         verifyIfRecruitIsMine(recruit, member);
 
-        recruit.updateRecruit(reqDto);
+        City city = cityRepository.findById(reqDto.cityId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 City ID입니다."));
+        CityDetail cityDetail = validateCityOrThrow(city, reqDto.cityDetailId());
+
+        recruit.updateRecruit(reqDto, city, cityDetail);
         recruit.clearCategories();
         injectCategories(reqDto, recruit);
     }
@@ -179,4 +194,16 @@ public class RecruitServiceImpl implements RecruitService {
     private String getRecruitViewKey(Long recruitId) {
         return "recruit:view:" + recruitId;
     }
+
+    private CityDetail validateCityOrThrow(City city, Long cityDetailId) {
+        if ("지역 무관".equals(city.getName())) {
+            return null;
+        }
+        if (cityDetailId == null) {
+            throw new IllegalArgumentException("세부 지역은 필수입니다.");
+        }
+        return cityDetailRepository.findById(cityDetailId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 cityDetail ID입니다."));
+    }
+
 }
