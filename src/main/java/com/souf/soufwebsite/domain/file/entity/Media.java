@@ -25,12 +25,12 @@ public class Media extends BaseEntity {
     @Column(nullable = false)
     private String originalUrl;
 
-    @NotNull
-    @Column
-    private String thumbnailUrl;
+    // @NotNull
+    // @Column
+    // private String thumbnailUrl;
 
-    @NotNull
-    private String detailThumbnailUrl;
+    // @NotNull
+    // private String detailThumbnailUrl;
 
     @NotNull
     private String fileName;
