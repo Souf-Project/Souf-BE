@@ -56,9 +56,6 @@ public class Member extends BaseEntity {
     @Column(length = 300)
     private String personalUrl;
 
-    @Column(length = 500)
-    private String profileImageUrl;
-
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberCategoryMapping> categories = new ArrayList<>();
 
@@ -76,7 +73,6 @@ public class Member extends BaseEntity {
 
     // 회원 정보 업데이트 (업데이트 가능한 필드만 반영)
     public void updateInfo(UpdateReqDto dto) {
-        if (dto.profileImageUrl() != null) this.profileImageUrl = dto.profileImageUrl();
         if (dto.username() != null) this.username = dto.username();
         if (dto.nickname() != null) this.nickname = dto.nickname();
         if (dto.intro() != null) this.intro = dto.intro();

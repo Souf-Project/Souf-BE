@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.domain.member.controller;
 
-import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberSearchReqDto;
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
@@ -58,4 +58,8 @@ public interface MemberApiSpecification {
     SuccessResponse<?> updateUserInfo(
             @RequestBody @Valid UpdateReqDto reqDto
     );
+
+    @Operation(summary = "회원프로필 업로드", description = "회원프로필을 업로드한 후의 파일정보를 저장합니다.")
+    @PostMapping("/upload")
+    SuccessResponse uploadMetadata(@Valid @RequestBody MediaReqDto mediaReqDto);
 }

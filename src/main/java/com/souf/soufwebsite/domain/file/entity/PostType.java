@@ -5,5 +5,5 @@ import lombok.Getter;
 @Getter
 public enum PostType {
 
-    RECRUIT, FEED
+    RECRUIT, FEED, PROFILE
 }

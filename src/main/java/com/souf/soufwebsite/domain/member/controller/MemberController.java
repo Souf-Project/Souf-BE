@@ -1,11 +1,14 @@
 package com.souf.soufwebsite.domain.member.controller;
 
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberSearchReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.service.MemberService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -68,8 +71,15 @@ public class MemberController implements MemberApiSpecification{
 //    }
 
     @PutMapping("/update")
-    public SuccessResponse<?> updateUserInfo(@RequestBody UpdateReqDto reqDto) {
-        memberService.updateUserInfo(reqDto);
-        return new SuccessResponse<>("회원정보 수정 성공");
+    public SuccessResponse<PresignedUrlResDto> updateUserInfo(@RequestBody UpdateReqDto reqDto) {
+        PresignedUrlResDto presignedUrlResDto = memberService.updateUserInfo(reqDto);
+        return new SuccessResponse<>(presignedUrlResDto, "회원정보 수정 성공");
+    }
+
+    @PostMapping("/upload")
+    public SuccessResponse uploadMetadata(@Valid @RequestBody MediaReqDto mediaReqDto){
+        memberService.uploadProfileMedia(mediaReqDto);
+
+        return new SuccessResponse("회원프로필 업로드에 성공하였습니다.");
     }
 }
