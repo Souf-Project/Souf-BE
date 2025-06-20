@@ -1,19 +1,30 @@
 package com.souf.soufwebsite.domain.member.service;
 
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
+import com.souf.soufwebsite.domain.file.entity.PostType;
+import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.*;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
-import com.souf.soufwebsite.domain.member.entity.*;
-import com.souf.soufwebsite.domain.member.exception.*;
+import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
+import com.souf.soufwebsite.domain.member.entity.RoleType;
+import com.souf.soufwebsite.domain.member.exception.NotAvailableEmailException;
+import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
+import com.souf.soufwebsite.domain.member.exception.NotMatchPasswordException;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
-import com.souf.soufwebsite.global.common.category.entity.*;
+import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
+import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
+import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.email.EmailService;
 import com.souf.soufwebsite.global.jwt.JwtService;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -24,10 +35,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
@@ -37,6 +50,7 @@ public class MemberServiceImpl implements MemberService {
     private final RedisTemplate<String, String> redisTemplate;
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FileService fileService;
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
@@ -162,7 +176,7 @@ public class MemberServiceImpl implements MemberService {
     //회원정보 수정
     @Override
     @Transactional
-    public void updateUserInfo(UpdateReqDto reqDto) {
+    public PresignedUrlResDto updateUserInfo(UpdateReqDto reqDto) {
         Long memberId = getCurrentUser().getId();
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(NotFoundMemberException::new);
@@ -171,15 +185,28 @@ public class MemberServiceImpl implements MemberService {
         member.clearCategories();
 
         for (CategoryDto cat : reqDto.newCategories()) {
-            FirstCategory first  = categoryService.findIfFirstIdExists(cat.firstCategory());
+            FirstCategory first = categoryService.findIfFirstIdExists(cat.firstCategory());
             SecondCategory second = categoryService.findIfSecondIdExists(cat.secondCategory());
-            ThirdCategory third  = categoryService.findIfThirdIdExists(cat.thirdCategory());
+            ThirdCategory third = categoryService.findIfThirdIdExists(cat.thirdCategory());
             categoryService.validate(first.getId(), second.getId(), third.getId());
             MemberCategoryMapping mapping = MemberCategoryMapping.of(member, first, second, third);
-            System.out.println("mapping = " + mapping);
+            log.info("mapping = {}", mapping);
             member.addCategory(mapping);
-            System.out.println("member.getCategories().size() = " + member.getCategories().size());
+            log.info("member.getCategories().size() = {}", member.getCategories().size());
         }
+
+        List<PresignedUrlResDto> presignedUrlResDtos = null;
+        if (reqDto.profileOriginalFileName() != null) {
+            presignedUrlResDtos = fileService.generatePresignedUrl("profile", List.of(reqDto.profileOriginalFileName()));
+        }
+
+        return presignedUrlResDtos.get(0);
+    }
+
+    @Override
+    public void uploadProfileMedia(MediaReqDto reqDto) {
+        Member member = memberRepository.findById(reqDto.postId()).orElseThrow(NotFoundMemberException::new);
+        fileService.uploadMetadata(reqDto, PostType.PROFILE, member.getId());
     }
 
     @Override

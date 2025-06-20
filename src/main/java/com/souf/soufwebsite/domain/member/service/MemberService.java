@@ -1,5 +1,7 @@
 package com.souf.soufwebsite.domain.member.service;
 
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.*;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
@@ -20,7 +22,9 @@ public interface MemberService {
 
     boolean verifyEmail(String email, String code);
 
-    void updateUserInfo(UpdateReqDto reqDto);
+    PresignedUrlResDto updateUserInfo(UpdateReqDto reqDto);
+
+    void uploadProfileMedia(MediaReqDto reqDto);
 
     Page<MemberSimpleResDto> getMembers(Long first, Long second, Long third, MemberSearchReqDto searchReqDto, Pageable pageable);
 

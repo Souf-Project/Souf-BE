@@ -39,6 +39,11 @@ public class FileService {
         return mediaList;
     }
 
+    public String getMediaUrl(PostType postType, Long postId){
+        List<Media> byPostTypeAndPostId = mediaRepository.findByPostTypeAndPostId(postType, postId);
+        return byPostTypeAndPostId.isEmpty() ? "" : byPostTypeAndPostId.get(0).getOriginalUrl();
+    }
+
     public List<Media> getMediaList(PostType postType, Long postId){
         return mediaRepository.findByPostTypeAndPostId(postType, postId);
     }

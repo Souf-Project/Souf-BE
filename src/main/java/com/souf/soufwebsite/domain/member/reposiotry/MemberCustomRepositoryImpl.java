@@ -102,7 +102,7 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
         // 3. DTO 변환
         List<MemberSimpleResDto> result = members.stream()
                 .map(m -> {
-                    String profileUrl = m.getProfileImageUrl();
+                    String profileUrl = fileService.getMediaUrl(PostType.PROFILE, m.getId());
                     List<Feed> feeds = feedRepository.findTop3ByMemberOrderByViewCountDesc(m);
                     List<MemberSimpleResDto.PopularFeedDto> feedDtos = feeds.stream()
                             .map(feed -> {
