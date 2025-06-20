@@ -197,9 +197,11 @@ public class MemberServiceImpl implements MemberService {
         }
 
         fileService.clearMediaList(PostType.PROFILE, memberId);
-        List<PresignedUrlResDto> presignedUrlResDtos = null;
+        List<PresignedUrlResDto> presignedUrlResDtos;
         if (reqDto.profileOriginalFileName() != null) {
             presignedUrlResDtos = fileService.generatePresignedUrl("profile", List.of(reqDto.profileOriginalFileName()));
+        } else {
+            presignedUrlResDtos = List.of(new PresignedUrlResDto("", ""));
         }
 
         return MemberUpdateResDto.of(member.getId(), presignedUrlResDtos.get(0));
