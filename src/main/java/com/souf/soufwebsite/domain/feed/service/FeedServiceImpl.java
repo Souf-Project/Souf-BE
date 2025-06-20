@@ -103,6 +103,7 @@ public class FeedServiceImpl implements FeedService {
         verifyIfFeedIsMine(feed, member);
 
         feed.updateContent(reqDto);
+        fileService.clearMediaList(PostType.FEED, feedId);
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
 
         return new FeedResDto(feed.getId(), presignedUrlResDtos);
