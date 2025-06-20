@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class FileService {
-    private final MediaRepository mediaRepository;
 
+    private final MediaRepository mediaRepository;
     private final S3UploaderService s3UploaderService;
 
     public List<PresignedUrlResDto> generatePresignedUrl(String path, List<String> fileNames){
@@ -41,5 +41,9 @@ public class FileService {
 
     public List<Media> getMediaList(PostType postType, Long postId){
         return mediaRepository.findByPostTypeAndPostId(postType, postId);
+    }
+
+    public void clearMediaList(PostType postType, Long postId){
+        mediaRepository.deleteAllByPostTypeAndPostId(postType, postId);
     }
 }

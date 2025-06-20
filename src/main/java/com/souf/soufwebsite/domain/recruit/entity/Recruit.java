@@ -1,10 +1,9 @@
 package com.souf.soufwebsite.domain.recruit.entity;
 
 import com.souf.soufwebsite.domain.city.entity.City;
-import com.souf.soufwebsite.domain.file.entity.Media;
+import com.souf.soufwebsite.domain.citydetail.entity.CityDetail;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
-import com.souf.soufwebsite.domain.citydetail.entity.CityDetail;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -79,10 +78,6 @@ public class Recruit extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @Builder.Default
-    @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Media> media = new ArrayList<>();
-
     public static Recruit of(RecruitReqDto reqDto, Member member, City city, CityDetail cityDetail) {
         return Recruit.builder()
                 .title(reqDto.title())
@@ -110,11 +105,6 @@ public class Recruit extends BaseEntity {
         this.maxPayment = reqDto.maxPayment();
         this.workType = reqDto.workType();
         this.preferentialTreatment = reqDto.preferentialTreatment();
-    }
-
-    public void addMediaOnRecruit(Media media){
-        this.media.add(media);
-        media.assignToRecruit(this);
     }
 
     public void addCategory(RecruitCategoryMapping recruitCategoryMapping){

@@ -1,5 +1,7 @@
 package com.souf.soufwebsite.domain.recruit.dto;
 
+import com.souf.soufwebsite.domain.file.dto.MediaResDto;
+import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.entity.RecruitCategoryMapping;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
@@ -19,9 +21,10 @@ public record RecruitResDto(
         String maxPayment,
         String preferentialTreatment,
         String nickname,
-        List<CategoryDto> categoryDtoList
+        List<CategoryDto> categoryDtoList,
+        List<MediaResDto> mediaResDtos
 ) {
-    public static RecruitResDto from(Recruit recruit, String nickname) {
+    public static RecruitResDto from(Recruit recruit, String nickname, List<Media> mediaList) {
         return new RecruitResDto(recruit.getId(),
                 recruit.getTitle(),
                 recruit.getContent(),
@@ -32,13 +35,20 @@ public record RecruitResDto(
                 recruit.getMaxPayment(),
                 recruit.getPreferentialTreatment(),
                 nickname,
-                convertToCategoryDto(recruit.getCategories())
+                convertToCategoryDto(recruit.getCategories()),
+                convertToMediaResDto(mediaList)
         );
     }
 
     private static List<CategoryDto> convertToCategoryDto(List<RecruitCategoryMapping> mappings){
         return mappings.stream().map(
                 m -> new CategoryDto(m.getFirstCategory().getId(), m.getSecondCategory().getId(), m.getThirdCategory().getId())
+        ).collect(Collectors.toList());
+    }
+
+    private static List<MediaResDto> convertToMediaResDto(List<Media> mediaList){
+        return mediaList.stream().map(
+                MediaResDto::fromFeedDetail
         ).collect(Collectors.toList());
     }
 }
