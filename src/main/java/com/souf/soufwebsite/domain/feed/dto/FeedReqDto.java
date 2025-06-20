@@ -17,9 +17,6 @@ public record FeedReqDto(
         @NotNull
         String content,
 
-        @Schema(description = "해시 태그", example = "[봄, 산책, 나들이, 어린이 대공원]('#'는 빼고 보내주세요!")
-        List<String> tags,
-
         @Schema(description = "원본 파일 이름", example = "[fileName.jpg, dog.jpg..]")
         List<String> originalFileNames,
 

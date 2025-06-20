@@ -61,9 +61,9 @@ public class RecruitController implements RecruitApiSpecification{
 
     @PatchMapping("/{recruitId}")
     public SuccessResponse updateRecruit(@PathVariable(name = "recruitId") Long recruitId, @Valid @RequestBody RecruitReqDto recruitReqDto) {
-        recruitService.updateRecruit(recruitId, recruitReqDto);
+        RecruitCreateResDto recruitUpdateDto = recruitService.updateRecruit(recruitId, recruitReqDto);
 
-        return new SuccessResponse(RECRUIT_UPDATE.getMessage());
+        return new SuccessResponse<>(recruitUpdateDto, RECRUIT_UPDATE.getMessage());
     }
 
     @DeleteMapping("/{recruitId}")

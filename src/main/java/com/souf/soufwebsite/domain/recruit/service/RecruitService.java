@@ -18,7 +18,7 @@ public interface RecruitService {
 
     RecruitResDto getRecruitById(Long recruitId);
 
-    void updateRecruit(Long recruitId, RecruitReqDto reqDto);
+    RecruitCreateResDto updateRecruit(Long recruitId, RecruitReqDto reqDto);
 
     void deleteRecruit(Long recruitId);
 

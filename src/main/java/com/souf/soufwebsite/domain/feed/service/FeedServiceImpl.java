@@ -13,6 +13,7 @@ import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
+import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
@@ -42,7 +43,6 @@ public class FeedServiceImpl implements FeedService {
     private final MemberRepository memberRepository;
     private final CategoryService categoryService;
     private final FileService fileService;
-    private final TagService tagService;
     private final RedisUtil redisUtil;
 
     private Member getCurrentUser() {
@@ -57,7 +57,6 @@ public class FeedServiceImpl implements FeedService {
         Feed feed = Feed.of(reqDto, member);
         injectCategories(reqDto, feed);
         feed = feedRepository.save(feed);
-        tagService.createFeedTag(feed, reqDto.tags());
 
         String feedViewKey = getFeedViewKey(feed.getId());
         redisUtil.set(feedViewKey);
@@ -70,11 +69,7 @@ public class FeedServiceImpl implements FeedService {
     @Override
     public void uploadFeedMedia(MediaReqDto mediaReqDto) {
         Feed feed = findIfFeedExist(mediaReqDto.postId());
-        List<Media> mediaList = fileService.uploadMetadata(mediaReqDto);
-
-        for(Media f : mediaList){
-            feed.addFileOnFeed(f);
-        }
+        List<Media> mediaList = fileService.uploadMetadata(mediaReqDto, PostType.FEED, feed.getId());
     }
 
     @Transactional(readOnly = true)
@@ -82,7 +77,7 @@ public class FeedServiceImpl implements FeedService {
     public Page<FeedSimpleResDto> getStudentFeeds(Long memberId, Pageable pageable) {
         Member member = findIfMemberExists(memberId);
         return feedRepository.findAllByMemberOrderByIdDesc(member, pageable)
-                .map(feed -> FeedSimpleResDto.from(feed, MediaResDto.fromFeedThumbnail(feed)));
+                .map(this::getFeedSimpleResDto);
     }
 
     @Transactional(readOnly = true)
@@ -95,7 +90,9 @@ public class FeedServiceImpl implements FeedService {
         redisUtil.increaseCount(feedViewKey);
         Long viewCountFromRedis = redisUtil.get(feedViewKey);
 
-        return FeedDetailResDto.from(memberId, feed, viewCountFromRedis);
+        List<Media> mediaList = fileService.getMediaList(PostType.FEED, feedId);
+
+        return FeedDetailResDto.from(memberId, feed, viewCountFromRedis, mediaList);
     }
 
     @Transactional
@@ -106,7 +103,7 @@ public class FeedServiceImpl implements FeedService {
         verifyIfFeedIsMine(feed, member);
 
         feed.updateContent(reqDto);
-        tagService.createFeedTag(feed, reqDto.tags());
+        fileService.clearMediaList(PostType.FEED, feedId);
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
 
         return new FeedResDto(feed.getId(), presignedUrlResDtos);
@@ -129,8 +126,15 @@ public class FeedServiceImpl implements FeedService {
         Page<Feed> popularFeeds = feedRepository.findByOrderByViewCountDesc(pageable);
 
          return popularFeeds.map(
-                feed -> FeedSimpleResDto.from(feed, MediaResDto.fromFeedThumbnail(feed))
+                 this::getFeedSimpleResDto
         );
+    }
+
+    private FeedSimpleResDto getFeedSimpleResDto(Feed feed) {
+        List<Media> mediaList = fileService.getMediaList(PostType.FEED, feed.getId());
+        if(mediaList.isEmpty())
+            return FeedSimpleResDto.from(feed, null);
+        return FeedSimpleResDto.from(feed, MediaResDto.fromFeedDetail(mediaList.get(0)));
     }
 
     @Override
@@ -141,8 +145,9 @@ public class FeedServiceImpl implements FeedService {
                 feed -> {
                     String feedViewKey = getFeedViewKey(feed.getId());
                     Long viewCountFromRedis = redisUtil.get(feedViewKey);
+                    List<Media> mediaList = fileService.getMediaList(PostType.FEED, feed.getId());
 
-                    return FeedDetailResDto.from(feed.getMember().getId(), feed, viewCountFromRedis);
+                    return FeedDetailResDto.from(feed.getMember().getId(), feed, viewCountFromRedis, mediaList);
                 }
         );
     }

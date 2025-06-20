@@ -4,6 +4,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import com.souf.soufwebsite.domain.file.entity.Media;
+import com.souf.soufwebsite.domain.file.entity.PostType;
+import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberSearchReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
@@ -25,6 +27,7 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
 
     private final JPAQueryFactory queryFactory;
     private final FeedRepository feedRepository;
+    private final FileService fileService;
 
 //    @Override
 //    public Page<Member> findByCategory(Long first, Pageable pageable) {
@@ -103,7 +106,7 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
                     List<Feed> feeds = feedRepository.findTop3ByMemberOrderByViewCountDesc(m);
                     List<MemberSimpleResDto.PopularFeedDto> feedDtos = feeds.stream()
                             .map(feed -> {
-                                List<Media> mediaList = feed.getMedia();
+                                List<Media> mediaList = fileService.getMediaList(PostType.FEED, feed.getId());
                                 if (mediaList.isEmpty()) {
                                     return null; // 썸네일이 없는 경우 처리
                                 }

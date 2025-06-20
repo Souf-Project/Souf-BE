@@ -17,13 +17,13 @@ public record FeedDetailResDto(
         List<MediaResDto> mediaResDtos,
         LocalDateTime lastModifiedTime
 ) {
-    public static FeedDetailResDto from(Long memberId, Feed feed, Long feedViewCount){
+    public static FeedDetailResDto from(Long memberId, Feed feed, Long feedViewCount, List<Media> mediaList) {
         return new FeedDetailResDto(
                 memberId,
                 feed.getTopic(),
             feed.getContent(),
             feed.getViewCount() + feedViewCount,
-            convertToMediaResDto(feed.getMedia()),
+            convertToMediaResDto(mediaList),
             feed.getLastModifiedTime());
     }
 
