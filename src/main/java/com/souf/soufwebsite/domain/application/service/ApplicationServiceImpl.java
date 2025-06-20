@@ -5,6 +5,8 @@ import com.souf.soufwebsite.domain.application.dto.MyApplicationResDto;
 import com.souf.soufwebsite.domain.application.entity.Application;
 import com.souf.soufwebsite.domain.application.exception.*;
 import com.souf.soufwebsite.domain.application.repository.ApplicationRepository;
+import com.souf.soufwebsite.domain.file.entity.PostType;
+import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
@@ -27,6 +29,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private final ApplicationRepository applicationRepository;
     private final RecruitRepository recruitRepository;
     private final EmailService emailService;
+    private final FileService fileService;
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
@@ -112,11 +115,13 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .orElseThrow(NotFoundRecruitException::new);
         verifyOwner(recruit, me);
 
+        String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, me.getId());
+
         return applicationRepository
                 .findByRecruit(recruit, pageable)
                 .map(app -> new ApplicantResDto(
                         app.getId(),
-                        MemberResDto.from(app.getMember()),
+                        MemberResDto.from(app.getMember(), mediaUrl),
                         app.getAppliedAt(),
                         app.getStatus().name()        // PENDING / ACCEPTED / REJECTED
                 ));
