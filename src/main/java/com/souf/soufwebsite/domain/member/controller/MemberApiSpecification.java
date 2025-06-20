@@ -4,6 +4,7 @@ import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
+import com.souf.soufwebsite.domain.member.dto.ResDto.MemberUpdateResDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -55,7 +56,7 @@ public interface MemberApiSpecification {
 
     @Operation(summary = "회원정보 수정", description = "로그인된 사용자의 회원정보를 업데이트합니다.")
     @PutMapping("/update")
-    SuccessResponse<?> updateUserInfo(
+    SuccessResponse<MemberUpdateResDto> updateUserInfo(
             @RequestBody @Valid UpdateReqDto reqDto
     );
 

@@ -7,6 +7,7 @@ import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.*;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
+import com.souf.soufwebsite.domain.member.dto.ResDto.MemberUpdateResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
@@ -176,7 +177,7 @@ public class MemberServiceImpl implements MemberService {
     //회원정보 수정
     @Override
     @Transactional
-    public PresignedUrlResDto updateUserInfo(UpdateReqDto reqDto) {
+    public MemberUpdateResDto updateUserInfo(UpdateReqDto reqDto) {
         Long memberId = getCurrentUser().getId();
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(NotFoundMemberException::new);
@@ -200,7 +201,7 @@ public class MemberServiceImpl implements MemberService {
             presignedUrlResDtos = fileService.generatePresignedUrl("profile", List.of(reqDto.profileOriginalFileName()));
         }
 
-        return presignedUrlResDtos.get(0);
+        return MemberUpdateResDto.of(member.getId(), presignedUrlResDtos.get(0));
     }
 
     @Override

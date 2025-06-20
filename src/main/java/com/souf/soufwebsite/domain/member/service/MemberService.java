@@ -1,10 +1,10 @@
 package com.souf.soufwebsite.domain.member.service;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
-import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.*;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
+import com.souf.soufwebsite.domain.member.dto.ResDto.MemberUpdateResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +22,7 @@ public interface MemberService {
 
     boolean verifyEmail(String email, String code);
 
-    PresignedUrlResDto updateUserInfo(UpdateReqDto reqDto);
+    MemberUpdateResDto updateUserInfo(UpdateReqDto reqDto);
 
     void uploadProfileMedia(MediaReqDto reqDto);
 

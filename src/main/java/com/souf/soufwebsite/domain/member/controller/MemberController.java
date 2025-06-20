@@ -1,11 +1,11 @@
 package com.souf.soufwebsite.domain.member.controller;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
-import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberSearchReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
+import com.souf.soufwebsite.domain.member.dto.ResDto.MemberUpdateResDto;
 import com.souf.soufwebsite.domain.member.service.MemberService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import jakarta.validation.Valid;
@@ -71,9 +71,9 @@ public class MemberController implements MemberApiSpecification{
 //    }
 
     @PutMapping("/update")
-    public SuccessResponse<PresignedUrlResDto> updateUserInfo(@RequestBody UpdateReqDto reqDto) {
-        PresignedUrlResDto presignedUrlResDto = memberService.updateUserInfo(reqDto);
-        return new SuccessResponse<>(presignedUrlResDto, "회원정보 수정 성공");
+    public SuccessResponse<MemberUpdateResDto> updateUserInfo(@RequestBody UpdateReqDto reqDto) {
+        MemberUpdateResDto resDto = memberService.updateUserInfo(reqDto);
+        return new SuccessResponse<>(resDto, "회원정보 수정 성공");
     }
 
     @PostMapping("/upload")
