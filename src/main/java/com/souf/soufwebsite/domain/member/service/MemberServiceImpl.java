@@ -196,6 +196,7 @@ public class MemberServiceImpl implements MemberService {
             log.info("member.getCategories().size() = {}", member.getCategories().size());
         }
 
+        fileService.clearMediaList(PostType.PROFILE, memberId);
         List<PresignedUrlResDto> presignedUrlResDtos = null;
         if (reqDto.profileOriginalFileName() != null) {
             presignedUrlResDtos = fileService.generatePresignedUrl("profile", List.of(reqDto.profileOriginalFileName()));
