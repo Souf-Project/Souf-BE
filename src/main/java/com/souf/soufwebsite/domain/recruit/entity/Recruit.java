@@ -1,12 +1,13 @@
 package com.souf.soufwebsite.domain.recruit.entity;
 
+import com.souf.soufwebsite.domain.city.entity.City;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
+import com.souf.soufwebsite.domain.citydetail.entity.CityDetail;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,10 +34,14 @@ public class Recruit extends BaseEntity {
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false, columnDefinition = "VARCHAR(30)")
-    @Size(max = 50)
-    @Enumerated(EnumType.STRING)
-    private RegionType region;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "city_id", nullable = false)
+    private City city;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cityDetail_id", nullable = true)
+    private CityDetail cityDetail;
+
 
     // 마감일자
     @Column
@@ -78,11 +83,12 @@ public class Recruit extends BaseEntity {
     @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Media> media = new ArrayList<>();
 
-    public static Recruit of(RecruitReqDto reqDto, Member member) {
+    public static Recruit of(RecruitReqDto reqDto, Member member, City city, CityDetail cityDetail) {
         return Recruit.builder()
                 .title(reqDto.title())
                 .content(reqDto.content())
-                .region(reqDto.region())
+                .city(city)
+                .cityDetail(cityDetail)
                 .deadline(reqDto.deadline())
                 .minPayment(reqDto.minPayment())
                 .maxPayment(reqDto.maxPayment())
@@ -94,10 +100,11 @@ public class Recruit extends BaseEntity {
                 .member(member)
                 .build();
     }
-    public void updateRecruit(RecruitReqDto reqDto) {
+    public void updateRecruit(RecruitReqDto reqDto, City city, CityDetail cityDetail) {
         this.title = reqDto.title();
         this.content = reqDto.content();
-        this.region = reqDto.region();
+        this.city = city;
+        this.cityDetail = cityDetail;
         this.deadline = reqDto.deadline();
         this.minPayment = reqDto.minPayment();
         this.maxPayment = reqDto.maxPayment();

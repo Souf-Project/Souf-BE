@@ -10,10 +10,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.souf.soufwebsite.domain.recruit.entity.QRecruit.recruit;
 import static com.souf.soufwebsite.domain.recruit.entity.QRecruitCategoryMapping.recruitCategoryMapping;
@@ -37,13 +34,15 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         recruit.content,
                         recruit.minPayment,
                         recruit.maxPayment,
-                        recruit.region,
+                        recruit.city.name,
+                        recruit.cityDetail.name,
                         recruit.deadline,
                         recruit.recruitCount,
                         recruit.lastModifiedTime
                 )
                 .from(recruit)
                 .join(recruit.categories, recruitCategoryMapping)
+                .leftJoin(recruit.cityDetail)
                 .where(
                         first != null ? recruitCategoryMapping.firstCategory.id.eq(first) : null,
                         second != null ? recruitCategoryMapping.secondCategory.id.eq(second) : null,
@@ -62,6 +61,8 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
             Long secondCatId = t.get(recruitCategoryMapping.secondCategory.id);
 
             if (!mergedMap.containsKey(recruitId)) {
+                String cityDetailName = Optional.ofNullable(t.get(recruit.cityDetail.name)).orElse("");
+
                 RecruitSimpleResDto dto = RecruitSimpleResDto.of(
                         recruitId,
                         t.get(recruit.title),
@@ -69,7 +70,8 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         t.get(recruit.content),
                         t.get(recruit.minPayment),
                         t.get(recruit.maxPayment),
-                        t.get(recruit.region),
+                        t.get(recruit.city.name),
+                        cityDetailName,
                         t.get(recruit.deadline),
                         t.get(recruit.recruitCount),
                         t.get(recruit.lastModifiedTime)

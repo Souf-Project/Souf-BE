@@ -1,7 +1,5 @@
 package com.souf.soufwebsite.domain.recruit.dto;
 
-import com.souf.soufwebsite.domain.recruit.entity.RegionType;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,18 +12,19 @@ public record RecruitSimpleResDto(
         String content,
         String minPayment,
         String maxPayment,
-        RegionType region,
+        String cityName,
+        String cityDetailName,
         LocalDateTime deadLine,
         Long recruitCount,
         LocalDateTime lastModified
 ) {
     public static RecruitSimpleResDto of(Long recruitId, String title, Long secondCategoryId, String content,
-                                         String minPayment, String maxPayment, RegionType region, LocalDateTime deadLine,
-                                         Long recruitCount, LocalDateTime lastModified) {
+                                         String minPayment, String maxPayment, String cityName, String cityDetailName,
+                                         LocalDateTime deadLine, Long recruitCount, LocalDateTime lastModified) {
         return new RecruitSimpleResDto(
                 recruitId, title,
                 new ArrayList<>(List.of(secondCategoryId)), // 초기 리스트
-                content, minPayment, maxPayment, region, deadLine, recruitCount, lastModified
+                content, minPayment, maxPayment, cityName, cityDetailName, deadLine, recruitCount, lastModified
         );
     }
 
