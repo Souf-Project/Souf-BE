@@ -1,10 +1,8 @@
 package com.souf.soufwebsite.domain.member.dto.ResDto;
 
-import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.entity.RoleType;
 import io.swagger.v3.oas.annotations.media.Schema;
-
-import java.time.LocalDate;
 
 public record MemberResDto(
         Long id,
@@ -25,10 +23,13 @@ public record MemberResDto(
         String personalUrl,
 
         @Schema(description = "회원 권한", example = "MEMBER")
-        RoleType role
+        RoleType role,
+
+        @Schema(description = "회원 프로필 사진", example = "sakdjffasljk.png")
+        String profileUrl
 
 ) {
-    public static MemberResDto from(Member member) {
+    public static MemberResDto from(Member member, String profileUrl) {
         return new MemberResDto(
                 member.getId(),
                 member.getEmail(),
@@ -36,7 +37,8 @@ public record MemberResDto(
                 member.getNickname(),
                 member.getIntro(),
                 member.getPersonalUrl(),
-                member.getRole()
+                member.getRole(),
+                profileUrl
         );
     }
 }

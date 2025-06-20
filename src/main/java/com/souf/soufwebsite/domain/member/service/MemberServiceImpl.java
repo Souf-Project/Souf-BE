@@ -227,7 +227,8 @@ public class MemberServiceImpl implements MemberService {
     @Transactional(readOnly = true)
     public MemberResDto getMyInfo() {
         Member member = getCurrentUser();
-        return MemberResDto.from(member);
+        String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
+        return MemberResDto.from(member, mediaUrl);
     }
 
     //회원 조회
@@ -235,7 +236,9 @@ public class MemberServiceImpl implements MemberService {
     @Transactional(readOnly = true)
     public MemberResDto getMemberById(Long id) {
         Member member = memberRepository.findById(id).orElseThrow(NotFoundMemberException::new);
-        return MemberResDto.from(member);
+        String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
+
+        return MemberResDto.from(member, mediaUrl);
     }
 
 //    @Override
