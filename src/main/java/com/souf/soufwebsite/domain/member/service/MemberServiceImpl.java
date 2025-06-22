@@ -15,6 +15,7 @@ import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.exception.NotAvailableEmailException;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.exception.NotMatchPasswordException;
+import com.souf.soufwebsite.domain.member.exception.NotVerifiedEmailException;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
@@ -36,6 +37,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -61,6 +63,13 @@ public class MemberServiceImpl implements MemberService {
     //회원가입
     @Override
     public void signup(SignupReqDto reqDto) {
+
+        String verifiedKey = "email:verified:" + reqDto.email();
+        String isVerified = redisTemplate.opsForValue().get(verifiedKey);
+        if (!"true".equals(isVerified)) {
+            throw new NotVerifiedEmailException();
+        }
+
         if (memberRepository.findByEmail(reqDto.email()).isPresent()) {
             throw new NotAvailableEmailException();
         }
@@ -69,9 +78,11 @@ public class MemberServiceImpl implements MemberService {
             throw new NotMatchPasswordException();
         }
 
+        RoleType role = reqDto.email().endsWith(".ac.kr") ? RoleType.STUDENT : RoleType.MEMBER;
+
         String encodedPassword = passwordEncoder.encode(reqDto.password());
 
-        Member member = new Member(reqDto.email(), encodedPassword, reqDto.username(), reqDto.nickname(), RoleType.MEMBER);
+        Member member = new Member(reqDto.email(), encodedPassword, reqDto.username(), reqDto.nickname(), role);
 
         for (CategoryDto dto : reqDto.categoryDtos()) {
             FirstCategory first = categoryService.findIfFirstIdExists(dto.firstCategory());
@@ -84,6 +95,8 @@ public class MemberServiceImpl implements MemberService {
         }
 
         memberRepository.save(member);
+
+        redisTemplate.delete(verifiedKey);
     }
 
     //로그인
@@ -157,18 +170,14 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public boolean verifyEmail(String email, String code) {
-        String emailKey = "email:verification:" + email;
-        String storedCode = redisTemplate.opsForValue().get(emailKey);
-        if (storedCode != null && storedCode.equals(code)) {
-            if (email.endsWith(".ac.kr")) {
-                Optional<Member> optionalMember = memberRepository.findByEmail(email);
-                optionalMember.ifPresent(member -> {
-                    if (member.getRole() != RoleType.STUDENT) {
-                        member.updateRole(RoleType.STUDENT);
-                    }
-                });
-            }
+        String emailKey = "email:verification:" + email; // Redis에서 인증번호 키
+        String verifiedKey = "email:verified:" + email; // Redis에서 인증 완료된 이메일 키
 
+        String storedCode = redisTemplate.opsForValue().get(emailKey);
+
+        if (storedCode != null && storedCode.equals(code)) {
+            // 인증 완료 상태 저장 (예: 30분 동안 유효)
+            redisTemplate.opsForValue().set(verifiedKey, "true", Duration.ofMinutes(30));
             return true;
         }
         return false;
