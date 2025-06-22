@@ -4,6 +4,7 @@ import com.souf.soufwebsite.domain.member.dto.ReqDto.ResetReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SigninReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SignupReqDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
+import com.souf.soufwebsite.domain.member.service.VerificationPurpose;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -45,11 +46,14 @@ public interface AuthApiSpecification {
             @RequestParam String email
     );
 
-    @Operation(summary = "이메일 인증번호 검증", description = "이메일로 발급된 인증번호와 일치하게 입력하였는지 검증합니다.")
+    @Operation(summary = "이메일 인증번호 검증",
+            description = "이메일로 발급된 인증번호와 일치하게 입력하였는지 검증합니다.<br>" +
+                    " 인증 목적에 따라 (SIGNUP) 또는 (RESET)을 입력합니다.")
     @PostMapping("/email/verify")
     SuccessResponse<Boolean> verifyEmailCode(
             @RequestParam String email,
-            @RequestParam String code
+            @RequestParam String code,
+            @RequestParam VerificationPurpose purpose
     );
 
     @Operation(summary = "닉네임 중복 검증", description = "입력된 닉네임이 사용 가능한지 확인합니다.")

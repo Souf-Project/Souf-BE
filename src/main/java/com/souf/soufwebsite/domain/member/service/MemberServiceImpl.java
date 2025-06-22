@@ -169,15 +169,16 @@ public class MemberServiceImpl implements MemberService {
     //인증번호 확인
     @Override
     @Transactional
-    public boolean verifyEmail(String email, String code) {
+    public boolean verifyEmail(String email, String code, VerificationPurpose purpose) {
         String emailKey = "email:verification:" + email; // Redis에서 인증번호 키
         String verifiedKey = "email:verified:" + email; // Redis에서 인증 완료된 이메일 키
 
         String storedCode = redisTemplate.opsForValue().get(emailKey);
 
         if (storedCode != null && storedCode.equals(code)) {
-            // 인증 완료 상태 저장 (예: 30분 동안 유효)
-            redisTemplate.opsForValue().set(verifiedKey, "true", Duration.ofMinutes(30));
+            if (purpose == VerificationPurpose.SIGNUP) {
+                redisTemplate.opsForValue().set(verifiedKey, "true", Duration.ofMinutes(30));
+            }
             return true;
         }
         return false;
