@@ -37,4 +37,6 @@ public interface MemberService {
 //    Page<MemberResDto> getMembersByNickname(String nickname, Pageable pageable);
 
     boolean isNicknameAvailable(String nickname);
+
+    void withdraw(WithdrawReqDto reqDto);
 }
