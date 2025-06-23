@@ -5,6 +5,7 @@ import com.souf.soufwebsite.domain.member.dto.ReqDto.SigninReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SignupReqDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.service.MemberService;
+import com.souf.soufwebsite.domain.member.service.VerificationPurpose;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -52,8 +53,11 @@ public class AuthController implements AuthApiSpecification{
 
     // 인증번호 검증
     @PostMapping("/email/verify")
-    public SuccessResponse<Boolean> verifyEmailCode(@RequestParam String email, @RequestParam String code) {
-        boolean verified = memberService.verifyEmail(email, code);
+    public SuccessResponse<Boolean> verifyEmailCode(
+            @RequestParam String email,
+            @RequestParam String code,
+            @RequestParam VerificationPurpose purpose) {
+        boolean verified = memberService.verifyEmail(email, code, purpose);
         return new SuccessResponse<>(verified);
     }
 
