@@ -102,6 +102,7 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
         // 3. DTO 변환
         List<MemberSimpleResDto> result = members.stream()
                 .map(m -> {
+                    Long memberId = m.getId();
                     String profileUrl = fileService.getMediaUrl(PostType.PROFILE, m.getId());
                     List<Feed> feeds = feedRepository.findTop3ByMemberOrderByViewCountDesc(m);
                     List<MemberSimpleResDto.PopularFeedDto> feedDtos = feeds.stream()
@@ -116,7 +117,7 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
                             .filter(Objects::nonNull)
                             .toList();
 
-                    return new MemberSimpleResDto(profileUrl, m.getNickname(), m.getIntro(), feedDtos);
+                    return new MemberSimpleResDto(memberId, profileUrl, m.getNickname(), m.getIntro(), feedDtos);
                 })
                 .toList();
 
