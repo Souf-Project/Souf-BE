@@ -270,4 +270,18 @@ public class MemberServiceImpl implements MemberService {
     public boolean isNicknameAvailable(String nickname) {
         return !memberRepository.existsByNickname(nickname);
     }
+
+    @Override
+    @Transactional
+    public void withdraw(WithdrawReqDto reqDto) {
+        Long memberId = getCurrentUser().getId();
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(NotFoundMemberException::new);
+
+        if (!passwordEncoder.matches(reqDto.password(), member.getPassword())) {
+            throw new NotMatchPasswordException();
+        }
+
+        member.softDelete();
+    }
 }

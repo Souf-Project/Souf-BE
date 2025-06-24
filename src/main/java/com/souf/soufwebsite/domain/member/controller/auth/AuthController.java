@@ -3,6 +3,7 @@ package com.souf.soufwebsite.domain.member.controller.auth;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.ResetReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SigninReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SignupReqDto;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.WithdrawReqDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.service.MemberService;
 import com.souf.soufwebsite.domain.member.service.VerificationPurpose;
@@ -67,5 +68,11 @@ public class AuthController implements AuthApiSpecification{
             @RequestParam @NotEmpty String nickname) {
         boolean available = memberService.isNicknameAvailable(nickname);
         return new SuccessResponse<>(available, "닉네임 사용 가능 여부");
+    }
+
+    @DeleteMapping("/withdraw")
+    public SuccessResponse<?> withdraw(@RequestBody @Valid WithdrawReqDto reqDto) {
+        memberService.withdraw(reqDto);
+        return new SuccessResponse<>("회원 탈퇴 성공");
     }
 }
