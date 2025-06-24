@@ -4,6 +4,7 @@ import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 
 public record FeedSimpleResDto(
+        Long feedId,
         String nickname,
         String categoryName,
         MediaResDto mediaResDto
@@ -15,6 +16,6 @@ public record FeedSimpleResDto(
                 .map(cat -> cat.getSecondCategory().getName())
                 .orElse(null);
 
-        return new FeedSimpleResDto(nickname, categoryName, mediaResDto);
+        return new FeedSimpleResDto(feed.getId(), nickname, categoryName, mediaResDto);
     }
 }
