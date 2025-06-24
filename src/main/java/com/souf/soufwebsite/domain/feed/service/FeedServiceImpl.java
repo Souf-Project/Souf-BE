@@ -1,9 +1,6 @@
 package com.souf.soufwebsite.domain.feed.service;
 
-import com.souf.soufwebsite.domain.feed.dto.FeedDetailResDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedReqDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedResDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedSimpleResDto;
+import com.souf.soufwebsite.domain.feed.dto.*;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.entity.FeedCategoryMapping;
 import com.souf.soufwebsite.domain.feed.exception.NotFoundFeedException;
@@ -15,6 +12,7 @@ import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
+import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
@@ -74,10 +72,14 @@ public class FeedServiceImpl implements FeedService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<FeedSimpleResDto> getStudentFeeds(Long memberId, Pageable pageable) {
+    public MemberFeedResDto getStudentFeeds(Long memberId, Pageable pageable) {
         Member member = findIfMemberExists(memberId);
-        return feedRepository.findAllByMemberOrderByIdDesc(member, pageable)
+        String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
+        Page<FeedSimpleResDto> feedSimpleResDtos = feedRepository.findAllByMemberOrderByIdDesc(member, pageable)
                 .map(this::getFeedSimpleResDto);
+
+        MemberResDto memberResDto = MemberResDto.from(member, mediaUrl);
+        return new MemberFeedResDto(memberResDto, feedSimpleResDtos);
     }
 
     @Transactional(readOnly = true)
