@@ -1,9 +1,6 @@
 package com.souf.soufwebsite.domain.feed.controller;
 
-import com.souf.soufwebsite.domain.feed.dto.FeedDetailResDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedReqDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedResDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedSimpleResDto;
+import com.souf.soufwebsite.domain.feed.dto.*;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,7 +26,7 @@ public interface FeedApiSpecification {
 
     @Operation(summary = "피드 리스트 조회", description = "특정 학생이 올린 피드 리스트들을 조회합니다.")
     @GetMapping("/{memberId}")
-    SuccessResponse<Page<FeedSimpleResDto>> getStudentFeeds(
+    SuccessResponse<MemberFeedResDto> getStudentFeeds(
             @PathVariable(name = "memberId") Long memberId,
             @PageableDefault(size = 12) Pageable pageable);
 

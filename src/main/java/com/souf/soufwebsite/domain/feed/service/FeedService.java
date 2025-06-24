@@ -1,9 +1,6 @@
 package com.souf.soufwebsite.domain.feed.service;
 
-import com.souf.soufwebsite.domain.feed.dto.FeedDetailResDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedReqDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedResDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedSimpleResDto;
+import com.souf.soufwebsite.domain.feed.dto.*;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +12,7 @@ public interface FeedService {
 
     void uploadFeedMedia(MediaReqDto mediaReqDto);
 
-    Page<FeedSimpleResDto> getStudentFeeds(Long memberId, Pageable pageable);
+    MemberFeedResDto getStudentFeeds(Long memberId, Pageable pageable);
 
     FeedDetailResDto getFeedById(Long memberId, Long feedId);
 
