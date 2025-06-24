@@ -274,7 +274,9 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public void withdraw(WithdrawReqDto reqDto) {
-        Member member = getCurrentUser();
+        Long memberId = getCurrentUser().getId();
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(NotFoundMemberException::new);
 
         if (!passwordEncoder.matches(reqDto.password(), member.getPassword())) {
             throw new NotMatchPasswordException();
