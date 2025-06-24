@@ -2,15 +2,13 @@ package com.souf.soufwebsite.domain.file.service;
 
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.Headers;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.entity.MediaType;
-import com.souf.soufwebsite.domain.file.repository.MediaRepository;
+import com.souf.soufwebsite.domain.file.entity.PostType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +25,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class S3UploaderService {
 
-    private final MediaRepository mediaRepository;
     private final AmazonS3 amazonS3;
 
     @Value("${cloud.aws.s3.bucket}")
@@ -49,10 +46,6 @@ public class S3UploaderService {
         GeneratePresignedUrlRequest urlRequest = new GeneratePresignedUrlRequest(bucketName, fileName)
                 .withMethod(HttpMethod.PUT)
                 .withExpiration(expiration);
-        urlRequest.addRequestParameter(
-                Headers.S3_CANNED_ACL,
-                CannedAccessControlList.PublicRead.toString()
-        );
 
         return urlRequest;
     }
@@ -79,7 +72,7 @@ public class S3UploaderService {
             throw new IllegalArgumentException("지원하지 않는 파일 확장자입니다.");
         }
 
-        Media media = Media.of(fileUrl.fileUrl(), originalFilename, mediaType);
+        Media media = Media.of(fileUrl.fileUrl(), originalFilename, mediaType, PostType.FEED, 1L);
         //return fileRepository.save(media);
     }
 

@@ -1,16 +1,17 @@
 package com.souf.soufwebsite.domain.recruit.entity;
 
-import com.souf.soufwebsite.domain.file.entity.Media;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
+import com.souf.soufwebsite.domain.city.entity.City;
+import com.souf.soufwebsite.domain.citydetail.entity.CityDetail;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
 import com.souf.soufwebsite.global.common.BaseEntity;
-import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Recruit extends BaseEntity {
     @Id
@@ -28,27 +30,46 @@ public class Recruit extends BaseEntity {
     @Column(nullable = false, columnDefinition = "VARCHAR(50)")
     private String title;
 
-    @Lob
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false, columnDefinition = "VARCHAR(30)")
-    @Size(max = 50)
-    private String region;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "city_id", nullable = false)
+    private City city;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cityDetail_id", nullable = true)
+    private CityDetail cityDetail;
+
 
     // 마감일자
     @Column
     private LocalDateTime deadline;
 
     @Column(nullable = false)
-    private String payment;
+    private String minPayment;
+
+    @Column(nullable = false)
+    private String maxPayment;
 
     @Column
     private String preferentialTreatment;
 
-    @Column
-    private Long recruiter;
+    @Column(nullable = false)
+    private Long recruitCount;
 
+    @Column
+    private Long viewCount;
+
+    @NotNull
+    @Column(nullable = false)
+    private boolean recruitable;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private WorkType workType;
+
+    @Builder.Default
     @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
     List<RecruitCategoryMapping> categories = new ArrayList<>();
 
@@ -57,45 +78,33 @@ public class Recruit extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Media> media = new ArrayList<>();
-
-    @Builder
-    public Recruit(String title, String content, String region, LocalDateTime deadline, String payment,
-                   String preferentialTreatment, Member member, List<CategoryDto> categoryDtoList) {
-        this.title = title;
-        this.content = content;
-        this.region = region;
-        this.deadline = deadline;
-        this.payment = payment;
-        this.preferentialTreatment = preferentialTreatment;
-        this.member = member;
-        this.recruiter = 0L;
-    }
-
-    public static Recruit of(RecruitReqDto reqDto, Member member) {
+    public static Recruit of(RecruitReqDto reqDto, Member member, City city, CityDetail cityDetail) {
         return Recruit.builder()
                 .title(reqDto.title())
                 .content(reqDto.content())
-                .region(reqDto.region())
+                .city(city)
+                .cityDetail(cityDetail)
                 .deadline(reqDto.deadline())
-                .payment(reqDto.payment())
+                .minPayment(reqDto.minPayment())
+                .maxPayment(reqDto.maxPayment())
                 .preferentialTreatment(reqDto.preferentialTreatment())
+                .recruitCount(0L)
+                .viewCount(0L)
+                .recruitable(true)
+                .workType(reqDto.workType())
                 .member(member)
                 .build();
     }
-    public void updateRecruit(RecruitReqDto reqDto) {
+    public void updateRecruit(RecruitReqDto reqDto, City city, CityDetail cityDetail) {
         this.title = reqDto.title();
         this.content = reqDto.content();
-        this.region = reqDto.region();
+        this.city = city;
+        this.cityDetail = cityDetail;
         this.deadline = reqDto.deadline();
-        this.payment = reqDto.payment();
+        this.minPayment = reqDto.minPayment();
+        this.maxPayment = reqDto.maxPayment();
+        this.workType = reqDto.workType();
         this.preferentialTreatment = reqDto.preferentialTreatment();
-    }
-
-    public void addMediaOnRecruit(Media media){
-        this.media.add(media);
-        media.assignToRecruit(this);
     }
 
     public void addCategory(RecruitCategoryMapping recruitCategoryMapping){
@@ -107,5 +116,13 @@ public class Recruit extends BaseEntity {
             mapping.disconnectRecruit();
         }
         categories.clear();
+    }
+
+    public void increaseRecruitCount() {
+        this.recruitCount++;
+    }
+
+    public void decreaseRecruitCount() {
+        this.recruitCount--;
     }
 }

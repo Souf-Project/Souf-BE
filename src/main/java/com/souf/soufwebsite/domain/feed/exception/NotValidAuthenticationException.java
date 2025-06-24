@@ -2,8 +2,10 @@ package com.souf.soufwebsite.domain.feed.exception;
 
 import com.souf.soufwebsite.global.exception.BaseErrorException;
 
+import static com.souf.soufwebsite.domain.feed.exception.ErrorType.NOT_VALID_AUTHENTICATION;
+
 public class NotValidAuthenticationException extends BaseErrorException {
     public NotValidAuthenticationException() {
-        super(ErrorType.NOT_VALID_AUTHENTICATION.getCode(), ErrorType.NOT_VALID_AUTHENTICATION.getMessage());
+        super(NOT_VALID_AUTHENTICATION.getCode(), NOT_VALID_AUTHENTICATION.getMessage());
     }
 }

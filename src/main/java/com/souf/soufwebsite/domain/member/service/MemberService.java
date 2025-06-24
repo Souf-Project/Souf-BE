@@ -1,15 +1,13 @@
 package com.souf.soufwebsite.domain.member.service;
 
-import com.souf.soufwebsite.domain.member.dto.ReqDto.ResetReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.SigninReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.SignupReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.*;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
+import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
+import com.souf.soufwebsite.domain.member.dto.ResDto.MemberUpdateResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import java.util.List;
 
 public interface MemberService {
     void signup(SignupReqDto reqDto);
@@ -18,17 +16,27 @@ public interface MemberService {
 
     void resetPassword(ResetReqDto reqDto);
 
-    boolean sendEmailVerification(String email);
+    boolean sendSignupEmailVerification(String email);
 
-    boolean verifyEmail(String email, String code);
+    boolean sendResetEmailVerification(String email);
 
-    void updateUserInfo(UpdateReqDto reqDto);
+    boolean verifyEmail(String email, String code, VerificationPurpose purpose);
 
-    List<MemberResDto> getMembers(Pageable pageable);
+    MemberUpdateResDto updateUserInfo(UpdateReqDto reqDto);
+
+    void uploadProfileMedia(MediaReqDto reqDto);
+
+    Page<MemberSimpleResDto> getMembers(Long first, Long second, Long third, MemberSearchReqDto searchReqDto, Pageable pageable);
+
+    MemberResDto getMyInfo();
 
     MemberResDto getMemberById(Long id);
 
-    Page<MemberResDto> getMembersByCategory(Long first, Long second, Long third, Pageable pageable);
+//    Page<MemberResDto> getMembersByCategory(Long first, Pageable pageable);
+//
+//    Page<MemberResDto> getMembersByNickname(String nickname, Pageable pageable);
 
-    Page<MemberResDto> getMembersByNickname(String nickname, Pageable pageable);
+    boolean isNicknameAvailable(String nickname);
+
+    void withdraw(WithdrawReqDto reqDto);
 }

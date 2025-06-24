@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.member.controller;
+package com.souf.soufwebsite.domain.member.controller.memberCategory;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

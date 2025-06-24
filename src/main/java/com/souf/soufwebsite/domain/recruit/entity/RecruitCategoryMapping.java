@@ -1,12 +1,10 @@
 package com.souf.soufwebsite.domain.recruit.entity;
 
-import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
 import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -20,6 +18,7 @@ public class RecruitCategoryMapping {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recruit_id")
     private Recruit recruit;
 
     @ManyToOne(fetch = FetchType.LAZY)

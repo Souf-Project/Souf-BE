@@ -1,12 +1,12 @@
 package com.souf.soufwebsite.domain.recruit.repository;
 
-import com.souf.soufwebsite.domain.recruit.dto.RecruitResDto;
+import com.souf.soufwebsite.domain.recruit.dto.RecruitSearchReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitSimpleResDto;
-import org.springframework.stereotype.Repository;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface RecruitCustomRepository {
 
-    List<RecruitSimpleResDto> getRecruitList(Long first, Long second, Long third);
+    Page<RecruitSimpleResDto> getRecruitList(Long first, Long second, Long third,
+                                             RecruitSearchReqDto searchReqDto, Pageable pageable);
 }

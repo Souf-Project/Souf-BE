@@ -26,7 +26,6 @@ public class TagService {
 
         for(Tag tag : allTags){
             FeedTag feedTag = FeedTag.of(feed, tag);
-            feed.addFeedTagOnFeed(feedTag);
         }
 
     }

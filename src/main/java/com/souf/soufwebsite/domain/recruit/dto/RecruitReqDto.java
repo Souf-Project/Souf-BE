@@ -1,6 +1,7 @@
 package com.souf.soufwebsite.domain.recruit.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.souf.soufwebsite.domain.recruit.entity.WorkType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Future;
@@ -22,10 +23,12 @@ public record RecruitReqDto(
         @Size(max = 300)
         String content,
 
-        @Schema(description = "지역", example = "광진구 화양동")
-        @NotNull(message = "진행 지역은 필수입니다.")
-        @Size(max = 30)
-        String region,
+        @Schema(description = "지역 ID", example = "1")
+        @NotNull(message = "지역은 필수입니다.")
+        Long cityId,
+
+        @Schema(description = "세부 지역 ID", example = "1")
+        Long cityDetailId,
 
         @Schema(description = "마감 기한", example = "2025-06-23T13:29")
         @Future
@@ -33,9 +36,13 @@ public record RecruitReqDto(
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm")
         LocalDateTime deadline,
 
-        @Schema(description = "제시 금액", example = "100만원")
-        @NotEmpty(message = "제시 금액은 필수입니다.")
-        String payment,
+        @Schema(description = "최소 제시 금액", example = "100만원")
+        @NotEmpty(message = "최소 제시 금액은 필수입니다.")
+        String minPayment,
+
+        @Schema(description = "최대 제시 금액", example = "100만원")
+        @NotEmpty(message = "최대 제시 금액은 필수입니다.")
+        String maxPayment,
 
         @Schema(description = "우대사항", example = "1. 전공자 우대\n2. 군필자 우대\n3. Powerpoint를 다루어 본 자")
         @NotNull(message = "우대사항은 옵션입니다.")
@@ -46,7 +53,11 @@ public record RecruitReqDto(
         @NotNull(message = "적어도 한 개의 카테고리가 들어있어야 합니다.")
         List<CategoryDto> categoryDtos,
 
-        @Schema(description = "원본 파일 이름", example = "[fileName.jpg, dog.jpg..]")
-        List<String> originalFileNames
+        @Schema(description = "원본 파일 이름 리스트, 없으면 [] 이렇게 빈 리스트로 반환해주세요.", example = "[\"fileName.jpg\", \"dog.jpg\"]")
+        List<String> originalFileNames,
+
+        @Schema(description = "업무 형태를 넣어주세요.", example = "OFFLINE or ONLINE")
+        @NotNull(message = "업무 형태를 반드시 지정해주세요.")
+        WorkType workType
 ) {
 }

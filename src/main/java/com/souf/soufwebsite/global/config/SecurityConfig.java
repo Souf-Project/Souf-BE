@@ -81,19 +81,44 @@ public class SecurityConfig {
                                         "/error"
                                 ).permitAll()
 
-                                // GET 요청은 STUDENT, MEMBER, ADMIN 모두 접근 가능
-                                .requestMatchers(HttpMethod.GET, "/api/v1/feed/**").authenticated()
-                                .requestMatchers(HttpMethod.GET, "/api/v1/recruit/**").authenticated()
-                                .requestMatchers(HttpMethod.GET, "/api/v1/member/**").authenticated()
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/v1/feed",
+                                        "/api/v1/recruit",
+                                        "/api/v1/member"
+                                ).permitAll()
 
-                                // 기업 사용자 권한
-                                .requestMatchers("/api/v1/recruit/**").hasRole("MEMBER")
-
-                                // 학생 사용자 권한
-                                .requestMatchers("/api/v1/feed/**").hasRole("STUDENT")
-
-                                // 인증, 회원가입은 모두 허용
+                                .requestMatchers("/v1/normal/check").permitAll()
                                 .requestMatchers("/api/v1/auth/**").permitAll()
+                                .requestMatchers("/api/v1/recruit/popular", "/api/v1/feed/popular")
+                                .permitAll()
+
+                                // 2) STUDENT 전용: apply, withdraw, 내 지원 내역
+                                .requestMatchers(HttpMethod.POST,   "/api/v1/applications/*/apply")
+                                .hasRole("STUDENT")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/applications/*/apply")
+                                .hasRole("STUDENT")
+                                .requestMatchers(HttpMethod.GET,    "/api/v1/applications/my")
+                                .hasRole("STUDENT")
+
+                                // 3) MEMBER(=공고 작성자) 전용: 지원자 목록, 승인·거절
+                                .requestMatchers(HttpMethod.GET,  "/api/v1/applications/*/applicants")
+                                .hasAnyRole("MEMBER","ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/v1/applications/*/approve",
+                                        "/api/v1/applications/*/reject")
+                                .hasAnyRole("MEMBER","ADMIN")
+
+                                // 4) 기타 GET 엔드포인트: 로그인된 모든 사용자
+                                .requestMatchers(HttpMethod.GET,
+                                        "/api/v1/feed/**",
+                                        "/api/v1/recruit/**",
+                                        "/api/v1/member/**"
+                                ).authenticated()
+
+                                // 5) POST/PUT/DELETE 등 기타 공고·피드 엔드포인트
+                                .requestMatchers("/api/v1/recruit/**").hasAnyRole("MEMBER", "ADMIN")
+                                .requestMatchers("/api/v1/feed/**").hasAnyRole("STUDENT", "ADMIN")
+
                                 .anyRequest().authenticated()
                 );
 
@@ -104,7 +129,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // 허용할 HTTP 메서드
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT","PATCH", "DELETE", "OPTIONS")); // 허용할 HTTP 메서드
         configuration.setAllowedHeaders(Arrays.asList("*")); // 모든 헤더 허용
         configuration.setExposedHeaders(Arrays.asList("Authorization"));
         configuration.setAllowCredentials(true); // 자격 증명 허용

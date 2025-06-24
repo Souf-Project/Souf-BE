@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.feed.dto;
 
+import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -16,10 +17,11 @@ public record FeedReqDto(
         @NotNull
         String content,
 
-        @Schema(description = "해시 태그", example = "[봄, 산책, 나들이, 어린이 대공원]('#'는 빼고 보내주세요!")
-        List<String> tags,
-
         @Schema(description = "원본 파일 이름", example = "[fileName.jpg, dog.jpg..]")
-        List<String> originalFileNames
-) {
+        List<String> originalFileNames,
+
+        @Schema(description = "카테고리 목록", implementation = CategoryDto.class)
+        @NotNull(message = "적어도 한 개의 카테고리가 들어있어야 합니다.")
+        List<CategoryDto> categoryDtos
+        ) {
 }

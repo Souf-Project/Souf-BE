@@ -1,21 +1,28 @@
 package com.souf.soufwebsite.domain.member.entity;
 
 import com.souf.soufwebsite.domain.feed.entity.Feed;
-import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
+import com.souf.soufwebsite.global.common.category.exception.NotDuplicateCategoryException;
+import com.souf.soufwebsite.global.common.category.exception.NotExceedCategoryLimitException;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Where;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Where(clause = "is_deleted = false")
 public class Member extends BaseEntity {
 
     @Id
@@ -52,12 +59,14 @@ public class Member extends BaseEntity {
     @Column(length = 300)
     private String personalUrl;
 
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberCategoryMapping> categories = new ArrayList<>();
-
-    @OneToOne
-    @JoinColumn(name = "media_id")
-    private Media media;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Feed> feeds = new ArrayList<>();
@@ -90,14 +99,13 @@ public class Member extends BaseEntity {
     public void addCategory(MemberCategoryMapping mapping) {
         for (MemberCategoryMapping existing : this.categories) {
             if (existing.isSameCategorySet(mapping)) {
-                throw new IllegalArgumentException("이미 존재하는 카테고리 세트입니다.");
+                throw new NotDuplicateCategoryException();
             }
         }
 
-        if (this.categories.size() >= 3) {
-            throw new IllegalStateException("카테고리는 최대 3개까지만 등록할 수 있습니다.");
+        if (this.categories.size() > 3) {
+            throw new NotExceedCategoryLimitException();
         }
-
         this.categories.add(mapping);
         mapping.setMember(this);
     }
@@ -113,5 +121,17 @@ public class Member extends BaseEntity {
                         mapping.getSecondCategory().getId().equals(dto.secondCategory()) &&
                         mapping.getThirdCategory().getId().equals(dto.thirdCategory())
         );
+    }
+
+    public void clearCategories() {
+        for (MemberCategoryMapping mapping : categories) {
+            mapping.disconnectMember();
+        }
+        categories.clear();
+    }
+
+    public void softDelete() {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
     }
 }
