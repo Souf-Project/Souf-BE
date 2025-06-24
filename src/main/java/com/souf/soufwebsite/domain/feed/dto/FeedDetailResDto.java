@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 public record FeedDetailResDto(
 
         Long memberId,
+        Long feedId,
         String topic,
         String content,
         Long view,
@@ -20,6 +21,7 @@ public record FeedDetailResDto(
     public static FeedDetailResDto from(Long memberId, Feed feed, Long feedViewCount, List<Media> mediaList) {
         return new FeedDetailResDto(
                 memberId,
+                feed.getId(),
                 feed.getTopic(),
             feed.getContent(),
             feed.getViewCount() + feedViewCount,
