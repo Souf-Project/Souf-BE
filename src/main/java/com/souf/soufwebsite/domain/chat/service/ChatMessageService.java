@@ -34,9 +34,6 @@ public class ChatMessageService {
 
     @Transactional
     public void markMessagesAsRead(ChatRoom room, Member reader) {
-        List<ChatMessage> unreadMessages = chatMessageRepository
-                .findByChatRoomAndSenderNotAndIsReadFalse(room, reader);
-
-        unreadMessages.forEach(msg -> msg.markAsRead());
+        chatMessageRepository.markAllAsRead(room, reader);
     }
 }

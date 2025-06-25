@@ -22,26 +22,42 @@ public class ChatRoomNativeRepository {
                 CASE
                     WHEN r.sender_id = :userId THEN m2.nickname
                     ELSE m1.nickname
-                END AS senderNickname,
+                END AS opponentNickname,
+                
+                CASE
+                    WHEN r.sender_id = :userId THEN m2.profile_image_url
+                    ELSE m1.profile_image_url
+                END AS opponentProfileImageUrl,
+                
                 (
-                    SELECT content 
+                    SELECT cm.content
                     FROM chat_message cm
                     WHERE cm.chatroom_id = r.chatroom_id
                     ORDER BY cm.created_time DESC
                     LIMIT 1
                 ) AS lastMessage,
+
                 (
-                    SELECT COUNT(*) 
+                    SELECT cm.created_time
+                    FROM chat_message cm
+                    WHERE cm.chatroom_id = r.chatroom_id
+                    ORDER BY cm.created_time DESC
+                    LIMIT 1
+                ) AS lastMessageTime,
+
+                (
+                    SELECT COUNT(*)
                     FROM chat_message cm2
                     WHERE cm2.chatroom_id = r.chatroom_id
                       AND cm2.sender_id != :userId
                       AND cm2.is_read = false
                 ) AS unreadCount
+
             FROM chat_room r
             JOIN member m1 ON r.sender_id = m1.member_id
             JOIN member m2 ON r.receiver_id = m2.member_id
             WHERE r.sender_id = :userId OR r.receiver_id = :userId
-            ORDER BY r.created_time DESC
+            ORDER BY lastMessageTime DESC
         """;
 
         List<Object[]> resultList = em.createNativeQuery(sql)
@@ -50,10 +66,12 @@ public class ChatRoomNativeRepository {
 
         return resultList.stream()
                 .map(row -> new ChatRoomSummaryDto(
-                        ((Number) row[0]).longValue(),
-                        (String) row[1],
-                        (String) row[2],
-                        ((Number) row[3]).intValue()
+                        ((Number) row[0]).longValue(),             // roomId
+                        (String) row[1],                           // opponentNickname
+                        (String) row[2],                           // opponentProfileImageUrl
+                        (String) row[3],                           // lastMessage
+                        ((java.sql.Timestamp) row[4]).toLocalDateTime(), // lastMessageTime
+                        ((Number) row[5]).intValue()
                 ))
                 .toList();
     }

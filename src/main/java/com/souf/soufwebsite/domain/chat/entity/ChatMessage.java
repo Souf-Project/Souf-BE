@@ -26,13 +26,14 @@ public class ChatMessage extends BaseEntity {
     @JoinColumn(name = "sender_id", nullable = false)
     private Member sender;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     @Column(name = "is_read", nullable = false)
     private boolean isRead = false;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private MessageType type;
 
     @Builder
@@ -42,9 +43,4 @@ public class ChatMessage extends BaseEntity {
         this.content = content;
         this.type = type;
     }
-
-    public void markAsRead() {
-        this.isRead = true;
-    }
-
 }
