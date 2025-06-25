@@ -78,7 +78,7 @@ public class ChatRoomNativeRepository {
                             ((Number) row[0]).longValue(),     // roomId
                             (String) row[1],                   // opponentNickname
                             (String) row[2],                   // opponentProfileImageUrl
-                            (String) row[3],                   // lastMessage
+                            lastMessage,                   // lastMessage
                             lastMessageTime,                   // lastMessageTime (nullable)
                             ((Number) row[5]).intValue()       // unreadCount
                     );
