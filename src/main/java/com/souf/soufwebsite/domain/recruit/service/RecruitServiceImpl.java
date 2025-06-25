@@ -92,15 +92,15 @@ public class RecruitServiceImpl implements RecruitService {
     @Transactional(readOnly = true)
     @Override
     public RecruitResDto getRecruitById(Long recruitId) {
-        Member member = getCurrentUser();
         Recruit recruit = findIfRecruitExist(recruitId);
+        Member recruitMember = recruit.getMember();
 
         String recruitViewKey = getRecruitViewKey(recruit.getId());
         redisUtil.increaseCount(recruitViewKey);
 
         List<Media> mediaList = fileService.getMediaList(PostType.RECRUIT, recruitId);
 
-        return RecruitResDto.from(recruit.getMember().getId(), recruit, member.getNickname(), mediaList);
+        return RecruitResDto.from(recruitMember.getId(), recruit, recruitMember.getNickname(), mediaList);
     }
 
     @Transactional(readOnly = true)
