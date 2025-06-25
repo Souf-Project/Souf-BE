@@ -85,7 +85,7 @@ public class FeedServiceImpl implements FeedService {
     @Transactional(readOnly = true)
     @Override
     public FeedDetailResDto getFeedById(Long memberId, Long feedId) {
-        findIfMemberExists(memberId);
+        Member member = findIfMemberExists(memberId);
         Feed feed = findIfFeedExist(feedId);
 
         String feedViewKey = getFeedViewKey(feed.getId());
@@ -93,8 +93,9 @@ public class FeedServiceImpl implements FeedService {
         Long viewCountFromRedis = redisUtil.get(feedViewKey);
 
         List<Media> mediaList = fileService.getMediaList(PostType.FEED, feedId);
+        String profileUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-        return FeedDetailResDto.from(memberId, feed, viewCountFromRedis, mediaList);
+        return FeedDetailResDto.from(member, profileUrl, feed, viewCountFromRedis, mediaList);
     }
 
     @Transactional
@@ -148,8 +149,10 @@ public class FeedServiceImpl implements FeedService {
                     String feedViewKey = getFeedViewKey(feed.getId());
                     Long viewCountFromRedis = redisUtil.get(feedViewKey);
                     List<Media> mediaList = fileService.getMediaList(PostType.FEED, feed.getId());
+                    Member member = feed.getMember();
+                    String profileUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-                    return FeedDetailResDto.from(feed.getMember().getId(), feed, viewCountFromRedis, mediaList);
+                    return FeedDetailResDto.from(feed.getMember(), profileUrl, feed, viewCountFromRedis, mediaList);
                 }
         );
     }

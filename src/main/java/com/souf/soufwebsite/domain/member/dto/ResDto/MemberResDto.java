@@ -1,8 +1,13 @@
 package com.souf.soufwebsite.domain.member.dto.ResDto;
 
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
+import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public record MemberResDto(
         Long id,
@@ -26,7 +31,10 @@ public record MemberResDto(
         RoleType role,
 
         @Schema(description = "회원 프로필 사진", example = "sakdjffasljk.png")
-        String profileUrl
+        String profileUrl,
+
+        @Schema(description = "회원이 설정한 카테고리")
+        List<CategoryDto> categoryDtoList
 
 ) {
     public static MemberResDto from(Member member, String profileUrl) {
@@ -38,7 +46,14 @@ public record MemberResDto(
                 member.getIntro(),
                 member.getPersonalUrl(),
                 member.getRole(),
-                profileUrl
+                profileUrl,
+                convertToCategoryDto(member.getCategories())
         );
+    }
+
+    private static List<CategoryDto> convertToCategoryDto(List<MemberCategoryMapping> mappings){
+        return mappings.stream().map(
+                m -> new CategoryDto(m.getFirstCategory().getId(), m.getSecondCategory().getId(), m.getThirdCategory().getId())
+        ).collect(Collectors.toList());
     }
 }
