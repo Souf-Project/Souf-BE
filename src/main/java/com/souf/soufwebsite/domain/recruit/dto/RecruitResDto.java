@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public record RecruitResDto(
+
+        Long memberId,
         Long recruitId,
         String title,
         String content,
@@ -25,8 +27,10 @@ public record RecruitResDto(
         List<CategoryDto> categoryDtoList,
         List<MediaResDto> mediaResDtos
 ) {
-    public static RecruitResDto from(Recruit recruit, String nickname, List<Media> mediaList) {
-        return new RecruitResDto(recruit.getId(),
+    public static RecruitResDto from(Long memberId, Recruit recruit, String nickname, List<Media> mediaList) {
+        return new RecruitResDto(
+                memberId,
+                recruit.getId(),
                 recruit.getTitle(),
                 recruit.getContent(),
                 recruit.getCity().getName(),

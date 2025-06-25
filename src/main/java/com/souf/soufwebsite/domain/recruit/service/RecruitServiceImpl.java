@@ -100,7 +100,7 @@ public class RecruitServiceImpl implements RecruitService {
 
         List<Media> mediaList = fileService.getMediaList(PostType.RECRUIT, recruitId);
 
-        return RecruitResDto.from(recruit, member.getNickname(), mediaList);
+        return RecruitResDto.from(member.getId(), recruit, member.getNickname(), mediaList);
     }
 
     @Transactional(readOnly = true)
