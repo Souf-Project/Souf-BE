@@ -6,6 +6,8 @@ import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -23,12 +25,12 @@ public class ChatRoomNativeRepository {
                     WHEN r.sender_id = :userId THEN m2.nickname
                     ELSE m1.nickname
                 END AS opponentNickname,
-                
+
                 CASE
                     WHEN r.sender_id = :userId THEN m2.profile_image_url
                     ELSE m1.profile_image_url
                 END AS opponentProfileImageUrl,
-                
+
                 (
                     SELECT cm.content
                     FROM chat_message cm
@@ -65,14 +67,22 @@ public class ChatRoomNativeRepository {
                 .getResultList();
 
         return resultList.stream()
-                .map(row -> new ChatRoomSummaryDto(
-                        ((Number) row[0]).longValue(),             // roomId
-                        (String) row[1],                           // opponentNickname
-                        (String) row[2],                           // opponentProfileImageUrl
-                        (String) row[3],                           // lastMessage
-                        ((java.sql.Timestamp) row[4]).toLocalDateTime(), // lastMessageTime
-                        ((Number) row[5]).intValue()
-                ))
+                .map(row -> {
+                    String lastMessage = row[3] != null ? (String) row[3] : "대화를 시작해보세요";
+                    LocalDateTime lastMessageTime = null;
+                    if (row[4] != null) {
+                        lastMessageTime = ((Timestamp) row[4]).toLocalDateTime();
+                    }
+
+                    return new ChatRoomSummaryDto(
+                            ((Number) row[0]).longValue(),     // roomId
+                            (String) row[1],                   // opponentNickname
+                            (String) row[2],                   // opponentProfileImageUrl
+                            (String) row[3],                   // lastMessage
+                            lastMessageTime,                   // lastMessageTime (nullable)
+                            ((Number) row[5]).intValue()       // unreadCount
+                    );
+                })
                 .toList();
     }
 }
