@@ -24,6 +24,7 @@ public record RecruitResDto(
         String maxPayment,
         String preferentialTreatment,
         String nickname,
+        boolean recruitable,
         List<CategoryDto> categoryDtoList,
         List<MediaResDto> mediaResDtos
 ) {
@@ -40,6 +41,7 @@ public record RecruitResDto(
                 recruit.getMaxPayment(),
                 recruit.getPreferentialTreatment(),
                 nickname,
+                recruit.isRecruitable(),
                 convertToCategoryDto(recruit.getCategories()),
                 convertToMediaResDto(mediaList)
         );
