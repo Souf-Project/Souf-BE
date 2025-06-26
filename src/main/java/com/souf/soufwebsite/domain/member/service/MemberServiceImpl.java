@@ -39,7 +39,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -240,8 +239,9 @@ public class MemberServiceImpl implements MemberService {
     @Transactional(readOnly = true)
     public MemberResDto getMyInfo() {
         Member member = getCurrentUser();
+        Member myMember = memberRepository.findById(member.getId()).orElseThrow(NotFoundMemberException::new); // 지연 로딩 오류 해결
         String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
-        return MemberResDto.from(member, mediaUrl);
+        return MemberResDto.from(myMember, mediaUrl);
     }
 
     //회원 조회
