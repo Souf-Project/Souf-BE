@@ -47,9 +47,10 @@ public interface AuthApiSpecification {
     );
 
     @Operation(summary = "이메일 인증번호 전송", description = "기존 회원의 이메일 인증을 위해 인증번호를 전송합니다.")
-    @PostMapping("/certify/email/send")
-    SuccessResponse<Boolean> sendCertifyEmailVerification(
-            @RequestParam String email
+    @PostMapping("/modify/email/send")
+    SuccessResponse<Boolean> sendModifyEmailVerification(
+            @RequestParam String originalEmail,
+            @RequestParam String acKrEmail
     );
 
     @Operation(summary = "이메일 인증번호 검증",

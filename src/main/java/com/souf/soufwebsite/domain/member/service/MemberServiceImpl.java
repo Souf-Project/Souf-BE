@@ -154,14 +154,14 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public boolean sendCertifyEmailVerification(String email) {
-        if (!memberRepository.existsByEmail(email)) {
+    public boolean sendModifyEmailVerification(String originalEmail, String acKrEmail) {
+        if (!memberRepository.existsByEmail(originalEmail)) {
             throw new NotFoundMemberException();
         }
-        if (!email.endsWith(".ac.kr")) {
+        if (!acKrEmail.endsWith(".ac.kr")) {
             throw new NotValidEmailException();
         }
-        return sendEmailCode(email);
+        return sendModifyEmailCode(originalEmail, acKrEmail);
     }
 
     private boolean sendEmailCode(String email) {
@@ -174,30 +174,55 @@ public class MemberServiceImpl implements MemberService {
         return emailService.sendEmail(email, "이메일 인증번호", "인증번호는 " + code + " 입니다.");
     }
 
+    private boolean sendModifyEmailCode(String originalEmail, String acKrEmail) {
+        String code = String.format("%06d", new Random().nextInt(1_000_000));
+        String verifyKey = "email:verification:" + acKrEmail;
+        String ownerKey = "email:owner:" + acKrEmail;
+
+        redisTemplate.opsForValue().set(verifyKey, code, 5, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(ownerKey, originalEmail, 5, TimeUnit.MINUTES);
+
+        return emailService.sendEmail(acKrEmail, "학생 인증 메일", "인증번호는 " + code + " 입니다.");
+    }
+
     //인증번호 확인
     @Override
     @Transactional
     public boolean verifyEmail(String email, String code, VerificationPurpose purpose) {
-        String emailKey = "email:verification:" + email; // Redis에서 인증번호 키
-        String verifiedKey = "email:verified:" + email; // Redis에서 인증 완료된 이메일 키
-
+        String emailKey = "email:verification:" + email;
         String storedCode = redisTemplate.opsForValue().get(emailKey);
 
-        if (storedCode != null && storedCode.equals(code)) {
-            if (purpose == VerificationPurpose.SIGNUP) {
+        if (storedCode == null || !storedCode.equals(code)) {
+            return false;
+        }
+
+        switch (purpose) {
+            case SIGNUP -> {
+                String verifiedKey = "email:verified:" + email;
                 redisTemplate.opsForValue().set(verifiedKey, "true", Duration.ofMinutes(30));
             }
-            if (purpose == VerificationPurpose.CERTIFY) {
-                Member member = memberRepository.findByEmail(email)
+
+            case MODIFY -> {
+                String ownerKey = "email:owner:" + email;
+                String ownerEmail = redisTemplate.opsForValue().get(ownerKey);
+
+                if (ownerEmail == null) {
+                    throw new NotValidEmailException();
+                }
+
+                Member member = memberRepository.findByEmail(ownerEmail)
                         .orElseThrow(NotFoundMemberException::new);
+
                 if (email.endsWith(".ac.kr")) {
                     member.updateRole(RoleType.STUDENT);
                 }
+
+                redisTemplate.delete(ownerKey);
             }
-            redisTemplate.delete(emailKey);
-            return true;
         }
-        return false;
+
+        redisTemplate.delete(emailKey);
+        return true;
     }
 
     //회원정보 수정

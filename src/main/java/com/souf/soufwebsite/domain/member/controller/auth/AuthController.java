@@ -52,9 +52,10 @@ public class AuthController implements AuthApiSpecification{
         return new SuccessResponse<>(memberService.sendResetEmailVerification(email));
     }
 
-    @PostMapping("/certify/email/send")
-    public SuccessResponse<Boolean> sendCertifyEmailVerification(@RequestParam String email) {
-        return new SuccessResponse<>(memberService.sendCertifyEmailVerification(email));
+    @PostMapping("/modify/email/send")
+    public SuccessResponse<Boolean> sendModifyEmailVerification(
+            @RequestParam String originalEmail, @RequestParam String acKrEmail) {
+        return new SuccessResponse<>(memberService.sendModifyEmailVerification(originalEmail, acKrEmail));
     }
 
     // 인증번호 검증
@@ -66,6 +67,7 @@ public class AuthController implements AuthApiSpecification{
         boolean verified = memberService.verifyEmail(email, code, purpose);
         return new SuccessResponse<>(verified);
     }
+
 
     // 이메일 중복 검증
     @GetMapping("/nickname/available")
