@@ -121,7 +121,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .findByRecruit(recruit, pageable)
                 .map(app -> new ApplicantResDto(
                         app.getId(),
-                        MemberResDto.from(app.getMember(), mediaUrl),
+                        MemberResDto.from(app.getMember(), app.getMember().getCategories(), mediaUrl),
                         app.getAppliedAt(),
                         app.getStatus().name()        // PENDING / ACCEPTED / REJECTED
                 ));
