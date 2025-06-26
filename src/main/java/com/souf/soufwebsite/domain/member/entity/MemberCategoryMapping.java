@@ -18,6 +18,7 @@ public class MemberCategoryMapping {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -31,6 +32,7 @@ public class MemberCategoryMapping {
 
     public static MemberCategoryMapping of(Member member, FirstCategory first, SecondCategory second, ThirdCategory third) {
         MemberCategoryMapping mapping = new MemberCategoryMapping();
+        mapping.member = member;
         mapping.firstCategory = first;
         mapping.secondCategory = second;
         mapping.thirdCategory = third;
@@ -41,10 +43,6 @@ public class MemberCategoryMapping {
         return this.firstCategory.getId().equals(mapping.firstCategory.getId())
                 && this.secondCategory.getId().equals(mapping.secondCategory.getId())
                 && this.thirdCategory.getId().equals(mapping.thirdCategory.getId());
-    }
-
-    public void setMember(Member member) {
-        this.member = member;
     }
 
     public void disconnectMember() {

@@ -107,7 +107,6 @@ public class Member extends BaseEntity {
             throw new NotExceedCategoryLimitException();
         }
         this.categories.add(mapping);
-        mapping.setMember(this);
     }
 
     public void updateCategory(CategoryDto oldDto, MemberCategoryMapping newMapping) {
