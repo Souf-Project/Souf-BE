@@ -76,6 +76,12 @@ public class MemberController implements MemberApiSpecification{
         return new SuccessResponse<>(resDto, "회원정보 수정 성공");
     }
 
+    @PostMapping("/modify/email/send")
+    public SuccessResponse<Boolean> sendModifyEmailVerification(
+            @RequestParam String originalEmail, @RequestParam String acKrEmail) {
+        return new SuccessResponse<>(memberService.sendModifyEmailVerification(originalEmail, acKrEmail));
+    }
+
     @PostMapping("/upload")
     public SuccessResponse uploadMetadata(@Valid @RequestBody MediaReqDto mediaReqDto){
         memberService.uploadProfileMedia(mediaReqDto);

@@ -60,6 +60,13 @@ public interface MemberApiSpecification {
             @RequestBody @Valid UpdateReqDto reqDto
     );
 
+    @Operation(summary = "이메일 인증번호 전송", description = "기존 회원의 이메일 인증을 위해 인증번호를 전송합니다.")
+    @PostMapping("/modify/email/send")
+    SuccessResponse<Boolean> sendModifyEmailVerification(
+            @RequestParam String originalEmail,
+            @RequestParam String acKrEmail
+    );
+
     @Operation(summary = "회원프로필 업로드", description = "회원프로필을 업로드한 후의 파일정보를 저장합니다.")
     @PostMapping("/upload")
     SuccessResponse uploadMetadata(@Valid @RequestBody MediaReqDto mediaReqDto);
