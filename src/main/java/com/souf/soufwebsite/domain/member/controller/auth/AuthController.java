@@ -52,6 +52,11 @@ public class AuthController implements AuthApiSpecification{
         return new SuccessResponse<>(memberService.sendResetEmailVerification(email));
     }
 
+    @PostMapping("/certify/email/send")
+    public SuccessResponse<Boolean> sendCertifyEmailVerification(@RequestParam String email) {
+        return new SuccessResponse<>(memberService.sendCertifyEmailVerification(email));
+    }
+
     // 인증번호 검증
     @PostMapping("/email/verify")
     public SuccessResponse<Boolean> verifyEmailCode(

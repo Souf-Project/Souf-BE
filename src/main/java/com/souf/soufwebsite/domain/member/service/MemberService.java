@@ -20,6 +20,8 @@ public interface MemberService {
 
     boolean sendResetEmailVerification(String email);
 
+    boolean sendCertifyEmailVerification(String email);
+
     boolean verifyEmail(String email, String code, VerificationPurpose purpose);
 
     MemberUpdateResDto updateUserInfo(UpdateReqDto reqDto);

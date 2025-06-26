@@ -12,10 +12,7 @@ import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
-import com.souf.soufwebsite.domain.member.exception.NotAvailableEmailException;
-import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
-import com.souf.soufwebsite.domain.member.exception.NotMatchPasswordException;
-import com.souf.soufwebsite.domain.member.exception.NotVerifiedEmailException;
+import com.souf.soufwebsite.domain.member.exception.*;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
@@ -39,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -155,6 +153,17 @@ public class MemberServiceImpl implements MemberService {
         return sendEmailCode(email);
     }
 
+    @Override
+    public boolean sendCertifyEmailVerification(String email) {
+        if (!memberRepository.existsByEmail(email)) {
+            throw new NotFoundMemberException();
+        }
+        if (!email.endsWith(".ac.kr")) {
+            throw new NotValidEmailException();
+        }
+        return sendEmailCode(email);
+    }
+
     private boolean sendEmailCode(String email) {
         String redisKey = "email:verification:" + email;
 
@@ -178,6 +187,14 @@ public class MemberServiceImpl implements MemberService {
             if (purpose == VerificationPurpose.SIGNUP) {
                 redisTemplate.opsForValue().set(verifiedKey, "true", Duration.ofMinutes(30));
             }
+            if (purpose == VerificationPurpose.CERTIFY) {
+                Member member = memberRepository.findByEmail(email)
+                        .orElseThrow(NotFoundMemberException::new);
+                if (email.endsWith(".ac.kr")) {
+                    member.updateRole(RoleType.STUDENT);
+                }
+            }
+            redisTemplate.delete(emailKey);
             return true;
         }
         return false;

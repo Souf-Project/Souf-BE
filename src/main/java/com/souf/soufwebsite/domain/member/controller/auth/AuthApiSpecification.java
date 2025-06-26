@@ -46,6 +46,12 @@ public interface AuthApiSpecification {
             @RequestParam String email
     );
 
+    @Operation(summary = "이메일 인증번호 전송", description = "기존 회원의 이메일 인증을 위해 인증번호를 전송합니다.")
+    @PostMapping("/certify/email/send")
+    SuccessResponse<Boolean> sendCertifyEmailVerification(
+            @RequestParam String email
+    );
+
     @Operation(summary = "이메일 인증번호 검증",
             description = "이메일로 발급된 인증번호와 일치하게 입력하였는지 검증합니다.<br>" +
                     " 인증 목적에 따라 (SIGNUP) 또는 (RESET)을 입력합니다.")
