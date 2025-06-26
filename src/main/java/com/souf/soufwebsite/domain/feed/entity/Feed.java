@@ -71,4 +71,11 @@ public class Feed extends BaseEntity {
     public void addCategory(FeedCategoryMapping feedCategoryMapping){
         this.categories.add(feedCategoryMapping);
     }
+
+    public void clearCategories() {
+        for (FeedCategoryMapping mapping : categories) {
+            mapping.disconectFeed();
+        }
+        categories.clear();
+    }
 }

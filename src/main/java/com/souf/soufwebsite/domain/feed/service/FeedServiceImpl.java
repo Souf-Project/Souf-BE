@@ -109,6 +109,9 @@ public class FeedServiceImpl implements FeedService {
         fileService.clearMediaList(PostType.FEED, feedId);
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
 
+        feed.clearCategories();
+        injectCategories(reqDto, feed);
+
         return new FeedResDto(feed.getId(), presignedUrlResDtos);
     }
 
