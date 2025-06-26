@@ -40,4 +40,8 @@ public class FeedCategoryMapping {
         mapping.thirdCategory = thirdCategory;
         return mapping;
     }
+
+    public void disconectFeed(){
+        this.feed = null;
+    }
 }
