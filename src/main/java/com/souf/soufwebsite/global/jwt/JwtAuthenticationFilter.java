@@ -1,7 +1,6 @@
 package com.souf.soufwebsite.global.jwt;
 
 import com.souf.soufwebsite.domain.member.entity.Member;
-import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.global.security.UserDetailsImpl;
 import jakarta.servlet.FilterChain;
@@ -10,7 +9,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -127,7 +125,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.info("AccessToken 재발급: {}", newAccessToken);
             return newAccessToken;
         }
-
         throw new IllegalArgumentException("유효하지 않은 refresh token");
     }
 }
