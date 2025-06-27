@@ -6,6 +6,7 @@ import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,6 +51,7 @@ public record MemberResDto(
     }
 
     private static List<CategoryDto> convertToCategoryDto(List<MemberCategoryMapping> mappings){
+        if(mappings == null) return new ArrayList<>();
         return mappings.stream().map(
                 m -> new CategoryDto(m.getFirstCategory().getId(), m.getSecondCategory().getId(), m.getThirdCategory().getId())
         ).collect(Collectors.toList());
