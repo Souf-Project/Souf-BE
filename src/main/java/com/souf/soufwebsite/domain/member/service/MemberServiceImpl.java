@@ -12,10 +12,7 @@ import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
-import com.souf.soufwebsite.domain.member.exception.NotAvailableEmailException;
-import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
-import com.souf.soufwebsite.domain.member.exception.NotMatchPasswordException;
-import com.souf.soufwebsite.domain.member.exception.NotVerifiedEmailException;
+import com.souf.soufwebsite.domain.member.exception.*;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
@@ -41,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -142,19 +140,30 @@ public class MemberServiceImpl implements MemberService {
 
     //인증번호 전송
     @Override
-    public boolean sendSignupEmailVerification(String email) {
-        if (memberRepository.existsByEmail(email)) {
+    public boolean sendSignupEmailVerification(SendEmailReqDto reqDto) {
+        if (memberRepository.existsByEmail(reqDto.email())) {
             throw new NotAvailableEmailException();
         }
-        return sendEmailCode(email);
+        return sendEmailCode(reqDto.email());
     }
 
     @Override
-    public boolean sendResetEmailVerification(String email) {
-        if (!memberRepository.existsByEmail(email)) {
+    public boolean sendResetEmailVerification(SendEmailReqDto reqDto) {
+        if (!memberRepository.existsByEmail(reqDto.email())) {
             throw new NotFoundMemberException();
         }
-        return sendEmailCode(email);
+        return sendEmailCode(reqDto.email());
+    }
+
+    @Override
+    public boolean sendModifyEmailVerification(SendModifyEmailReqDto reqDto) {
+        if (!memberRepository.existsByEmail(reqDto.originalEmail())) {
+            throw new NotFoundMemberException();
+        }
+        if (!reqDto.acKrEmail().endsWith(".ac.kr")) {
+            throw new NotValidEmailException();
+        }
+        return sendModifyEmailCode(reqDto.originalEmail(), reqDto.acKrEmail());
     }
 
     private boolean sendEmailCode(String email) {
@@ -167,22 +176,55 @@ public class MemberServiceImpl implements MemberService {
         return emailService.sendEmail(email, "이메일 인증번호", "인증번호는 " + code + " 입니다.");
     }
 
+    private boolean sendModifyEmailCode(String originalEmail, String acKrEmail) {
+        String code = String.format("%06d", new Random().nextInt(1_000_000));
+        String verifyKey = "email:verification:" + acKrEmail;
+        String ownerKey = "email:owner:" + acKrEmail;
+
+        redisTemplate.opsForValue().set(verifyKey, code, 5, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(ownerKey, originalEmail, 5, TimeUnit.MINUTES);
+
+        return emailService.sendEmail(acKrEmail, "학생 인증 메일", "인증번호는 " + code + " 입니다.");
+    }
+
     //인증번호 확인
     @Override
     @Transactional
-    public boolean verifyEmail(String email, String code, VerificationPurpose purpose) {
-        String emailKey = "email:verification:" + email; // Redis에서 인증번호 키
-        String verifiedKey = "email:verified:" + email; // Redis에서 인증 완료된 이메일 키
-
+    public boolean verifyEmail(VerifyEmailReqDto reqDto) {
+        String emailKey = "email:verification:" + reqDto.email();
         String storedCode = redisTemplate.opsForValue().get(emailKey);
 
-        if (storedCode != null && storedCode.equals(code)) {
-            if (purpose == VerificationPurpose.SIGNUP) {
+        if (storedCode == null || !storedCode.equals(reqDto.code())) {
+            return false;
+        }
+
+        switch (reqDto.purpose()) {
+            case SIGNUP -> {
+                String verifiedKey = "email:verified:" + reqDto.email();
                 redisTemplate.opsForValue().set(verifiedKey, "true", Duration.ofMinutes(30));
             }
-            return true;
+
+            case MODIFY -> {
+                String ownerKey = "email:owner:" + reqDto.email();
+                String ownerEmail = redisTemplate.opsForValue().get(ownerKey);
+
+                if (ownerEmail == null) {
+                    throw new NotValidEmailException();
+                }
+
+                Member member = memberRepository.findByEmail(ownerEmail)
+                        .orElseThrow(NotFoundMemberException::new);
+
+                if (reqDto.email().endsWith(".ac.kr")) {
+                    member.updateRole(RoleType.STUDENT);
+                }
+
+                redisTemplate.delete(ownerKey);
+            }
         }
-        return false;
+
+        redisTemplate.delete(emailKey);
+        return true;
     }
 
     //회원정보 수정

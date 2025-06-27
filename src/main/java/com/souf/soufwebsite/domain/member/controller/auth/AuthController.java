@@ -1,9 +1,6 @@
 package com.souf.soufwebsite.domain.member.controller.auth;
 
-import com.souf.soufwebsite.domain.member.dto.ReqDto.ResetReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.SigninReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.SignupReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.WithdrawReqDto;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.*;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.service.MemberService;
 import com.souf.soufwebsite.domain.member.service.VerificationPurpose;
@@ -44,24 +41,22 @@ public class AuthController implements AuthApiSpecification{
 
     // 인증번호 전송
     @PostMapping("/signup/email/send")
-    public SuccessResponse<Boolean> sendSignupEmailVerification(@RequestParam String email) {
-        return new SuccessResponse<>(memberService.sendSignupEmailVerification(email));
+    public SuccessResponse<Boolean> sendSignupEmailVerification(@RequestBody SendEmailReqDto reqDto) {
+        return new SuccessResponse<>(memberService.sendSignupEmailVerification(reqDto));
     }
 
     @PostMapping("/reset/email/send")
-    public SuccessResponse<Boolean> sendResetEmailVerification(@RequestParam String email) {
-        return new SuccessResponse<>(memberService.sendResetEmailVerification(email));
+    public SuccessResponse<Boolean> sendResetEmailVerification(@RequestBody SendEmailReqDto reqDto) {
+        return new SuccessResponse<>(memberService.sendResetEmailVerification(reqDto));
     }
 
     // 인증번호 검증
     @PostMapping("/email/verify")
-    public SuccessResponse<Boolean> verifyEmailCode(
-            @RequestParam String email,
-            @RequestParam String code,
-            @RequestParam VerificationPurpose purpose) {
-        boolean verified = memberService.verifyEmail(email, code, purpose);
+    public SuccessResponse<Boolean> verifyEmailCode(@RequestBody @Valid VerifyEmailReqDto reqDto) {
+        boolean verified = memberService.verifyEmail(reqDto);
         return new SuccessResponse<>(verified);
     }
+
 
     // 이메일 중복 검증
     @GetMapping("/nickname/available")
