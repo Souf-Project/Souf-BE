@@ -6,13 +6,14 @@ import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberUpdateResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface MemberService {
     void signup(SignupReqDto reqDto);
 
-    TokenDto signin(SigninReqDto reqDto);
+    TokenDto signin(SigninReqDto reqDto, HttpServletResponse response);
 
     void resetPassword(ResetReqDto reqDto);
 

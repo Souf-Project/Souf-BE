@@ -1,7 +1,6 @@
 package com.souf.soufwebsite.global.jwt;
 
 import com.souf.soufwebsite.domain.member.entity.Member;
-import com.souf.soufwebsite.domain.member.entity.RoleType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -13,7 +12,6 @@ public interface JwtService {
 
     String createRefreshToken(Member member);
 
-
     Optional<String> extractAccessToken(HttpServletRequest request);
 
     Optional<String> extractRefreshToken(HttpServletRequest request);
@@ -22,8 +20,11 @@ public interface JwtService {
 
     boolean isTokenValid(String token);
 
-
     long getExpiration(String token);
 
     void sendAccessToken(HttpServletResponse response, String newAccessToken);
+
+    void sendAccessAndRefreshToken(HttpServletResponse response,
+                                          String accessToken,
+                                          String refreshToken);
 }

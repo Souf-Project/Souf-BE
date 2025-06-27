@@ -22,6 +22,7 @@ import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.email.EmailService;
 import com.souf.soufwebsite.global.jwt.JwtService;
 import com.souf.soufwebsite.global.util.SecurityUtils;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -35,6 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -98,7 +100,7 @@ public class MemberServiceImpl implements MemberService {
 
     //로그인
     @Override
-    public TokenDto signin(SigninReqDto reqDto) {
+    public TokenDto signin(SigninReqDto reqDto, HttpServletResponse response) {
 
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(reqDto.email(), reqDto.password());
 
@@ -110,12 +112,12 @@ public class MemberServiceImpl implements MemberService {
 
         String accessToken = jwtService.createAccessToken(member);
         String refreshToken = jwtService.createRefreshToken(member);
-
         redisTemplate.opsForValue().set("refresh:" + email, refreshToken, jwtService.getExpiration(refreshToken), TimeUnit.MILLISECONDS);
+
+        jwtService.sendAccessAndRefreshToken(response, accessToken, refreshToken);
 
         return TokenDto.builder()
                 .accessToken(accessToken)
-                .refreshToken(refreshToken)
                 .memberId(member.getId())
                 .username(member.getUsername())
                 .roleType(member.getRole())

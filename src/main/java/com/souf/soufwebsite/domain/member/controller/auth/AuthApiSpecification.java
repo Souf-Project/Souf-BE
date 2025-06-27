@@ -6,6 +6,7 @@ import com.souf.soufwebsite.domain.member.service.VerificationPurpose;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,8 @@ public interface AuthApiSpecification {
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인하고 토큰을 발급받습니다.")
     @PostMapping("/login")
     SuccessResponse<TokenDto> signin(
-            @RequestBody @Valid SigninReqDto reqDto
+            @RequestBody @Valid SigninReqDto reqDto,
+            HttpServletResponse response
     );
 
     @Operation(summary = "비밀번호 재설정", description = "입력한 새 비밀번호로 계정 비밀번호를 변경합니다.")
