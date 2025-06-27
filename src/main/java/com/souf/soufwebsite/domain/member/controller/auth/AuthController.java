@@ -8,6 +8,7 @@ import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.service.MemberService;
 import com.souf.soufwebsite.domain.member.service.VerificationPurpose;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
@@ -28,9 +29,9 @@ public class AuthController implements AuthApiSpecification{
     }
 
     @PostMapping("/login")
-    public SuccessResponse<TokenDto> signin(@RequestBody @Valid SigninReqDto reqDto) {
+    public SuccessResponse<TokenDto> signin(@RequestBody @Valid SigninReqDto reqDto, HttpServletResponse response) {
         log.info("로그인 요청: {}", reqDto);
-        TokenDto tokenDto = memberService.signin(reqDto);
+        TokenDto tokenDto = memberService.signin(reqDto, response);
         log.info("로그인 성공: {}", tokenDto);
         return new SuccessResponse<>(tokenDto);
     }
