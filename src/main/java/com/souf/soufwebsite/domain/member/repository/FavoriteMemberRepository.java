@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.member.reposiotry;
+package com.souf.soufwebsite.domain.member.repository;
 
 import com.souf.soufwebsite.domain.member.entity.FavoriteMember;
 import com.souf.soufwebsite.domain.member.entity.Member;
@@ -15,6 +15,6 @@ public interface FavoriteMemberRepository extends JpaRepository<FavoriteMember, 
     @Query("SELECT fm FROM FavoriteMember fm JOIN FETCH fm.toMember WHERE fm.fromMember = :from order by fm.createdTime")
     Page<FavoriteMember> findWithToMemberByFromMember(@Param("from") Member from, Pageable pageable);
 
-    @Query("SELECT fm FROM FavoriteMember fm WHERE fm.fromMember = : from AND fm.toMember = :to")
-    Optional<FavoriteMember> findByFromMemberAndToMember(Member from, Member to);
+    @Query("SELECT fm FROM FavoriteMember fm WHERE fm.fromMember = :from AND fm.toMember = :to")
+    Optional<FavoriteMember> findByFromMemberAndToMember(@Param("from") Member from, @Param("to") Member to);
 }

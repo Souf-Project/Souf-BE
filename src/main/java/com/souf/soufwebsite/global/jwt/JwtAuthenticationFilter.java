@@ -1,7 +1,7 @@
 package com.souf.soufwebsite.global.jwt;
 
 import com.souf.soufwebsite.domain.member.entity.Member;
-import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
+import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.global.security.UserDetailsImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
