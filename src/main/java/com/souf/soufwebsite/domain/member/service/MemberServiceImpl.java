@@ -120,7 +120,6 @@ public class MemberServiceImpl implements MemberService {
 
         return TokenDto.builder()
                 .accessToken(accessToken)
-                .refreshToken(refreshToken)
                 .memberId(member.getId())
                 .username(member.getUsername())
                 .roleType(member.getRole())
