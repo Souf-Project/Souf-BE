@@ -6,6 +6,7 @@ import com.souf.soufwebsite.domain.member.dto.ReqDto.FavoriteMemberReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.entity.FavoriteMember;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.exception.NotFoundFavoriteException;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.reposiotry.FavoriteMemberRepository;
 import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
@@ -46,6 +47,16 @@ public class FavoriteServiceImpl implements FavoriteService {
             String profileUrl = fileService.getMediaUrl(PostType.PROFILE, toMember.getId());
             return MemberResDto.from(toMember, null, profileUrl);
         });
+    }
+
+    @Override
+    public void deleteFavoriteMember(FavoriteMemberReqDto favoriteMemberReqDto) {
+        Member fromMember = findIfExists(favoriteMemberReqDto.fromMemberId());
+        Member toMember = findIfExists(favoriteMemberReqDto.toMemberId());
+        FavoriteMember favoriteMember = favoriteMemberRepository.findByFromMemberAndToMember(fromMember, toMember)
+                .orElseThrow(NotFoundFavoriteException::new);
+
+        favoriteMemberRepository.delete(favoriteMember);
     }
 
     private Member findIfExists(Long fromMemberId) {

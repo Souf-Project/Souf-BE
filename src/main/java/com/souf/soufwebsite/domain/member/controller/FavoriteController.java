@@ -10,8 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
-import static com.souf.soufwebsite.domain.member.controller.FavoriteMemberSuccessResponse.ADD_FAVORITE_SUCCESS;
-import static com.souf.soufwebsite.domain.member.controller.FavoriteMemberSuccessResponse.GET_FAVORITE_SUCCESS;
+import static com.souf.soufwebsite.domain.member.controller.FavoriteMemberSuccessResponse.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -37,5 +36,14 @@ public class FavoriteController {
         return new SuccessResponse<>(
                 favoriteService.getFavoriteMember(fromMemberId, pageable),
                 GET_FAVORITE_SUCCESS.getMessage());
+    }
+
+    @DeleteMapping
+    public SuccessResponse deleteFavoriteMember(
+            @RequestBody FavoriteMemberReqDto favoriteMemberReqDto
+    ){
+        favoriteService.deleteFavoriteMember(favoriteMemberReqDto);
+
+        return new SuccessResponse(DELETE_FAVORITE_SUCCESS.getMessage());
     }
 }

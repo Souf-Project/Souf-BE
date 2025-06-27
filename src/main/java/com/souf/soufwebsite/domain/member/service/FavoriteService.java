@@ -10,4 +10,6 @@ public interface FavoriteService {
     void createFavoriteMember(FavoriteMemberReqDto favoriteMemberReqDto);
 
     Page<MemberResDto> getFavoriteMember(Long fromMemberId, Pageable pageable);
+
+    void deleteFavoriteMember(FavoriteMemberReqDto favoriteMemberReqDto);
 }
