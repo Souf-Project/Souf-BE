@@ -138,30 +138,30 @@ public class MemberServiceImpl implements MemberService {
 
     //인증번호 전송
     @Override
-    public boolean sendSignupEmailVerification(String email) {
-        if (memberRepository.existsByEmail(email)) {
+    public boolean sendSignupEmailVerification(SendEmailReqDto reqDto) {
+        if (memberRepository.existsByEmail(reqDto.email())) {
             throw new NotAvailableEmailException();
         }
-        return sendEmailCode(email);
+        return sendEmailCode(reqDto.email());
     }
 
     @Override
-    public boolean sendResetEmailVerification(String email) {
-        if (!memberRepository.existsByEmail(email)) {
+    public boolean sendResetEmailVerification(SendEmailReqDto reqDto) {
+        if (!memberRepository.existsByEmail(reqDto.email())) {
             throw new NotFoundMemberException();
         }
-        return sendEmailCode(email);
+        return sendEmailCode(reqDto.email());
     }
 
     @Override
-    public boolean sendModifyEmailVerification(String originalEmail, String acKrEmail) {
-        if (!memberRepository.existsByEmail(originalEmail)) {
+    public boolean sendModifyEmailVerification(SendModifyEmailReqDto reqDto) {
+        if (!memberRepository.existsByEmail(reqDto.originalEmail())) {
             throw new NotFoundMemberException();
         }
-        if (!acKrEmail.endsWith(".ac.kr")) {
+        if (!reqDto.acKrEmail().endsWith(".ac.kr")) {
             throw new NotValidEmailException();
         }
-        return sendModifyEmailCode(originalEmail, acKrEmail);
+        return sendModifyEmailCode(reqDto.originalEmail(), reqDto.acKrEmail());
     }
 
     private boolean sendEmailCode(String email) {
@@ -188,22 +188,22 @@ public class MemberServiceImpl implements MemberService {
     //인증번호 확인
     @Override
     @Transactional
-    public boolean verifyEmail(String email, String code, VerificationPurpose purpose) {
-        String emailKey = "email:verification:" + email;
+    public boolean verifyEmail(VerifyEmailReqDto reqDto) {
+        String emailKey = "email:verification:" + reqDto.email();
         String storedCode = redisTemplate.opsForValue().get(emailKey);
 
-        if (storedCode == null || !storedCode.equals(code)) {
+        if (storedCode == null || !storedCode.equals(reqDto.code())) {
             return false;
         }
 
-        switch (purpose) {
+        switch (reqDto.purpose()) {
             case SIGNUP -> {
-                String verifiedKey = "email:verified:" + email;
+                String verifiedKey = "email:verified:" + reqDto.email();
                 redisTemplate.opsForValue().set(verifiedKey, "true", Duration.ofMinutes(30));
             }
 
             case MODIFY -> {
-                String ownerKey = "email:owner:" + email;
+                String ownerKey = "email:owner:" + reqDto.email();
                 String ownerEmail = redisTemplate.opsForValue().get(ownerKey);
 
                 if (ownerEmail == null) {
@@ -213,7 +213,7 @@ public class MemberServiceImpl implements MemberService {
                 Member member = memberRepository.findByEmail(ownerEmail)
                         .orElseThrow(NotFoundMemberException::new);
 
-                if (email.endsWith(".ac.kr")) {
+                if (reqDto.email().endsWith(".ac.kr")) {
                     member.updateRole(RoleType.STUDENT);
                 }
 

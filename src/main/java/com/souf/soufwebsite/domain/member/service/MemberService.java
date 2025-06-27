@@ -16,13 +16,13 @@ public interface MemberService {
 
     void resetPassword(ResetReqDto reqDto);
 
-    boolean sendSignupEmailVerification(String email);
+    boolean sendSignupEmailVerification(SendEmailReqDto reqDto);
 
-    boolean sendResetEmailVerification(String email);
+    boolean sendResetEmailVerification(SendEmailReqDto reqDto);
 
-    boolean sendModifyEmailVerification(String originalEmail, String acKrEmail);
+    boolean sendModifyEmailVerification(SendModifyEmailReqDto reqDto);
 
-    boolean verifyEmail(String email, String code, VerificationPurpose purpose);
+    boolean verifyEmail(VerifyEmailReqDto reqDto);
 
     MemberUpdateResDto updateUserInfo(UpdateReqDto reqDto);
 
