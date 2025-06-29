@@ -1,7 +1,7 @@
 package com.souf.soufwebsite.global.security;
 
 import com.souf.soufwebsite.domain.member.entity.Member;
-import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
+import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

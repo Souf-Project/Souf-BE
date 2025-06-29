@@ -5,6 +5,7 @@ import com.souf.soufwebsite.domain.member.entity.RoleType;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -81,11 +82,12 @@ public class JwtServiceImpl implements JwtService {
         return Optional.empty();
     }
 
-    @Override
     public Optional<String> extractRefreshToken(HttpServletRequest request) {
-        String header = request.getHeader(refreshTokenHeader);
-        if (header != null && header.startsWith("Bearer ")) {
-            return Optional.of(header.substring("Bearer ".length()));
+        if (request.getCookies() == null) return Optional.empty();
+        for (Cookie cookie : request.getCookies()) {
+            if ("refreshToken".equals(cookie.getName())) {
+                return Optional.of(cookie.getValue());
+            }
         }
         return Optional.empty();
     }
@@ -129,6 +131,20 @@ public class JwtServiceImpl implements JwtService {
             log.error("토큰 만료 시간 추출 실패: {}", e.getMessage());
             throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
         }
+    }
+
+    public void sendAccessAndRefreshToken(HttpServletResponse response,
+                                          String accessToken,
+                                          String refreshToken) {
+        response.setHeader("Authorization", "Bearer " + accessToken);
+
+        Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setSecure(true); // HTTPS 환경 필수
+        refreshCookie.setPath("/");
+        refreshCookie.setMaxAge((int) (refreshTokenExpireTime / 1000)); // 초 단위로 설정
+
+        response.addCookie(refreshCookie);
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.souf.soufwebsite.domain.member.controller;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberSearchReqDto;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.SendModifyEmailReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
@@ -74,6 +75,12 @@ public class MemberController implements MemberApiSpecification{
     public SuccessResponse<MemberUpdateResDto> updateUserInfo(@RequestBody UpdateReqDto reqDto) {
         MemberUpdateResDto resDto = memberService.updateUserInfo(reqDto);
         return new SuccessResponse<>(resDto, "회원정보 수정 성공");
+    }
+
+    @PostMapping("/modify/email/send")
+    public SuccessResponse<Boolean> sendModifyEmailVerification(
+            @RequestBody @Valid SendModifyEmailReqDto reqDto) {
+        return new SuccessResponse<>(memberService.sendModifyEmailVerification(reqDto));
     }
 
     @PostMapping("/upload")

@@ -1,9 +1,6 @@
 package com.souf.soufwebsite.domain.feed.service;
 
-import com.souf.soufwebsite.domain.feed.dto.FeedDetailResDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedReqDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedResDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedSimpleResDto;
+import com.souf.soufwebsite.domain.feed.dto.*;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.entity.FeedCategoryMapping;
 import com.souf.soufwebsite.domain.feed.exception.NotFoundFeedException;
@@ -15,8 +12,9 @@ import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
+import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
-import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
+import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
@@ -74,16 +72,20 @@ public class FeedServiceImpl implements FeedService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<FeedSimpleResDto> getStudentFeeds(Long memberId, Pageable pageable) {
+    public MemberFeedResDto getStudentFeeds(Long memberId, Pageable pageable) {
         Member member = findIfMemberExists(memberId);
-        return feedRepository.findAllByMemberOrderByIdDesc(member, pageable)
+        String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
+        Page<FeedSimpleResDto> feedSimpleResDtos = feedRepository.findAllByMemberOrderByIdDesc(member, pageable)
                 .map(this::getFeedSimpleResDto);
+
+        MemberResDto memberResDto = MemberResDto.from(member, member.getCategories(), mediaUrl);
+        return new MemberFeedResDto(memberResDto, feedSimpleResDtos);
     }
 
     @Transactional(readOnly = true)
     @Override
     public FeedDetailResDto getFeedById(Long memberId, Long feedId) {
-        findIfMemberExists(memberId);
+        Member member = findIfMemberExists(memberId);
         Feed feed = findIfFeedExist(feedId);
 
         String feedViewKey = getFeedViewKey(feed.getId());
@@ -91,8 +93,9 @@ public class FeedServiceImpl implements FeedService {
         Long viewCountFromRedis = redisUtil.get(feedViewKey);
 
         List<Media> mediaList = fileService.getMediaList(PostType.FEED, feedId);
+        String profileUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-        return FeedDetailResDto.from(memberId, feed, viewCountFromRedis, mediaList);
+        return FeedDetailResDto.from(member, profileUrl, feed, viewCountFromRedis, mediaList);
     }
 
     @Transactional
@@ -103,8 +106,12 @@ public class FeedServiceImpl implements FeedService {
         verifyIfFeedIsMine(feed, member);
 
         feed.updateContent(reqDto);
-        fileService.clearMediaList(PostType.FEED, feedId);
+        updatedRemainingUrls(reqDto, feed);
+
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
+
+        feed.clearCategories();
+        injectCategories(reqDto, feed);
 
         return new FeedResDto(feed.getId(), presignedUrlResDtos);
     }
@@ -146,8 +153,10 @@ public class FeedServiceImpl implements FeedService {
                     String feedViewKey = getFeedViewKey(feed.getId());
                     Long viewCountFromRedis = redisUtil.get(feedViewKey);
                     List<Media> mediaList = fileService.getMediaList(PostType.FEED, feed.getId());
+                    Member member = feed.getMember();
+                    String profileUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-                    return FeedDetailResDto.from(feed.getMember().getId(), feed, viewCountFromRedis, mediaList);
+                    return FeedDetailResDto.from(feed.getMember(), profileUrl, feed, viewCountFromRedis, mediaList);
                 }
         );
     }
@@ -181,6 +190,15 @@ public class FeedServiceImpl implements FeedService {
             categoryService.validate(firstCategory.getId(), secondCategory.getId(), thirdCategory.getId());
             FeedCategoryMapping recruitCategoryMapping = FeedCategoryMapping.of(feed, firstCategory, secondCategory, thirdCategory);
             feed.addCategory(recruitCategoryMapping);
+        }
+    }
+
+    private void updatedRemainingUrls(FeedReqDto reqDto, Feed feed) {
+        List<Media> mediaList = fileService.getMediaList(PostType.FEED, feed.getId());
+        for (Media media : mediaList) {
+            if (!reqDto.existingImageUrls().contains(media.getOriginalUrl())) {
+                fileService.deleteMedia(media);  // DB에서만 삭제되도록 수정
+            }
         }
     }
 }

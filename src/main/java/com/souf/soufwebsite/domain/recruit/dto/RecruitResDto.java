@@ -7,34 +7,41 @@ import com.souf.soufwebsite.domain.recruit.entity.RecruitCategoryMapping;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public record RecruitResDto(
+
+        Long memberId,
         Long recruitId,
         String title,
         String content,
         String cityName,
         String cityDetailName,
-        LocalDateTime deadline,
+        String deadline,
         String minPayment,
         String maxPayment,
         String preferentialTreatment,
         String nickname,
+        boolean recruitable,
         List<CategoryDto> categoryDtoList,
         List<MediaResDto> mediaResDtos
 ) {
-    public static RecruitResDto from(Recruit recruit, String nickname, List<Media> mediaList) {
-        return new RecruitResDto(recruit.getId(),
+    public static RecruitResDto from(Long memberId, Recruit recruit, String nickname, List<Media> mediaList) {
+        return new RecruitResDto(
+                memberId,
+                recruit.getId(),
                 recruit.getTitle(),
                 recruit.getContent(),
                 recruit.getCity().getName(),
                 recruit.getCityDetail() != null ? recruit.getCityDetail().getName() : null,
-                recruit.getDeadline(),
+                convertToDateTime(recruit.getDeadline()),
                 recruit.getMinPayment(),
                 recruit.getMaxPayment(),
                 recruit.getPreferentialTreatment(),
                 nickname,
+                recruit.isRecruitable(),
                 convertToCategoryDto(recruit.getCategories()),
                 convertToMediaResDto(mediaList)
         );
@@ -50,5 +57,10 @@ public record RecruitResDto(
         return mediaList.stream().map(
                 MediaResDto::fromFeedDetail
         ).collect(Collectors.toList());
+    }
+
+    private static String convertToDateTime(LocalDateTime dateTime){
+
+        return dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
     }
 }

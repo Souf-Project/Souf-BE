@@ -1,9 +1,6 @@
 package com.souf.soufwebsite.domain.feed.controller;
 
-import com.souf.soufwebsite.domain.feed.dto.FeedDetailResDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedReqDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedResDto;
-import com.souf.soufwebsite.domain.feed.dto.FeedSimpleResDto;
+import com.souf.soufwebsite.domain.feed.dto.*;
 import com.souf.soufwebsite.domain.feed.service.FeedService;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
@@ -40,7 +37,7 @@ public class FeedController implements FeedApiSpecification{
     }
 
     @GetMapping("/{memberId}")
-    public SuccessResponse<Page<FeedSimpleResDto>> getStudentFeeds(
+    public SuccessResponse<MemberFeedResDto> getStudentFeeds(
             @PathVariable(name = "memberId") Long memberId,
             @PageableDefault(size = 12) Pageable pageable) {
         return new SuccessResponse<>(feedService.getStudentFeeds(memberId, pageable), FEED_GET.getMessage());

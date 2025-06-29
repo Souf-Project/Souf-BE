@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.member.reposiotry;
+package com.souf.soufwebsite.domain.member.repository;
 
 import com.souf.soufwebsite.domain.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;

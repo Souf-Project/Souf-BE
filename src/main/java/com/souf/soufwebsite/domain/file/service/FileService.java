@@ -51,4 +51,8 @@ public class FileService {
     public void clearMediaList(PostType postType, Long postId){
         mediaRepository.deleteAllByPostTypeAndPostId(postType, postId);
     }
+
+    public void deleteMedia(Media media) {
+        mediaRepository.delete(media);
+    }
 }
