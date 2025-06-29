@@ -4,7 +4,6 @@ package com.souf.soufwebsite.domain.member.dto.ReqDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 
 public record SigninReqDto(
         @Schema(description = "이메일", example = "user@example.com")

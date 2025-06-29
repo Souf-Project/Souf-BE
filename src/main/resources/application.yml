@@ -55,3 +55,10 @@ cloud:
       secret-key: ${AWS_SECRET_KEY}
     s3:
       bucket: ${BUCKET_NAME}
+
+websocket:
+  relay:
+    host: localhost
+    port: 61613
+    username: guest
+    password: guest
