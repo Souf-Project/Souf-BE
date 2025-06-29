@@ -53,6 +53,9 @@ public record RecruitReqDto(
         @NotNull(message = "적어도 한 개의 카테고리가 들어있어야 합니다.")
         List<CategoryDto> categoryDtos,
 
+        @Schema(description = "기존에 존재하는 파일 URL", example = "[\"https://s3.../img1.jpg\", \"https://s3.../img2.jpg\"]")
+        List<String> existingImageUrls,
+
         @Schema(description = "원본 파일 이름 리스트, 없으면 [] 이렇게 빈 리스트로 반환해주세요.", example = "[\"fileName.jpg\", \"dog.jpg\"]")
         List<String> originalFileNames,
 

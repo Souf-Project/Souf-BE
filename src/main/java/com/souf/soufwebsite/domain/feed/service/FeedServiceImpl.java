@@ -106,7 +106,8 @@ public class FeedServiceImpl implements FeedService {
         verifyIfFeedIsMine(feed, member);
 
         feed.updateContent(reqDto);
-        fileService.clearMediaList(PostType.FEED, feedId);
+        updatedRemainingUrls(reqDto, feed);
+
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
 
         feed.clearCategories();
@@ -189,6 +190,15 @@ public class FeedServiceImpl implements FeedService {
             categoryService.validate(firstCategory.getId(), secondCategory.getId(), thirdCategory.getId());
             FeedCategoryMapping recruitCategoryMapping = FeedCategoryMapping.of(feed, firstCategory, secondCategory, thirdCategory);
             feed.addCategory(recruitCategoryMapping);
+        }
+    }
+
+    private void updatedRemainingUrls(FeedReqDto reqDto, Feed feed) {
+        List<Media> mediaList = fileService.getMediaList(PostType.FEED, feed.getId());
+        for (Media media : mediaList) {
+            if (!reqDto.existingImageUrls().contains(media.getOriginalUrl())) {
+                fileService.deleteMedia(media);  // DB에서만 삭제되도록 수정
+            }
         }
     }
 }
