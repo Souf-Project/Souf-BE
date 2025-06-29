@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.member.reposiotry;
+package com.souf.soufwebsite.domain.member.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.souf.soufwebsite.domain.feed.entity.Feed;

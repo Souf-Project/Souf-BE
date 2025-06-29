@@ -141,7 +141,7 @@ public class RecruitServiceImpl implements RecruitService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 City ID입니다."));
         CityDetail cityDetail = validateCityOrThrow(city, reqDto.cityDetailId());
 
-        fileService.clearMediaList(PostType.RECRUIT, recruit.getId());
+        updateRemainingImages(reqDto, recruit);
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("recruit", reqDto.originalFileNames());
 
         recruit.updateRecruit(reqDto, city, cityDetail);
@@ -208,6 +208,15 @@ public class RecruitServiceImpl implements RecruitService {
         }
         return cityDetailRepository.findById(cityDetailId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 cityDetail ID입니다."));
+    }
+
+    private void updateRemainingImages(RecruitReqDto reqDto, Recruit recruit) {
+        List<Media> mediaList = fileService.getMediaList(PostType.RECRUIT, recruit.getId());
+        for (Media media : mediaList) {
+            if (!reqDto.existingImageUrls().contains(media.getOriginalUrl())) {
+                fileService.deleteMedia(media);  // DB에서만 삭제되도록 수정
+            }
+        }
     }
 
 }

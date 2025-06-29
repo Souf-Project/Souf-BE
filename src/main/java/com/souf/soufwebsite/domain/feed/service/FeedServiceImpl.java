@@ -14,7 +14,7 @@ import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
-import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
+import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
@@ -78,7 +78,7 @@ public class FeedServiceImpl implements FeedService {
         Page<FeedSimpleResDto> feedSimpleResDtos = feedRepository.findAllByMemberOrderByIdDesc(member, pageable)
                 .map(this::getFeedSimpleResDto);
 
-        MemberResDto memberResDto = MemberResDto.from(member, mediaUrl);
+        MemberResDto memberResDto = MemberResDto.from(member, member.getCategories(), mediaUrl);
         return new MemberFeedResDto(memberResDto, feedSimpleResDtos);
     }
 
@@ -106,7 +106,8 @@ public class FeedServiceImpl implements FeedService {
         verifyIfFeedIsMine(feed, member);
 
         feed.updateContent(reqDto);
-        fileService.clearMediaList(PostType.FEED, feedId);
+        updatedRemainingUrls(reqDto, feed);
+
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
 
         feed.clearCategories();
@@ -189,6 +190,15 @@ public class FeedServiceImpl implements FeedService {
             categoryService.validate(firstCategory.getId(), secondCategory.getId(), thirdCategory.getId());
             FeedCategoryMapping recruitCategoryMapping = FeedCategoryMapping.of(feed, firstCategory, secondCategory, thirdCategory);
             feed.addCategory(recruitCategoryMapping);
+        }
+    }
+
+    private void updatedRemainingUrls(FeedReqDto reqDto, Feed feed) {
+        List<Media> mediaList = fileService.getMediaList(PostType.FEED, feed.getId());
+        for (Media media : mediaList) {
+            if (!reqDto.existingImageUrls().contains(media.getOriginalUrl())) {
+                fileService.deleteMedia(media);  // DB에서만 삭제되도록 수정
+            }
         }
     }
 }

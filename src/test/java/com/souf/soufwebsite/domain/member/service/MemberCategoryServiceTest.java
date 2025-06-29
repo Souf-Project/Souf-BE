@@ -1,7 +1,7 @@
 package com.souf.soufwebsite.domain.member.service;
 
-import com.souf.soufwebsite.domain.member.reposiotry.MemberCategoryMappingRepository;
-import com.souf.soufwebsite.domain.member.reposiotry.MemberRepository;
+import com.souf.soufwebsite.domain.member.repository.MemberCategoryMappingRepository;
+import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;

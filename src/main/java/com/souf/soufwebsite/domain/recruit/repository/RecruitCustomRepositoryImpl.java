@@ -38,6 +38,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         recruit.cityDetail.name,
                         recruit.deadline,
                         recruit.recruitCount,
+                        recruit.recruitable,
                         recruit.lastModifiedTime
                 )
                 .from(recruit)
@@ -74,6 +75,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         cityDetailName,
                         t.get(recruit.deadline),
                         t.get(recruit.recruitCount),
+                        Boolean.TRUE.equals(t.get(recruit.recruitable)),
                         t.get(recruit.lastModifiedTime)
                 );
                 mergedMap.put(recruitId, dto);
