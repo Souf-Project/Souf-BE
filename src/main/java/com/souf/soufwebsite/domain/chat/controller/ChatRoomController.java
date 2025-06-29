@@ -24,7 +24,7 @@ import java.util.List;
 @RequestMapping("/api/v1/chatrooms")
 @RequiredArgsConstructor
 @Slf4j
-public class ChatRoomController {
+public class ChatRoomController implements ChatRoomApiSpecificaton {
     private final ChatRoomService chatRoomService;
     private final ChatMessageService chatMessageService;
     private final MemberRepository memberRepository;
