@@ -27,7 +27,7 @@ public interface MemberService {
 
     MemberUpdateResDto updateUserInfo(UpdateReqDto reqDto);
 
-    void uploadProfileMedia(MediaReqDto reqDto);
+    void uploadProfileImage(MediaReqDto reqDto);
 
     Page<MemberSimpleResDto> getMembers(Long first, Long second, Long third, MemberSearchReqDto searchReqDto, Pageable pageable);
 

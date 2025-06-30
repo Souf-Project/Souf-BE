@@ -93,9 +93,9 @@ public class FeedServiceImpl implements FeedService {
         Long viewCountFromRedis = redisUtil.get(feedViewKey);
 
         List<Media> mediaList = fileService.getMediaList(PostType.FEED, feedId);
-        String profileUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
+        String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-        return FeedDetailResDto.from(member, profileUrl, feed, viewCountFromRedis, mediaList);
+        return FeedDetailResDto.from(member, profileImageUrl, feed, viewCountFromRedis, mediaList);
     }
 
     @Transactional
@@ -154,9 +154,9 @@ public class FeedServiceImpl implements FeedService {
                     Long viewCountFromRedis = redisUtil.get(feedViewKey);
                     List<Media> mediaList = fileService.getMediaList(PostType.FEED, feed.getId());
                     Member member = feed.getMember();
-                    String profileUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
+                    String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-                    return FeedDetailResDto.from(feed.getMember(), profileUrl, feed, viewCountFromRedis, mediaList);
+                    return FeedDetailResDto.from(feed.getMember(), profileImageUrl, feed, viewCountFromRedis, mediaList);
                 }
         );
     }

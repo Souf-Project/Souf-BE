@@ -44,8 +44,8 @@ public class FavoriteServiceImpl implements FavoriteService {
 
         return favoriteMembers.map(favoriteMember -> {
             Member toMember = favoriteMember.getToMember();
-            String profileUrl = fileService.getMediaUrl(PostType.PROFILE, toMember.getId());
-            return MemberResDto.from(toMember, null, profileUrl);
+            String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, toMember.getId());
+            return MemberResDto.from(toMember, null, profileImageUrl);
         });
     }
 

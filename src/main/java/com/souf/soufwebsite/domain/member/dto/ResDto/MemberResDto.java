@@ -18,6 +18,10 @@ public record MemberResDto(
         @Schema(description = "이메일 주소", example = "user@example.com")
         String email,
 
+
+        @Schema(description = "실명", example = "김철수")
+        String username,
+
         @Schema(description = "닉네임", example = "김개똥")
         String nickname,
 
@@ -31,21 +35,22 @@ public record MemberResDto(
         RoleType role,
 
         @Schema(description = "회원 프로필 사진", example = "sakdjffasljk.png")
-        String profileUrl,
+        String profileImageUrl,
 
         @Schema(description = "회원이 설정한 카테고리")
         List<CategoryDto> categoryDtoList
 
 ) {
-    public static MemberResDto from(Member member, List<MemberCategoryMapping> categories, String profileUrl) {
+    public static MemberResDto from(Member member, List<MemberCategoryMapping> categories, String profileImageUrl) {
         return new MemberResDto(
                 member.getId(),
                 member.getEmail(),
+                member.getUsername(),
                 member.getNickname(),
                 member.getIntro(),
                 member.getPersonalUrl(),
                 member.getRole(),
-                profileUrl,
+                profileImageUrl,
                 convertToCategoryDto(categories)
         );
     }
