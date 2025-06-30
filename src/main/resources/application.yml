@@ -58,7 +58,7 @@ cloud:
 
 websocket:
   relay:
-    host: localhost
+    host: rabbitmq
     port: 61613
     username: guest
     password: guest
