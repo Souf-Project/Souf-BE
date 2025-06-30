@@ -85,7 +85,7 @@ public class MemberController implements MemberApiSpecification{
 
     @PostMapping("/upload")
     public SuccessResponse uploadMetadata(@Valid @RequestBody MediaReqDto mediaReqDto){
-        memberService.uploadProfileMedia(mediaReqDto);
+        memberService.uploadProfileImage(mediaReqDto);
 
         return new SuccessResponse("회원프로필 업로드에 성공하였습니다.");
     }

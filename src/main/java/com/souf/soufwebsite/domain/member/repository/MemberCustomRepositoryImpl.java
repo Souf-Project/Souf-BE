@@ -82,8 +82,6 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
                 )
                 .groupBy(member.id)
                 .orderBy(member.lastModifiedTime.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
                 .fetch();
 
 
@@ -99,11 +97,12 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
                 .orderBy(member.lastModifiedTime.desc())
                 .fetch();
 
+
         // 3. DTO 변환
         List<MemberSimpleResDto> result = members.stream()
                 .map(m -> {
                     Long memberId = m.getId();
-                    String profileUrl = fileService.getMediaUrl(PostType.PROFILE, m.getId());
+                    String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, m.getId());
                     List<Feed> feeds = feedRepository.findTop3ByMemberOrderByViewCountDesc(m);
                     List<MemberSimpleResDto.PopularFeedDto> feedDtos = feeds.stream()
                             .map(feed -> {
@@ -117,7 +116,7 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
                             .filter(Objects::nonNull)
                             .toList();
 
-                    return new MemberSimpleResDto(memberId, profileUrl, m.getNickname(), m.getIntro(), feedDtos);
+                    return new MemberSimpleResDto(memberId, profileImageUrl, m.getNickname(), m.getIntro(), feedDtos);
                 })
                 .toList();
 

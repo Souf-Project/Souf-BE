@@ -259,7 +259,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public void uploadProfileMedia(MediaReqDto reqDto) {
+    public void uploadProfileImage(MediaReqDto reqDto) {
         Member member = memberRepository.findById(reqDto.postId()).orElseThrow(NotFoundMemberException::new);
         fileService.uploadMetadata(reqDto, PostType.PROFILE, member.getId());
     }
