@@ -27,8 +27,8 @@ public class ChatRoomNativeRepository {
                 END AS opponentNickname,
 
                 CASE
-                    WHEN r.sender_id = :userId THEN m2.profile_image_url
-                    ELSE m1.profile_image_url
+                    WHEN r.sender_id = :userId THEN pm2.original_url
+                    ELSE pm1.original_url
                 END AS opponentProfileImageUrl,
 
                 (
@@ -57,7 +57,9 @@ public class ChatRoomNativeRepository {
 
             FROM chat_room r
             JOIN member m1 ON r.sender_id = m1.member_id
+            LEFT JOIN media pm1 ON pm1.post_id = m1.member_id AND pm1.post_type = 'PROFILE'
             JOIN member m2 ON r.receiver_id = m2.member_id
+            LEFT JOIN media pm2 ON pm2.post_id = m2.member_id AND pm2.post_type = 'PROFILE'
             WHERE r.sender_id = :userId OR r.receiver_id = :userId
             ORDER BY lastMessageTime DESC
         """;
