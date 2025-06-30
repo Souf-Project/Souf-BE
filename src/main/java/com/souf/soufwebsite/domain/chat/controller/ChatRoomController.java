@@ -72,7 +72,8 @@ public class ChatRoomController implements ChatRoomApiSpecificaton {
                         msg.getSender().getNickname(),
                         msg.getType(),
                         msg.getContent(),
-                        msg.isRead()
+                        msg.isRead(),
+                        msg.getCreatedTime()
                 ))
                 .toList();
 

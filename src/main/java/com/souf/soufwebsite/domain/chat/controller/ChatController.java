@@ -18,6 +18,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.messaging.handler.annotation.Payload;
 
+import java.time.LocalDateTime;
+
 @Controller
 @RequiredArgsConstructor
 @Slf4j
@@ -50,7 +52,8 @@ public class ChatController {
                 sender.getNickname(),
                 request.type(),
                 request.content(),
-                false
+                false,
+                LocalDateTime.now()
         );
 
         messagingTemplate.convertAndSend("/topic/chatroom." + room.getId(), response);
