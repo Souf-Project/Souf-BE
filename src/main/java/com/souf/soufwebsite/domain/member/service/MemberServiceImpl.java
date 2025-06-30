@@ -117,7 +117,7 @@ public class MemberServiceImpl implements MemberService {
         return TokenDto.builder()
                 .accessToken(accessToken)
                 .memberId(member.getId())
-                .username(member.getUsername())
+                .nickname(member.getNickname())
                 .roleType(member.getRole())
                 .build();
     }

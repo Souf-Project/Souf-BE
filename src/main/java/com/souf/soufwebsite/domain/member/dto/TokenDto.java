@@ -7,7 +7,7 @@ import lombok.Builder;
 public record TokenDto(
         String accessToken,
         Long memberId,
-        String username,
+        String nickname,
         RoleType roleType
 ) {
 }
