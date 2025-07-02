@@ -2,6 +2,7 @@ package com.souf.soufwebsite.domain.file.service;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
+import com.souf.soufwebsite.domain.file.dto.VideoResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.entity.MediaType;
 import com.souf.soufwebsite.domain.file.entity.PostType;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,11 +22,22 @@ public class FileService {
     private final MediaRepository mediaRepository;
     private final S3UploaderService s3UploaderService;
 
+    private final Set<String> videoExtensions = Set.of("mp4", "mov", "avi", "mkv", "webm", "flv");
+
+    public VideoResDto configVideoUploadInitiation(List<String> originalFilenames) {
+        String videoString = originalFilenames.stream()
+                .filter(f -> videoExtensions.contains(extractExtension(f).toLowerCase())).toString();
+
+        return s3UploaderService.initiateUpload("feed", videoString);
+    }
+
     public List<PresignedUrlResDto> generatePresignedUrl(String path, List<String> fileNames){
-        List<PresignedUrlResDto> presignedUrlList = fileNames.stream().map(f ->
-                        s3UploaderService.generatePresignedUploadUrl(path, f))
+        // 비디오 확장자 제외
+        // Presigned URL 생성
+        return fileNames.stream()
+                .filter(f -> !videoExtensions.contains(extractExtension(f).toLowerCase())) // 비디오 확장자 제외
+                .map(f -> s3UploaderService.generatePresignedUploadUrl(path, f)) // Presigned URL 생성
                 .collect(Collectors.toList());
-        return presignedUrlList;
     }
 
     public List<Media> uploadMetadata(MediaReqDto files, PostType postType, Long postId){
@@ -54,5 +67,10 @@ public class FileService {
 
     public void deleteMedia(Media media) {
         mediaRepository.delete(media);
+    }
+
+    private String extractExtension(String fileName) {
+        if (fileName == null || !fileName.contains(".")) return "";
+        return fileName.substring(fileName.lastIndexOf('.') + 1);
     }
 }
