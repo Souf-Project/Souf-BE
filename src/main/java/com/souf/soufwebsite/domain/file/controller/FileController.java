@@ -17,7 +17,7 @@ import static com.souf.soufwebsite.domain.file.controller.FileUploadSuccessMessa
 @RestController
 @RequestMapping("/api/v1/upload")
 @RequiredArgsConstructor
-public class FileController {
+public class FileController implements FileApiSpecification {
 
     private final S3UploaderService s3UploaderService;
 
