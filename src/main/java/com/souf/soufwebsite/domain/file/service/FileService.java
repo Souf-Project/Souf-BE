@@ -9,6 +9,7 @@ import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.repository.MediaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +47,7 @@ public class FileService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public List<Media> uploadMetadata(MediaReqDto files, PostType postType, Long postId){
         List<Media> mediaList = new ArrayList<>();
         for(int i=0;i<files.fileUrl().size();i++){

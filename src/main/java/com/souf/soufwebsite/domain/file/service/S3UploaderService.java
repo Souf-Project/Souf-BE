@@ -61,7 +61,7 @@ public class S3UploaderService {
 
         PresignedUploadPartRequest presignedUploadPartRequest = s3Presigner.presignUploadPart(uploadPartPresignRequest);
 
-        return new PresignedUrlResDto(presignedUploadPartRequest.toString(), reqDto.fileName());
+        return new PresignedUrlResDto(presignedUploadPartRequest.url().toString(), reqDto.fileName());
     }
 
     public void completedUpload(VideoUploadCompletedDto dtos) {
