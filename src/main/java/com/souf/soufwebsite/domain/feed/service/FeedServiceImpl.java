@@ -9,6 +9,7 @@ import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
+import com.souf.soufwebsite.domain.file.dto.VideoResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
@@ -60,8 +61,9 @@ public class FeedServiceImpl implements FeedService {
         redisUtil.set(feedViewKey);
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
+        VideoResDto videoResDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames());
 
-        return new FeedResDto(feed.getId(), presignedUrlResDtos);
+        return new FeedResDto(feed.getId(), presignedUrlResDtos, videoResDto);
     }
 
     @Override
@@ -109,11 +111,12 @@ public class FeedServiceImpl implements FeedService {
         updatedRemainingUrls(reqDto, feed);
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
+        VideoResDto videoResDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames());
 
         feed.clearCategories();
         injectCategories(reqDto, feed);
 
-        return new FeedResDto(feed.getId(), presignedUrlResDtos);
+        return new FeedResDto(feed.getId(), presignedUrlResDtos, videoResDto);
     }
 
     @Override
