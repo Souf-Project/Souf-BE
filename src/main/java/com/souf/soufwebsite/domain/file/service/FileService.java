@@ -23,7 +23,7 @@ public class FileService {
     private final MediaRepository mediaRepository;
     private final S3UploaderService s3UploaderService;
 
-    private final Set<String> videoExtensions = Set.of("mp4", "mov", "avi", "mkv", "webm", "flv");
+    private final Set<String> videoExtensions = Set.of("MP4", "MOV", "AVI", "MKV", "WEBM", "FLV");
 
     public VideoResDto configVideoUploadInitiation(List<String> originalFilenames) {
         List<String> videoFiles = originalFilenames.stream()
