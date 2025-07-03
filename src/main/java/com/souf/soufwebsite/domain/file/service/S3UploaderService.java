@@ -69,7 +69,7 @@ public class S3UploaderService {
         for(S3UploadPartsDetailDto dto : dtos.parts()){
              CompletedPart part = CompletedPart.builder()
                     .partNumber(dto.partNumber())
-                    .eTag(dto.awsTag())
+                    .eTag(dto.awsETag())
                     .build();
             completedPartList.add(part);
         }
