@@ -34,11 +34,12 @@ public class S3UploaderService {
     // 비디오 업로드 전 세팅 단계
     public VideoResDto initiateUpload(String prefix, String originalFilename) {
         String ext = extractExtension(originalFilename);
-        String filename = prefix + "/" + videoFolder + "/" + UUID.randomUUID() + ext;
+        String filename = prefix + "/" + videoFolder + "/" + UUID.randomUUID() + "." + ext;
 
         CreateMultipartUploadRequest createMultipartUploadRequest = CreateMultipartUploadRequest.builder()
                 .bucket(bucketName)
                 .key(filename)
+                .contentType("video/mp4")
                 .build();
 
         CreateMultipartUploadResponse response = s3Client.createMultipartUpload(createMultipartUploadRequest);
