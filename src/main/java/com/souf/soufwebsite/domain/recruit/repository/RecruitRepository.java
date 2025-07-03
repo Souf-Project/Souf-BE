@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface RecruitRepository extends JpaRepository<Recruit, Long>, RecruitCustomRepository {
 
     @Modifying
@@ -18,4 +20,6 @@ public interface RecruitRepository extends JpaRepository<Recruit, Long>, Recruit
     Page<Recruit> findByOrderByViewCountDesc(Pageable pageable);
 
     Page<Recruit> findByMember(Member member, Pageable pageable);
+
+    List<Recruit> findByRecruitableTrue();
 }

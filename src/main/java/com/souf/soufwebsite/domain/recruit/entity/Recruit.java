@@ -125,4 +125,10 @@ public class Recruit extends BaseEntity {
     public void decreaseRecruitCount() {
         this.recruitCount--;
     }
+
+    public void checkAndUpdateRecruitable() {
+        if (this.deadline != null && this.deadline.isBefore(LocalDateTime.now())) {
+            this.recruitable = false;
+        }
+    }
 }
