@@ -25,9 +25,15 @@ public class FileService {
     private final Set<String> videoExtensions = Set.of("mp4", "mov", "avi", "mkv", "webm", "flv");
 
     public VideoResDto configVideoUploadInitiation(List<String> originalFilenames) {
-        String videoString = originalFilenames.stream()
-                .filter(f -> videoExtensions.contains(extractExtension(f).toLowerCase())).toString();
+        List<String> videoFiles = originalFilenames.stream()
+                .filter(f -> videoExtensions.contains(extractExtension(f).toLowerCase()))
+                .toList();
 
+        if (videoFiles.isEmpty()) {
+            return null; // 또는 throw new IllegalArgumentException("No video files");
+        }
+
+        String videoString = videoFiles.get(0); // 혹은 여러 개면 join해서
         return s3UploaderService.initiateUpload("feed", videoString);
     }
 
