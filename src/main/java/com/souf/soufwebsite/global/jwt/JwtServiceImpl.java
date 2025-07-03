@@ -140,7 +140,7 @@ public class JwtServiceImpl implements JwtService {
 
         Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
         refreshCookie.setHttpOnly(true);
-        refreshCookie.setSecure(true); // HTTPS 환경 필수
+        refreshCookie.setSecure(false); // 추후 true로 변경 필요 (HTTPS 환경에서만)
         refreshCookie.setPath("/");
         refreshCookie.setMaxAge((int) (refreshTokenExpireTime / 1000)); // 초 단위로 설정
 
