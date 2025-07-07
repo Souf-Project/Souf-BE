@@ -81,15 +81,7 @@ public class MemberServiceImpl implements MemberService {
 
         Member member = new Member(reqDto.email(), encodedPassword, reqDto.username(), reqDto.nickname(), role);
 
-        for (CategoryDto dto : reqDto.categoryDtos()) {
-            FirstCategory first = categoryService.findIfFirstIdExists(dto.firstCategory());
-            SecondCategory second = categoryService.findIfSecondIdExists(dto.secondCategory());
-            ThirdCategory third = categoryService.findIfThirdIdExists(dto.thirdCategory());
-            categoryService.validate(first.getId(), second.getId(), third.getId());
-
-            MemberCategoryMapping mapping = MemberCategoryMapping.of(member, first, second, third);
-            member.addCategory(mapping);
-        }
+        injectCategories(reqDto, member);
 
         memberRepository.save(member);
 
@@ -193,6 +185,7 @@ public class MemberServiceImpl implements MemberService {
         String storedCode = redisTemplate.opsForValue().get(emailKey);
 
         if (storedCode == null || !storedCode.equals(reqDto.code())) {
+            log.info("storeCode: {}, reqCode: {}", storedCode, reqDto.code());
             return false;
         }
 
@@ -240,7 +233,8 @@ public class MemberServiceImpl implements MemberService {
             FirstCategory first = categoryService.findIfFirstIdExists(cat.firstCategory());
             SecondCategory second = categoryService.findIfSecondIdExists(cat.secondCategory());
             ThirdCategory third = categoryService.findIfThirdIdExists(cat.thirdCategory());
-            categoryService.validate(first.getId(), second.getId(), third.getId());
+
+            categoryService.validate(cat.firstCategory(), cat.secondCategory(), cat.thirdCategory());
             MemberCategoryMapping mapping = MemberCategoryMapping.of(member, first, second, third);
             log.info("mapping = {}", mapping);
             member.addCategory(mapping);
@@ -252,7 +246,7 @@ public class MemberServiceImpl implements MemberService {
         if (reqDto.profileOriginalFileName() != null) {
             presignedUrlResDtos = fileService.generatePresignedUrl("profile", List.of(reqDto.profileOriginalFileName()));
         } else {
-            presignedUrlResDtos = List.of(new PresignedUrlResDto("", ""));
+            presignedUrlResDtos = List.of(new PresignedUrlResDto("", "", ""));
         }
 
         return MemberUpdateResDto.of(member.getId(), presignedUrlResDtos.get(0));
@@ -325,5 +319,17 @@ public class MemberServiceImpl implements MemberService {
         }
 
         member.softDelete();
+    }
+
+    private void injectCategories(SignupReqDto reqDto, Member member) {
+        for (CategoryDto dto : reqDto.categoryDtos()) {
+            FirstCategory first = categoryService.findIfFirstIdExists(dto.firstCategory());
+            SecondCategory second = categoryService.findIfSecondIdExists(dto.secondCategory());
+            ThirdCategory third = categoryService.findIfThirdIdExists(dto.thirdCategory());
+            categoryService.validate(dto.firstCategory(), dto.secondCategory(), dto.thirdCategory());
+
+            MemberCategoryMapping mapping = MemberCategoryMapping.of(member, first, second, third);
+            member.addCategory(mapping);
+        }
     }
 }

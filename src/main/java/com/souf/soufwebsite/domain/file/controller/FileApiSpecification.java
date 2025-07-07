@@ -1,8 +1,8 @@
 package com.souf.soufwebsite.domain.file.controller;
 
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
-import com.souf.soufwebsite.domain.file.dto.S3VideoUploadSignedUrlReqDto;
-import com.souf.soufwebsite.domain.file.dto.VideoUploadCompletedDto;
+import com.souf.soufwebsite.domain.file.dto.video.S3VideoUploadSignedUrlReqDto;
+import com.souf.soufwebsite.domain.file.dto.video.VideoUploadCompletedDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

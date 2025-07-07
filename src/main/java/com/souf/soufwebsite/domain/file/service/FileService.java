@@ -2,7 +2,7 @@ package com.souf.soufwebsite.domain.file.service;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
-import com.souf.soufwebsite.domain.file.dto.VideoResDto;
+import com.souf.soufwebsite.domain.file.dto.video.VideoResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.entity.MediaType;
 import com.souf.soufwebsite.domain.file.entity.PostType;
