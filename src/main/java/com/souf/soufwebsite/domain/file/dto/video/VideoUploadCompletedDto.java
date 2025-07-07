@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.file.dto;
+package com.souf.soufwebsite.domain.file.dto.video;
 
 import java.util.List;
 

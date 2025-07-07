@@ -1,6 +1,10 @@
 package com.souf.soufwebsite.domain.file.service;
 
-import com.souf.soufwebsite.domain.file.dto.*;
+import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
+import com.souf.soufwebsite.domain.file.dto.video.S3UploadPartsDetailDto;
+import com.souf.soufwebsite.domain.file.dto.video.S3VideoUploadSignedUrlReqDto;
+import com.souf.soufwebsite.domain.file.dto.video.VideoResDto;
+import com.souf.soufwebsite.domain.file.dto.video.VideoUploadCompletedDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,7 +66,7 @@ public class S3UploaderService {
 
         PresignedUploadPartRequest presignedUploadPartRequest = s3Presigner.presignUploadPart(uploadPartPresignRequest);
 
-        return new PresignedUrlResDto(presignedUploadPartRequest.url().toString(), reqDto.fileName());
+        return new PresignedUrlResDto(presignedUploadPartRequest.url().toString(), reqDto.fileName(), "");
     }
 
     public void completedUpload(VideoUploadCompletedDto dtos) {
@@ -94,10 +98,17 @@ public class S3UploaderService {
         String ext = extractExtension(originalFilename);
         String fileName = prefix + "/original/" + UUID.randomUUID() + (ext.isEmpty() ? "" : "." + ext);
 
+        String mediaType = null;
+        if(ext.equals("jpeg") || ext.equals("jpg")){
+            mediaType = "image/jpeg";
+        }
+        else if(ext.equals("png"))
+            mediaType = "image/png";
+
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(fileName)
-                .contentType("application/octet-stream") // 혹은 적절한 MIME
+                .contentType(mediaType) // 혹은 적절한 MIME
                 .build();
 
         PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(builder -> builder
@@ -107,7 +118,7 @@ public class S3UploaderService {
 
         URL presignedUrl = presignedRequest.url();
 
-        return new PresignedUrlResDto(presignedUrl.toString(), fileName);
+        return new PresignedUrlResDto(presignedUrl.toString(), fileName, mediaType);
     }
 
     public void deleteFromS3(String fileUrl) {

@@ -1,7 +1,7 @@
 package com.souf.soufwebsite.domain.feed.dto;
 
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
-import com.souf.soufwebsite.domain.file.dto.VideoResDto;
+import com.souf.soufwebsite.domain.file.dto.video.VideoResDto;
 
 import java.util.List;
 
