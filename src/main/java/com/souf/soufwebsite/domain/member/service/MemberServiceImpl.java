@@ -81,7 +81,7 @@ public class MemberServiceImpl implements MemberService {
 
         Member member = new Member(reqDto.email(), encodedPassword, reqDto.username(), reqDto.nickname(), role);
 
-        injectCatogies(reqDto, member);
+        injectCategories(reqDto, member);
 
         memberRepository.save(member);
 
@@ -321,7 +321,7 @@ public class MemberServiceImpl implements MemberService {
         member.softDelete();
     }
 
-    private void injectCatogies(SignupReqDto reqDto, Member member) {
+    private void injectCategories(SignupReqDto reqDto, Member member) {
         for (CategoryDto dto : reqDto.categoryDtos()) {
             FirstCategory first = categoryService.findIfFirstIdExists(dto.firstCategory());
             SecondCategory second = categoryService.findIfSecondIdExists(dto.secondCategory());

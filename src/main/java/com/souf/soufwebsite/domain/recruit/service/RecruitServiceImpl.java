@@ -187,7 +187,6 @@ public class RecruitServiceImpl implements RecruitService {
             FirstCategory firstCategory = categoryService.findIfFirstIdExists(dto.firstCategory());
             SecondCategory secondCategory = categoryService.findIfSecondIdExists(dto.secondCategory());
             ThirdCategory thirdCategory = categoryService.findIfThirdIdExists(dto.thirdCategory());
-            log.info("f: {}, s: {}, t: {}", firstCategory.getName(), secondCategory.getName(), thirdCategory.getName());
 
             categoryService.validate(dto.firstCategory(), dto.secondCategory(), dto.thirdCategory());
             RecruitCategoryMapping recruitCategoryMapping = RecruitCategoryMapping.of(recruit, firstCategory, secondCategory, thirdCategory);
