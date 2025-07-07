@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  app:
+    image: wjd4204/github-actions-iamsouf:latest
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Seoul
+    depends_on:
+      - rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"     # AMQP
+      - "15672:15672"   # Web Management
+      - "61613:61613"   # STOMP
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: always
+    command: >
+      bash -c "rabbitmq-plugins enable --offline rabbitmq_stomp &&
+               rabbitmq-plugins enable --offline rabbitmq_management &&
+               rabbitmq-server"
+
+volumes:
+  rabbitmq_data:
