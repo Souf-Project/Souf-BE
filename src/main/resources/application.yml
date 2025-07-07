@@ -16,10 +16,10 @@ spring:
   data:
     redis:
       port: ${REDIS_PORT:6379}
-      host: ${REDIS_HOST:localhost}
+      host: ${REDIS_HOST:redis-container}
       password: ${REDIS_PASSWORD}
       ssl:
-        enabled: true
+        enabled: false
 
   application:
     name: soufwebsite
