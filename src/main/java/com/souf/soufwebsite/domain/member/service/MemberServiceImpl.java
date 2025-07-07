@@ -185,6 +185,7 @@ public class MemberServiceImpl implements MemberService {
         String storedCode = redisTemplate.opsForValue().get(emailKey);
 
         if (storedCode == null || !storedCode.equals(reqDto.code())) {
+            log.info("storeCode: {}, reqCode: {}", storedCode, reqDto.code());
             return false;
         }
 
