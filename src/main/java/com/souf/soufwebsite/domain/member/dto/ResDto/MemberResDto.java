@@ -58,7 +58,10 @@ public record MemberResDto(
     private static List<CategoryDto> convertToCategoryDto(List<MemberCategoryMapping> mappings){
         if(mappings == null) return new ArrayList<>();
         return mappings.stream().map(
-                m -> new CategoryDto(m.getFirstCategory().getId(), m.getSecondCategory().getId(), m.getThirdCategory().getId())
-        ).collect(Collectors.toList());
+                m -> new CategoryDto(
+                        m.getFirstCategory().getId(),
+                        m.getSecondCategory() != null ? m.getSecondCategory().getId() : null,
+                        m.getThirdCategory() != null ? m.getThirdCategory().getId() : null
+        )).collect(Collectors.toList());
     }
 }

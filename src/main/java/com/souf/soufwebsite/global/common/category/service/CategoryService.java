@@ -23,11 +23,13 @@ public class CategoryService {
     }
 
     public SecondCategory findIfSecondIdExists(Long secondCategoryId){
-        return secondCategoryRepository.findById(secondCategoryId).orElseThrow(NotFoundSecondCategoryException::new);
+        return secondCategoryId == null ? null
+                : secondCategoryRepository.findById(secondCategoryId).orElseThrow(NotFoundSecondCategoryException::new);
     }
 
     public ThirdCategory findIfThirdIdExists(Long thirdCategoryId){
-        return thirdCategoryRepository.findById(thirdCategoryId).orElseThrow(NotFoundThirdCategoryException::new);
+        return thirdCategoryId == null ? null
+                : thirdCategoryRepository.findById(thirdCategoryId).orElseThrow(NotFoundThirdCategoryException::new);
     }
 
     public void validate(Long firstId, Long secondId, Long thirdId) {

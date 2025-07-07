@@ -34,7 +34,7 @@ public class MemberCategoryServiceImpl implements MemberCategoryService {
         FirstCategory first = categoryService.findIfFirstIdExists(dto.firstCategory());
         SecondCategory second = categoryService.findIfSecondIdExists(dto.secondCategory());
         ThirdCategory third = categoryService.findIfThirdIdExists(dto.thirdCategory());
-        categoryService.validate(first.getId(), second.getId(), third.getId());
+        categoryService.validate(dto.firstCategory(), dto.secondCategory(), dto.thirdCategory());
 
         MemberCategoryMapping mapping = MemberCategoryMapping.of(member, first, second, third);
         member.addCategory(mapping);
@@ -60,7 +60,7 @@ public class MemberCategoryServiceImpl implements MemberCategoryService {
         FirstCategory first = categoryService.findIfFirstIdExists(newDto.firstCategory());
         SecondCategory second = categoryService.findIfSecondIdExists(newDto.secondCategory());
         ThirdCategory third = categoryService.findIfThirdIdExists(newDto.thirdCategory());
-        categoryService.validate(first.getId(), second.getId(), third.getId());
+        categoryService.validate(newDto.firstCategory(), newDto.secondCategory(), newDto.thirdCategory());
 
         boolean exists = member.getCategories().stream()
                 .anyMatch(mapping ->
@@ -84,10 +84,10 @@ public class MemberCategoryServiceImpl implements MemberCategoryService {
                 .orElseThrow(NotFoundMemberException::new);
 
         return member.getCategories().stream()
-                .map(mapping -> new CategoryDto(
-                        mapping.getFirstCategory().getId(),
-                        mapping.getSecondCategory().getId(),
-                        mapping.getThirdCategory().getId()
+                .map(m -> new CategoryDto(
+                        m.getFirstCategory().getId(),
+                        m.getSecondCategory() != null ? m.getSecondCategory().getId() : null,
+                        m.getThirdCategory() != null ? m.getThirdCategory().getId() : null
                 ))
                 .toList();
     }

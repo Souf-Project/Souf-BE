@@ -80,7 +80,8 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                 );
                 mergedMap.put(recruitId, dto);
             } else {
-                mergedMap.get(recruitId).addSecondCategory(secondCatId);
+                if(secondCatId != null)
+                    mergedMap.get(recruitId).addSecondCategory(secondCatId);
             }
         }
 

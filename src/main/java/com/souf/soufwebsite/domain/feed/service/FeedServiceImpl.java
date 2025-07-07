@@ -188,9 +188,9 @@ public class FeedServiceImpl implements FeedService {
             FirstCategory firstCategory = categoryService.findIfFirstIdExists(dto.firstCategory());
             SecondCategory secondCategory = categoryService.findIfSecondIdExists(dto.secondCategory());
             ThirdCategory thirdCategory = categoryService.findIfThirdIdExists(dto.thirdCategory());
-            log.info("f: {}, s: {}, t: {}", firstCategory.getName(), secondCategory.getName(), thirdCategory.getName());
 
-            categoryService.validate(firstCategory.getId(), secondCategory.getId(), thirdCategory.getId());
+            categoryService.validate(dto.firstCategory(), dto.secondCategory(), dto.thirdCategory());
+
             FeedCategoryMapping recruitCategoryMapping = FeedCategoryMapping.of(feed, firstCategory, secondCategory, thirdCategory);
             feed.addCategory(recruitCategoryMapping);
         }
