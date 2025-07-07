@@ -12,15 +12,6 @@ services:
     depends_on:
       - rabbitmq
 
-  redis:
-    image: redis:7.2.4
-    container_name: redis-container
-    ports:
-      - "6379:6379"
-    command: redis-server --bind 0.0.0.0
-    restart: always
-
-
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
