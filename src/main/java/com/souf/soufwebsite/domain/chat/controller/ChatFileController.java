@@ -21,7 +21,7 @@ import java.util.List;
 @RequestMapping("/api/v1/chat")
 @RequiredArgsConstructor
 @Slf4j
-public class ChatFileController {
+public class ChatFileController implements ChatFileApiSpecification{
 
     private final FileService fileService;
     private final ChatMessageService chatMessageService;
