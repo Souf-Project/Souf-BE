@@ -23,7 +23,7 @@ public class ChatMessageService {
     private final ChatMessageRepository chatMessageRepository;
     private final FileService fileService;
 
-    public void saveMessage(ChatRoom room, Member sender, String content, MessageType type) {
+    public ChatMessage saveMessage(ChatRoom room, Member sender, String content, MessageType type) {
         ChatMessage message = ChatMessage.builder()
                 .chatRoom(room)
                 .sender(sender)
@@ -31,7 +31,7 @@ public class ChatMessageService {
                 .type(type)
                 .build();
 
-        chatMessageRepository.save(message);
+        return chatMessageRepository.save(message);
     }
 
     public List<ChatMessage> getMessages(Long chatRoomId) {

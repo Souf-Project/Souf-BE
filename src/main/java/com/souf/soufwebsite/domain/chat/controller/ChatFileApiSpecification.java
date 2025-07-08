@@ -21,7 +21,7 @@ public interface ChatFileApiSpecification {
     ResponseEntity<List<PresignedUrlResDto>> uploadChatFile(
             @RequestBody ChatFileReqDto reqDto);
 
-    @Operation(summary = "해당 채팅 관련 파일 정보 저장\", description = \"제공된 presignedUrl을 통해 업로드한 파일의 정보를 DB에도 반영할 수 있도록 서버에게 파일 정보를 보냅니다.")
+    @Operation(summary = "해당 채팅 관련 파일 정보 저장", description = "제공된 presignedUrl을 통해 업로드한 파일의 정보를 DB에도 반영할 수 있도록 서버에게 파일 정보를 보냅니다.")
     @PostMapping
     SuccessResponse uploadMetadata(
             @Valid @RequestBody MediaReqDto mediaReqDto);
