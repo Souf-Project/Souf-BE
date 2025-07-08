@@ -1,8 +1,12 @@
 package com.souf.soufwebsite.domain.chat.controller;
 
 import com.souf.soufwebsite.domain.chat.dto.ChatFileReqDto;
+import com.souf.soufwebsite.domain.chat.service.ChatMessageService;
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.service.FileService;
+import com.souf.soufwebsite.global.success.SuccessResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -20,10 +24,18 @@ import java.util.List;
 public class ChatFileController {
 
     private final FileService fileService;
+    private final ChatMessageService chatMessageService;
 
     @PostMapping("/file-upload")
     public ResponseEntity<List<PresignedUrlResDto>> uploadChatFile(@RequestBody ChatFileReqDto reqDto) {
         List<PresignedUrlResDto> url = fileService.generatePresignedUrl("chat", reqDto.originalFileNames());
         return ResponseEntity.ok(url);
+    }
+
+    @PostMapping("/upload")
+    public SuccessResponse uploadMetadata(@Valid @RequestBody MediaReqDto mediaReqDto){
+        chatMessageService.uploadChatFile(mediaReqDto);
+
+        return new SuccessResponse("채팅 파일 업로드에 성공하였습니다.");
     }
 }
