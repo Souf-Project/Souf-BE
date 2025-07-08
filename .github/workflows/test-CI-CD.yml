@@ -94,14 +94,11 @@ jobs:
           script: |
             set -e
             
-            echo
             cd ~/deploy
-            
-            echo
             docker pull ${{ secrets.DOCKER_USERNAME }}/github-actions-iamsouf
             
-            echo
-            docker-compose down
-            docker-compose up -d
+            docker compose -f docker-compose-test.yml --env-file ./souf.env down
+            
+            docker compose -f docker-compose-test.yml --env-file ./souf.env up -d
 
 
