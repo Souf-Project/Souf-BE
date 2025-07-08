@@ -9,7 +9,10 @@ import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberIdReqDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
+import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.recruit.dto.*;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.entity.RecruitCategoryMapping;
@@ -40,6 +43,7 @@ public class RecruitServiceImpl implements RecruitService {
 
     private final FileService fileService;
     private final RecruitRepository recruitRepository;
+    private final MemberRepository memberRepository;
     private final CityRepository cityRepository;
     private final CityDetailRepository cityDetailRepository;
     private final CategoryService categoryService;
@@ -171,6 +175,18 @@ public class RecruitServiceImpl implements RecruitService {
                 RecruitPopularityResDto::of
         );
     }
+
+    @Transactional
+    @Override
+    public void updateRecruitable(Long recruitId, MemberIdReqDto reqDto) {
+        Recruit recruit = findIfRecruitExist(recruitId);
+        Member member = memberRepository.findById(reqDto.memberId()).orElseThrow(NotFoundMemberException::new);
+
+        verifyIfRecruitIsMine(recruit, member); // 소지 여부 확인
+
+        recruit.updateRecruitable();
+    }
+
 
     private void verifyIfRecruitIsMine(Recruit recruit, Member member) {
         if(!recruit.getMember().getId().equals(member.getId())){

@@ -91,6 +91,7 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }} # EC2 서버에 접근하기 위한 SSH 개인 키
           script: |
+            echo "SPRING_PROFILE=prod" >> ~/deploy/.env
             echo "DB_URL=${{ secrets.DB_URL }}" >> ~/deploy/.env
             echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> ~/deploy/.env
             echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> ~/deploy/.env

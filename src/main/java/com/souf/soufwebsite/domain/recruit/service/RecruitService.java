@@ -1,6 +1,7 @@
 package com.souf.soufwebsite.domain.recruit.service;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberIdReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,4 +24,6 @@ public interface RecruitService {
     void deleteRecruit(Long recruitId);
 
     Page<RecruitPopularityResDto> getPopularRecruits(Pageable pageable);
+
+    void updateRecruitable(Long recruitId, MemberIdReqDto reqDto);
 }

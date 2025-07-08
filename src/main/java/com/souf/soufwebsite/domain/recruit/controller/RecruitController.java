@@ -1,6 +1,7 @@
 package com.souf.soufwebsite.domain.recruit.controller;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberIdReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.*;
 import com.souf.soufwebsite.domain.recruit.service.RecruitService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
@@ -79,5 +80,14 @@ public class RecruitController implements RecruitApiSpecification{
         return new SuccessResponse<>(
                 recruitService.getPopularRecruits(pageable),
                 RECRUIT_GET_POPULATION.getMessage());
+    }
+
+    @PatchMapping("/closure/{recruitId}")
+    public SuccessResponse closeRecruit(
+            @PathVariable(name = "recruitId") Long recruitId,
+            @RequestBody MemberIdReqDto reqDto) {
+
+        recruitService.updateRecruitable(recruitId, reqDto);
+        return SuccessResponse.ok(RECRUIT_UPDATE.getMessage());
     }
 }
