@@ -3,6 +3,7 @@ package com.souf.soufwebsite.domain.chat.controller;
 import com.souf.soufwebsite.domain.chat.dto.ChatMessageReqDto;
 import com.souf.soufwebsite.domain.chat.dto.ChatMessageResDto;
 import com.souf.soufwebsite.domain.chat.dto.MessageType;
+import com.souf.soufwebsite.domain.chat.entity.ChatMessage;
 import com.souf.soufwebsite.domain.chat.entity.ChatRoom;
 import com.souf.soufwebsite.domain.chat.service.ChatMessageService;
 import com.souf.soufwebsite.domain.chat.service.ChatRoomService;
@@ -49,7 +50,7 @@ public class ChatController {
             throw new AccessDeniedException("채팅방에 참여하지 않은 유저입니다.");
         }
 
-        chatMessageService.saveMessage(room, sender, request.content(), request.type());
+        ChatMessage saved = chatMessageService.saveMessage(room, sender, request.content(), request.type());
 
         String urlPrefix = "https://" + bucketName + ".s3.ap-northeast-2.amazonaws.com/";
         String finalContent = (request.type().equals(MessageType.IMAGE) || request.type().equals(MessageType.FILE))
@@ -58,14 +59,13 @@ public class ChatController {
 
         ChatMessageResDto response = new ChatMessageResDto(
                 room.getId(),
+                saved.getId(),
                 sender.getNickname(),
                 request.type(),
                 finalContent,
                 false,
                 LocalDateTime.now()
         );
-
         messagingTemplate.convertAndSend("/topic/chatroom." + room.getId(), response);
-
     }
 }

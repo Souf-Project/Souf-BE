@@ -69,6 +69,7 @@ public class ChatRoomController implements ChatRoomApiSpecificaton {
         List<ChatMessageResDto> result = messages.stream()
                 .map(msg -> new ChatMessageResDto(
                         roomId,
+                        msg.getId(),
                         msg.getSender().getNickname(),
                         msg.getType(),
                         msg.getContent(),
