@@ -97,8 +97,8 @@ jobs:
             cd ~/deploy
             docker pull ${{ secrets.DOCKER_USERNAME }}/github-actions-iamsouf
             
-            docker compose -f docker-compose-test.yml --env-file ./souf.env down
+            docker-compose -f docker-compose-test.yml --env-file ./souf.env down
             
-            docker compose -f docker-compose-test.yml --env-file ./souf.env up -d
+            docker-compose -f docker-compose-test.yml --env-file ./souf.env up -d
 
 
