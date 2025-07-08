@@ -2,6 +2,7 @@ package com.souf.soufwebsite.domain.chat.controller;
 
 import com.souf.soufwebsite.domain.chat.dto.ChatMessageReqDto;
 import com.souf.soufwebsite.domain.chat.dto.ChatMessageResDto;
+import com.souf.soufwebsite.domain.chat.dto.MessageType;
 import com.souf.soufwebsite.domain.chat.entity.ChatRoom;
 import com.souf.soufwebsite.domain.chat.service.ChatMessageService;
 import com.souf.soufwebsite.domain.chat.service.ChatRoomService;
@@ -9,6 +10,7 @@ import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -28,6 +30,8 @@ public class ChatController {
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatRoomService chatRoomService;
     private final ChatMessageService chatMessageService;
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucketName;
 
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(@Payload ChatMessageReqDto request, Message<?> message) {
@@ -47,11 +51,16 @@ public class ChatController {
 
         chatMessageService.saveMessage(room, sender, request.content(), request.type());
 
+        String urlPrefix = "https://" + bucketName + ".s3.ap-northeast-2.amazonaws.com/";
+        String finalContent = (request.type().equals(MessageType.IMAGE) || request.type().equals(MessageType.FILE))
+                ? urlPrefix + request.content()
+                : request.content();
+
         ChatMessageResDto response = new ChatMessageResDto(
                 room.getId(),
                 sender.getNickname(),
                 request.type(),
-                request.content(),
+                finalContent,
                 false,
                 LocalDateTime.now()
         );
