@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: ${SPRING_PROFILE:test}
+    active: ${SPRING_PROFILE:dev}
 
   jpa:
     hibernate:
