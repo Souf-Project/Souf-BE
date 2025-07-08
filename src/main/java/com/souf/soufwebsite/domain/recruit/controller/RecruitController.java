@@ -82,7 +82,7 @@ public class RecruitController implements RecruitApiSpecification{
                 RECRUIT_GET_POPULATION.getMessage());
     }
 
-    @PatchMapping("/config/status/{recruitId}")
+    @PatchMapping("/closure/{recruitId}")
     public SuccessResponse closeRecruit(
             @PathVariable(name = "recruitId") Long recruitId,
             @RequestBody MemberIdReqDto reqDto) {

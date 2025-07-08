@@ -53,7 +53,7 @@ public interface RecruitApiSpecification {
             @PageableDefault(size = 6) Pageable pageable);
 
     @Operation(summary = "공고문 마감하기", description = "마감기한 전에 매칭된 공고문에 대해 소유자가 마감합니다.")
-    @PatchMapping("/config/status/{recruitId}")
+    @PatchMapping("/closure/{recruitId}")
     SuccessResponse closeRecruit(
             @PathVariable(name = "recruitId") Long recruitId,
             @RequestBody MemberIdReqDto reqDto);
