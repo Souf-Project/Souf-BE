@@ -20,6 +20,7 @@ import java.net.URL;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -98,17 +99,12 @@ public class S3UploaderService {
         String ext = extractExtension(originalFilename);
         String fileName = prefix + "/original/" + UUID.randomUUID() + (ext.isEmpty() ? "" : "." + ext);
 
-        String mediaType = null;
-        if(ext.equals("jpeg") || ext.equals("jpg")){
-            mediaType = "image/jpeg";
-        }
-        else if(ext.equals("png"))
-            mediaType = "image/png";
+        String mediaType = CONTENT_TYPE_MAP.getOrDefault(ext, "application/octet-stream"); // 기본값 설정
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(fileName)
-                .contentType(mediaType) // 혹은 적절한 MIME
+                .contentType(mediaType)
                 .build();
 
         PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(builder -> builder
@@ -145,4 +141,21 @@ public class S3UploaderService {
         if (idx == -1) throw new IllegalArgumentException("Invalid URL format: " + url);
         return url.substring(idx);
     }
+
+    private static final Map<String, String> CONTENT_TYPE_MAP = Map.ofEntries(
+            Map.entry("jpg", "image/jpeg"),
+            Map.entry("jpeg", "image/jpeg"),
+            Map.entry("png", "image/png"),
+            Map.entry("webp", "image/webp"),
+            Map.entry("pdf", "application/pdf"),
+            Map.entry("doc", "application/msword"),
+            Map.entry("docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+            Map.entry("ppt", "application/vnd.ms-powerpoint"),
+            Map.entry("pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation"),
+            Map.entry("xls", "application/vnd.ms-excel"),
+            Map.entry("xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+            Map.entry("txt", "text/plain"),
+            Map.entry("hwp", "application/x-hwp"),
+            Map.entry("zip", "application/zip")
+    );
 }
