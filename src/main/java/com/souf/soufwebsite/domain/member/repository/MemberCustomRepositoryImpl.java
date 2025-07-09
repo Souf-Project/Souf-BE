@@ -9,6 +9,7 @@ import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberSearchReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.entity.RoleType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -20,6 +21,7 @@ import java.util.Objects;
 
 import static com.souf.soufwebsite.domain.member.entity.QMember.member;
 import static com.souf.soufwebsite.domain.member.entity.QMemberCategoryMapping.memberCategoryMapping;
+import static com.souf.soufwebsite.domain.member.entity.RoleType.STUDENT;
 
 @Repository
 @RequiredArgsConstructor
@@ -73,6 +75,7 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
                 .from(member)
                 .leftJoin(member.categories, memberCategoryMapping)
                 .where(
+                        member.role.eq(RoleType.STUDENT),
                         first != null ? memberCategoryMapping.firstCategory.id.eq(first) : null,
                         second != null ? memberCategoryMapping.secondCategory.id.eq(second) : null,
                         third != null ? memberCategoryMapping.thirdCategory.id.eq(third) : null,
