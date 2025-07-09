@@ -169,7 +169,7 @@ public class RecruitServiceImpl implements RecruitService {
 
     @Override
     public Page<RecruitPopularityResDto> getPopularRecruits(Pageable pageable) {
-        Page<Recruit> popularRecruits = recruitRepository.findByOrderByViewCountDesc(pageable);
+        Page<Recruit> popularRecruits = recruitRepository.findByRecruitableTrueOrderByViewCountDesc(pageable);
 
         return popularRecruits.map(
                 RecruitPopularityResDto::of

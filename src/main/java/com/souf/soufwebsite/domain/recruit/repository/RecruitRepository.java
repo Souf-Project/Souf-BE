@@ -17,7 +17,7 @@ public interface RecruitRepository extends JpaRepository<Recruit, Long>, Recruit
     @Query("update Recruit r set r.viewCount = r.viewCount + :count where r.id = :recruitId")
     void increaseViewCount(@Param("recruitId") Long recruitId, @Param("count") Long count);
 
-    Page<Recruit> findByOrderByViewCountDesc(Pageable pageable);
+    Page<Recruit> findByRecruitableTrueOrderByViewCountDesc(Pageable pageable);
 
     Page<Recruit> findByMember(Member member, Pageable pageable);
 
