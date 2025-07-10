@@ -61,7 +61,7 @@ public class FeedServiceImpl implements FeedService {
         redisUtil.set(feedViewKey);
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
-        VideoResDto videoResDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames());
+        VideoResDto videoResDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.FEED);
 
         return new FeedResDto(feed.getId(), presignedUrlResDtos, videoResDto);
     }
@@ -111,7 +111,7 @@ public class FeedServiceImpl implements FeedService {
         updatedRemainingUrls(reqDto, feed);
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
-        VideoResDto videoResDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames());
+        VideoResDto videoResDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.FEED);
 
         feed.clearCategories();
         injectCategories(reqDto, feed);
