@@ -53,7 +53,9 @@ public class ChatController {
         ChatMessage saved = chatMessageService.saveMessage(room, sender, request.content(), request.type());
 
         String urlPrefix = "https://" + bucketName + ".s3.ap-northeast-2.amazonaws.com/";
-        String finalContent = (request.type().equals(MessageType.IMAGE) || request.type().equals(MessageType.FILE))
+        String finalContent = (request.type().equals(MessageType.IMAGE)
+                || request.type().equals(MessageType.VIDEO)
+                || request.type().equals(MessageType.FILE))
                 ? urlPrefix + request.content()
                 : request.content();
 

@@ -4,6 +4,8 @@ import com.souf.soufwebsite.domain.chat.dto.ChatFileReqDto;
 import com.souf.soufwebsite.domain.chat.service.ChatMessageService;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
+import com.souf.soufwebsite.domain.file.dto.video.VideoResDto;
+import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import jakarta.validation.Valid;
@@ -37,5 +39,11 @@ public class ChatFileController implements ChatFileApiSpecification{
         chatMessageService.uploadChatFile(mediaReqDto);
 
         return new SuccessResponse("채팅 파일 업로드에 성공하였습니다.");
+    }
+
+    @PostMapping("/video-upload")
+    public ResponseEntity<VideoResDto> uploadChatVideoFile(@RequestBody ChatFileReqDto reqDto) {
+        VideoResDto resDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.CHAT);
+        return ResponseEntity.ok(resDto);
     }
 }

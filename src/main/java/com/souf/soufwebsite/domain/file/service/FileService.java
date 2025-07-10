@@ -25,7 +25,7 @@ public class FileService {
 
     private final Set<String> videoExtensions = Set.of("mp4", "mov", "avi", "mkv", "webm", "flv");
 
-    public VideoResDto configVideoUploadInitiation(List<String> originalFilenames) {
+    public VideoResDto configVideoUploadInitiation(List<String> originalFilenames, PostType type) {
         List<String> videoFiles = originalFilenames.stream()
                 .filter(f -> videoExtensions.contains(extractExtension(f).toLowerCase()))
                 .toList();
@@ -35,7 +35,11 @@ public class FileService {
         }
 
         String videoString = videoFiles.get(0); // 혹은 여러 개면 join해서
-        return s3UploaderService.initiateUpload("feed", videoString);
+        if (type == PostType.FEED) {
+            return s3UploaderService.initiateUpload("feed", videoString);
+        } else {
+            return s3UploaderService.initiateUpload("chat", videoString);
+        }
     }
 
     public List<PresignedUrlResDto> generatePresignedUrl(String path, List<String> fileNames){

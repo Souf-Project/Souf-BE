@@ -34,5 +34,4 @@ public class FileController implements FileApiSpecification {
 
         return new SuccessResponse(COMPLETE_UPLOAD_VIDEO.getMessage());
     }
-
 }
