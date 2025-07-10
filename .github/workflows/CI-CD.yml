@@ -89,7 +89,8 @@ jobs:
       - name: Trigger Auto Scaling Instance Refresh
         run: |
           aws autoscaling start-instance-refresh \
-          --auto-scaling-group-name my-private-asg \
+          --auto-scaling-group-name ${{ secrets.AUTO_SCALING_GROUP_NAME }} \
+          --region ap-northeast-2 \
           --strategy Rolling \
           --preferences '{"MinHealthyPercentage": 80, "InstanceWarmup": 100}'
             
