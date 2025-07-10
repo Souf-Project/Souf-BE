@@ -1,8 +1,8 @@
 package com.souf.soufwebsite.domain.file.controller;
 
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
-import com.souf.soufwebsite.domain.file.dto.S3VideoUploadSignedUrlReqDto;
-import com.souf.soufwebsite.domain.file.dto.VideoUploadCompletedDto;
+import com.souf.soufwebsite.domain.file.dto.video.S3VideoUploadSignedUrlReqDto;
+import com.souf.soufwebsite.domain.file.dto.video.VideoUploadCompletedDto;
 import com.souf.soufwebsite.domain.file.service.S3UploaderService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import lombok.RequiredArgsConstructor;
@@ -34,5 +34,4 @@ public class FileController implements FileApiSpecification {
 
         return new SuccessResponse(COMPLETE_UPLOAD_VIDEO.getMessage());
     }
-
 }

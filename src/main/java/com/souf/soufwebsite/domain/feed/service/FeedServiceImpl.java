@@ -9,7 +9,7 @@ import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
-import com.souf.soufwebsite.domain.file.dto.VideoResDto;
+import com.souf.soufwebsite.domain.file.dto.video.VideoResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
@@ -61,7 +61,7 @@ public class FeedServiceImpl implements FeedService {
         redisUtil.set(feedViewKey);
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
-        VideoResDto videoResDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames());
+        VideoResDto videoResDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.FEED);
 
         return new FeedResDto(feed.getId(), presignedUrlResDtos, videoResDto);
     }
@@ -111,7 +111,7 @@ public class FeedServiceImpl implements FeedService {
         updatedRemainingUrls(reqDto, feed);
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
-        VideoResDto videoResDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames());
+        VideoResDto videoResDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.FEED);
 
         feed.clearCategories();
         injectCategories(reqDto, feed);
@@ -188,9 +188,9 @@ public class FeedServiceImpl implements FeedService {
             FirstCategory firstCategory = categoryService.findIfFirstIdExists(dto.firstCategory());
             SecondCategory secondCategory = categoryService.findIfSecondIdExists(dto.secondCategory());
             ThirdCategory thirdCategory = categoryService.findIfThirdIdExists(dto.thirdCategory());
-            log.info("f: {}, s: {}, t: {}", firstCategory.getName(), secondCategory.getName(), thirdCategory.getName());
 
-            categoryService.validate(firstCategory.getId(), secondCategory.getId(), thirdCategory.getId());
+            categoryService.validate(dto.firstCategory(), dto.secondCategory(), dto.thirdCategory());
+
             FeedCategoryMapping recruitCategoryMapping = FeedCategoryMapping.of(feed, firstCategory, secondCategory, thirdCategory);
             feed.addCategory(recruitCategoryMapping);
         }

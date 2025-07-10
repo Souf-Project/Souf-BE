@@ -131,4 +131,8 @@ public class Recruit extends BaseEntity {
             this.recruitable = false;
         }
     }
+
+    public void updateRecruitable() {
+        this.recruitable = false;
+    }
 }

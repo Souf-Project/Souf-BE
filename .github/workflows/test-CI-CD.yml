@@ -1,9 +1,9 @@
-name: Java CI/CD with Gradle
+name: test-CI-CD
 
 # 워크플로우가 실행될 조건을 정의합니다.
 on:
   push:
-    branches: [ "main" ] # main 브랜치에 push가 발생하면 실행됩니다.
+    branches: [ "dev" ] # dev 브랜치에 push가 발생하면 실행됩니다.
 
 # 워크플로우가 접근할 수 있는 권한을 설정합니다.
 permissions:
@@ -78,19 +78,27 @@ jobs:
       - name: docker Hub push
         run: docker push ${{ secrets.DOCKER_USERNAME }}/github-actions-iamsouf
 
-      # 권한 주입
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-docker-image
+    if: github.event_name == 'push'
+    steps:
+      # SSH를 사용하여 원격 서버에 배포
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
         with:
-          aws-access-key-id: ${{ secrets.ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.SECRET_KEY }}
-          aws-region: ap-northeast-2
+          host: ${{ secrets.TEST_SSH_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          port: 22
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+            
+            cd ~/deploy
+            docker pull ${{ secrets.DOCKER_USERNAME }}/github-actions-iamsouf
+            
+            docker-compose -f docker-compose-test.yml --env-file ./souf.env down
+            
+            docker-compose -f docker-compose-test.yml --env-file ./souf.env up -d
 
-      - name: Trigger Auto Scaling Instance Refresh
-        run: |
-          aws autoscaling start-instance-refresh \
-          --auto-scaling-group-name my-private-asg \
-          --strategy Rolling \
-          --preferences '{"MinHealthyPercentage": 80, "InstanceWarmup": 100}'
-            
-            
+

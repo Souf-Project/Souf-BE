@@ -46,7 +46,10 @@ public record FeedDetailResDto(
 
     private static List<CategoryDto> convertToCategoryDto(List<FeedCategoryMapping> mappings){
         return mappings.stream().map(
-                m -> new CategoryDto(m.getFirstCategory().getId(), m.getSecondCategory().getId(), m.getThirdCategory().getId())
-        ).collect(Collectors.toList());
+                m -> new CategoryDto(
+                        m.getFirstCategory().getId(),
+                        m.getSecondCategory() != null ? m.getSecondCategory().getId() : null,
+                        m.getThirdCategory() != null ? m.getThirdCategory().getId() : null
+        )).collect(Collectors.toList());
     }
 }

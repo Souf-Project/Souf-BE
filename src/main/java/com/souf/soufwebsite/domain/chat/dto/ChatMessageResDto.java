@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 public record ChatMessageResDto(
         Long roomId,
+        Long chatId,
         String sender,
         MessageType type,
         String content,

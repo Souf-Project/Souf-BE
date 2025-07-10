@@ -1,6 +1,10 @@
 package com.souf.soufwebsite.domain.file.service;
 
-import com.souf.soufwebsite.domain.file.dto.*;
+import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
+import com.souf.soufwebsite.domain.file.dto.video.S3UploadPartsDetailDto;
+import com.souf.soufwebsite.domain.file.dto.video.S3VideoUploadSignedUrlReqDto;
+import com.souf.soufwebsite.domain.file.dto.video.VideoResDto;
+import com.souf.soufwebsite.domain.file.dto.video.VideoUploadCompletedDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +20,7 @@ import java.net.URL;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -62,7 +67,7 @@ public class S3UploaderService {
 
         PresignedUploadPartRequest presignedUploadPartRequest = s3Presigner.presignUploadPart(uploadPartPresignRequest);
 
-        return new PresignedUrlResDto(presignedUploadPartRequest.url().toString(), reqDto.fileName());
+        return new PresignedUrlResDto(presignedUploadPartRequest.url().toString(), reqDto.fileName(), "");
     }
 
     public void completedUpload(VideoUploadCompletedDto dtos) {
@@ -94,10 +99,12 @@ public class S3UploaderService {
         String ext = extractExtension(originalFilename);
         String fileName = prefix + "/original/" + UUID.randomUUID() + (ext.isEmpty() ? "" : "." + ext);
 
+        String mediaType = CONTENT_TYPE_MAP.getOrDefault(ext, "application/octet-stream"); // 기본값 설정
+
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(fileName)
-                .contentType("application/octet-stream") // 혹은 적절한 MIME
+                .contentType(mediaType)
                 .build();
 
         PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(builder -> builder
@@ -107,7 +114,7 @@ public class S3UploaderService {
 
         URL presignedUrl = presignedRequest.url();
 
-        return new PresignedUrlResDto(presignedUrl.toString(), fileName);
+        return new PresignedUrlResDto(presignedUrl.toString(), fileName, mediaType);
     }
 
     public void deleteFromS3(String fileUrl) {
@@ -134,4 +141,21 @@ public class S3UploaderService {
         if (idx == -1) throw new IllegalArgumentException("Invalid URL format: " + url);
         return url.substring(idx);
     }
+
+    private static final Map<String, String> CONTENT_TYPE_MAP = Map.ofEntries(
+            Map.entry("jpg", "image/jpeg"),
+            Map.entry("jpeg", "image/jpeg"),
+            Map.entry("png", "image/png"),
+            Map.entry("webp", "image/webp"),
+            Map.entry("pdf", "application/pdf"),
+            Map.entry("doc", "application/msword"),
+            Map.entry("docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+            Map.entry("ppt", "application/vnd.ms-powerpoint"),
+            Map.entry("pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation"),
+            Map.entry("xls", "application/vnd.ms-excel"),
+            Map.entry("xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+            Map.entry("txt", "text/plain"),
+            Map.entry("hwp", "application/vnd.hancom.hwp"),
+            Map.entry("zip", "application/zip")
+    );
 }
