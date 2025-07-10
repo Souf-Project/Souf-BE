@@ -155,7 +155,7 @@ public class S3UploaderService {
             Map.entry("xls", "application/vnd.ms-excel"),
             Map.entry("xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
             Map.entry("txt", "text/plain"),
-            Map.entry("hwp", "application/haansofthwp"),
+            Map.entry("hwp", "application/vnd.hancom.hwp"),
             Map.entry("zip", "application/zip")
     );
 }
