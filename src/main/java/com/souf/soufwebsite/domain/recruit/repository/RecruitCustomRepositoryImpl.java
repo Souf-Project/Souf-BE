@@ -67,6 +67,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
 
             if (!mergedMap.containsKey(recruitId)) {
                 String cityName = Optional.ofNullable(t.get(recruit.city.name)).orElse("");
+                String cityDetailName = Optional.ofNullable(t.get(recruit.cityDetail.name)).orElse("");
 
                 RecruitSimpleResDto dto = RecruitSimpleResDto.of(
                         recruitId,
@@ -76,7 +77,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         t.get(recruit.minPayment),
                         t.get(recruit.maxPayment),
                         cityName,
-                        t.get(recruit.city.name),
+                        cityDetailName,
                         t.get(recruit.deadline),
                         t.get(recruit.recruitCount),
                         Boolean.TRUE.equals(t.get(recruit.recruitable)),
