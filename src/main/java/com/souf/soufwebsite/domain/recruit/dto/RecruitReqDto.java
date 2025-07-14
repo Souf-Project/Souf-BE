@@ -20,7 +20,7 @@ public record RecruitReqDto(
 
         @Schema(description = "공고문 내용", example = "공고문 내용...")
         @NotNull(message = "공고문 내용은 필수입니다.")
-        @Size(max = 300)
+        @Size(min = 1)
         String content,
 
         @Schema(description = "지역 ID", example = "1")
@@ -45,8 +45,6 @@ public record RecruitReqDto(
         String maxPayment,
 
         @Schema(description = "우대사항", example = "1. 전공자 우대\n2. 군필자 우대\n3. Powerpoint를 다루어 본 자")
-        @NotNull(message = "우대사항은 옵션입니다.")
-        @Size(max = 300)
         String preferentialTreatment,
 
         @Schema(description = "카테고리 목록", implementation = CategoryDto.class)
