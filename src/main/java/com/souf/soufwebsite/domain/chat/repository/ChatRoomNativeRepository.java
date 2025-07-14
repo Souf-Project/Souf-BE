@@ -56,6 +56,7 @@ public class ChatRoomNativeRepository {
                 ) AS unreadCount
 
             FROM chat_room r
+            JOIN chat_participant cp ON cp.chatroom_id = r.chatroom_id AND cp.member_id = :userId AND cp.exited = false
             JOIN member m1 ON r.sender_id = m1.member_id
             LEFT JOIN media pm1 ON pm1.post_id = m1.member_id AND pm1.post_type = 'PROFILE'
             JOIN member m2 ON r.receiver_id = m2.member_id

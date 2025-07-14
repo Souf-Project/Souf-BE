@@ -50,6 +50,8 @@ public class ChatController {
             throw new AccessDeniedException("채팅방에 참여하지 않은 유저입니다.");
         }
 
+        chatRoomService.restoreParticipantIfNeeded(room, sender);
+
         ChatMessage saved = chatMessageService.saveMessage(room, sender, request.content(), request.type());
 
         String urlPrefix = "https://" + bucketName + ".s3.ap-northeast-2.amazonaws.com/";
