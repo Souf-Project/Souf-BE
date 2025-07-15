@@ -11,6 +11,7 @@ import com.souf.soufwebsite.domain.chat.service.ChatRoomService;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.global.security.UserDetailsImpl;
+import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,10 @@ public class ChatRoomController implements ChatRoomApiSpecificaton {
     private final ChatRoomService chatRoomService;
     private final ChatMessageService chatMessageService;
     private final MemberRepository memberRepository;
+
+    private Member getCurrentUser() {
+        return SecurityUtils.getCurrentMember();
+    }
 
     @PostMapping
     public ResponseEntity<ChatRoomResDto> createChatRoom(
@@ -90,6 +95,13 @@ public class ChatRoomController implements ChatRoomApiSpecificaton {
         ChatRoom room = chatRoomService.getRoomById(roomId);
 
         chatMessageService.markMessagesAsRead(room, reader);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{roomId}/exit")
+    public ResponseEntity<Void> leaveChatRoom(@PathVariable Long roomId) {
+        Member member = getCurrentUser(); // 인증된 사용자
+        chatRoomService.exitChatRoom(member, roomId);
         return ResponseEntity.ok().build();
     }
 }
