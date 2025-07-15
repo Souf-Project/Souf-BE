@@ -78,9 +78,12 @@ public class MemberController implements MemberApiSpecification{
     }
 
     @PostMapping("/modify/email/send")
-    public SuccessResponse<Boolean> sendModifyEmailVerification(
+    public SuccessResponse<?> sendModifyEmailVerification(
             @RequestBody @Valid SendModifyEmailReqDto reqDto) {
-        return new SuccessResponse<>(memberService.sendModifyEmailVerification(reqDto));
+
+        memberService.sendModifyEmailVerification(reqDto);
+
+        return new SuccessResponse<>("인증번호가 전송되었습니다.");
     }
 
     @PostMapping("/upload")
