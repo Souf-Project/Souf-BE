@@ -1,5 +1,10 @@
 package com.souf.soufwebsite.global.config;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,7 +16,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 @Configuration
-public class S3Config {
+public class AWSConfig {
 
     @Value("${cloud.aws.credentials.access-key}")
     private String accessKey;
@@ -37,6 +42,17 @@ public class S3Config {
         return S3Presigner.builder()
                 .region(Region.AP_NORTHEAST_2)
                 .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
+                .build();
+    }
+
+    @Bean
+    public AmazonSimpleEmailService emailService() {
+        final BasicAWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
+        final AWSStaticCredentialsProvider credentialsProvider = new AWSStaticCredentialsProvider(credentials);
+
+        return AmazonSimpleEmailServiceClientBuilder.standard()
+                .withCredentials(credentialsProvider)
+                .withRegion(Regions.AP_NORTHEAST_2)
                 .build();
     }
 }

@@ -2,7 +2,6 @@ package com.souf.soufwebsite.domain.member.controller.auth;
 
 import com.souf.soufwebsite.domain.member.dto.ReqDto.*;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
-import com.souf.soufwebsite.domain.member.service.VerificationPurpose;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,13 +35,13 @@ public interface AuthApiSpecification {
 
     @Operation(summary = "이메일 인증번호 전송", description = "회원가입 시 입력된 이메일로 인증번호를 전송합니다.")
     @PostMapping("/signup/email/send")
-    SuccessResponse<Boolean> sendSignupEmailVerification(
+    SuccessResponse sendSignupEmailVerification(
             @RequestBody @Valid SendEmailReqDto reqDto
     );
 
     @Operation(summary = "이메일 인증번호 전송", description = "비밀번호 재설정 시 입력된 이메일로 인증번호를 전송합니다.")
     @PostMapping("/reset/email/send")
-    SuccessResponse<Boolean> sendResetEmailVerification(
+    SuccessResponse sendResetEmailVerification(
             @RequestBody @Valid SendEmailReqDto reqDto
     );
 
