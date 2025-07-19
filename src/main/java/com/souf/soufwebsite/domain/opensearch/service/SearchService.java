@@ -18,17 +18,19 @@ import java.util.List;
 public class SearchService {
     private final OpenSearchClient client;
 
-    public List<SearchResDto> searchAll(String keyword) throws IOException {
+    public List<SearchResDto> searchAll(String keyword, int page, int size) throws IOException {
         List<SearchResDto> results = new ArrayList<>();
+        int from = page * size;
         log.info("running searchAll with keyword: {}", keyword);
         // Recruit 인덱스 검색
         SearchResponse<ObjectNode> recruitResponse = client.search(s -> s
                         .index("recruit")
+                        .from(from)
+                        .size(size)
                         .query(q -> q.multiMatch(m -> m
                                 .query(keyword)
                                 .fields("title", "content")
-                        ))
-                        .size(20),
+                        )),
                 ObjectNode.class
         );
         log.info("Recruit search results: {}", recruitResponse.hits().hits().size());
@@ -36,22 +38,24 @@ public class SearchService {
         // Feed 인덱스 검색
         SearchResponse<ObjectNode> feedResponse = client.search(s -> s
                         .index("feed")
+                        .from(from)
+                        .size(size)
                         .query(q -> q.multiMatch(m -> m
                                 .query(keyword)
                                 .fields("topic", "content")
-                        ))
-                        .size(20),
+                        )),
                 ObjectNode.class
         );
 
         // Member 인덱스 검색
         SearchResponse<ObjectNode> memberResponse = client.search(s -> s
                         .index("member")
+                        .from(from)
+                        .size(size)
                         .query(q -> q.multiMatch(m -> m
                                 .query(keyword)
                                 .fields("nickname")
-                        ))
-                        .size(10),
+                        )),
                 ObjectNode.class
         );
 
