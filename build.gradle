@@ -74,18 +74,6 @@ dependencies {
     implementation("org.opensearch.client:opensearch-java:2.19.0")
     implementation("com.fasterxml.jackson.core:jackson-databind")
     implementation("org.opensearch.client:opensearch-rest-client:2.19.0")
-
-    // SigV4
-    implementation 'software.amazon.awssdk:auth'
-    implementation 'software.amazon.awssdk:regions'
-    implementation("software.amazon.awssdk:apache-client")
-
-    // AWS Request Signing Interceptor (OpenSearch 인증용)
-    implementation 'io.github.acm19:aws-request-signing-apache-interceptor:3.0.0'
-
-
-    // sts
-    implementation 'software.amazon.awssdk:sts'
 }
 
 tasks.named('test') {
