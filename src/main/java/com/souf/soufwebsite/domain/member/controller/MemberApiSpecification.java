@@ -1,7 +1,6 @@
 package com.souf.soufwebsite.domain.member.controller;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.SendEmailReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SendModifyEmailReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
@@ -64,7 +63,7 @@ public interface MemberApiSpecification {
 
     @Operation(summary = "이메일 인증번호 전송", description = "기존 회원의 이메일 인증을 위해 인증번호를 전송합니다.")
     @PostMapping("/modify/email/send")
-    SuccessResponse<Boolean> sendModifyEmailVerification(
+    SuccessResponse sendModifyEmailVerification(
             @RequestBody @Valid SendModifyEmailReqDto reqDto
     );
 

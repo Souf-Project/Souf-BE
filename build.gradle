@@ -41,7 +41,7 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
 
     // s3
-    implementation platform("software.amazon.awssdk:bom:2.28.11") // or 최신
+    implementation platform("software.amazon.awssdk:bom:2.17.53") // or 최신
     implementation 'software.amazon.awssdk:s3'
 
     // Querydsl 추가 (Spring boot 3.x 이상)
@@ -54,9 +54,6 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-    // 메일
-    implementation 'org.springframework.boot:spring-boot-starter-mail'
-
     // cache
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
@@ -68,6 +65,10 @@ dependencies {
 
     // stomp
     implementation 'io.projectreactor.netty:reactor-netty:1.1.12'
+
+    // AWS ses service
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'com.amazonaws:aws-java-sdk-ses:1.12.3'
 
     // opensearch
     implementation("org.opensearch.client:opensearch-java:2.19.0")
