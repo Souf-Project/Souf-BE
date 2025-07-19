@@ -20,8 +20,11 @@ public class SearchController {
     private final SearchService searchService;
 
     @GetMapping
-    public List<SearchResDto> searchAll(@RequestParam String keyword) throws IOException {
+    public List<SearchResDto> searchAll(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) throws IOException {
         log.info("SearchController: searchAll called with keyword: {}", keyword);
-        return searchService.searchAll(keyword);
+        return searchService.searchAll(keyword, page, size);
     }
 }
