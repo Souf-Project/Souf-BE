@@ -78,14 +78,16 @@ public class SecurityConfig {
                                         "/favicon.ico",
                                         "/swagger-ui/**",
                                         "/v3/api-docs/**",
-                                        "/error"
+                                        "/error",
+                                        "/api/v1/admin/bulk-reindex"
                                 ).permitAll()
 
                                 .requestMatchers(
                                         HttpMethod.GET,
                                         "/api/v1/feed",
                                         "/api/v1/recruit",
-                                        "/api/v1/member"
+                                        "/api/v1/member",
+                                        "/api/v1/search"
                                 ).permitAll()
 
                                 .requestMatchers("/v1/normal/check").permitAll()
