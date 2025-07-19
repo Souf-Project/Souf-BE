@@ -17,6 +17,8 @@ spring:
       password: ${REDIS_PASSWORD}
       ssl:
         enabled: false
+  cache:
+    type: redis
 
   application:
     name: soufwebsite

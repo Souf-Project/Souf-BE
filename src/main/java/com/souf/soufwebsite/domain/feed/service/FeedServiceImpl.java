@@ -7,7 +7,6 @@ import com.souf.soufwebsite.domain.feed.exception.NotFoundFeedException;
 import com.souf.soufwebsite.domain.feed.exception.NotValidAuthenticationException;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
-import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.dto.video.VideoResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
@@ -25,6 +24,7 @@ import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -43,6 +43,7 @@ public class FeedServiceImpl implements FeedService {
     private final CategoryService categoryService;
     private final FileService fileService;
     private final RedisUtil redisUtil;
+    private final FeedConverter feedConverter;
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
@@ -78,7 +79,7 @@ public class FeedServiceImpl implements FeedService {
         Member member = findIfMemberExists(memberId);
         String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
         Page<FeedSimpleResDto> feedSimpleResDtos = feedRepository.findAllByMemberOrderByIdDesc(member, pageable)
-                .map(this::getFeedSimpleResDto);
+                .map(feedConverter::getFeedSimpleResDto);
 
         MemberResDto memberResDto = MemberResDto.from(member, member.getCategories(), mediaUrl);
         return new MemberFeedResDto(memberResDto, feedSimpleResDtos);
@@ -132,19 +133,13 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
+    @Cacheable(value = "popularFeeds", key = "'page:' + #pageable.pageNumber")
     public Page<FeedSimpleResDto> getPopularFeeds(Pageable pageable) {
         Page<Feed> popularFeeds = feedRepository.findByOrderByViewCountDesc(pageable);
 
          return popularFeeds.map(
-                 this::getFeedSimpleResDto
+                 feedConverter::getFeedSimpleResDto
         );
-    }
-
-    private FeedSimpleResDto getFeedSimpleResDto(Feed feed) {
-        List<Media> mediaList = fileService.getMediaList(PostType.FEED, feed.getId());
-        if(mediaList.isEmpty())
-            return FeedSimpleResDto.from(feed, null);
-        return FeedSimpleResDto.from(feed, MediaResDto.fromFeedDetail(mediaList.get(0)));
     }
 
     @Override

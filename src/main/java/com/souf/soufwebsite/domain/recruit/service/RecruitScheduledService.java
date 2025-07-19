@@ -1,14 +1,18 @@
 package com.souf.soufwebsite.domain.recruit.service;
 
+import com.souf.soufwebsite.domain.recruit.dto.RecruitPopularityResDto;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
 import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.CacheManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -18,8 +22,9 @@ public class RecruitScheduledService {
 
     private final RecruitRepository recruitRepository;
     private final RedisUtil redisUtil;
+    private final CacheManager cacheManager;
 
-    @Scheduled(cron = "0 0 0 ? * MON")
+    @Scheduled(cron = "0 0 0 * * *")
     @Transactional
     public void syncViewCountsToDB() {
         Set<String> keys = redisUtil.getKeys("recruit:view:*");
@@ -46,6 +51,16 @@ public class RecruitScheduledService {
 
         for (Recruit recruit : recruitList) {
             recruit.checkAndUpdateRecruitable();
+        }
+    }
+
+    @Scheduled(cron = "0 2 0 * * *")
+    public void refreshPopularFeeds() {
+
+        for(int i=0;i<3;i++) {
+            Pageable pageable = PageRequest.of(i, 6);
+            Page<Recruit> recruits = recruitRepository.findByRecruitableTrueOrderByViewCountDesc(pageable);
+            cacheManager.getCache("popularRecruits").put("page:" + i, recruits.map(RecruitPopularityResDto::of));
         }
     }
 }
