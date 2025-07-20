@@ -31,7 +31,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
     testImplementation 'org.springframework.security:spring-security-test'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
@@ -70,6 +69,11 @@ dependencies {
     // AWS ses service
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'com.amazonaws:aws-java-sdk-ses:1.12.3'
+
+    // opensearch
+    implementation("org.opensearch.client:opensearch-java:2.19.0")
+    implementation("com.fasterxml.jackson.core:jackson-databind")
+    implementation("org.opensearch.client:opensearch-rest-client:2.19.0")
 }
 
 tasks.named('test') {

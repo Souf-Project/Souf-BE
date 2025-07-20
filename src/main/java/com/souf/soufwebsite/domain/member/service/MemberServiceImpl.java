@@ -14,6 +14,9 @@ import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.exception.*;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.domain.opensearch.EntityType;
+import com.souf.soufwebsite.domain.opensearch.OperationType;
+import com.souf.soufwebsite.domain.opensearch.event.IndexEventPublisherHelper;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
@@ -50,6 +53,7 @@ public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final FileService fileService;
+    private final IndexEventPublisherHelper indexEventPublisherHelper;
 
     private final SesMailService mailService;
 
@@ -85,6 +89,13 @@ public class MemberServiceImpl implements MemberService {
         injectCategories(reqDto, member);
 
         memberRepository.save(member);
+
+        indexEventPublisherHelper.publishIndexEvent(
+                EntityType.MEMBER,
+                OperationType.CREATE,
+                "Member",
+                member
+        );
 
         redisTemplate.delete(verifiedKey);
     }
@@ -250,6 +261,13 @@ public class MemberServiceImpl implements MemberService {
             presignedUrlResDtos = List.of(new PresignedUrlResDto("", "", ""));
         }
 
+        indexEventPublisherHelper.publishIndexEvent(
+                EntityType.MEMBER,
+                OperationType.CREATE,
+                "Member",
+                member
+        );
+
         return MemberUpdateResDto.of(member.getId(), presignedUrlResDtos.get(0));
     }
 
@@ -320,6 +338,13 @@ public class MemberServiceImpl implements MemberService {
         }
 
         member.softDelete();
+
+        indexEventPublisherHelper.publishIndexEvent(
+                EntityType.MEMBER,
+                OperationType.DELETE,
+                "Member",
+                member.getId()
+        );
     }
 
     private void injectCategories(SignupReqDto reqDto, Member member) {
