@@ -55,9 +55,6 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-    // 메일
-    implementation 'org.springframework.boot:spring-boot-starter-mail'
-
     // cache
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-cache'
@@ -71,6 +68,10 @@ dependencies {
 
     // stomp
     implementation 'io.projectreactor.netty:reactor-netty:1.1.12'
+
+    // AWS ses service
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'com.amazonaws:aws-java-sdk-ses:1.12.3'
 }
 
 tasks.named('test') {

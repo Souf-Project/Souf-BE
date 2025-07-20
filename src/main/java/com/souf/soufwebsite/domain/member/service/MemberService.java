@@ -17,11 +17,11 @@ public interface MemberService {
 
     void resetPassword(ResetReqDto reqDto);
 
-    boolean sendSignupEmailVerification(SendEmailReqDto reqDto);
+    void sendSignupEmailVerification(SendEmailReqDto reqDto);
 
-    boolean sendResetEmailVerification(SendEmailReqDto reqDto);
+    void sendResetEmailVerification(SendEmailReqDto reqDto);
 
-    boolean sendModifyEmailVerification(SendModifyEmailReqDto reqDto);
+    void sendModifyEmailVerification(SendModifyEmailReqDto reqDto);
 
     boolean verifyEmail(VerifyEmailReqDto reqDto);
 
