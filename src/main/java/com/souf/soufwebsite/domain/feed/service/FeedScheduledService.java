@@ -4,15 +4,16 @@ import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FeedScheduledService {
@@ -22,7 +23,6 @@ public class FeedScheduledService {
     private final CacheManager cacheManager;
     private final FeedConverter feedConverter;
 
-    @Scheduled(cron = "0 0 0 * * *")
     public void syncViewCountsToDB() {
         Set<String> keys = redisUtil.getKeys("feed:view:*");
 
@@ -39,9 +39,9 @@ public class FeedScheduledService {
             // Redis 값 0으로 초기화
             redisUtil.set(key);
         }
+        log.info("피드 조회수 스케줄링 작업 완료");
     }
 
-    @Scheduled(cron = "0 2 0 * * *")
     public void refreshPopularFeeds() {
 
         for(int i=0;i<3;i++) {

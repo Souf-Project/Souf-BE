@@ -5,17 +5,18 @@ import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
 import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RecruitScheduledService {
@@ -24,7 +25,6 @@ public class RecruitScheduledService {
     private final RedisUtil redisUtil;
     private final CacheManager cacheManager;
 
-    @Scheduled(cron = "0 0 0 * * *")
     @Transactional
     public void syncViewCountsToDB() {
         Set<String> keys = redisUtil.getKeys("recruit:view:*");
@@ -42,9 +42,9 @@ public class RecruitScheduledService {
             // Redis 값 0으로 초기화
             redisUtil.set(key);
         }
+        log.info("공고문 조회수 스케줄링 작업 완료");
     }
 
-    @Scheduled(cron = "0 0/30 * * * *")
     @Transactional
     public void updateRecruitableStatus() {
         List<Recruit> recruitList = recruitRepository.findByRecruitableTrue();
@@ -52,15 +52,13 @@ public class RecruitScheduledService {
         for (Recruit recruit : recruitList) {
             recruit.checkAndUpdateRecruitable();
         }
+        log.info("공고문 마감 상태 스케줄링 작업 완료");
     }
 
-    @Scheduled(cron = "0 2 0 * * *")
-    public void refreshPopularFeeds() {
+    public void refreshPopularRecruits() {
 
-        for(int i=0;i<3;i++) {
-            Pageable pageable = PageRequest.of(i, 6);
-            Page<Recruit> recruits = recruitRepository.findByRecruitableTrueOrderByViewCountDesc(pageable);
-            cacheManager.getCache("popularRecruits").put("page:" + i, recruits.map(RecruitPopularityResDto::of));
-        }
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Recruit> recruits = recruitRepository.findByRecruitableTrueOrderByViewCountDesc(pageable);
+        cacheManager.getCache("popularRecruits").put("page:0", recruits.map(RecruitPopularityResDto::of));
     }
 }
