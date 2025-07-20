@@ -3,7 +3,6 @@ package com.souf.soufwebsite.domain.member.controller.auth;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.*;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.service.MemberService;
-import com.souf.soufwebsite.domain.member.service.VerificationPurpose;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -41,13 +40,19 @@ public class AuthController implements AuthApiSpecification{
 
     // 인증번호 전송
     @PostMapping("/signup/email/send")
-    public SuccessResponse<Boolean> sendSignupEmailVerification(@RequestBody SendEmailReqDto reqDto) {
-        return new SuccessResponse<>(memberService.sendSignupEmailVerification(reqDto));
+    public SuccessResponse sendSignupEmailVerification(@RequestBody SendEmailReqDto reqDto) {
+
+        memberService.sendSignupEmailVerification(reqDto);
+
+        return new SuccessResponse<>("인증번호가 전송되었습니다.");
     }
 
     @PostMapping("/reset/email/send")
-    public SuccessResponse<Boolean> sendResetEmailVerification(@RequestBody SendEmailReqDto reqDto) {
-        return new SuccessResponse<>(memberService.sendResetEmailVerification(reqDto));
+    public SuccessResponse sendResetEmailVerification(@RequestBody SendEmailReqDto reqDto) {
+
+        memberService.sendResetEmailVerification(reqDto);
+
+        return new SuccessResponse<>("비밀번호 재설정 인증번호가 전송되었습니다.");
     }
 
     // 인증번호 검증

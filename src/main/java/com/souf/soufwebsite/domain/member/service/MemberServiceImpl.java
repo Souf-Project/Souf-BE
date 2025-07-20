@@ -14,12 +14,15 @@ import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.exception.*;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.domain.opensearch.EntityType;
+import com.souf.soufwebsite.domain.opensearch.OperationType;
+import com.souf.soufwebsite.domain.opensearch.event.IndexEventPublisherHelper;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
 import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
-import com.souf.soufwebsite.global.email.EmailService;
+import com.souf.soufwebsite.global.common.mail.SesMailService;
 import com.souf.soufwebsite.global.jwt.JwtService;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import jakarta.servlet.http.HttpServletResponse;
@@ -45,12 +48,14 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
     private final JwtService jwtService;
-    private final EmailService emailService;
     private final AuthenticationManager authenticationManager;
     private final RedisTemplate<String, String> redisTemplate;
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final FileService fileService;
+    private final IndexEventPublisherHelper indexEventPublisherHelper;
+
+    private final SesMailService mailService;
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
@@ -84,6 +89,13 @@ public class MemberServiceImpl implements MemberService {
         injectCategories(reqDto, member);
 
         memberRepository.save(member);
+
+        indexEventPublisherHelper.publishIndexEvent(
+                EntityType.MEMBER,
+                OperationType.CREATE,
+                "Member",
+                member
+        );
 
         redisTemplate.delete(verifiedKey);
     }
@@ -130,43 +142,43 @@ public class MemberServiceImpl implements MemberService {
 
     //인증번호 전송
     @Override
-    public boolean sendSignupEmailVerification(SendEmailReqDto reqDto) {
+    public void sendSignupEmailVerification(SendEmailReqDto reqDto) {
         if (memberRepository.existsByEmail(reqDto.email())) {
             throw new NotAvailableEmailException();
         }
-        return sendEmailCode(reqDto.email());
+        sendEmailCode(reqDto.email());
     }
 
     @Override
-    public boolean sendResetEmailVerification(SendEmailReqDto reqDto) {
+    public void sendResetEmailVerification(SendEmailReqDto reqDto) {
         if (!memberRepository.existsByEmail(reqDto.email())) {
             throw new NotFoundMemberException();
         }
-        return sendEmailCode(reqDto.email());
+        sendEmailCode(reqDto.email());
     }
 
     @Override
-    public boolean sendModifyEmailVerification(SendModifyEmailReqDto reqDto) {
+    public void sendModifyEmailVerification(SendModifyEmailReqDto reqDto) {
         if (!memberRepository.existsByEmail(reqDto.originalEmail())) {
             throw new NotFoundMemberException();
         }
         if (!reqDto.acKrEmail().endsWith(".ac.kr")) {
             throw new NotValidEmailException();
         }
-        return sendModifyEmailCode(reqDto.originalEmail(), reqDto.acKrEmail());
+        sendModifyEmailCode(reqDto.originalEmail(), reqDto.acKrEmail());
     }
 
-    private boolean sendEmailCode(String email) {
+    private void sendEmailCode(String email) {
         String redisKey = "email:verification:" + email;
 
         redisTemplate.delete(redisKey);
         String code = String.format("%06d", new Random().nextInt(1000000));
         redisTemplate.opsForValue().set(redisKey, code, 5, TimeUnit.MINUTES);
 
-        return emailService.sendEmail(email, "이메일 인증번호", "인증번호는 " + code + " 입니다.");
+        mailService.sendEmailAuthenticationCode(email, "인증번호", code);
     }
 
-    private boolean sendModifyEmailCode(String originalEmail, String acKrEmail) {
+    private void sendModifyEmailCode(String originalEmail, String acKrEmail) {
         String code = String.format("%06d", new Random().nextInt(1_000_000));
         String verifyKey = "email:verification:" + acKrEmail;
         String ownerKey = "email:owner:" + acKrEmail;
@@ -174,7 +186,7 @@ public class MemberServiceImpl implements MemberService {
         redisTemplate.opsForValue().set(verifyKey, code, 5, TimeUnit.MINUTES);
         redisTemplate.opsForValue().set(ownerKey, originalEmail, 5, TimeUnit.MINUTES);
 
-        return emailService.sendEmail(acKrEmail, "학생 인증 메일", "인증번호는 " + code + " 입니다.");
+        mailService.sendEmailAuthenticationCode(acKrEmail, "학생 사용자 확인 인증번호", code);
     }
 
     //인증번호 확인
@@ -249,6 +261,13 @@ public class MemberServiceImpl implements MemberService {
             presignedUrlResDtos = List.of(new PresignedUrlResDto("", "", ""));
         }
 
+        indexEventPublisherHelper.publishIndexEvent(
+                EntityType.MEMBER,
+                OperationType.CREATE,
+                "Member",
+                member
+        );
+
         return MemberUpdateResDto.of(member.getId(), presignedUrlResDtos.get(0));
     }
 
@@ -319,6 +338,13 @@ public class MemberServiceImpl implements MemberService {
         }
 
         member.softDelete();
+
+        indexEventPublisherHelper.publishIndexEvent(
+                EntityType.MEMBER,
+                OperationType.DELETE,
+                "Member",
+                member.getId()
+        );
     }
 
     private void injectCategories(SignupReqDto reqDto, Member member) {
