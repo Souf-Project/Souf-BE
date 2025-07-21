@@ -15,6 +15,9 @@ import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.domain.opensearch.EntityType;
+import com.souf.soufwebsite.domain.opensearch.OperationType;
+import com.souf.soufwebsite.domain.opensearch.event.IndexEventPublisherHelper;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
@@ -44,6 +47,7 @@ public class FeedServiceImpl implements FeedService {
     private final FileService fileService;
     private final RedisUtil redisUtil;
     private final FeedConverter feedConverter;
+    private final IndexEventPublisherHelper indexEventPublisherHelper;
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
@@ -57,6 +61,13 @@ public class FeedServiceImpl implements FeedService {
         Feed feed = Feed.of(reqDto, member);
         injectCategories(reqDto, feed);
         feed = feedRepository.save(feed);
+
+        indexEventPublisherHelper.publishIndexEvent(
+                EntityType.FEED,
+                OperationType.CREATE,
+                "Feed",
+                feed
+        );
 
         String feedViewKey = getFeedViewKey(feed.getId());
         redisUtil.set(feedViewKey);
@@ -117,6 +128,13 @@ public class FeedServiceImpl implements FeedService {
         feed.clearCategories();
         injectCategories(reqDto, feed);
 
+        indexEventPublisherHelper.publishIndexEvent(
+                EntityType.FEED,
+                OperationType.CREATE,
+                "Feed",
+                feed
+        );
+
         return new FeedResDto(feed.getId(), presignedUrlResDtos, videoResDto);
     }
 
@@ -130,6 +148,13 @@ public class FeedServiceImpl implements FeedService {
         redisUtil.deleteKey(feedViewKey);
 
         feedRepository.delete(feed);
+
+        indexEventPublisherHelper.publishIndexEvent(
+                EntityType.FEED,
+                OperationType.DELETE,
+                "Feed",
+                feed.getId()
+        );
     }
 
     @Override

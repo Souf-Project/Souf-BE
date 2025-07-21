@@ -13,6 +13,9 @@ import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberIdReqDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.domain.opensearch.EntityType;
+import com.souf.soufwebsite.domain.opensearch.OperationType;
+import com.souf.soufwebsite.domain.opensearch.event.IndexEventPublisherHelper;
 import com.souf.soufwebsite.domain.recruit.dto.*;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.entity.RecruitCategoryMapping;
@@ -49,6 +52,7 @@ public class RecruitServiceImpl implements RecruitService {
     private final CityDetailRepository cityDetailRepository;
     private final CategoryService categoryService;
     private final RedisUtil redisUtil;
+    private final IndexEventPublisherHelper indexEventPublisherHelper;
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
@@ -66,6 +70,13 @@ public class RecruitServiceImpl implements RecruitService {
         Recruit recruit = Recruit.of(reqDto, member, city, cityDetail);
         injectCategories(reqDto, recruit);
         recruit = recruitRepository.save(recruit);
+
+        indexEventPublisherHelper.publishIndexEvent(
+                EntityType.RECRUIT,
+                OperationType.CREATE,
+                "Recruit",
+                recruit
+        );
 
         String recruitViewKey = getRecruitViewKey(recruit.getId());
         redisUtil.set(recruitViewKey);
@@ -153,6 +164,13 @@ public class RecruitServiceImpl implements RecruitService {
         recruit.clearCategories();
         injectCategories(reqDto, recruit);
 
+        indexEventPublisherHelper.publishIndexEvent(
+                EntityType.RECRUIT,
+                OperationType.UPDATE,
+                "Recruit",
+                recruit
+        );
+
         return new RecruitCreateResDto(recruit.getId(), presignedUrlResDtos);
     }
 
@@ -166,6 +184,13 @@ public class RecruitServiceImpl implements RecruitService {
         redisUtil.deleteKey(recruitViewKey);
 
         recruitRepository.delete(recruit);
+
+        indexEventPublisherHelper.publishIndexEvent(
+                EntityType.RECRUIT,
+                OperationType.DELETE,
+                "Recruit",
+                recruit.getId()
+        );
     }
 
     @Override

@@ -85,7 +85,8 @@ public class SecurityConfig {
                                         HttpMethod.GET,
                                         "/api/v1/feed",
                                         "/api/v1/recruit",
-                                        "/api/v1/member"
+                                        "/api/v1/member",
+                                        "/api/v1/search"
                                 ).permitAll()
 
                                 .requestMatchers("/v1/normal/check").permitAll()
@@ -118,7 +119,7 @@ public class SecurityConfig {
                                 // 5) POST/PUT/DELETE 등 기타 공고·피드 엔드포인트
                                 .requestMatchers("/api/v1/recruit/**").hasAnyRole("MEMBER", "ADMIN")
                                 .requestMatchers("/api/v1/feed/**").hasAnyRole("STUDENT", "ADMIN")
-
+                                .requestMatchers("/api/v1/admin/bulk-reindex").hasAnyRole("ADMIN")
                                 .anyRequest().authenticated()
                 );
 
