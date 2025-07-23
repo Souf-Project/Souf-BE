@@ -5,6 +5,26 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
+  data:
+    redis:
+      port: ${REDIS_PORT:6379}
+      host: ${REDIS_HOST:redis-container}
+      password: ${REDIS_PASSWORD}
+      ssl:
+        enabled: false
+
   jpa:
     hibernate:
       ddl-auto: validate
+
+  logging:
+    level:
+      org:
+        hibernate:
+          SQL: debug
+        springframework:
+          jdbc:
+            core:
+              JdbcTemplate: DEBUG
+              PreparedStatementCreator: OFF
+              JdbcTemplate$SimplePreparedStatementCreator: OFF
