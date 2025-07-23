@@ -6,6 +6,8 @@ import com.souf.soufwebsite.domain.recruit.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 public interface RecruitService {
 
     RecruitCreateResDto createRecruit(RecruitReqDto reqDto);
@@ -23,7 +25,7 @@ public interface RecruitService {
 
     void deleteRecruit(Long recruitId);
 
-    Page<RecruitPopularityResDto> getPopularRecruits(Pageable pageable);
+    List<RecruitPopularityResDto> getPopularRecruits(Pageable pageable);
 
     void updateRecruitable(Long recruitId, MemberIdReqDto reqDto);
 }

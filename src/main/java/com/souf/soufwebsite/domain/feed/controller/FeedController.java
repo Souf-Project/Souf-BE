@@ -6,14 +6,17 @@ import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 import static com.souf.soufwebsite.domain.feed.controller.FeedSuccessMessage.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/feed")
@@ -65,8 +68,10 @@ public class FeedController implements FeedApiSpecification{
     }
 
     @GetMapping("/popular")
-    public SuccessResponse<Page<FeedSimpleResDto>> getPopularFeeds(
-            @PageableDefault(size = 12) Pageable pageable){
+    public SuccessResponse<List<FeedSimpleResDto>> getPopularFeeds(
+            @PageableDefault(size = 6) Pageable pageable){
+
+        log.info("피드 캐싱 조회");
         return new SuccessResponse<>(feedService.getPopularFeeds(pageable),
                 FEED_GET_POPULATION.getMessage());
     }

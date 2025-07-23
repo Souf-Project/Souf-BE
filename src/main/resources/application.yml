@@ -7,14 +7,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
-  data:
-    redis:
-      port: ${REDIS_PORT:6379}
-      host: ${REDIS_HOST:redis-container}
-      password: ${REDIS_PASSWORD}
-      ssl:
-        enabled: false
   cache:
     type: redis
 

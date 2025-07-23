@@ -6,6 +6,7 @@ import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
 import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -55,10 +56,25 @@ public class RecruitScheduledService {
         log.info("공고문 마감 상태 스케줄링 작업 완료");
     }
 
+    @Transactional
     public void refreshPopularRecruits() {
+        Cache cache = cacheManager.getCache("popularRecruits");
+        if (cache == null) {
+            log.error("popularRecruits 캐시가 설정되지 않았습니다.");
+            return;
+        }
 
         Pageable pageable = PageRequest.of(0, 10);
+
         Page<Recruit> recruits = recruitRepository.findByRecruitableTrueOrderByViewCountDesc(pageable);
-        cacheManager.getCache("popularRecruits").put("page:0", recruits.map(RecruitPopularityResDto::of));
+
+        List<RecruitPopularityResDto> dto = recruits.getContent().stream()
+                .map(RecruitPopularityResDto::of).toList();
+
+        cache.put(buildKey(pageable), dto);
+    }
+
+    private String buildKey(Pageable pageable) {
+        return "page:" + pageable.getPageNumber() + ":" + pageable.getPageSize();
     }
 }

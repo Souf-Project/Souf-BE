@@ -158,13 +158,16 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    @Cacheable(value = "popularFeeds", key = "'page:' + #pageable.pageNumber")
-    public Page<FeedSimpleResDto> getPopularFeeds(Pageable pageable) {
+    @Cacheable(value = "popularFeeds",
+            key = "'page:' + #pageable.pageNumber + ':' + #pageable.pageSize")
+    public List<FeedSimpleResDto> getPopularFeeds(Pageable pageable) {
         Page<Feed> popularFeeds = feedRepository.findByOrderByViewCountDesc(pageable);
 
-         return popularFeeds.map(
-                 feedConverter::getFeedSimpleResDto
-        );
+        log.info("피드 서비스 로직 실행");
+
+         return popularFeeds.getContent().stream()
+                 .map(feedConverter::getFeedSimpleResDto)
+                 .toList();
     }
 
     @Override

@@ -20,19 +20,19 @@ public class DistributedLockService {
     private final FeedScheduledService feedScheduledService;
     private final RecruitScheduledService recruitScheduledService;
 
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
     public void syncFeedView(){
         distributedLock("sync:feed:lock", feedScheduledService::syncViewCountsToDB);
         distributedLock("sync:popular:feed:lock", feedScheduledService::refreshPopularFeeds);
     }
 
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
     public void syncRecruitView(){
         distributedLock("sync:recruit:lock", recruitScheduledService::syncViewCountsToDB);
         distributedLock("sync:recruit:popular:lock", recruitScheduledService::refreshPopularRecruits);
     }
 
-    @Scheduled(cron = "0 0/30 * * * *")
+    @Scheduled(cron = "0 0/30 * * * *", zone = "Asia/Seoul")
     public void syncUpdatedRecruitStatus(){
         distributedLock("sync:recruit:status:lock", recruitScheduledService::updateRecruitableStatus);
     }
@@ -41,15 +41,19 @@ public class DistributedLockService {
         RLock lock = redissonClient.getLock(keyName);
 
         boolean isLocked = false;
-        try{
+        try {
             isLocked = lock.tryLock(3, 60, TimeUnit.SECONDS);
-            if(!isLocked){
-                log.warn("락을 획득하지 못했습니다.");
+            if (!isLocked) {
+                log.warn("락 획득 실패: {}", keyName);
+                return;
             }
-            // 실제 로직 처리
             task.run();
-        } catch (InterruptedException e){
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            log.error("락 대기 중 인터럽트 발생", e);
+        } catch (Exception e) {
+            log.error("스케줄 작업 중 예외 발생", e);
+            throw e;
         } finally {
             if (isLocked && lock.isHeldByCurrentThread()) {
                 lock.unlock();
