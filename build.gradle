@@ -58,6 +58,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-cache'
     implementation 'org.redisson:redisson-spring-boot-starter:3.17.7'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
     // swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
