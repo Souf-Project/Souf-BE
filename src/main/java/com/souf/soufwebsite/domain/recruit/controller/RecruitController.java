@@ -7,13 +7,17 @@ import com.souf.soufwebsite.domain.recruit.service.RecruitService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 import static com.souf.soufwebsite.domain.recruit.controller.RecruitSuccessMessage.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/recruit")
@@ -74,9 +78,12 @@ public class RecruitController implements RecruitApiSpecification{
     }
 
     @GetMapping("/popular")
-    public SuccessResponse<Page<RecruitPopularityResDto>> getPopularRecruits(
-            @PageableDefault(size = 6) Pageable pageable
+    public SuccessResponse<List<RecruitPopularityResDto>> getPopularRecruits(
+            @PageableDefault(size = 10) Pageable pageable
     ) {
+
+        log.info("공고문 캐싱 조회");
+
         return new SuccessResponse<>(
                 recruitService.getPopularRecruits(pageable),
                 RECRUIT_GET_POPULATION.getMessage());

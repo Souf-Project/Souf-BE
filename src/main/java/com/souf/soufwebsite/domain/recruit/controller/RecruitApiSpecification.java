@@ -12,6 +12,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Tag(name = "Recruit", description = "공고문 관련 API")
 public interface RecruitApiSpecification {
 
@@ -49,7 +51,7 @@ public interface RecruitApiSpecification {
 
     @Operation(summary = "인기있는 공고문 조회", description = "사용자 조회 수 별로 인기있는 공고문을 조회합니다.")
     @GetMapping("/popular")
-    SuccessResponse<Page<RecruitPopularityResDto>> getPopularRecruits(
+    SuccessResponse<List<RecruitPopularityResDto>> getPopularRecruits(
             @PageableDefault(size = 6) Pageable pageable);
 
     @Operation(summary = "공고문 마감하기", description = "마감기한 전에 매칭된 공고문에 대해 소유자가 마감합니다.")
