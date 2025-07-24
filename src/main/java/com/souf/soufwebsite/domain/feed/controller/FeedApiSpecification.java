@@ -6,11 +6,12 @@ import com.souf.soufwebsite.global.success.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Tag(name = "Feed", description = "피드 관련 API")
 public interface FeedApiSpecification {
@@ -48,8 +49,8 @@ public interface FeedApiSpecification {
 
     @Operation(summary = "인기있는 피드 조회", description = "인기있는 피드를 조회합니다.")
     @GetMapping("/popular")
-    SuccessResponse<Page<FeedSimpleResDto>> getPopularFeeds(
-            @PageableDefault(size = 12) Pageable pageable);
+    SuccessResponse<List<FeedSimpleResDto>> getPopularFeeds(
+            @PageableDefault(size = 6) Pageable pageable);
 
     @Tag(name = "Feed", description = "학생 피드 관련 API")
     @Operation(summary = "대학생 피드 조회", description = "피드들을 조회합니다.")

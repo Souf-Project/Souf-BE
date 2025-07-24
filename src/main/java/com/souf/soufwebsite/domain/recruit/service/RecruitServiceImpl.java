@@ -194,13 +194,15 @@ public class RecruitServiceImpl implements RecruitService {
     }
 
     @Override
-    @Cacheable(value = "popularRecruits", key = "'page:' + #pageable.pageNumber")
-    public Page<RecruitPopularityResDto> getPopularRecruits(Pageable pageable) {
+    @Cacheable(value = "popularRecruits",
+            key = "'page:' + #pageable.pageNumber + ':' + #pageable.pageSize")
+    public List<RecruitPopularityResDto> getPopularRecruits(Pageable pageable) {
         Page<Recruit> popularRecruits = recruitRepository.findByRecruitableTrueOrderByViewCountDesc(pageable);
 
-        return popularRecruits.map(
-                RecruitPopularityResDto::of
-        );
+        log.info("공고문 로직 실행 중");
+
+        return popularRecruits.getContent().stream()
+                .map(RecruitPopularityResDto::of).toList();
     }
 
     @Transactional

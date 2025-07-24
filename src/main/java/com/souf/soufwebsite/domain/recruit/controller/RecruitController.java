@@ -4,26 +4,33 @@ import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberIdReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.*;
 import com.souf.soufwebsite.domain.recruit.service.RecruitService;
+import com.souf.soufwebsite.global.slack.service.SlackService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 import static com.souf.soufwebsite.domain.recruit.controller.RecruitSuccessMessage.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/recruit")
 public class RecruitController implements RecruitApiSpecification{
 
     private final RecruitService recruitService;
+    private final SlackService slackService;
 
     @PostMapping
     public SuccessResponse<RecruitCreateResDto> createRecruit(@Valid @RequestBody RecruitReqDto recruitReqDto) {
         RecruitCreateResDto recruitCreateResDto = recruitService.createRecruit(recruitReqDto);
+        slackService.sendSlackMessage("회원이 공고문을 작성했어요!", "post");
 
         return new SuccessResponse<>(recruitCreateResDto, RECRUIT_CREATE.getMessage());
     }
@@ -74,9 +81,12 @@ public class RecruitController implements RecruitApiSpecification{
     }
 
     @GetMapping("/popular")
-    public SuccessResponse<Page<RecruitPopularityResDto>> getPopularRecruits(
-            @PageableDefault(size = 6) Pageable pageable
+    public SuccessResponse<List<RecruitPopularityResDto>> getPopularRecruits(
+            @PageableDefault(size = 10) Pageable pageable
     ) {
+
+        log.info("공고문 캐싱 조회");
+
         return new SuccessResponse<>(
                 recruitService.getPopularRecruits(pageable),
                 RECRUIT_GET_POPULATION.getMessage());
