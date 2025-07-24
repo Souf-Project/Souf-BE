@@ -28,3 +28,6 @@ spring:
               JdbcTemplate: DEBUG
               PreparedStatementCreator: OFF
               JdbcTemplate$SimplePreparedStatementCreator: OFF
+
+slack:
+  token: ${SLACK_TOKEN}
