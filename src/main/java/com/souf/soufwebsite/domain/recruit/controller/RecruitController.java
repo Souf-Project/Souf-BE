@@ -30,7 +30,7 @@ public class RecruitController implements RecruitApiSpecification{
     @PostMapping
     public SuccessResponse<RecruitCreateResDto> createRecruit(@Valid @RequestBody RecruitReqDto recruitReqDto) {
         RecruitCreateResDto recruitCreateResDto = recruitService.createRecruit(recruitReqDto);
-        slackService.sendSlackMessage("회원이 공고문을 올렸어요!", "post");
+        slackService.sendSlackMessage("회원이 공고문을 작성했어요!", "post");
 
         return new SuccessResponse<>(recruitCreateResDto, RECRUIT_CREATE.getMessage());
     }

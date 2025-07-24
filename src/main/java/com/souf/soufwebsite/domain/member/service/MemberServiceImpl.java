@@ -100,7 +100,7 @@ public class MemberServiceImpl implements MemberService {
         );
 
         redisTemplate.delete(verifiedKey);
-        slackService.sendSlackMessage("회원이 한 명 들어왔어요!", "signup");
+        slackService.sendSlackMessage("회원이 한 명 가입했어요!", "signup");
     }
 
     //로그인
