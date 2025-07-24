@@ -24,6 +24,7 @@ import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.common.mail.SesMailService;
 import com.souf.soufwebsite.global.jwt.JwtService;
+import com.souf.soufwebsite.global.slack.service.SlackService;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -54,6 +55,7 @@ public class MemberServiceImpl implements MemberService {
     private final PasswordEncoder passwordEncoder;
     private final FileService fileService;
     private final IndexEventPublisherHelper indexEventPublisherHelper;
+    private final SlackService slackService;
 
     private final SesMailService mailService;
 
@@ -98,6 +100,7 @@ public class MemberServiceImpl implements MemberService {
         );
 
         redisTemplate.delete(verifiedKey);
+        slackService.sendSlackMessage("회원이 한 명 들어왔어요!", "signup");
     }
 
     //로그인
