@@ -79,7 +79,8 @@ public class FeedServiceImpl implements FeedService {
 
 
         String slackMsg = member.getNickname() + " 님이 피드를 작성하였습니다.\n" +
-                "https://www.souf.co.kr/feedDetails/" + feed.getId().toString() + "\n";
+                "https://www.souf.co.kr/feedDetails/" + feed.getId().toString() + "\n" +
+                member.getNickname() + " 님을 다같이 환영해보아요:)";
         slackService.sendSlackMessage(slackMsg, "post");
         return new FeedResDto(feed.getId(), presignedUrlResDtos, videoResDto);
     }

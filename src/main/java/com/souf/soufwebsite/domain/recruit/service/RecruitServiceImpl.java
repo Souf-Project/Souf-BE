@@ -86,7 +86,8 @@ public class RecruitServiceImpl implements RecruitService {
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("recruit", reqDto.originalFileNames());
 
         String slackMsg = member.getNickname() + " 님이 공고문을 작성하였습니다.\n" +
-                "https://www.souf.co.kr/recruitDetails/" + recruit.getId().toString() + "\n";
+                "https://www.souf.co.kr/recruitDetails/" + recruit.getId().toString() + "\n" +
+                member.getNickname() + " 님을 다같이 환영해보아요:)";
         slackService.sendSlackMessage(slackMsg, "post");
         return new RecruitCreateResDto(recruit.getId(), presignedUrlResDtos);
     }
