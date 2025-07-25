@@ -24,6 +24,7 @@ import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
 import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.redis.util.RedisUtil;
+import com.souf.soufwebsite.global.slack.service.SlackService;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +49,7 @@ public class FeedServiceImpl implements FeedService {
     private final RedisUtil redisUtil;
     private final FeedConverter feedConverter;
     private final IndexEventPublisherHelper indexEventPublisherHelper;
+    private final SlackService slackService;
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
@@ -75,6 +77,10 @@ public class FeedServiceImpl implements FeedService {
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
         VideoResDto videoResDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.FEED);
 
+
+        String slackMsg = member.getNickname() + " 님이 피드를 작성하였습니다.\n" +
+                "https://www.souf.co.kr/feedDetails/" + feed.getId().toString() + "\n";
+        slackService.sendSlackMessage(slackMsg, "post");
         return new FeedResDto(feed.getId(), presignedUrlResDtos, videoResDto);
     }
 

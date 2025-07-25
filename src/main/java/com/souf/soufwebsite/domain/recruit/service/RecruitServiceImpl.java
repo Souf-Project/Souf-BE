@@ -28,6 +28,7 @@ import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
 import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.redis.util.RedisUtil;
+import com.souf.soufwebsite.global.slack.service.SlackService;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +54,7 @@ public class RecruitServiceImpl implements RecruitService {
     private final CategoryService categoryService;
     private final RedisUtil redisUtil;
     private final IndexEventPublisherHelper indexEventPublisherHelper;
+    private final SlackService slackService;
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
@@ -83,6 +85,9 @@ public class RecruitServiceImpl implements RecruitService {
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("recruit", reqDto.originalFileNames());
 
+        String slackMsg = member.getNickname() + " 님이 공고문을 작성하였습니다.\n" +
+                "https://www.souf.co.kr/recruitDetails/" + recruit.getId().toString() + "\n";
+        slackService.sendSlackMessage(slackMsg, "post");
         return new RecruitCreateResDto(recruit.getId(), presignedUrlResDtos);
     }
 
