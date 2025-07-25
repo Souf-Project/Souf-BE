@@ -36,15 +36,19 @@ public class S3UploaderService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
 
+    /* ------------------------------------- VIDEO ----------------------------------------------*/
+
     // 비디오 업로드 전 세팅 단계
     public VideoResDto initiateUpload(String prefix, String originalFilename) {
         String ext = extractExtension(originalFilename);
         String filename = prefix + "/" + videoFolder + "/" + UUID.randomUUID() + "." + ext;
 
+        String mediaType = CONTENT_TYPE_MAP.getOrDefault(ext, "video/mp4"); // 기본값 설정
+
         CreateMultipartUploadRequest createMultipartUploadRequest = CreateMultipartUploadRequest.builder()
                 .bucket(bucketName)
                 .key(filename)
-                .contentType("video/mp4")
+                .contentType(mediaType)
                 .build();
 
         CreateMultipartUploadResponse response = s3Client.createMultipartUpload(createMultipartUploadRequest);
@@ -94,6 +98,8 @@ public class S3UploaderService {
 
         CompleteMultipartUploadResponse response = s3Client.completeMultipartUpload(completeMultipartUploadRequest);
     }
+
+    /* -------------------------------------- image ---------------------------------------------- */
 
     public PresignedUrlResDto generatePresignedUploadUrl(String prefix, String originalFilename) {
         String ext = extractExtension(originalFilename);
@@ -156,6 +162,12 @@ public class S3UploaderService {
             Map.entry("xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
             Map.entry("txt", "text/plain"),
             Map.entry("hwp", "application/vnd.hancom.hwp"),
-            Map.entry("zip", "application/zip")
+            Map.entry("zip", "application/zip"),
+            Map.entry("mp4", "video/mp4"),
+            Map.entry("mov", "video/quicktime"),
+            Map.entry("avi", "video/x-msvideo"),
+            Map.entry("mkv", "video/x-matroska"),
+            Map.entry("webm", "video/webm"),
+            Map.entry("flv", "video/x-flv")
     );
 }
