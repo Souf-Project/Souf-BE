@@ -4,7 +4,6 @@ import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberIdReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.*;
 import com.souf.soufwebsite.domain.recruit.service.RecruitService;
-import com.souf.soufwebsite.global.slack.service.SlackService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,12 +24,10 @@ import static com.souf.soufwebsite.domain.recruit.controller.RecruitSuccessMessa
 public class RecruitController implements RecruitApiSpecification{
 
     private final RecruitService recruitService;
-    private final SlackService slackService;
 
     @PostMapping
     public SuccessResponse<RecruitCreateResDto> createRecruit(@Valid @RequestBody RecruitReqDto recruitReqDto) {
         RecruitCreateResDto recruitCreateResDto = recruitService.createRecruit(recruitReqDto);
-        slackService.sendSlackMessage("회원이 공고문을 작성했어요!", "post");
 
         return new SuccessResponse<>(recruitCreateResDto, RECRUIT_CREATE.getMessage());
     }
