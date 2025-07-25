@@ -25,7 +25,7 @@ public class OpenSearchInitializer implements ApplicationRunner {
         return """
     {
       "number_of_shards": 3,
-      "number_of_replicas": 1,
+      "number_of_replicas": 0,
       "analysis": {
         "tokenizer": {
           "edge_ngram_tokenizer": {
