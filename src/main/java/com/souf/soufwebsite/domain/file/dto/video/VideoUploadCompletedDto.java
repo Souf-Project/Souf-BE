@@ -5,6 +5,7 @@ import java.util.List;
 public record VideoUploadCompletedDto(
         String uploadId,
         String fileUrl,
-        List<S3UploadPartsDetailDto> parts
+        List<S3UploadPartsDetailDto> parts,
+        String type
 ) {
 }
