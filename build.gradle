@@ -81,7 +81,7 @@ dependencies {
     // AWS ECS
     implementation 'software.amazon.awssdk:ecs'
 
-    // AWS SQS
+    // SQS
     implementation 'io.awspring.cloud:spring-cloud-aws-messaging:2.4.2'
 
     // slack

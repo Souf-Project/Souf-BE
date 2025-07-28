@@ -44,6 +44,13 @@ cloud:
       secret-key: ${AWS_SECRET_KEY}
     s3:
       bucket: ${BUCKET_NAME}
+    ecs:
+      cluster: asdfads
+      task-definition: asdfdas
+      subnet: asdfdsa
+      security-group: asdfdas
+    messaging:
+      enabled: true
 
 websocket:
   relay:
