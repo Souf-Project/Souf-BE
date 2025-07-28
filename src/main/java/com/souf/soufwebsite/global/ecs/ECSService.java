@@ -31,7 +31,7 @@ public class ECSService {
                 .launchType(LaunchType.FARGATE)
                 .overrides(TaskOverride.builder()
                         .containerOverrides(ContainerOverride.builder()
-                                .name("ffmpeg-container-souf")
+                                .name("souf-ffmpeg-container-souf")
                                 .command(prefix, videoUrl)
                                 .build())
                         .build())

@@ -45,10 +45,10 @@ cloud:
     s3:
       bucket: ${BUCKET_NAME}
     ecs:
-      cluster: asdfads
-      task-definition: asdfdas
-      subnet: asdfdsa
-      security-group: asdfdas
+      cluster: ${ECS_CLUSTER}
+      task-definition: ${ECS_TASK_DEFINITION}
+      subnet: ${ECS_SUBNET}
+      security-group: ${SECURITY_GROUP}
     messaging:
       enabled: true
 
