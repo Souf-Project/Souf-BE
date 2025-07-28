@@ -78,6 +78,12 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind")
     implementation("org.opensearch.client:opensearch-rest-client:2.19.0")
 
+    // AWS ECS
+    implementation 'software.amazon.awssdk:ecs'
+
+    // AWS SQS
+    implementation 'io.awspring.cloud:spring-cloud-aws-messaging:2.4.2'
+
     // slack
     implementation("com.slack.api:bolt:1.18.0")
     implementation("com.slack.api:bolt-servlet:1.18.0")

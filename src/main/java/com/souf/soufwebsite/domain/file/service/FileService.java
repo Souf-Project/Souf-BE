@@ -2,7 +2,7 @@ package com.souf.soufwebsite.domain.file.service;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
-import com.souf.soufwebsite.domain.file.dto.video.VideoResDto;
+import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.entity.MediaType;
 import com.souf.soufwebsite.domain.file.entity.PostType;
@@ -25,7 +25,7 @@ public class FileService {
 
     private final Set<String> videoExtensions = Set.of("mp4", "mov", "avi", "mkv", "webm", "flv");
 
-    public VideoResDto configVideoUploadInitiation(List<String> originalFilenames, PostType type) {
+    public VideoDto configVideoUploadInitiation(List<String> originalFilenames, PostType type) {
         List<String> videoFiles = originalFilenames.stream()
                 .filter(f -> videoExtensions.contains(extractExtension(f).toLowerCase()))
                 .toList();

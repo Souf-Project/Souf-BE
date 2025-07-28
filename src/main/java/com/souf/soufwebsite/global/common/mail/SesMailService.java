@@ -28,6 +28,7 @@ public class SesMailService {
                     createSendTemplatedEmailRequest(to, "SouFEmailVerification", data);
 
             emailService.sendTemplatedEmail(request);
+            log.info("인증번호가 성공적으로 전송되었습니다!");
         } catch (Exception e) {
             throw new RuntimeException("인증번호 전송 실패", e);
         }
