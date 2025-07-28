@@ -23,9 +23,8 @@ public class Media extends BaseEntity {
     @Column(nullable = false)
     private String originalUrl;
 
-    // @NotNull
-    // @Column
-    // private String thumbnailUrl;
+     @Column
+     private String thumbnailUrl;
 
     // @NotNull
     // private String detailThumbnailUrl;
@@ -51,5 +50,9 @@ public class Media extends BaseEntity {
                 .postType(postType)
                 .postId(postId)
                 .build();
+    }
+
+    public void addThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
     }
 }
