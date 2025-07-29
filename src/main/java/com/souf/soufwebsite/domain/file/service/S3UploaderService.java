@@ -3,8 +3,9 @@ package com.souf.soufwebsite.domain.file.service;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.dto.video.S3UploadPartsDetailDto;
 import com.souf.soufwebsite.domain.file.dto.video.S3VideoUploadSignedUrlReqDto;
-import com.souf.soufwebsite.domain.file.dto.video.VideoResDto;
+import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
 import com.souf.soufwebsite.domain.file.dto.video.VideoUploadCompletedDto;
+import com.souf.soufwebsite.global.ecs.ECSService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +31,7 @@ public class S3UploaderService {
 
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
+    private final ECSService ecsService;
 
     private static final String videoFolder = "video";
 
@@ -39,7 +41,7 @@ public class S3UploaderService {
     /* ------------------------------------- VIDEO ----------------------------------------------*/
 
     // 비디오 업로드 전 세팅 단계
-    public VideoResDto initiateUpload(String prefix, String originalFilename) {
+    public VideoDto initiateUpload(String prefix, String originalFilename) {
         String ext = extractExtension(originalFilename);
         String filename = prefix + "/" + videoFolder + "/" + UUID.randomUUID() + "." + ext;
 
@@ -53,7 +55,7 @@ public class S3UploaderService {
 
         CreateMultipartUploadResponse response = s3Client.createMultipartUpload(createMultipartUploadRequest);
 
-        return new VideoResDto(response.uploadId(), filename);
+        return new VideoDto(response.uploadId(), filename);
     }
 
     public PresignedUrlResDto getVideoUploadSignedUrl(S3VideoUploadSignedUrlReqDto reqDto) {
@@ -88,7 +90,7 @@ public class S3UploaderService {
                 .parts(completedPartList)
                 .build();
 
-        String fileName = dtos.fileName();
+        String fileName = dtos.fileUrl();
         CompleteMultipartUploadRequest completeMultipartUploadRequest = CompleteMultipartUploadRequest.builder()
                 .bucket(bucketName)
                 .key(fileName)
@@ -96,7 +98,9 @@ public class S3UploaderService {
                 .multipartUpload(completedMultipartUpload)
                 .build();
 
-        CompleteMultipartUploadResponse response = s3Client.completeMultipartUpload(completeMultipartUploadRequest);
+        s3Client.completeMultipartUpload(completeMultipartUploadRequest);
+
+        ecsService.triggerThumbnailJob(dtos.fileUrl(), dtos.type() + "/video/" + dtos.fileUrl());
     }
 
     /* -------------------------------------- image ---------------------------------------------- */

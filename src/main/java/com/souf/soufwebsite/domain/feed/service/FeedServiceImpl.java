@@ -8,7 +8,7 @@ import com.souf.soufwebsite.domain.feed.exception.NotValidAuthenticationExceptio
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
-import com.souf.soufwebsite.domain.file.dto.video.VideoResDto;
+import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
@@ -75,20 +75,20 @@ public class FeedServiceImpl implements FeedService {
         redisUtil.set(feedViewKey);
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
-        VideoResDto videoResDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.FEED);
+        VideoDto videoDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.FEED);
 
 
         String slackMsg = member.getNickname() + " 님이 피드를 작성하였습니다.\n" +
                 "https://www.souf.co.kr/feedDetails/" + feed.getId().toString() + "\n" +
                 member.getNickname() + " 님을 다같이 환영해보아요:)";
         slackService.sendSlackMessage(slackMsg, "post");
-        return new FeedResDto(feed.getId(), presignedUrlResDtos, videoResDto);
+        return new FeedResDto(feed.getId(), presignedUrlResDtos, videoDto);
     }
 
     @Override
     public void uploadFeedMedia(MediaReqDto mediaReqDto) {
         Feed feed = findIfFeedExist(mediaReqDto.postId());
-        List<Media> mediaList = fileService.uploadMetadata(mediaReqDto, PostType.FEED, feed.getId());
+        fileService.uploadMetadata(mediaReqDto, PostType.FEED, feed.getId());
     }
 
     @Transactional(readOnly = true)
@@ -130,7 +130,7 @@ public class FeedServiceImpl implements FeedService {
         updatedRemainingUrls(reqDto, feed);
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
-        VideoResDto videoResDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.FEED);
+        VideoDto videoDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.FEED);
 
         feed.clearCategories();
         injectCategories(reqDto, feed);
@@ -142,7 +142,7 @@ public class FeedServiceImpl implements FeedService {
                 feed
         );
 
-        return new FeedResDto(feed.getId(), presignedUrlResDtos, videoResDto);
+        return new FeedResDto(feed.getId(), presignedUrlResDtos, videoDto);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.domain.file.dto.video;
 
-public record VideoResDto(
+public record VideoDto(
         String uploadId,
         String fileName
 ) {
