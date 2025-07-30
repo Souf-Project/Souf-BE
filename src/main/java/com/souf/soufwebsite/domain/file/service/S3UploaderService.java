@@ -90,17 +90,17 @@ public class S3UploaderService {
                 .parts(completedPartList)
                 .build();
 
-        String fileName = dtos.fileUrl();
+        String fileName = dtos.fileUrl().substring(dtos.fileUrl().lastIndexOf("/") + 1);
         CompleteMultipartUploadRequest completeMultipartUploadRequest = CompleteMultipartUploadRequest.builder()
                 .bucket(bucketName)
-                .key(fileName)
+                .key(dtos.fileUrl())
                 .uploadId(dtos.uploadId())
                 .multipartUpload(completedMultipartUpload)
                 .build();
 
         s3Client.completeMultipartUpload(completeMultipartUploadRequest);
 
-        ecsService.triggerThumbnailJob(dtos.fileUrl(), dtos.type() + "/video/" + dtos.fileUrl());
+        ecsService.triggerThumbnailJob(fileName, dtos.type() + "/video/" + fileName);
     }
 
     /* -------------------------------------- image ---------------------------------------------- */
