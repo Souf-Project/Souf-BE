@@ -100,6 +100,7 @@ public class S3UploaderService {
 
         s3Client.completeMultipartUpload(completeMultipartUploadRequest);
 
+        log.info("postId: {}, prefix: {}", dtos.type() + "/video/" + fileName, fileName);
         ecsService.triggerThumbnailJob(fileName, dtos.type() + "/video/" + fileName);
     }
 

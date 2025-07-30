@@ -32,10 +32,7 @@ public class ECSService {
                 .overrides(TaskOverride.builder()
                         .containerOverrides(ContainerOverride.builder()
                                 .name("souf-ffmpeg-container-souf")
-                                .environment(
-                                        KeyValuePair.builder().name("S3_KEY").value(prefix).build(),
-                                        KeyValuePair.builder().name("POST_ID").value(videoUrl).build()
-                                )
+                                .command(prefix, videoUrl)
                                 .build())
                         .build())
                 .networkConfiguration(NetworkConfiguration.builder()
