@@ -13,6 +13,15 @@ public record MediaResDto(
 ) {
 
     public static MediaResDto fromFeedDetail(Media media){
+        String originalUrl = media.getOriginalUrl();
+
+        return new MediaResDto(
+                media.getFileName(),
+                originalUrl
+        );
+    }
+
+    public static MediaResDto fromMedia(Media media){
         List<MediaType> mediaTypes = List.of(new MediaType[]{MP4, MOV, AVI, MKV, WEBM, FLV, QUICKTIME});
         String originalUrl = media.getOriginalUrl();
         if(mediaTypes.contains(media.getMediaType())){
