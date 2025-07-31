@@ -3,16 +3,16 @@ package com.souf.soufwebsite.global.sqs;
 import com.amazonaws.services.s3.event.S3EventNotification;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.repository.MediaRepository;
-import io.awspring.cloud.messaging.listener.annotation.SqsListener;
+import io.awspring.cloud.sqs.annotation.SqsListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.nio.file.Paths;
 import java.util.Optional;
 
 @Slf4j
-@Service
+@Component
 @RequiredArgsConstructor
 public class ThumbnailEventListener {
 
