@@ -37,8 +37,8 @@ jwt:
 
 cloud:
   aws:
-#    region:
-#      static: ap-northeast-2
+    region:
+      static: ap-northeast-2
     credentials:
       access-key: ${AWS_ACCESS_KEY}
       secret-key: ${AWS_SECRET_KEY}
@@ -49,7 +49,7 @@ cloud:
       task-definition: ${ECS_TASK_DEFINITION}
       subnet: ${ECS_SUBNET}
       security-group: ${SECURITY_GROUP}
-    messaging:
+    sqs:
       enabled: true
 
 websocket:
