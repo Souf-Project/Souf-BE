@@ -5,8 +5,13 @@ import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.repository.MediaRepository;
 import io.awspring.cloud.messaging.listener.annotation.SqsListener;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Paths;
+import java.util.Optional;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ThumbnailEventListener {
@@ -15,13 +20,31 @@ public class ThumbnailEventListener {
 
     @SqsListener("souf-thumbnail-created-queue")
     public void handleThumbnailEvent(String message) {
-        S3EventNotification notification = S3EventNotification.parseJson(message);
-        for(S3EventNotification.S3EventNotificationRecord record : notification.getRecords()) {
-            String s3Key = record.getS3().getObject().getKey();
-            String urlType = s3Key.substring(s3Key.lastIndexOf("/") + 1, s3Key.lastIndexOf("."));
+        try {
+            S3EventNotification notification = S3EventNotification.parseJson(message);
+            for (S3EventNotification.S3EventNotificationRecord record : notification.getRecords()) {
+                String s3Key = record.getS3().getObject().getKey();
+                String fileName = Paths.get(s3Key).getFileName().toString(); // 183a-1asjk-...mp4.png
 
-            Media media = mediaRepository.findByOriginalUrlContains(urlType);
-            media.addThumbnailUrl(record.getS3().getObject().getKey());
+                if (!fileName.endsWith(".png")) {
+                    log.warn("Unexpected file name: {}", fileName);
+                    continue;
+                }
+
+                String originalFileName = fileName.replace(".png", ""); // 183a-1asjk-..mp4
+
+                Optional<Media> mediaOpt = mediaRepository.findFirstByOriginalUrlEndingWith(originalFileName);
+                if (mediaOpt.isPresent()) {
+                    Media media = mediaOpt.get();
+                    media.addThumbnailUrl(s3Key);
+                    mediaRepository.save(media);
+                    log.info("썸네일 URL 저장 완료: {}", s3Key);
+                } else {
+                    log.warn("Media not found for original file: {}", originalFileName);
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error Processing Thumbnail SQS message", e);
         }
     }
 }
