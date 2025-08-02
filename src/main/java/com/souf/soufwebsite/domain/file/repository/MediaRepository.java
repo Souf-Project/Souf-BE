@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface MediaRepository extends JpaRepository<Media, Long> {
@@ -19,5 +20,5 @@ public interface MediaRepository extends JpaRepository<Media, Long> {
     @Query("delete from Media m where m.postType = :postType and m.postId = :postId")
     void deleteAllByPostTypeAndPostId(PostType postType, Long postId);
 
-    Media findByOriginalUrlContains(String originalUrl);
+    Optional<Media> findFirstByOriginalUrlEndingWith(String originalUrl);
 }

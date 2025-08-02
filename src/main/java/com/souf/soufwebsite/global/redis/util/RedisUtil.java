@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.util.Set;
 
 @Component
@@ -14,6 +15,10 @@ public class RedisUtil {
 
     public void set(String key) {
         redisTemplate.opsForValue().set(key, 0L);
+    }
+
+    public void setIfAbsent(String key) {
+        redisTemplate.opsForValue().setIfAbsent(key, 0L, Duration.ofDays(1));
     }
 
     public Long get(String key) {

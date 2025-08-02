@@ -2,6 +2,7 @@ package com.souf.soufwebsite.global.redis.service;
 
 import com.souf.soufwebsite.domain.feed.service.FeedScheduledService;
 import com.souf.soufwebsite.domain.recruit.service.RecruitScheduledService;
+import com.souf.soufwebsite.global.common.viewCount.service.ViewCountService;
 import com.souf.soufwebsite.global.slack.service.SlackService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ public class DistributedLockService {
     private final RedissonClient redissonClient;
     private final FeedScheduledService feedScheduledService;
     private final RecruitScheduledService recruitScheduledService;
+    private final ViewCountService viewCountService;
     private final SlackService slackService;
 
     @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
@@ -32,6 +34,16 @@ public class DistributedLockService {
     public void syncRecruitView(){
         distributedLock("sync:recruit:lock", recruitScheduledService::syncViewCountsToDB);
         distributedLock("sync:recruit:popular:lock", recruitScheduledService::refreshPopularRecruits);
+    }
+
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
+    public void initMainCount(){
+        distributedLock("init:count:main:lock", viewCountService::initiateRedisKey);
+    }
+
+    @Scheduled(cron = "0 */20 * * * *", zone = "Asia/Seoul")
+    public void updateMainCount() {
+        distributedLock("update:count:main:lock", viewCountService::refreshViewCountCache);
     }
 
     @Scheduled(cron = "0 0/30 * * * *", zone = "Asia/Seoul")

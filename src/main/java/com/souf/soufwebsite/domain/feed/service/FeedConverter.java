@@ -21,6 +21,6 @@ public class FeedConverter {
         List<Media> mediaList = fileService.getMediaList(PostType.FEED, feed.getId());
         if(mediaList.isEmpty())
             return FeedSimpleResDto.from(feed, null);
-        return FeedSimpleResDto.from(feed, MediaResDto.fromFeedDetail(mediaList.get(0)));
+        return FeedSimpleResDto.from(feed, MediaResDto.fromMedia(mediaList.get(0)));
     }
 }
