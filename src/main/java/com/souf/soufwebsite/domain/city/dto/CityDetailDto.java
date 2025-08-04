@@ -1,6 +1,6 @@
-package com.souf.soufwebsite.domain.citydetail.dto;
+package com.souf.soufwebsite.domain.city.dto;
 
-import com.souf.soufwebsite.domain.citydetail.entity.CityDetail;
+import com.souf.soufwebsite.domain.city.entity.CityDetail;
 
 public record CityDetailDto(
         Long id,
