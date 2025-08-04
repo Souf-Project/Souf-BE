@@ -3,9 +3,13 @@ package com.souf.soufwebsite.domain.feed.service;
 import com.souf.soufwebsite.domain.feed.dto.*;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.entity.FeedCategoryMapping;
+import com.souf.soufwebsite.domain.feed.entity.LikedFeed;
+import com.souf.soufwebsite.domain.feed.exception.AlreadyExistsFeedLikeException;
+import com.souf.soufwebsite.domain.feed.exception.NotExistsFeedLikeException;
 import com.souf.soufwebsite.domain.feed.exception.NotFoundFeedException;
 import com.souf.soufwebsite.domain.feed.exception.NotValidAuthenticationException;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
+import com.souf.soufwebsite.domain.feed.repository.LikedFeedRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
@@ -50,6 +54,7 @@ public class FeedServiceImpl implements FeedService {
     private final FeedConverter feedConverter;
     private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final SlackService slackService;
+    private final LikedFeedRepository likedFeedRepository;
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
@@ -113,10 +118,12 @@ public class FeedServiceImpl implements FeedService {
         redisUtil.increaseCount(feedViewKey);
         Long viewCountFromRedis = redisUtil.get(feedViewKey);
 
+        Long likedCount = likedFeedRepository.countByFeedId(feedId).orElse(0L);
+
         List<Media> mediaList = fileService.getMediaList(PostType.FEED, feedId);
         String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-        return FeedDetailResDto.from(member, profileImageUrl, feed, viewCountFromRedis, mediaList);
+        return FeedDetailResDto.from(member, profileImageUrl, feed, viewCountFromRedis, likedCount, mediaList);
     }
 
     @Transactional
@@ -189,9 +196,30 @@ public class FeedServiceImpl implements FeedService {
                     Member member = feed.getMember();
                     String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-                    return FeedDetailResDto.from(feed.getMember(), profileImageUrl, feed, viewCountFromRedis, mediaList);
+                    Long likedCount = likedFeedRepository.countByFeedId(feed.getId()).orElse(0L);
+
+                    return FeedDetailResDto.from(feed.getMember(), profileImageUrl, feed, viewCountFromRedis, likedCount, mediaList);
                 }
         );
+    }
+
+    @Transactional
+    @Override
+    public void updateLikedCount(Long feedId, LikeFeedReqDto likeFeedReqDto) {
+        Feed feed = findIfFeedExist(feedId);
+        Member member = findIfMemberExists(likeFeedReqDto.memberId());
+
+        // 좋아요를 누를 경우
+        if(likeFeedReqDto.isLiked().equals(Boolean.TRUE)){
+            likedFeedRepository.findByFeedIdAndMemberId(feedId, member.getId()).ifPresent(likedFeed -> {
+                throw new AlreadyExistsFeedLikeException();
+            });
+            LikedFeed likedFeed = new LikedFeed(member.getId(), feed.getId());
+            likedFeedRepository.save(likedFeed);
+        } else { // 좋아요를 취소할 경우
+            likedFeedRepository.findByFeedIdAndMemberId(feedId, member.getId()).orElseThrow(NotExistsFeedLikeException::new);
+            likedFeedRepository.deleteByFeedIdAndMemberId(feedId, member.getId());
+        }
     }
 
     private void verifyIfFeedIsMine(Feed feed, Member member) {
