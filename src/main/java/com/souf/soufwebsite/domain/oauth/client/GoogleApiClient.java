@@ -1,0 +1,53 @@
+package com.souf.soufwebsite.domain.oauth.client;
+
+import com.souf.soufwebsite.domain.oauth.dto.SocialMemberInfo;
+import com.souf.soufwebsite.domain.oauth.dto.google.GoogleMemberResDto;
+import com.souf.soufwebsite.domain.oauth.dto.google.GoogleTokenResDto;
+import com.souf.soufwebsite.domain.oauth.properties.GoogleOauthProperties;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+public class GoogleApiClient {
+
+    private final WebClient webClient = WebClient.builder().build();
+    private final GoogleOauthProperties googleOauthProperties;
+
+    public SocialMemberInfo getMemberInfoByCode(String code) {
+        String accessToken = getAccessToken(code);
+        return getMemberInfo(accessToken);
+    }
+
+    private String getAccessToken(String code) {
+        return webClient.post()
+                .uri("https://oauth2.googleapis.com/token")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .bodyValue("grant_type=authorization_code" +
+                        "&client_id=" + googleOauthProperties.getClientId() +
+                        "&client_secret=" + googleOauthProperties.getClientSecret() +
+                        "&redirect_uri=" + googleOauthProperties.getRedirectUri() +
+                        "&code=" + code)
+                .retrieve()
+                .bodyToMono(GoogleTokenResDto.class)
+                .map(GoogleTokenResDto::accessToken)
+                .block();
+    }
+
+    private SocialMemberInfo getMemberInfo(String accessToken) {
+        GoogleMemberResDto response = webClient.get()
+                .uri("https://www.googleapis.com/oauth2/v2/userinfo")
+                .headers(h -> h.setBearerAuth(accessToken))
+                .retrieve()
+                .bodyToMono(GoogleMemberResDto.class)
+                .block();
+
+        return new SocialMemberInfo(
+                response.id(),
+                response.email(),
+                response.name(),
+                response.picture()
+        );
+    }
+}
