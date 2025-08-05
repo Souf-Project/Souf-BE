@@ -54,8 +54,10 @@ public class CommentServiceImpl implements CommentService {
         Member writer = findIfMemberExists(reqDto.writerId());
         Member author = findIfMemberExists(reqDto.authorId());
 
+        Feed feed = findIfFeedExist(postId);
+
         Comment comment = new Comment(writer.getId(), reqDto.content(),
-                author.getId(), parentComment.getId(), parentComment.getId());
+                author.getId(), feed.getId(), parentComment.getId());
         commentRepository.save(comment);
         log.info("{}에 대한 대댓글 생성", reqDto.parentId());
     }
@@ -82,7 +84,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Slice<CommentResDto> getComments(Long postId, Pageable pageable) {
-        Slice<Comment> comments = commentRepository.findDistinctByPostIdOrderByCommentGroup(postId, pageable);
+        Slice<Comment> comments = commentRepository.findFirstByGroup(postId, pageable);
 
         List<CommentResDto> commentResDtos = comments.stream().map(
                 comment -> {
