@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.feed.service;
 
+import com.souf.soufwebsite.domain.comment.repository.CommentRepository;
 import com.souf.soufwebsite.domain.feed.dto.*;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.entity.FeedCategoryMapping;
@@ -55,6 +56,7 @@ public class FeedServiceImpl implements FeedService {
     private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final SlackService slackService;
     private final LikedFeedRepository likedFeedRepository;
+    private final CommentRepository commentRepository;
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
@@ -119,11 +121,12 @@ public class FeedServiceImpl implements FeedService {
         Long viewCountFromRedis = redisUtil.get(feedViewKey);
 
         Long likedCount = likedFeedRepository.countByFeedId(feedId).orElse(0L);
+        Long commentCount = commentRepository.countByPostId(feedId).orElse(0L);
 
         List<Media> mediaList = fileService.getMediaList(PostType.FEED, feedId);
         String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-        return FeedDetailResDto.from(member, profileImageUrl, feed, viewCountFromRedis, likedCount, mediaList);
+        return FeedDetailResDto.from(member, profileImageUrl, feed, viewCountFromRedis, likedCount, commentCount, mediaList);
     }
 
     @Transactional
@@ -197,8 +200,9 @@ public class FeedServiceImpl implements FeedService {
                     String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
                     Long likedCount = likedFeedRepository.countByFeedId(feed.getId()).orElse(0L);
+                    Long commentCount = commentRepository.countByPostId(feed.getId()).orElse(0L);
 
-                    return FeedDetailResDto.from(feed.getMember(), profileImageUrl, feed, viewCountFromRedis, likedCount, mediaList);
+                    return FeedDetailResDto.from(feed.getMember(), profileImageUrl, feed, viewCountFromRedis, likedCount, commentCount, mediaList);
                 }
         );
     }
