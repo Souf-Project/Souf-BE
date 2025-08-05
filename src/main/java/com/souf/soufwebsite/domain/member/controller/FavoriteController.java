@@ -15,7 +15,7 @@ import static com.souf.soufwebsite.domain.member.controller.FavoriteMemberSucces
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/favorite")
-public class FavoriteController {
+public class FavoriteController implements FavoriteApiSpecification{
 
     private final FavoriteService favoriteService;
 

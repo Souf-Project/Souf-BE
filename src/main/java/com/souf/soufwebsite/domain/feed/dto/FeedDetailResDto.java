@@ -20,11 +20,14 @@ public record FeedDetailResDto(
         String topic,
         String content,
         Long view,
+        Long likedCount,
+        Long commentCount,
         List<MediaResDto> mediaResDtos,
         List<CategoryDto> categoryDtos,
         LocalDateTime lastModifiedTime
 ) {
-    public static FeedDetailResDto from(Member member, String profileImageUrl, Feed feed, Long feedViewCount, List<Media> mediaList) {
+    public static FeedDetailResDto from(Member member, String profileImageUrl, Feed feed, Long feedViewCount,
+                                        Long likedCount, Long commentCount, List<Media> mediaList) {
         return new FeedDetailResDto(
                 member.getId(),
                 member.getNickname(),
@@ -33,6 +36,8 @@ public record FeedDetailResDto(
                 feed.getTopic(),
             feed.getContent(),
             feed.getViewCount() + feedViewCount,
+            likedCount,
+            commentCount,
             convertToMediaResDto(mediaList),
             convertToCategoryDto(feed.getCategories()),
             feed.getLastModifiedTime());
