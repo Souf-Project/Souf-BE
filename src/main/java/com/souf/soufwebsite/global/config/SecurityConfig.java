@@ -87,7 +87,8 @@ public class SecurityConfig {
                                         "/api/v1/recruit",
                                         "/api/v1/member",
                                         "/api/v1/search",
-                                        "/api/v1/view/**"
+                                        "/api/v1/view/**",
+                                        "/api/v1/post/**"
                                 ).permitAll()
 
                                 .requestMatchers("/v1/normal/check").permitAll()
