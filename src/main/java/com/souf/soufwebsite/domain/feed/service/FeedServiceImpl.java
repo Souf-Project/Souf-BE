@@ -187,6 +187,7 @@ public class FeedServiceImpl implements FeedService {
                  .toList();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Slice<FeedDetailResDto> getFeeds(Long first, Pageable pageable) {
         Slice<Feed> feeds = feedRepository.findByFirstCategoryOrderByCreatedTimeDesc(first, pageable);
