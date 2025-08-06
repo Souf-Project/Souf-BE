@@ -4,7 +4,7 @@ import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberIdReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.*;
 import com.souf.soufwebsite.domain.recruit.service.RecruitService;
-import com.souf.soufwebsite.global.slack.service.SlackService;
+import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,12 +25,11 @@ import static com.souf.soufwebsite.domain.recruit.controller.RecruitSuccessMessa
 public class RecruitController implements RecruitApiSpecification{
 
     private final RecruitService recruitService;
-    private final SlackService slackService;
+    private final RedisUtil redisUtil;
 
     @PostMapping
     public SuccessResponse<RecruitCreateResDto> createRecruit(@Valid @RequestBody RecruitReqDto recruitReqDto) {
         RecruitCreateResDto recruitCreateResDto = recruitService.createRecruit(recruitReqDto);
-        slackService.sendSlackMessage("회원이 공고문을 작성했어요!", "post");
 
         return new SuccessResponse<>(recruitCreateResDto, RECRUIT_CREATE.getMessage());
     }
@@ -44,7 +43,7 @@ public class RecruitController implements RecruitApiSpecification{
 
     @GetMapping
     public SuccessResponse<Page<RecruitSimpleResDto>> getRecruits(
-            @RequestParam(name = "firstCategory") Long first,
+            @RequestParam(required = false, name = "firstCategory") Long first,
             @RequestParam(required = false, name = "secondCategory") Long second,
             @RequestParam(required = false, name = "thirdCategory") Long third,
             @ModelAttribute RecruitSearchReqDto recruitSearchReqDto,
@@ -86,6 +85,7 @@ public class RecruitController implements RecruitApiSpecification{
     ) {
 
         log.info("공고문 캐싱 조회");
+        redisUtil.increaseCount("view:main:totalCount");
 
         return new SuccessResponse<>(
                 recruitService.getPopularRecruits(pageable),

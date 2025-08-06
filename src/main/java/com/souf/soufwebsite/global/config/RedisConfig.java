@@ -49,11 +49,14 @@ public class RedisConfig {
         return redisTemplate;
     }
 
-    @Bean
+    @Bean(destroyMethod = "shutdown")
     public RedissonClient redissonClient() {
         Config config = new Config();
-        config.useSingleServer().setAddress(REDISSON_PREFIX + redisProperties.getHost() + ":" + redisProperties.getPort());
-        config.useSingleServer().setPassword(redisProperties.getPassword());
+        config.useSingleServer()
+                .setAddress(REDISSON_PREFIX + redisProperties.getHost() + ":" + redisProperties.getPort())
+                .setPassword(redisProperties.getPassword())
+                .setConnectionPoolSize(25)
+                .setConnectionMinimumIdleSize(15);
 
         return Redisson.create(config);
     }

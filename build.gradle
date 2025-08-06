@@ -100,6 +100,14 @@ dependencies {
     implementation 'software.amazon.awssdk:http-auth-aws'
     implementation 'software.amazon.awssdk:regions'
 
+    // AWS ECS
+    implementation 'software.amazon.awssdk:ecs'
+
+    // AWS SQS
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.538'
+    implementation platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.1.0")
+    implementation "io.awspring.cloud:spring-cloud-aws-starter-sqs"
+
     // slack
     implementation("com.slack.api:bolt:1.18.0")
     implementation("com.slack.api:bolt-servlet:1.18.0")

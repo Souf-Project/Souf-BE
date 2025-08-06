@@ -1,14 +1,19 @@
 package com.souf.soufwebsite.domain.feed.service;
 
+import com.souf.soufwebsite.domain.comment.repository.CommentRepository;
 import com.souf.soufwebsite.domain.feed.dto.*;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.entity.FeedCategoryMapping;
+import com.souf.soufwebsite.domain.feed.entity.LikedFeed;
+import com.souf.soufwebsite.domain.feed.exception.AlreadyExistsFeedLikeException;
+import com.souf.soufwebsite.domain.feed.exception.NotExistsFeedLikeException;
 import com.souf.soufwebsite.domain.feed.exception.NotFoundFeedException;
 import com.souf.soufwebsite.domain.feed.exception.NotValidAuthenticationException;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
+import com.souf.soufwebsite.domain.feed.repository.LikedFeedRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
-import com.souf.soufwebsite.domain.file.dto.video.VideoResDto;
+import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
@@ -24,6 +29,7 @@ import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
 import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.redis.util.RedisUtil;
+import com.souf.soufwebsite.global.slack.service.SlackService;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +54,9 @@ public class FeedServiceImpl implements FeedService {
     private final RedisUtil redisUtil;
     private final FeedConverter feedConverter;
     private final IndexEventPublisherHelper indexEventPublisherHelper;
+    private final SlackService slackService;
+    private final LikedFeedRepository likedFeedRepository;
+    private final CommentRepository commentRepository;
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
@@ -73,15 +82,20 @@ public class FeedServiceImpl implements FeedService {
         redisUtil.set(feedViewKey);
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
-        VideoResDto videoResDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.FEED);
+        VideoDto videoDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.FEED);
 
-        return new FeedResDto(feed.getId(), presignedUrlResDtos, videoResDto);
+
+        String slackMsg = member.getNickname() + " 님이 피드를 작성하였습니다.\n" +
+                "https://www.souf.co.kr/feedDetails/" + feed.getId().toString() + "\n" +
+                member.getNickname() + " 님을 다같이 환영해보아요:)";
+        slackService.sendSlackMessage(slackMsg, "post");
+        return new FeedResDto(feed.getId(), presignedUrlResDtos, videoDto);
     }
 
     @Override
     public void uploadFeedMedia(MediaReqDto mediaReqDto) {
         Feed feed = findIfFeedExist(mediaReqDto.postId());
-        List<Media> mediaList = fileService.uploadMetadata(mediaReqDto, PostType.FEED, feed.getId());
+        fileService.uploadMetadata(mediaReqDto, PostType.FEED, feed.getId());
     }
 
     @Transactional(readOnly = true)
@@ -106,10 +120,13 @@ public class FeedServiceImpl implements FeedService {
         redisUtil.increaseCount(feedViewKey);
         Long viewCountFromRedis = redisUtil.get(feedViewKey);
 
+        Long likedCount = likedFeedRepository.countByFeedId(feedId).orElse(0L);
+        Long commentCount = commentRepository.countByPostId(feedId).orElse(0L);
+
         List<Media> mediaList = fileService.getMediaList(PostType.FEED, feedId);
         String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-        return FeedDetailResDto.from(member, profileImageUrl, feed, viewCountFromRedis, mediaList);
+        return FeedDetailResDto.from(member, profileImageUrl, feed, viewCountFromRedis, likedCount, commentCount, mediaList);
     }
 
     @Transactional
@@ -123,7 +140,7 @@ public class FeedServiceImpl implements FeedService {
         updatedRemainingUrls(reqDto, feed);
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
-        VideoResDto videoResDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.FEED);
+        VideoDto videoDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.FEED);
 
         feed.clearCategories();
         injectCategories(reqDto, feed);
@@ -135,7 +152,7 @@ public class FeedServiceImpl implements FeedService {
                 feed
         );
 
-        return new FeedResDto(feed.getId(), presignedUrlResDtos, videoResDto);
+        return new FeedResDto(feed.getId(), presignedUrlResDtos, videoDto);
     }
 
     @Override
@@ -170,6 +187,7 @@ public class FeedServiceImpl implements FeedService {
                  .toList();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Slice<FeedDetailResDto> getFeeds(Long first, Pageable pageable) {
         Slice<Feed> feeds = feedRepository.findByFirstCategoryOrderByCreatedTimeDesc(first, pageable);
@@ -182,9 +200,31 @@ public class FeedServiceImpl implements FeedService {
                     Member member = feed.getMember();
                     String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-                    return FeedDetailResDto.from(feed.getMember(), profileImageUrl, feed, viewCountFromRedis, mediaList);
+                    Long likedCount = likedFeedRepository.countByFeedId(feed.getId()).orElse(0L);
+                    Long commentCount = commentRepository.countByPostId(feed.getId()).orElse(0L);
+
+                    return FeedDetailResDto.from(feed.getMember(), profileImageUrl, feed, viewCountFromRedis, likedCount, commentCount, mediaList);
                 }
         );
+    }
+
+    @Transactional
+    @Override
+    public void updateLikedCount(Long feedId, LikeFeedReqDto likeFeedReqDto) {
+        Feed feed = findIfFeedExist(feedId);
+        Member member = findIfMemberExists(likeFeedReqDto.memberId());
+
+        // 좋아요를 누를 경우
+        if(likeFeedReqDto.isLiked().equals(Boolean.TRUE)){
+            likedFeedRepository.findByFeedIdAndMemberId(feedId, member.getId()).ifPresent(likedFeed -> {
+                throw new AlreadyExistsFeedLikeException();
+            });
+            LikedFeed likedFeed = new LikedFeed(member.getId(), feed.getId());
+            likedFeedRepository.save(likedFeed);
+        } else { // 좋아요를 취소할 경우
+            likedFeedRepository.findByFeedIdAndMemberId(feedId, member.getId()).orElseThrow(NotExistsFeedLikeException::new);
+            likedFeedRepository.deleteByFeedIdAndMemberId(feedId, member.getId());
+        }
     }
 
     private void verifyIfFeedIsMine(Feed feed, Member member) {

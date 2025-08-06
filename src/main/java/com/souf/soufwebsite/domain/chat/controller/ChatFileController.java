@@ -4,7 +4,7 @@ import com.souf.soufwebsite.domain.chat.dto.ChatFileReqDto;
 import com.souf.soufwebsite.domain.chat.service.ChatMessageService;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
-import com.souf.soufwebsite.domain.file.dto.video.VideoResDto;
+import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
 import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
@@ -42,8 +42,8 @@ public class ChatFileController implements ChatFileApiSpecification{
     }
 
     @PostMapping("/video-upload")
-    public ResponseEntity<VideoResDto> uploadChatVideoFile(@RequestBody ChatFileReqDto reqDto) {
-        VideoResDto resDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.CHAT);
+    public ResponseEntity<VideoDto> uploadChatVideoFile(@RequestBody ChatFileReqDto reqDto) {
+        VideoDto resDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.CHAT);
         return ResponseEntity.ok(resDto);
     }
 }

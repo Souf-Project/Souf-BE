@@ -3,7 +3,6 @@ package com.souf.soufwebsite.domain.feed.controller;
 import com.souf.soufwebsite.domain.feed.dto.*;
 import com.souf.soufwebsite.domain.feed.service.FeedService;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
-import com.souf.soufwebsite.global.slack.service.SlackService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,14 +23,12 @@ import static com.souf.soufwebsite.domain.feed.controller.FeedSuccessMessage.*;
 public class FeedController implements FeedApiSpecification{
 
     private final FeedService feedService;
-    private final SlackService slackService;
 
     @PostMapping
     public SuccessResponse<FeedResDto> createFeed(
             @RequestBody @Valid FeedReqDto feedReqDto) {
         FeedResDto feedResDto = feedService.createFeed(feedReqDto);
 
-        slackService.sendSlackMessage("회원이 피드를 작성했어요!", "post");
         return new SuccessResponse<>(feedResDto, FEED_CREATE.getMessage());
     }
 
@@ -87,5 +84,14 @@ public class FeedController implements FeedApiSpecification{
                 feedService.getFeeds(first, pageable),
                 FEED_GET.getMessage()
         );
+    }
+
+    @PatchMapping("/{feedId}/like")
+    public SuccessResponse<?> likeFeed(
+            @PathVariable(name = "feedId") Long feedId,
+            @RequestBody LikeFeedReqDto likeFeedReqDto
+    ){
+        feedService.updateLikedCount(feedId, likeFeedReqDto);
+        return new SuccessResponse<>(FEED_LIKE_UPDATE_SUCCESS.getMessage());
     }
 }

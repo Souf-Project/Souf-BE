@@ -37,13 +37,20 @@ jwt:
 
 cloud:
   aws:
-#    region:
-#      static: ap-northeast-2
+    region:
+      static: ap-northeast-2
     credentials:
       access-key: ${AWS_ACCESS_KEY}
       secret-key: ${AWS_SECRET_KEY}
     s3:
       bucket: ${BUCKET_NAME}
+    ecs:
+      cluster: ${ECS_CLUSTER}
+      task-definition: ${ECS_TASK_DEFINITION}
+      subnet: ${ECS_SUBNET}
+      security-group: ${SECURITY_GROUP}
+    sqs:
+      enabled: true
 
 websocket:
   relay:
