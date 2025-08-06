@@ -25,6 +25,7 @@ package com.souf.soufwebsite.domain.opensearch.service;
 //}
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -34,6 +35,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class IndexingService {
 
     private final RestTemplate openSearchRestTemplate;
@@ -52,9 +54,9 @@ public class IndexingService {
             HttpEntity<T> request = new HttpEntity<>(document, headers);
 
             openSearchRestTemplate.put(url, request);
-            System.out.println("✅ 문서 인덱싱 성공: " + url);
+            log.info("✅ 문서 인덱싱 성공: " + url);
         } catch (Exception e) {
-            System.out.println("⚠️  문서 인덱싱 실패: " + url);
+            log.error("문서 인덱싱 실패: " + url, e);
         }
     }
 
@@ -66,9 +68,9 @@ public class IndexingService {
 
         try {
             openSearchRestTemplate.delete(url);
-            System.out.println("🗑️ 문서 삭제 성공: " + url);
+            log.info("🗑️ 문서 삭제 성공: " + url);
         } catch (Exception e) {
-            System.out.println("⚠️  문서 삭제 실패: " + url);
+            log.error("문서 삭제 실패: " + url, e);
         }
     }
 

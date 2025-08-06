@@ -1,6 +1,7 @@
 package com.souf.soufwebsite.global.config;
 
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -19,6 +20,7 @@ import software.amazon.awssdk.regions.Region;
 import java.net.URI;
 
 @Configuration
+@Slf4j
 public class OpenSearchConfig {
     @Value("${opensearch.host}")
     private String host;
@@ -31,8 +33,7 @@ public class OpenSearchConfig {
 
     @PostConstruct
     public void debugCredentials() {
-        System.out.println("🔑 OpenSearch 연결 정보");
-        System.out.println("➡️ host = " + host);
+        log.info("🔑 OpenSearch 연결 정보 - host: {}", host);
 //        System.out.println("➡️ username = " + username);
 //        System.out.println("➡️ password = " + password);
     }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 //import org.opensearch.client.opensearch.OpenSearchClient;
 //import org.springframework.boot.ApplicationArguments;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -19,6 +20,7 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class OpenSearchInitializer implements ApplicationRunner {
 
 //    private final OpenSearchClient client;
@@ -179,10 +181,10 @@ public class OpenSearchInitializer implements ApplicationRunner {
             body.put("mappings", objectMapper.readValue(mappingsBuilder.toString(), Map.class));
 
             openSearchRestTemplate.put(url, new HttpEntity<>(body, getJsonHeaders()));
-            System.out.println("✅ 인덱스 생성 완료: " + indexName);
+            log.info("✅ 인덱스 생성 완료: {}", indexName);
         } catch (Exception e) {
-            System.out.println("⚠️  인덱스 생성 실패 (이미 존재하거나 오류 발생): " + indexName);
-            e.printStackTrace();
+            log.info("⚠️  인덱스 생성 실패 (이미 존재하거나 오류 발생): {}", indexName);
+            log.error("인덱스 생성 실패: {}", e.getMessage());
         }
     }
 
