@@ -182,6 +182,7 @@ public class OpenSearchInitializer implements ApplicationRunner {
             System.out.println("✅ 인덱스 생성 완료: " + indexName);
         } catch (Exception e) {
             System.out.println("⚠️  인덱스 생성 실패 (이미 존재하거나 오류 발생): " + indexName);
+            e.printStackTrace();
         }
     }
 

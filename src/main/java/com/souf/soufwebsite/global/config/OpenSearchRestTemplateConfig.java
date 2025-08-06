@@ -28,9 +28,6 @@ public class OpenSearchRestTemplateConfig {
     @Value("${opensearch.host}")
     private String host;
 
-    @Value("${aws.region}")
-    private String region;
-
     /**
      * OpenSearch REST 호출용 RestTemplate 빈
      * - Apache HTTPClient 5.x 사용
@@ -45,7 +42,7 @@ public class OpenSearchRestTemplateConfig {
                 "es",
                 AwsV4HttpSigner.create(),
                 creds,
-                Region.of(region)
+                Region.of("ap-northeast-2")
         );
 
         // 2. HttpClient 5.x 타임아웃 설정

@@ -23,7 +23,6 @@ repositories {
     mavenCentral()
 
     maven {url "https://aws.oss.sonatype.org/content/repositories/releases/"}
-    maven { url "https://repo.opensearch.org/maven" }
     maven { url 'https://jitpack.io' }
 }
 
@@ -94,7 +93,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'software.amazon.awssdk:apache-client'
 
-    implementation 'org.apache.httpcomponents.client5:httpclient5:5.4.1'   // Apache HttpClient 5.x
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
+    implementation 'org.apache.httpcomponents.core5:httpcore5:5.2.5'
     implementation 'io.github.acm19:aws-request-signing-apache-interceptor:3.0.0'
     implementation 'software.amazon.awssdk:auth'
     implementation 'software.amazon.awssdk:http-auth-aws'
