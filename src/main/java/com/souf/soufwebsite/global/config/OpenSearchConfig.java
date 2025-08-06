@@ -55,16 +55,13 @@ public class OpenSearchConfig {
 //    }
 
 
-    @Value("${aws.region}")
-    private String region;
-
     @Bean
     public OpenSearchClient openSearchClient() {
         AwsCredentialsProvider credentialsProvider = DefaultCredentialsProvider.create();
 
         return OpenSearchClient.builder()
                 .endpointOverride(URI.create(host))
-                .region(Region.of(region))
+                .region(Region.of("ap-northeast-2"))
                 .credentialsProvider(credentialsProvider)
                 .build();
     }

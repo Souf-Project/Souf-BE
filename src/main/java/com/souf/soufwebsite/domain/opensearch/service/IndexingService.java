@@ -38,14 +38,14 @@ public class IndexingService {
 
     private final RestTemplate openSearchRestTemplate;
 
-    @Value("${opensearch.index-prefix:}")
-    private String indexPrefix;
+    @Value("${opensearch.host}")
+    private String host;
 
     /**
      * 문서를 인덱싱합니다.
      */
     public <T> void indexDocument(String indexName, String id, T document) {
-        String url = indexPrefix + "/" + indexName + "/_doc/" + id;
+        String url = host + "/" + indexName + "/_doc/" + id;
 
         try {
             HttpHeaders headers = getJsonHeaders();
@@ -62,7 +62,7 @@ public class IndexingService {
      * 문서를 삭제합니다.
      */
     public void deleteDocument(String indexName, String id) {
-        String url = indexPrefix + "/" + indexName + "/_doc/" + id;
+        String url = host + "/" + indexName + "/_doc/" + id;
 
         try {
             openSearchRestTemplate.delete(url);
