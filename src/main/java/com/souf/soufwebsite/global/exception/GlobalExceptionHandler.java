@@ -1,6 +1,7 @@
 package com.souf.soufwebsite.global.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,7 +20,10 @@ public class GlobalExceptionHandler {
         logWarning(e, e.getErrorCode());
         ExceptionResponse<Void> response = ExceptionResponse.fail(e.getErrorCode(), e.getMessage());
 
-        return ResponseEntity.status(e.getErrorCode()).body(response);
+        return ResponseEntity
+                .status(e.getErrorCode())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response);
     }
 
     // @Valid 예외 처리 (@NotNull, @Size, etc...) or IllegalArgumentException
