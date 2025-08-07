@@ -33,6 +33,7 @@ import com.souf.soufwebsite.global.slack.service.SlackService;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,6 +42,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -121,12 +123,14 @@ public class FeedServiceImpl implements FeedService {
         Long viewCountFromRedis = redisUtil.get(feedViewKey);
 
         Long likedCount = likedFeedRepository.countByFeedId(feedId).orElse(0L);
+        Boolean liked = getLiked(memberId, feedId);
+
         Long commentCount = commentRepository.countByPostId(feedId).orElse(0L);
 
         List<Media> mediaList = fileService.getMediaList(PostType.FEED, feedId);
         String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-        return FeedDetailResDto.from(member, profileImageUrl, feed, viewCountFromRedis, likedCount, commentCount, mediaList);
+        return FeedDetailResDto.from(member, profileImageUrl, feed, viewCountFromRedis, likedCount, liked, commentCount, mediaList);
     }
 
     @Transactional
@@ -201,9 +205,10 @@ public class FeedServiceImpl implements FeedService {
                     String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
                     Long likedCount = likedFeedRepository.countByFeedId(feed.getId()).orElse(0L);
+                    Boolean liked = getLiked(member.getId(), feed.getId());
                     Long commentCount = commentRepository.countByPostId(feed.getId()).orElse(0L);
 
-                    return FeedDetailResDto.from(feed.getMember(), profileImageUrl, feed, viewCountFromRedis, likedCount, commentCount, mediaList);
+                    return FeedDetailResDto.from(feed.getMember(), profileImageUrl, feed, viewCountFromRedis, likedCount, liked, commentCount, mediaList);
                 }
         );
     }
@@ -266,5 +271,12 @@ public class FeedServiceImpl implements FeedService {
                 fileService.deleteMedia(media);  // DB에서만 삭제되도록 수정
             }
         }
+    }
+
+    @NotNull
+    private Boolean getLiked(Long memberId, Long feedId) {
+        return Optional.ofNullable(
+                likedFeedRepository.findByFeedIdAndMemberId(feedId, memberId)
+        ).isPresent();
     }
 }
