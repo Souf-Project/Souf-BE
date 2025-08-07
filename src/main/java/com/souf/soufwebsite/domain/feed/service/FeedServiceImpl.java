@@ -115,6 +115,8 @@ public class FeedServiceImpl implements FeedService {
     @Transactional(readOnly = true)
     @Override
     public FeedDetailResDto getFeedById(Long memberId, Long feedId) {
+        Member currentUser = getCurrentUser();
+
         Member member = findIfMemberExists(memberId);
         Feed feed = findIfFeedExist(feedId);
 
@@ -123,7 +125,7 @@ public class FeedServiceImpl implements FeedService {
         Long viewCountFromRedis = redisUtil.get(feedViewKey);
 
         Long likedCount = likedFeedRepository.countByFeedId(feedId).orElse(0L);
-        Boolean liked = getLiked(memberId, feedId);
+        Boolean liked = getLiked(currentUser.getId(), feedId);
 
         Long commentCount = commentRepository.countByPostId(feedId).orElse(0L);
 
@@ -194,6 +196,8 @@ public class FeedServiceImpl implements FeedService {
     @Transactional(readOnly = true)
     @Override
     public Slice<FeedDetailResDto> getFeeds(Long first, Pageable pageable) {
+        Member currentUser = getCurrentUser();
+
         Slice<Feed> feeds = feedRepository.findByFirstCategoryOrderByCreatedTimeDesc(first, pageable);
 
         return feeds.map(
@@ -205,7 +209,7 @@ public class FeedServiceImpl implements FeedService {
                     String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
                     Long likedCount = likedFeedRepository.countByFeedId(feed.getId()).orElse(0L);
-                    Boolean liked = getLiked(member.getId(), feed.getId());
+                    Boolean liked = getLiked(currentUser.getId(), feed.getId());
                     Long commentCount = commentRepository.countByPostId(feed.getId()).orElse(0L);
 
                     return FeedDetailResDto.from(feed.getMember(), profileImageUrl, feed, viewCountFromRedis, likedCount, liked, commentCount, mediaList);
