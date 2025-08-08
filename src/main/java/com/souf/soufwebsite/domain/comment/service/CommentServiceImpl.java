@@ -14,6 +14,7 @@ import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
@@ -31,6 +32,10 @@ public class CommentServiceImpl implements CommentService {
     private final FeedRepository feedRepository;
     private final MemberRepository memberRepository;
     private final FileService fileService;
+
+    private Member getCurrentUser() {
+        return SecurityUtils.getCurrentMember();
+    }
 
     @Override
     public void createComment(Long postId, CommentReqDto reqDto) {
@@ -64,10 +69,11 @@ public class CommentServiceImpl implements CommentService {
 
     @Transactional
     @Override
-    public void deleteComment(Long postId, CommentUpdateReqDto reqDto) {
-        Comment comment = findIfCommentExists(reqDto.commentId());
+    public void deleteComment(Long postId, Long commentId) {
+        Member member = getCurrentUser();
+        Comment comment = findIfCommentExists(commentId);
 
-        validatedIfCommentMine(reqDto, comment); // 현재 사용자와 댓글 작성자의 아이디가 일치하지 않으면 예외 발생
+        validatedIfCommentMine(member, comment); // 현재 사용자와 댓글 작성자의 아이디가 일치하지 않으면 예외 발생
 
         commentRepository.delete(comment);
     }
@@ -75,9 +81,10 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     @Override
     public void updateComment(Long postId, CommentUpdateReqDto reqDto) {
+        Member member = getCurrentUser();
         Comment comment = findIfCommentExists(reqDto.commentId());
 
-        validatedIfCommentMine(reqDto, comment); // 현재 사용자와 댓글 작성자의 아이디가 일치하지 않으면 예외 발생
+        validatedIfCommentMine(member, comment); // 현재 사용자와 댓글 작성자의 아이디가 일치하지 않으면 예외 발생
 
         comment.updateContent(reqDto.content());
     }
@@ -131,8 +138,8 @@ public class CommentServiceImpl implements CommentService {
         return commentRepository.findById(commentId).orElseThrow(NotFoundCommentException::new);
     }
 
-    private static void validatedIfCommentMine(CommentUpdateReqDto reqDto, Comment comment) {
-        if(!comment.getWriterId().equals(reqDto.writerId())){
+    private static void validatedIfCommentMine(Member member, Comment comment) {
+        if(!comment.getWriterId().equals(member.getId())){
             throw new NotMatchedOwnerException();
         }
     }

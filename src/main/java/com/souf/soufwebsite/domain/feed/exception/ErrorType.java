@@ -13,7 +13,8 @@ public enum ErrorType {
 
     // LIKE_FEED
     ALREADY_EXISTS_LIKE(404, "이미 좋아요를 누르셨습니다."),
-    NOT_EXISTS_LIKE(404, "좋아요를 누르지 않았습니다.");
+    NOT_EXISTS_LIKE(404, "좋아요를 누르지 않았습니다."),
+    NOT_FOUND_FEED_LIKE(404, "해당 회원의 좋아요 여부를 확인할 수 없습니다.");
 
 
     private final int code;

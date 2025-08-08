@@ -71,12 +71,12 @@ public class CommentController implements CommentApiSpecification{
         return new SuccessResponse(UPDATE_COMMENT_SUCCESS.getMessage());
     }
 
-    @DeleteMapping
+    @DeleteMapping("/{commentId}")
     public SuccessResponse deleteComment(
             @PathVariable(name = "postId") Long postId,
-            @Valid @RequestBody CommentUpdateReqDto reqDto) {
+            @PathVariable(name = "commentId") Long commentId) {
 
-        commentService.deleteComment(postId, reqDto);
+        commentService.deleteComment(postId, commentId);
 
         return new SuccessResponse(DELETE_COMMENT_SUCCESS.getMessage());
     }

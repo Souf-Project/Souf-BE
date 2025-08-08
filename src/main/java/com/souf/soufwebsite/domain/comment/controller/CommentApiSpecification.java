@@ -49,8 +49,8 @@ public interface CommentApiSpecification {
             @RequestBody CommentUpdateReqDto reqDto);
 
     @Operation(summary = "댓글 삭제", description = "사용자가 작성한 댓글을 삭제합니다.")
-    @DeleteMapping
+    @DeleteMapping("/{commentId}")
     SuccessResponse deleteComment(
             @PathVariable Long postId,
-            @RequestBody CommentUpdateReqDto reqDto);
+            @PathVariable(name = "commentId") Long commentId);
 }

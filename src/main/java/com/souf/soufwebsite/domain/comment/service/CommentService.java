@@ -13,7 +13,7 @@ public interface CommentService {
 
     void createReply(Long postId, CommentReqDto reqDto);
 
-    void deleteComment(Long postId, CommentUpdateReqDto reqDto);
+    void deleteComment(Long postId, Long commentId);
 
     void updateComment(Long postId, CommentUpdateReqDto reqDto);
 
