@@ -1,6 +1,7 @@
 package com.souf.soufwebsite.domain.oauth.service;
 
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.oauth.SocialProvider;
 import com.souf.soufwebsite.domain.oauth.client.GoogleApiClient;
@@ -42,6 +43,9 @@ public class OauthService {
     }
 
     private Member registerMember(SocialMemberInfo info, SocialProvider provider) {
+
+        RoleType role = info.email().endsWith(".ac.kr") ? RoleType.STUDENT : RoleType.MEMBER;
+
         Member member = new Member(
                 provider,
                 info.socialId(),
