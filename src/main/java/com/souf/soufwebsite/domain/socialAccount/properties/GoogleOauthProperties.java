@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.oauth.properties;
+package com.souf.soufwebsite.domain.socialAccount.properties;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

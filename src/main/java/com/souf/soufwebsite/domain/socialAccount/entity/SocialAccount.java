@@ -1,11 +1,14 @@
-package com.souf.soufwebsite.domain.oauth.entity;
+package com.souf.soufwebsite.domain.socialAccount.entity;
 
-import com.souf.soufwebsite.domain.oauth.SocialProvider;
+import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.socialAccount.SocialProvider;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "social_account",
@@ -33,7 +36,6 @@ public class SocialAccount {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    // 선택: 소셜에서 내려주는 부가정보(이메일은 종종 null)
     @Column(length = 200) private String providerEmail;
     @Column(length = 100) private String displayName;
     @Column(length = 300) private String profileImageUrl;

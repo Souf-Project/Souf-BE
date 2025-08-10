@@ -1,12 +1,13 @@
-package com.souf.soufwebsite.domain.oauth.client;
+package com.souf.soufwebsite.domain.socialAccount.client;
 
-import com.souf.soufwebsite.domain.oauth.dto.SocialMemberInfo;
-import com.souf.soufwebsite.domain.oauth.dto.kakao.KakaoMemberResDto;
-import com.souf.soufwebsite.domain.oauth.dto.kakao.KakaoTokenResDto;
-import com.souf.soufwebsite.domain.oauth.properties.KakaoOauthProperties;
+import com.souf.soufwebsite.domain.socialAccount.dto.SocialMemberInfo;
+import com.souf.soufwebsite.domain.socialAccount.dto.kakao.KakaoMemberResDto;
+import com.souf.soufwebsite.domain.socialAccount.dto.kakao.KakaoTokenResDto;
+import com.souf.soufwebsite.domain.socialAccount.properties.KakaoOauthProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
 @RequiredArgsConstructor
@@ -21,7 +22,7 @@ public class KakaoApiClient implements SocialApiClient {
 
     private String getAccessToken(String code) {
         return webClient.post()
-                .uri("https://kauth.kakao.com/oauth/token")
+                .uri(kakaoOauthProperties.getTokenUri())
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .bodyValue(
                         "grant_type=authorization_code" +
@@ -37,7 +38,7 @@ public class KakaoApiClient implements SocialApiClient {
 
     private SocialMemberInfo getUserInfo(String accessToken) {
         KakaoMemberResDto kakaoUser = webClient.get()
-                .uri("https://kapi.kakao.com/v2/user/me")
+                .uri(kakaoOauthProperties.getUserInfoUri())
                 .headers(headers -> {
                     headers.setBearerAuth(accessToken);
                     headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);

@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.oauth;
+package com.souf.soufwebsite.domain.socialAccount;
 
 public enum SocialProvider {
     KAKAO, NAVER, GOOGLE

@@ -1,9 +1,9 @@
-package com.souf.soufwebsite.domain.oauth.dto;
+package com.souf.soufwebsite.domain.socialAccount.dto;
 
 public record SocialMemberInfo(
         String socialId,
         String email,
-        String nickname,
+        String name,
         String profileImageUrl
 ) {
 }

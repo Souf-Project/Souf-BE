@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.oauth.dto.kakao;
+package com.souf.soufwebsite.domain.socialAccount.dto.kakao;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

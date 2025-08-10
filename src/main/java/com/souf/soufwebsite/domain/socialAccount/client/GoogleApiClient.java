@@ -1,12 +1,13 @@
-package com.souf.soufwebsite.domain.oauth.client;
+package com.souf.soufwebsite.domain.socialAccount.client;
 
-import com.souf.soufwebsite.domain.oauth.dto.SocialMemberInfo;
-import com.souf.soufwebsite.domain.oauth.dto.google.GoogleMemberResDto;
-import com.souf.soufwebsite.domain.oauth.dto.google.GoogleTokenResDto;
-import com.souf.soufwebsite.domain.oauth.properties.GoogleOauthProperties;
+import com.souf.soufwebsite.domain.socialAccount.dto.SocialMemberInfo;
+import com.souf.soufwebsite.domain.socialAccount.dto.google.GoogleMemberResDto;
+import com.souf.soufwebsite.domain.socialAccount.dto.google.GoogleTokenResDto;
+import com.souf.soufwebsite.domain.socialAccount.properties.GoogleOauthProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
 @RequiredArgsConstructor

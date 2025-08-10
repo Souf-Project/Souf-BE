@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.oauth.dto.google;
+package com.souf.soufwebsite.domain.socialAccount.dto.google;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
