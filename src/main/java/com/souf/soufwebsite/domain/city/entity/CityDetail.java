@@ -1,6 +1,5 @@
-package com.souf.soufwebsite.domain.citydetail.entity;
+package com.souf.soufwebsite.domain.city.entity;
 
-import com.souf.soufwebsite.domain.city.entity.City;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

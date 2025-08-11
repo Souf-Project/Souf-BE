@@ -1,9 +1,9 @@
 package com.souf.soufwebsite.domain.recruit.service;
 
 import com.souf.soufwebsite.domain.city.entity.City;
+import com.souf.soufwebsite.domain.city.entity.CityDetail;
+import com.souf.soufwebsite.domain.city.repository.CityDetailRepository;
 import com.souf.soufwebsite.domain.city.repository.CityRepository;
-import com.souf.soufwebsite.domain.citydetail.entity.CityDetail;
-import com.souf.soufwebsite.domain.citydetail.repository.CityDetailRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;

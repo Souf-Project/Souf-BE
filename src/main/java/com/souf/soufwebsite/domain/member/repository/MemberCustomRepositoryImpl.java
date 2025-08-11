@@ -21,7 +21,6 @@ import java.util.Objects;
 
 import static com.souf.soufwebsite.domain.member.entity.QMember.member;
 import static com.souf.soufwebsite.domain.member.entity.QMemberCategoryMapping.memberCategoryMapping;
-import static com.souf.soufwebsite.domain.member.entity.RoleType.STUDENT;
 
 @Repository
 @RequiredArgsConstructor
@@ -114,6 +113,8 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
                                     return null; // 썸네일이 없는 경우 처리
                                 }
                                 String originalUrl = mediaList.get(0).getOriginalUrl(); // 썸네일은 첫 번째 media로 가정
+                                if(mediaList.get(0).getThumbnailUrl() != null)
+                                    originalUrl = mediaList.get(0).getThumbnailUrl();
                                 return new MemberSimpleResDto.PopularFeedDto(originalUrl);
                             })
                             .filter(Objects::nonNull)

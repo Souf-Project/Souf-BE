@@ -85,4 +85,13 @@ public class FeedController implements FeedApiSpecification{
                 FEED_GET.getMessage()
         );
     }
+
+    @PatchMapping("/{feedId}/like")
+    public SuccessResponse<?> likeFeed(
+            @PathVariable(name = "feedId") Long feedId,
+            @RequestBody LikeFeedReqDto likeFeedReqDto
+    ){
+        feedService.updateLikedCount(feedId, likeFeedReqDto);
+        return new SuccessResponse<>(FEED_LIKE_UPDATE_SUCCESS.getMessage());
+    }
 }

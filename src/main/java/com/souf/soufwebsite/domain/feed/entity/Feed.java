@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.feed.entity;
 
+import com.souf.soufwebsite.domain.comment.entity.Comment;
 import com.souf.soufwebsite.domain.feed.dto.FeedReqDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.common.BaseEntity;
@@ -35,6 +36,9 @@ public class Feed extends BaseEntity {
     @NotNull
     @Column(nullable = false)
     private Long viewCount;
+
+    @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 
     @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FeedCategoryMapping> categories = new ArrayList<>();
