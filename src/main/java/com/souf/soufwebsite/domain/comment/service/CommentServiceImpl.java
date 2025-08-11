@@ -62,7 +62,7 @@ public class CommentServiceImpl implements CommentService {
         Feed feed = findIfFeedExist(postId);
 
         Comment comment = new Comment(writer, reqDto.content(),
-                author.getId(), feed, parentComment.getId());
+                author.getId(), feed, parentComment.getCommentGroup());
         commentRepository.save(comment);
         log.info("{}에 대한 대댓글 생성", reqDto.parentId());
     }
