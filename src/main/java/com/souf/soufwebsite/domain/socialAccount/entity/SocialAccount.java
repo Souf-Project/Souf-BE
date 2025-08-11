@@ -2,6 +2,7 @@ package com.souf.soufwebsite.domain.socialAccount.entity;
 
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.socialAccount.SocialProvider;
+import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -20,7 +21,7 @@ import java.time.LocalDateTime;
         })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class SocialAccount {
+public class SocialAccount extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -40,8 +41,6 @@ public class SocialAccount {
     @Column(length = 100) private String displayName;
     @Column(length = 300) private String profileImageUrl;
 
-    private LocalDateTime connectedAt;
-
     @Builder
     public SocialAccount(SocialProvider provider, String providerUserId, Member member,
                          String providerEmail, String displayName, String profileImageUrl) {
@@ -51,7 +50,6 @@ public class SocialAccount {
         this.providerEmail = providerEmail;
         this.displayName = displayName;
         this.profileImageUrl = profileImageUrl;
-        this.connectedAt = LocalDateTime.now();
     }
 }
 
