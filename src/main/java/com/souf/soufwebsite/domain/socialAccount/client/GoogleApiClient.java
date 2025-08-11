@@ -1,7 +1,7 @@
 package com.souf.soufwebsite.domain.socialAccount.client;
 
-import com.souf.soufwebsite.domain.socialAccount.dto.SocialMemberInfo;
-import com.souf.soufwebsite.domain.socialAccount.dto.google.GoogleMemberResDto;
+import com.souf.soufwebsite.domain.socialAccount.dto.SocialUserInfo;
+import com.souf.soufwebsite.domain.socialAccount.dto.google.GoogleUserResDto;
 import com.souf.soufwebsite.domain.socialAccount.dto.google.GoogleTokenResDto;
 import com.souf.soufwebsite.domain.socialAccount.properties.GoogleOauthProperties;
 import lombok.RequiredArgsConstructor;
@@ -16,9 +16,9 @@ public class GoogleApiClient {
     private final WebClient webClient = WebClient.builder().build();
     private final GoogleOauthProperties googleOauthProperties;
 
-    public SocialMemberInfo getMemberInfoByCode(String code) {
+    public SocialUserInfo getUserInfoByCode(String code) {
         String accessToken = getAccessToken(code);
-        return getMemberInfo(accessToken);
+        return getUserInfo(accessToken);
     }
 
     private String getAccessToken(String code) {
@@ -36,15 +36,15 @@ public class GoogleApiClient {
                 .block();
     }
 
-    private SocialMemberInfo getMemberInfo(String accessToken) {
-        GoogleMemberResDto response = webClient.get()
+    private SocialUserInfo getUserInfo(String accessToken) {
+        GoogleUserResDto response = webClient.get()
                 .uri("https://www.googleapis.com/oauth2/v2/userinfo")
                 .headers(h -> h.setBearerAuth(accessToken))
                 .retrieve()
-                .bodyToMono(GoogleMemberResDto.class)
+                .bodyToMono(GoogleUserResDto.class)
                 .block();
 
-        return new SocialMemberInfo(
+        return new SocialUserInfo(
                 response.id(),
                 response.email(),
                 response.name(),

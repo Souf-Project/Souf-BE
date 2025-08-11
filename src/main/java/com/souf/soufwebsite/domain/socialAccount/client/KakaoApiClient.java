@@ -1,7 +1,7 @@
 package com.souf.soufwebsite.domain.socialAccount.client;
 
-import com.souf.soufwebsite.domain.socialAccount.dto.SocialMemberInfo;
-import com.souf.soufwebsite.domain.socialAccount.dto.kakao.KakaoMemberResDto;
+import com.souf.soufwebsite.domain.socialAccount.dto.SocialUserInfo;
+import com.souf.soufwebsite.domain.socialAccount.dto.kakao.KakaoUserResDto;
 import com.souf.soufwebsite.domain.socialAccount.dto.kakao.KakaoTokenResDto;
 import com.souf.soufwebsite.domain.socialAccount.properties.KakaoOauthProperties;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,7 @@ public class KakaoApiClient implements SocialApiClient {
     private final WebClient webClient;
     private final KakaoOauthProperties kakaoOauthProperties;
 
-    public SocialMemberInfo getMemberInfoByCode(String code) {
+    public SocialUserInfo getUserInfoByCode(String code) {
         String accessToken = getAccessToken(code);
         return getUserInfo(accessToken);
     }
@@ -36,18 +36,18 @@ public class KakaoApiClient implements SocialApiClient {
                 .block(); // 단일 호출이므로 동기 처리
     }
 
-    private SocialMemberInfo getUserInfo(String accessToken) {
-        KakaoMemberResDto kakaoUser = webClient.get()
+    private SocialUserInfo getUserInfo(String accessToken) {
+        KakaoUserResDto kakaoUser = webClient.get()
                 .uri(kakaoOauthProperties.getUserInfoUri())
                 .headers(headers -> {
                     headers.setBearerAuth(accessToken);
                     headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
                 })
                 .retrieve()
-                .bodyToMono(KakaoMemberResDto.class)
+                .bodyToMono(KakaoUserResDto.class)
                 .block();
 
-        return new SocialMemberInfo(
+        return new SocialUserInfo(
                 String.valueOf(kakaoUser.id()),
                 kakaoUser.kakaoAccount().email(),
                 kakaoUser.kakaoAccount().profile().nickname(),

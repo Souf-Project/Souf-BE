@@ -2,7 +2,7 @@ package com.souf.soufwebsite.domain.socialAccount.dto.kakao;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public record KakaoMemberResDto(
+public record KakaoUserResDto(
         String id,
         @JsonProperty("kakao_account") KakaoAccount kakaoAccount
 ) {

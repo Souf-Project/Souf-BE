@@ -1,7 +1,5 @@
 package com.souf.soufwebsite.domain.socialAccount.service;
 
-import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
-import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
@@ -9,7 +7,7 @@ import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.socialAccount.client.GoogleApiClient;
 import com.souf.soufwebsite.domain.socialAccount.client.KakaoApiClient;
 import com.souf.soufwebsite.domain.socialAccount.dto.SocialLoginReqDto;
-import com.souf.soufwebsite.domain.socialAccount.dto.SocialMemberInfo;
+import com.souf.soufwebsite.domain.socialAccount.dto.SocialUserInfo;
 import com.souf.soufwebsite.domain.socialAccount.entity.SocialAccount;
 import com.souf.soufwebsite.domain.socialAccount.repository.SocialAccountRepository;
 import com.souf.soufwebsite.global.jwt.JwtService;
@@ -38,9 +36,9 @@ public class SocialAccountService {
 
     @Transactional
     public TokenDto loginOrSignUp(SocialLoginReqDto request,  HttpServletResponse response) { // (2)
-        SocialMemberInfo info = switch (request.provider()) {
-            case KAKAO -> kakaoApiClient.getMemberInfoByCode(request.code());
-            case GOOGLE -> googleApiClient.getMemberInfoByCode(request.code());
+        SocialUserInfo info = switch (request.provider()) {
+            case KAKAO -> kakaoApiClient.getUserInfoByCode(request.code());
+            case GOOGLE -> googleApiClient.getUserInfoByCode(request.code());
             default -> throw new IllegalArgumentException("Unsupported provider");
         };
 
@@ -84,7 +82,7 @@ public class SocialAccountService {
                 .build();
     }
 
-    private Member resolveMemberForSocial(SocialMemberInfo info) {
+    private Member resolveMemberForSocial(SocialUserInfo info) {
         if (info.email() != null) {
             return memberRepository.findByEmail(info.email())
                     .orElseGet(() -> createMemberFromSocial(info));
@@ -92,7 +90,7 @@ public class SocialAccountService {
         return createMemberFromSocial(info);
     }
 
-    private Member createMemberFromSocial(SocialMemberInfo info) {
+    private Member createMemberFromSocial(SocialUserInfo info) {
         // 닉네임을 나중에 설정한다면 임시 닉네임 사용
         String tmpNickname = "user_" + randomUUID().toString().substring(0, 8);
         String randomPassword = passwordEncoder.encode("SOCIAL@" + randomUUID());

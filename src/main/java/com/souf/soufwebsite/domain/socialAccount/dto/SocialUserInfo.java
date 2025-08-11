@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.domain.socialAccount.dto;
 
-public record SocialMemberInfo(
+public record SocialUserInfo(
         String socialId,
         String email,
         String name,
