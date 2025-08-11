@@ -1,5 +1,7 @@
 package com.souf.soufwebsite.domain.comment.entity;
 
+import com.souf.soufwebsite.domain.feed.entity.Feed;
+import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -15,8 +17,9 @@ public class Comment extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long writerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "writer_id", nullable = false)
+    private Member writer;
 
     @Column(nullable = false, length = 500)
     private String content;
@@ -24,8 +27,9 @@ public class Comment extends BaseEntity {
     @Column(nullable = false)
     private Long authorId;
 
-    @Column(nullable = false)
-    private Long postId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "feed_id", nullable = false)
+    private Feed feed;
 
     @Column
     private Long commentGroup; // 대댓글을 위한 댓글 ID
@@ -33,11 +37,11 @@ public class Comment extends BaseEntity {
     @Column(nullable = false)
     private final String isDeleted = "no";
 
-    public Comment(Long writer, String content, Long author, Long postId, Long commentGroup) {
-        this.writerId = writer;
+    public Comment(Member writer, String content, Long author, Feed feed, Long commentGroup) {
+        this.writer = writer;
         this.content = content;
         this.authorId = author;
-        this.postId = postId;
+        this.feed = feed;
         this.commentGroup = commentGroup;
     }
 
