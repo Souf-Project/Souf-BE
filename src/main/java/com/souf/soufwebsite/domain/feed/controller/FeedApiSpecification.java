@@ -52,11 +52,17 @@ public interface FeedApiSpecification {
     SuccessResponse<List<FeedSimpleResDto>> getPopularFeeds(
             @PageableDefault(size = 6) Pageable pageable);
 
-    @Tag(name = "Feed", description = "학생 피드 관련 API")
     @Operation(summary = "대학생 피드 조회", description = "피드들을 조회합니다.")
     @GetMapping
     SuccessResponse<Slice<FeedDetailResDto>> getFeedList(
             @RequestParam(name = "firstCategory") Long first,
             @PageableDefault(size = 12) Pageable pageable
+    );
+
+    @Operation(summary = "피드 좋아요 누르기", description = "잘 작성했다고 생각하는 게시글에 좋아요를 생성/삭제합니다.")
+    @PatchMapping("/{feedId}/like")
+    SuccessResponse<?> likeFeed(
+            @PathVariable(name = "feedId") Long feedId,
+            @RequestBody LikeFeedReqDto likeFeedReqDto
     );
 }
