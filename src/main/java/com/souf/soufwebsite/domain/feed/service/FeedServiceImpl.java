@@ -124,7 +124,7 @@ public class FeedServiceImpl implements FeedService {
         Long viewCountFromRedis = redisUtil.get(feedViewKey);
 
         Long likedCount = likedFeedRepository.countByFeedId(feedId).orElse(0L);
-        Boolean liked = getLiked(feedId, currentUser.getId());
+        Boolean liked = getLiked(currentUser.getId(), feedId);
 
         Long commentCount = commentRepository.countByFeed(feed).orElse(0L);
 
@@ -208,7 +208,7 @@ public class FeedServiceImpl implements FeedService {
                     String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
                     Long likedCount = likedFeedRepository.countByFeedId(feed.getId()).orElse(0L);
-                    Boolean liked = getLiked(feed.getId(), currentUser.getId());
+                    Boolean liked = getLiked(currentUser.getId(), feed.getId());
                     Long commentCount = commentRepository.countByFeed(feed).orElse(0L);
 
                     return FeedDetailResDto.from(feed.getMember(), profileImageUrl, feed, viewCountFromRedis, likedCount, liked, commentCount, mediaList);
