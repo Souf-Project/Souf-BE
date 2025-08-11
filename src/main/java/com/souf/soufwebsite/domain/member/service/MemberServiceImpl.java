@@ -86,7 +86,12 @@ public class MemberServiceImpl implements MemberService {
 
         String encodedPassword = passwordEncoder.encode(reqDto.password());
 
-        Member member = new Member(reqDto.email(), encodedPassword, reqDto.username(), reqDto.nickname(), role);
+        // 개인 정보 동의 확인
+        if (reqDto.isPersonalInfoAgreed().equals(Boolean.FALSE)) {
+            throw new NotAgreedPersonalInfoException();
+        }
+
+        Member member = new Member(reqDto.email(), encodedPassword, reqDto.username(), reqDto.nickname(), role, reqDto.isMarketingAgreed());
 
         injectCategories(reqDto, member);
 

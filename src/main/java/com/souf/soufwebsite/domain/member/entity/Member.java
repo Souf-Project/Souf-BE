@@ -71,13 +71,22 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Feed> feeds = new ArrayList<>();
 
+    // 이용약관 동의서 속성
+    @Column(name = "personal_info_agreement", nullable = false)
+    private boolean personalInfoAgreement = false;
+
+    @Column(name = "marketing_agreement", nullable = false)
+    private boolean marketingAgreement = false;
+
     @Builder
-    public Member(String email, String password, String username, String nickname, RoleType role) {
+    public Member(String email, String password, String username, String nickname, RoleType role, Boolean marketingAgreement) {
         this.email = email;
         this.password = password;
         this.username = username;
         this.nickname = nickname;
         this.role = role;
+        this.personalInfoAgreement = true;
+        this.marketingAgreement = marketingAgreement;
     }
 
     // 회원 정보 업데이트 (업데이트 가능한 필드만 반영)
