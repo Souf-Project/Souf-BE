@@ -42,7 +42,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -125,9 +124,9 @@ public class FeedServiceImpl implements FeedService {
         Long viewCountFromRedis = redisUtil.get(feedViewKey);
 
         Long likedCount = likedFeedRepository.countByFeedId(feedId).orElse(0L);
-        Boolean liked = getLiked(currentUser.getId(), feedId);
+        Boolean liked = getLiked(feedId, currentUser.getId());
 
-        Long commentCount = commentRepository.countByPostId(feedId).orElse(0L);
+        Long commentCount = commentRepository.countByFeed(feed).orElse(0L);
 
         List<Media> mediaList = fileService.getMediaList(PostType.FEED, feedId);
         String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
@@ -209,8 +208,8 @@ public class FeedServiceImpl implements FeedService {
                     String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
                     Long likedCount = likedFeedRepository.countByFeedId(feed.getId()).orElse(0L);
-                    Boolean liked = getLiked(currentUser.getId(), feed.getId());
-                    Long commentCount = commentRepository.countByPostId(feed.getId()).orElse(0L);
+                    Boolean liked = getLiked(feed.getId(), currentUser.getId());
+                    Long commentCount = commentRepository.countByFeed(feed).orElse(0L);
 
                     return FeedDetailResDto.from(feed.getMember(), profileImageUrl, feed, viewCountFromRedis, likedCount, liked, commentCount, mediaList);
                 }
@@ -279,8 +278,6 @@ public class FeedServiceImpl implements FeedService {
 
     @NotNull
     private Boolean getLiked(Long memberId, Long feedId) {
-        return Optional.ofNullable(
-                likedFeedRepository.findByFeedIdAndMemberId(feedId, memberId)
-        ).isPresent();
+        return likedFeedRepository.existsByFeedIdAndMemberId(feedId, memberId);
     }
 }
