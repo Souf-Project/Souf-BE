@@ -45,9 +45,9 @@ public class CommentServiceImpl implements CommentService {
 
         Feed feed = findIfFeedExist(postId);
 
-        Long parent = commentRepository.nextCommentGroup(postId); // 다음 댓글 그룹을 지정
-        Comment comment = new Comment(writer.getId(), reqDto.content(),
-                author.getId(), feed.getId(), parent);
+        Long parent = commentRepository.nextCommentGroup(feed); // 다음 댓글 그룹을 지정
+        Comment comment = new Comment(writer, reqDto.content(),
+                author.getId(), feed, parent);
         commentRepository.save(comment);
         log.info("{} 피드에 대한 댓글 생성 완료", feed.getId());
     }
@@ -61,8 +61,8 @@ public class CommentServiceImpl implements CommentService {
 
         Feed feed = findIfFeedExist(postId);
 
-        Comment comment = new Comment(writer.getId(), reqDto.content(),
-                author.getId(), feed.getId(), parentComment.getId());
+        Comment comment = new Comment(writer, reqDto.content(),
+                author.getId(), feed, parentComment.getId());
         commentRepository.save(comment);
         log.info("{}에 대한 대댓글 생성", reqDto.parentId());
     }
@@ -91,13 +91,13 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Slice<CommentResDto> getComments(Long postId, Pageable pageable) {
+        findIfFeedExist(postId);
         Slice<Comment> comments = commentRepository.findFirstByGroup(postId, pageable);
 
         List<CommentResDto> commentResDtos = comments.stream().map(
                 comment -> {
-                    Member member = findIfMemberExists(comment.getWriterId());
-                    String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
-                    return CommentResDto.from(comment, member, mediaUrl);
+                    String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, comment.getWriter().getId());
+                    return CommentResDto.from(comment, comment.getWriter(), mediaUrl);
                 }
         ).toList();
 
@@ -110,15 +110,16 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Page<CommentResDto> getReplyComments(Long postId, Long commentId, Pageable pageable) {
+        Feed feed = findIfFeedExist(postId);
+
         Page<Comment> replyComments = commentRepository
-                .findByPostIdAndCommentGroupOrderByCreatedTime(postId, commentId, pageable);
+                .findByFeedAndCommentGroupOrderByCreatedTime(feed, commentId, pageable);
 
 
         List<CommentResDto> commentResDtos = replyComments.stream().map(
                 comment -> {
-                    Member member = findIfMemberExists(comment.getWriterId());
-                    String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
-                    return CommentResDto.from(comment, member, mediaUrl);
+                    String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, comment.getWriter().getId());
+                    return CommentResDto.from(comment, comment.getWriter(), mediaUrl);
                 }
         ).toList();
 
@@ -139,7 +140,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private static void validatedIfCommentMine(Member member, Comment comment) {
-        if(!comment.getWriterId().equals(member.getId())){
+        if(!comment.getWriter().getId().equals(member.getId())){
             throw new NotMatchedOwnerException();
         }
     }

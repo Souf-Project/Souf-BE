@@ -12,4 +12,6 @@ public interface LikedFeedRepository extends JpaRepository<LikedFeed, Long> {
     void deleteByFeedIdAndMemberId(Long feedId, Long memberId);
 
     Optional<Long> countByFeedId(Long feedId);
+
+    boolean existsByFeedIdAndMemberId(Long feedId, Long memberId);
 }
