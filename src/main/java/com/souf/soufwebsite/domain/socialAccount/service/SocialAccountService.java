@@ -4,43 +4,70 @@ import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
-import com.souf.soufwebsite.domain.socialAccount.client.GoogleApiClient;
-import com.souf.soufwebsite.domain.socialAccount.client.KakaoApiClient;
+import com.souf.soufwebsite.domain.socialAccount.SocialProvider;
+import com.souf.soufwebsite.domain.socialAccount.client.SocialApiClient;
 import com.souf.soufwebsite.domain.socialAccount.dto.SocialLoginReqDto;
 import com.souf.soufwebsite.domain.socialAccount.dto.SocialUserInfo;
 import com.souf.soufwebsite.domain.socialAccount.entity.SocialAccount;
+import com.souf.soufwebsite.domain.socialAccount.exception.NotValidAuthenticationException;
 import com.souf.soufwebsite.domain.socialAccount.repository.SocialAccountRepository;
 import com.souf.soufwebsite.global.jwt.JwtService;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.UUID.randomUUID;
 
 @Service
-@RequiredArgsConstructor
 public class SocialAccountService {
 
-    private final KakaoApiClient kakaoApiClient;
-    private final GoogleApiClient googleApiClient;
     private final MemberRepository memberRepository;
     private final SocialAccountRepository socialAccountRepository;
     private final JwtService jwtService;
 
-    private final org.springframework.data.redis.core.StringRedisTemplate redisTemplate; // (1) 주입
-    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder; // (1) 주입
+    private final RedisTemplate<String, String> redisTemplate;
+    private final PasswordEncoder passwordEncoder;
+
+    private final Map<SocialProvider, SocialApiClient> clientMap;
+
+    public SocialAccountService(
+            List<SocialApiClient> clients,
+            MemberRepository memberRepository,
+            SocialAccountRepository socialAccountRepository,
+            JwtService jwtService,
+            RedisTemplate<String, String> redisTemplate,
+            PasswordEncoder passwordEncoder
+    ) {
+        this.memberRepository = memberRepository;
+        this.socialAccountRepository = socialAccountRepository;
+        this.jwtService = jwtService;
+        this.redisTemplate = redisTemplate;
+        this.passwordEncoder = passwordEncoder;
+
+        EnumMap<SocialProvider, SocialApiClient> map = new EnumMap<>(SocialProvider.class);
+        for (SocialApiClient c : clients) {
+            map.put(c.getProvider(), c);
+        }
+        this.clientMap = map;
+    }
+
 
     @Transactional
-    public TokenDto loginOrSignUp(SocialLoginReqDto request,  HttpServletResponse response) { // (2)
-        SocialUserInfo info = switch (request.provider()) {
-            case KAKAO -> kakaoApiClient.getUserInfoByCode(request.code());
-            case GOOGLE -> googleApiClient.getUserInfoByCode(request.code());
-            default -> throw new IllegalArgumentException("Unsupported provider");
-        };
+    public TokenDto loginOrSignUp(SocialLoginReqDto request,  HttpServletResponse response) {
+        SocialApiClient client = clientMap.get(request.provider());
+        if (client == null) {
+            throw new NotValidAuthenticationException();
+        }
+
+        SocialUserInfo info = client.getUserInfoByCode(request.code());
 
         SocialAccount account = socialAccountRepository
                 .findByProviderAndProviderUserId(request.provider(), info.socialId())
@@ -57,7 +84,7 @@ public class SocialAccountService {
                         .providerUserId(info.socialId())
                         .member(member)
                         .providerEmail(info.email())
-                        .displayName(info.name())
+                        .displayName(firstNonBlank(info.name(), ""))
                         .profileImageUrl(info.profileImageUrl())
                         .build());
             } catch (DataIntegrityViolationException e) {
@@ -103,5 +130,15 @@ public class SocialAccountService {
                 .role(RoleType.MEMBER)
                 .build();
         return memberRepository.save(member);
+    }
+
+    // null
+    private static String firstNonBlank(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return null;
     }
 }

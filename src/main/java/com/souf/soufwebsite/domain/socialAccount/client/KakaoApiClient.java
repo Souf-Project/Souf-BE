@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.socialAccount.client;
 
+import com.souf.soufwebsite.domain.socialAccount.SocialProvider;
 import com.souf.soufwebsite.domain.socialAccount.dto.SocialUserInfo;
 import com.souf.soufwebsite.domain.socialAccount.dto.kakao.KakaoUserResDto;
 import com.souf.soufwebsite.domain.socialAccount.dto.kakao.KakaoTokenResDto;
@@ -15,6 +16,12 @@ public class KakaoApiClient implements SocialApiClient {
     private final WebClient webClient;
     private final KakaoOauthProperties kakaoOauthProperties;
 
+    @Override
+    public SocialProvider getProvider() {
+        return SocialProvider.KAKAO;
+    }
+
+    @Override
     public SocialUserInfo getUserInfoByCode(String code) {
         String accessToken = getAccessToken(code);
         return getUserInfo(accessToken);

@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.socialAccount.client;
 
+import com.souf.soufwebsite.domain.socialAccount.SocialProvider;
 import com.souf.soufwebsite.domain.socialAccount.dto.SocialUserInfo;
 import com.souf.soufwebsite.domain.socialAccount.dto.google.GoogleUserResDto;
 import com.souf.soufwebsite.domain.socialAccount.dto.google.GoogleTokenResDto;
@@ -11,11 +12,17 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
 @RequiredArgsConstructor
-public class GoogleApiClient {
+public class GoogleApiClient implements SocialApiClient {
 
     private final WebClient webClient = WebClient.builder().build();
     private final GoogleOauthProperties googleOauthProperties;
 
+    @Override
+    public SocialProvider getProvider() {
+        return SocialProvider.GOOGLE;
+    }
+
+    @Override
     public SocialUserInfo getUserInfoByCode(String code) {
         String accessToken = getAccessToken(code);
         return getUserInfo(accessToken);
