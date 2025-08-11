@@ -3,8 +3,10 @@ package com.souf.soufwebsite.domain.socialAccount.controller;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.socialAccount.dto.SocialLoginReqDto;
 import com.souf.soufwebsite.domain.socialAccount.service.SocialAccountService;
+import com.souf.soufwebsite.global.success.SuccessResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.antlr.v4.runtime.Token;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,8 +22,8 @@ public class SocialAccountController implements SocialAccountApiSpecification{
     private final SocialAccountService socialAccountService;
 
     @PostMapping("/login")
-    public ResponseEntity<TokenDto> login(@RequestBody SocialLoginReqDto request, HttpServletResponse response) {
-        TokenDto resDto = socialAccountService.loginOrSignUp(request, response);
-        return ResponseEntity.ok(resDto);
+    public SuccessResponse<TokenDto> login(@RequestBody SocialLoginReqDto request, HttpServletResponse response) {
+        TokenDto tokenDto = socialAccountService.loginOrSignUp(request, response);
+        return new SuccessResponse<>(tokenDto);
     }
 }
