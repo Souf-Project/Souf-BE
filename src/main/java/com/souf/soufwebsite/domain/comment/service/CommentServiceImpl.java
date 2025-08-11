@@ -111,9 +111,10 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public Page<CommentResDto> getReplyComments(Long postId, Long commentId, Pageable pageable) {
         Feed feed = findIfFeedExist(postId);
+        Comment currentComment = findIfCommentExists(commentId);
 
         Page<Comment> replyComments = commentRepository
-                .findByFeedAndCommentGroupOrderByCreatedTime(feed, commentId, pageable);
+                .findByFeedAndCommentGroupOrderByCreatedTime(feed, currentComment.getCommentGroup(), pageable);
 
 
         List<CommentResDto> commentResDtos = replyComments.stream().map(
