@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/social")
+@RequestMapping("/api/v1/social")
 public class SocialAccountController {
 
     private final SocialAccountService socialAccountService;

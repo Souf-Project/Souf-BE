@@ -1,5 +1,7 @@
 package com.souf.soufwebsite.domain.socialAccount.service;
 
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
@@ -100,7 +102,7 @@ public class SocialAccountService {
                 .password(randomPassword)
                 .username(info.name())
                 .nickname(tmpNickname)
-                .role(RoleType.STUDENT)
+                .role(RoleType.MEMBER)
                 .build();
         return memberRepository.save(member);
     }
