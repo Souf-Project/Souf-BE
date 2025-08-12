@@ -73,3 +73,10 @@ opensearch:
 
   index:
     name: souf-website-index
+
+oauth:
+  kakao:
+    clientId: ${KAKAO_CLIENT_ID}
+    redirectUri: ${KAKAO_REDIRECT_URI}
+    tokenUri: https://kauth.kakao.com/oauth/token
+    userInfoUri: https://kapi.kakao.com/v2/user/me
