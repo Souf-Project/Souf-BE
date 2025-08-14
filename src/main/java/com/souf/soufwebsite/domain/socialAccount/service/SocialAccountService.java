@@ -1,16 +1,28 @@
 package com.souf.soufwebsite.domain.socialAccount.service;
 
+import com.souf.soufwebsite.domain.member.dto.ReqDto.SignupReqDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
+import com.souf.soufwebsite.domain.member.exception.NotAgreedPersonalInfoException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.domain.opensearch.EntityType;
+import com.souf.soufwebsite.domain.opensearch.OperationType;
+import com.souf.soufwebsite.domain.opensearch.event.IndexEventPublisherHelper;
 import com.souf.soufwebsite.domain.socialAccount.SocialProvider;
 import com.souf.soufwebsite.domain.socialAccount.client.SocialApiClient;
 import com.souf.soufwebsite.domain.socialAccount.dto.*;
 import com.souf.soufwebsite.domain.socialAccount.entity.SocialAccount;
 import com.souf.soufwebsite.domain.socialAccount.exception.NotValidAuthenticationException;
 import com.souf.soufwebsite.domain.socialAccount.repository.SocialAccountRepository;
+import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
+import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
+import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
+import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
+import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.jwt.JwtService;
+import com.souf.soufwebsite.global.slack.service.SlackService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -30,7 +42,11 @@ public class SocialAccountService {
 
     private final MemberRepository memberRepository;
     private final SocialAccountRepository socialAccountRepository;
+    private final CategoryService categoryService;
     private final JwtService jwtService;
+    private final IndexEventPublisherHelper indexEventPublisherHelper;
+    private final SlackService slackService;
+
 
     private final RedisTemplate<String, String> redisTemplate;
     private final PasswordEncoder passwordEncoder;
@@ -41,13 +57,19 @@ public class SocialAccountService {
             List<SocialApiClient> clients,
             MemberRepository memberRepository,
             SocialAccountRepository socialAccountRepository,
+            CategoryService categoryService,
             JwtService jwtService,
+            IndexEventPublisherHelper indexEventPublisherHelper,
+            SlackService slackService,
             RedisTemplate<String, String> redisTemplate,
             PasswordEncoder passwordEncoder
     ) {
         this.memberRepository = memberRepository;
         this.socialAccountRepository = socialAccountRepository;
+        this.categoryService = categoryService;
         this.jwtService = jwtService;
+        this.indexEventPublisherHelper = indexEventPublisherHelper;
+        this.slackService = slackService;
         this.redisTemplate = redisTemplate;
         this.passwordEncoder = passwordEncoder;
 
@@ -103,10 +125,11 @@ public class SocialAccountService {
         );
     }
 
+
     @Transactional
-    public TokenDto completeSignup(SocialCompleteSignupReqDto req, HttpServletResponse response) {
-        String key = "social:reg:" + req.registrationToken();
-        if (Boolean.FALSE.equals(redisTemplate.hasKey(key))) {
+    public TokenDto completeSignup(SocialCompleteSignupReqDto reqDto, HttpServletResponse response) {
+        String key = "social:reg:" + reqDto.registrationToken();
+        if (!redisTemplate.hasKey(key)) {
             throw new IllegalStateException("registrationToken expired or invalid");
         }
 
@@ -126,22 +149,29 @@ public class SocialAccountService {
         if (existing != null) {
             TokenDto token = issueTokens(existing.getMember());
             jwtService.sendAccessAndRefreshToken(response, token.accessToken(), // 필요 시
-                    redisTemplate.opsForValue().get("refresh:" + existing.getMember().getId()));
+                    redisTemplate.opsForValue().get("refresh:" + existing.getMember().getEmail()));
             redisTemplate.delete(key);
             return token;
         }
 
-        // 1) Member 생성 (닉네임/카테고리 반영)
-        Member member = memberRepository.save(Member.builder()
-                .email(email)
-                .password(passwordEncoder.encode("SOCIAL@" + java.util.UUID.randomUUID()))
-                .username(name != null && !name.isBlank() ? name : "user_" + java.util.UUID.randomUUID().toString().substring(0,6))
-                .nickname(req.nickname())  // 온보딩에서 받은 닉네임
-                .role(RoleType.MEMBER)
-                .build());
+        // 개인 정보 동의 확인
+        if (reqDto.isPersonalInfoAgreed().equals(Boolean.FALSE)) {
+            throw new NotAgreedPersonalInfoException();
+        }
 
-        // TODO: 카테고리 매핑 로직 추가 (req.categoryIds() 기반)
-        // categoryService.mapCategories(member, req.categoryIds());
+        // 1) Member 생성 (닉네임/카테고리 반영)
+        Member member = new Member(
+                email,
+                passwordEncoder.encode("SOCIAL@" + java.util.UUID.randomUUID()),
+                name != null && !name.isBlank() ? name : "user_" + java.util.UUID.randomUUID().toString().substring(0,6),
+                reqDto.nickname(),
+                RoleType.MEMBER,
+                reqDto.isMarketingAgreed()
+        );
+
+        injectCategories(reqDto.categoryDtos(), member);
+
+        memberRepository.save(member);
 
         // 2) SocialAccount 연결
         socialAccountRepository.save(SocialAccount.builder()
@@ -156,10 +186,17 @@ public class SocialAccountService {
         // 3) 토큰 발급/전송
         TokenDto token = issueTokens(member);
         jwtService.sendAccessAndRefreshToken(response, token.accessToken(),
-                redisTemplate.opsForValue().get("refresh:" + member.getId()));
+                redisTemplate.opsForValue().get("refresh:" + member.getEmail()));
 
-        // 4) 일회성 registrationToken 제거
+        indexEventPublisherHelper.publishIndexEvent(
+                EntityType.MEMBER,
+                OperationType.CREATE,
+                "Member",
+                member
+        );
+
         redisTemplate.delete(key);
+        slackService.sendSlackMessage(member.getNickname() + " 님이 회원가입했습니다.", "signup");
 
         return token;
     }
@@ -169,7 +206,7 @@ public class SocialAccountService {
         String refreshToken = jwtService.createRefreshToken(member);
 
         redisTemplate.opsForValue().set(
-                "refresh:" + member.getId(),
+                "refresh:" + member.getEmail(),
                 refreshToken,
                 jwtService.getExpiration(refreshToken),
                 TimeUnit.MILLISECONDS
@@ -181,5 +218,17 @@ public class SocialAccountService {
                 .nickname(member.getNickname())
                 .roleType(member.getRole())
                 .build();
+    }
+
+    private void injectCategories(List<CategoryDto> categoryDtos, Member member) {
+        for (CategoryDto dto : categoryDtos) {
+            FirstCategory first = categoryService.findIfFirstIdExists(dto.firstCategory());
+            SecondCategory second = categoryService.findIfSecondIdExists(dto.secondCategory());
+            ThirdCategory third = categoryService.findIfThirdIdExists(dto.thirdCategory());
+            categoryService.validate(dto.firstCategory(), dto.secondCategory(), dto.thirdCategory());
+
+            MemberCategoryMapping mapping = MemberCategoryMapping.of(member, first, second, third);
+            member.addCategory(mapping);
+        }
     }
 }
