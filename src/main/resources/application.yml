@@ -26,6 +26,13 @@ spring:
             enable: true
     default-encoding: UTF-8
 
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+    virtual-host: "/"
+
 jwt:
   secret: ${JWT_SECRET}
   access:
@@ -56,8 +63,8 @@ websocket:
   relay:
     host: rabbitmq
     port: 61613
-    username: guest
-    password: guest
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
 
 opensearch:
   host: ${OPENSEARCH_HOST}
@@ -66,3 +73,10 @@ opensearch:
 
   index:
     name: souf-website-index
+
+oauth:
+  kakao:
+    clientId: ${KAKAO_CLIENT_ID}
+    redirectUri: ${KAKAO_REDIRECT_URI}
+    tokenUri: https://kauth.kakao.com/oauth/token
+    userInfoUri: https://kapi.kakao.com/v2/user/me
