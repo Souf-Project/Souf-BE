@@ -6,8 +6,7 @@ import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.socialAccount.SocialProvider;
 import com.souf.soufwebsite.domain.socialAccount.client.SocialApiClient;
-import com.souf.soufwebsite.domain.socialAccount.dto.SocialLoginReqDto;
-import com.souf.soufwebsite.domain.socialAccount.dto.SocialUserInfo;
+import com.souf.soufwebsite.domain.socialAccount.dto.*;
 import com.souf.soufwebsite.domain.socialAccount.entity.SocialAccount;
 import com.souf.soufwebsite.domain.socialAccount.exception.NotValidAuthenticationException;
 import com.souf.soufwebsite.domain.socialAccount.repository.SocialAccountRepository;
@@ -60,46 +59,121 @@ public class SocialAccountService {
     }
 
 
-    @Transactional
-    public TokenDto loginOrSignUp(SocialLoginReqDto request,  HttpServletResponse response) {
+    @Transactional(readOnly = true)
+    public SocialLoginResDto loginOrSignUp(SocialLoginReqDto request) {
         SocialApiClient client = clientMap.get(request.provider());
-        if (client == null) {
-            throw new NotValidAuthenticationException();
-        }
+        if (client == null) throw new NotValidAuthenticationException();
 
         SocialUserInfo info = client.getUserInfoByCode(request.code());
 
+        // 1) 기존 소셜 연결이 있으면 → 바로 로그인
         SocialAccount account = socialAccountRepository
                 .findByProviderAndProviderUserId(request.provider(), info.socialId())
                 .orElse(null);
 
-        Member member;
         if (account != null) {
-            member = account.getMember();
-        } else {
-            member = resolveMemberForSocial(info);
-            try {
-                socialAccountRepository.save(SocialAccount.builder()
-                        .provider(request.provider())
-                        .providerUserId(info.socialId())
-                        .member(member)
-                        .providerEmail(info.email())
-                        .displayName(firstNonBlank(info.name(), ""))
-                        .profileImageUrl(info.profileImageUrl())
-                        .build());
-            } catch (DataIntegrityViolationException e) {
-                // 동시 요청 등으로 유니크 충돌 시 재조회
-                member = socialAccountRepository.findByProviderAndProviderUserId(request.provider(), info.socialId())
-                        .map(SocialAccount::getMember)
-                        .orElseThrow(() -> e);
-            }
+            Member member = account.getMember();
+            TokenDto token = issueTokens(member); // 아래 헬퍼 참고
+            return new SocialLoginResDto(false, token, null,
+                    new SocialPrefill(member.getEmail(), member.getUsername(),
+                            info.profileImageUrl(), request.provider().name()));
         }
 
+        // 2) 연결이 없으면 → 온보딩 필요 (DB 생성 금지!)
+        String registrationToken = java.util.UUID.randomUUID().toString();
+
+        // Redis 등에 임시 세션 저장 (TTL 10분 예시)
+        // 값에는 provider/socialId/email/profile 등 최소 식별/프리필용만 저장
+        var payload = Map.of(
+                "provider", request.provider().name(),
+                "socialId", info.socialId(),
+                "email", info.email(),
+                "name", info.name(),
+                "profileImageUrl", info.profileImageUrl()
+        );
+        redisTemplate.opsForHash().putAll("social:reg:" + registrationToken, payload);
+        redisTemplate.expire("social:reg:" + registrationToken, java.time.Duration.ofMinutes(10));
+
+        return new SocialLoginResDto(
+                true,                      // requiresSignup
+                null,                      // token 없음
+                registrationToken,         // 프론트가 들고 온보딩 완료 호출에 사용
+                new SocialPrefill(info.email(), info.name(),
+                        info.profileImageUrl(), request.provider().name())
+        );
+    }
+
+    @Transactional
+    public TokenDto completeSignup(SocialCompleteSignupReqDto req, HttpServletResponse response) {
+        String key = "social:reg:" + req.registrationToken();
+        if (Boolean.FALSE.equals(redisTemplate.hasKey(key))) {
+            throw new IllegalStateException("registrationToken expired or invalid");
+        }
+
+        // Redis에서 소셜 식별 정보 로드
+        String providerName = (String) redisTemplate.opsForHash().get(key, "provider");
+        String socialId     = (String) redisTemplate.opsForHash().get(key, "socialId");
+        String email        = (String) redisTemplate.opsForHash().get(key, "email");
+        String name         = (String) redisTemplate.opsForHash().get(key, "name");
+        String profileImage = (String) redisTemplate.opsForHash().get(key, "profileImageUrl");
+
+        SocialProvider provider = SocialProvider.valueOf(providerName);
+
+        // 안전장치: 혹시 그사이(다른 탭) 연결이 생겼다면 바로 로그인 처리
+        SocialAccount existing = socialAccountRepository
+                .findByProviderAndProviderUserId(provider, socialId)
+                .orElse(null);
+        if (existing != null) {
+            TokenDto token = issueTokens(existing.getMember());
+            jwtService.sendAccessAndRefreshToken(response, token.accessToken(), // 필요 시
+                    redisTemplate.opsForValue().get("refresh:" + existing.getMember().getId()));
+            redisTemplate.delete(key);
+            return token;
+        }
+
+        // 1) Member 생성 (닉네임/카테고리 반영)
+        Member member = memberRepository.save(Member.builder()
+                .email(email)
+                .password(passwordEncoder.encode("SOCIAL@" + java.util.UUID.randomUUID()))
+                .username(name != null && !name.isBlank() ? name : "user_" + java.util.UUID.randomUUID().toString().substring(0,6))
+                .nickname(req.nickname())  // 온보딩에서 받은 닉네임
+                .role(RoleType.MEMBER)
+                .build());
+
+        // TODO: 카테고리 매핑 로직 추가 (req.categoryIds() 기반)
+        // categoryService.mapCategories(member, req.categoryIds());
+
+        // 2) SocialAccount 연결
+        socialAccountRepository.save(SocialAccount.builder()
+                .provider(provider)
+                .providerUserId(socialId)
+                .member(member)
+                .providerEmail(email)
+                .displayName(name)
+                .profileImageUrl(profileImage)
+                .build());
+
+        // 3) 토큰 발급/전송
+        TokenDto token = issueTokens(member);
+        jwtService.sendAccessAndRefreshToken(response, token.accessToken(),
+                redisTemplate.opsForValue().get("refresh:" + member.getId()));
+
+        // 4) 일회성 registrationToken 제거
+        redisTemplate.delete(key);
+
+        return token;
+    }
+
+    private TokenDto issueTokens(Member member) {
         String accessToken = jwtService.createAccessToken(member);
         String refreshToken = jwtService.createRefreshToken(member);
-        redisTemplate.opsForValue().set("refresh:" + member.getEmail(),
-                refreshToken, jwtService.getExpiration(refreshToken), TimeUnit.MILLISECONDS);
-        jwtService.sendAccessAndRefreshToken(response, accessToken, refreshToken);
+
+        redisTemplate.opsForValue().set(
+                "refresh:" + member.getId(),
+                refreshToken,
+                jwtService.getExpiration(refreshToken),
+                TimeUnit.MILLISECONDS
+        );
 
         return TokenDto.builder()
                 .accessToken(accessToken)
@@ -107,38 +181,5 @@ public class SocialAccountService {
                 .nickname(member.getNickname())
                 .roleType(member.getRole())
                 .build();
-    }
-
-    private Member resolveMemberForSocial(SocialUserInfo info) {
-        if (info.email() != null) {
-            return memberRepository.findByEmail(info.email())
-                    .orElseGet(() -> createMemberFromSocial(info));
-        }
-        return createMemberFromSocial(info);
-    }
-
-    private Member createMemberFromSocial(SocialUserInfo info) {
-        // 닉네임을 나중에 설정한다면 임시 닉네임 사용
-        String tmpNickname = "user_" + randomUUID().toString().substring(0, 8);
-        String randomPassword = passwordEncoder.encode("SOCIAL@" + randomUUID());
-
-        Member member = Member.builder()
-                .email(info.email())
-                .password(randomPassword)
-                .username(info.name())
-                .nickname(tmpNickname)
-                .role(RoleType.MEMBER)
-                .build();
-        return memberRepository.save(member);
-    }
-
-    // null
-    private static String firstNonBlank(String... values) {
-        for (String value : values) {
-            if (value != null && !value.isBlank()) {
-                return value;
-            }
-        }
-        return null;
     }
 }

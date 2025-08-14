@@ -1,11 +1,14 @@
 package com.souf.soufwebsite.domain.socialAccount.controller;
 
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
+import com.souf.soufwebsite.domain.socialAccount.dto.SocialCompleteSignupReqDto;
 import com.souf.soufwebsite.domain.socialAccount.dto.SocialLoginReqDto;
+import com.souf.soufwebsite.domain.socialAccount.dto.SocialLoginResDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -14,5 +17,9 @@ public interface SocialAccountApiSpecification {
 
     @Operation(summary = "소셜 로그인", description = "소셜 로그인을 통해 사용자를 인증하고 토큰을 발급합니다.")
     @PostMapping("/login")
-    SuccessResponse<TokenDto> login(@RequestBody SocialLoginReqDto request, HttpServletResponse response);
+    SuccessResponse<SocialLoginResDto> login(@RequestBody @Valid SocialLoginReqDto req);
+
+    @PostMapping("/complete-signup")
+    SuccessResponse<TokenDto> completeSignup(@RequestBody @Valid SocialCompleteSignupReqDto req,
+                                             HttpServletResponse res);
 }
