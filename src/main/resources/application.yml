@@ -83,7 +83,7 @@ oauth:
 
   google:
     clientId: ${GOOGLE_CLIENT_ID}
-    clienSecret: ${GOOGLE_CLIENT_SECRET}
+    clientSecret: ${GOOGLE_CLIENT_SECRET}
     redirectUri: ${GOOGLE_REDIRECT_URI}
     tokenUri: https://oauth2.googleapis.com/token
     userInfoUri: https://www.googleapis.com/oauth2/v3/userinfo
