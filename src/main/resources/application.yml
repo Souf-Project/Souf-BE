@@ -63,8 +63,8 @@ websocket:
   relay:
     host: rabbitmq
     port: 61613
-    username: ${RABBITMQ_USERNAME}
-    password: ${RABBITMQ_PASSWORD}
+    username: guest
+    password: guest
 
 opensearch:
   host: ${OPENSEARCH_HOST}
