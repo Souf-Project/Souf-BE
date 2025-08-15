@@ -2,7 +2,6 @@ package com.souf.soufwebsite.domain.member.entity;
 
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
-import com.souf.soufwebsite.domain.socialAccount.SocialProvider;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.exception.NotDuplicateCategoryException;
@@ -96,6 +95,7 @@ public class Member extends BaseEntity {
         if (dto.nickname() != null) this.nickname = dto.nickname();
         if (dto.intro() != null) this.intro = dto.intro();
         if (dto.personalUrl() != null) this.personalUrl = dto.personalUrl();
+        if (dto.marketingAgreement() != null) this.marketingAgreement = dto.marketingAgreement();
     }
 
     public void updateRole(RoleType newRole) {

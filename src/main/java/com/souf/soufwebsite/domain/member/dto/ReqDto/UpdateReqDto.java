@@ -33,6 +33,9 @@ public record UpdateReqDto(
         ]
         """
         )
-        List<CategoryDto> newCategories
+        List<CategoryDto> newCategories,
+
+        @Schema(description = "마케팅 수신 동의 여부 수정", example = "true or false")
+        Boolean marketingAgreement
 ) {
 }
