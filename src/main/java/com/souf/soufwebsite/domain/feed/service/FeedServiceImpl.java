@@ -107,7 +107,7 @@ public class FeedServiceImpl implements FeedService {
         Page<FeedSimpleResDto> feedSimpleResDtos = feedRepository.findAllByMemberOrderByIdDesc(member, pageable)
                 .map(feedConverter::getFeedSimpleResDto);
 
-        MemberResDto memberResDto = MemberResDto.from(member, member.getCategories(), mediaUrl);
+        MemberResDto memberResDto = MemberResDto.from(member, member.getCategories(), mediaUrl, false);
         return new MemberFeedResDto(memberResDto, feedSimpleResDtos);
     }
 

@@ -304,7 +304,7 @@ public class MemberServiceImpl implements MemberService {
         Member member = getCurrentUser();
         Member myMember = memberRepository.findById(member.getId()).orElseThrow(NotFoundMemberException::new); // 지연 로딩 오류 해결
         String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
-        return MemberResDto.from(myMember, myMember.getCategories(), mediaUrl);
+        return MemberResDto.from(myMember, myMember.getCategories(), mediaUrl, member.isMarketingAgreement());
     }
 
     //회원 조회
@@ -314,7 +314,7 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findById(id).orElseThrow(NotFoundMemberException::new);
         String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-        return MemberResDto.from(member, member.getCategories(), mediaUrl);
+        return MemberResDto.from(member, member.getCategories(), mediaUrl, false);
     }
 
 //    @Override
