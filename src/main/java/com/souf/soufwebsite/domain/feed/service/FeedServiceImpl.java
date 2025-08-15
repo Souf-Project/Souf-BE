@@ -195,7 +195,6 @@ public class FeedServiceImpl implements FeedService {
     @Transactional(readOnly = true)
     @Override
     public Slice<FeedDetailResDto> getFeeds(Long first, Pageable pageable) {
-//        Member currentUser = getCurrentUser();
 
         Slice<Feed> feeds = feedRepository.findByFirstCategoryOrderByCreatedTimeDesc(first, pageable);
 
@@ -208,10 +207,8 @@ public class FeedServiceImpl implements FeedService {
                     String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
                     Long likedCount = likedFeedRepository.countByFeedId(feed.getId()).orElse(0L);
-//                    Boolean liked = getLiked(currentUser.getId(), feed.getId());
                     Long commentCount = commentRepository.countByFeed(feed).orElse(0L);
 
-//                    return FeedDetailResDto.from(feed.getMember(), profileImageUrl, feed, viewCountFromRedis, likedCount, liked, commentCount, mediaList);
                     return FeedDetailResDto.from(feed.getMember(), profileImageUrl, feed, viewCountFromRedis, likedCount, false, commentCount, mediaList);
                 }
         );
