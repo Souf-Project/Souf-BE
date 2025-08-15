@@ -6,8 +6,10 @@ import com.souf.soufwebsite.domain.socialAccount.dto.kakao.KakaoUserResDto;
 import com.souf.soufwebsite.domain.socialAccount.dto.kakao.KakaoTokenResDto;
 import com.souf.soufwebsite.domain.socialAccount.properties.KakaoOauthProperties;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
@@ -31,13 +33,17 @@ public class KakaoApiClient implements SocialApiClient {
         return webClient.post()
                 .uri(kakaoOauthProperties.getTokenUri())
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .bodyValue(
-                        "grant_type=authorization_code" +
-                                "&client_id=" + kakaoOauthProperties.getClientId() +
-                                "&redirect_uri=" + kakaoOauthProperties.getRedirectUri() +
-                                "&code=" + code
+                .body(BodyInserters.fromFormData("grant_type", "authorization_code")
+                                .with("client_id", kakaoOauthProperties.getClientId())
+                                .with("redirect_uri", kakaoOauthProperties.getRedirectUri())
+                                .with("code", code)
                 )
                 .retrieve()
+                .onStatus(HttpStatusCode::isError, resp ->
+                        resp.bodyToMono(String.class).map(body ->
+                                new IllegalStateException("Kakao token error: " + resp.statusCode() + " " + body)
+                        )
+                )
                 .bodyToMono(KakaoTokenResDto.class)
                 .map(KakaoTokenResDto::accessToken)
                 .block(); // 단일 호출이므로 동기 처리
