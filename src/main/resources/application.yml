@@ -29,8 +29,8 @@ spring:
   rabbitmq:
     host: rabbitmq
     port: 5672
-    username: ${RABBITMQ_USERNAME}
-    password: ${RABBITMQ_PASSWORD}
+    username: guest
+    password: guest
     virtual-host: "/"
 
 jwt:
