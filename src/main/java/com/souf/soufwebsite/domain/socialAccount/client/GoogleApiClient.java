@@ -38,7 +38,7 @@ public class GoogleApiClient implements SocialApiClient {
                         .with("client_secret", googleOauthProperties.getClientSecret())
                         .with("redirect_uri", googleOauthProperties.getRedirectUri()) // 인가 때와 반드시 동일
                         .with("code", code)
-                )\
+                )
                 .retrieve()
                 .bodyToMono(GoogleTokenResDto.class)
                 .map(GoogleTokenResDto::accessToken)
