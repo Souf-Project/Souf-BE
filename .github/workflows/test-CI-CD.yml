@@ -17,6 +17,10 @@ jobs:
       # 리포지토리의 코드를 체크아웃합니다.
       - uses: actions/checkout@v3
 
+      - name: Free disk space
+        run: |
+          docker system prune -af --volumes
+
       # JDK 17을 설치하고 환경을 설정합니다.
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -73,10 +77,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }} # Docker Hub 사용자 이름
           password: ${{ secrets.DOCKER_PASSWORD }} # Docker Hub 비밀번호
-
-      - name: Free disk space
-        run: |
-          docker system prune -af --volumes
 
       # 빌드된 Docker 이미지를 Docker Hub에 푸시합니다.
       - name: docker Hub push
