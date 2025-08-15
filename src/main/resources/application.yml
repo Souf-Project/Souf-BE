@@ -65,9 +65,6 @@ opensearch:
   password: ${OPENSEARCH_PASSWORD}
 
   index:
-<<<<<<< Updated upstream
-    name: souf-website-index
-=======
     name: souf-website-index
 
 oauth:
@@ -83,4 +80,3 @@ oauth:
     redirectUri: ${GOOGLE_REDIRECT_URI}
     tokenUri: https://oauth2.googleapis.com/token
     userInfoUri: https://www.googleapis.com/oauth2/v3/userinfo
->>>>>>> Stashed changes
