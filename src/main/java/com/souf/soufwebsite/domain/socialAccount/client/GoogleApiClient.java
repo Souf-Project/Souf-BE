@@ -8,6 +8,7 @@ import com.souf.soufwebsite.domain.socialAccount.properties.GoogleOauthPropertie
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
@@ -32,11 +33,12 @@ public class GoogleApiClient implements SocialApiClient {
         return webClient.post()
                 .uri("https://oauth2.googleapis.com/token")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .bodyValue("grant_type=authorization_code" +
-                        "&client_id=" + googleOauthProperties.getClientId() +
-                        "&client_secret=" + googleOauthProperties.getClientSecret() +
-                        "&redirect_uri=" + googleOauthProperties.getRedirectUri() +
-                        "&code=" + code)
+                .body(BodyInserters.fromFormData("grant_type", "authorization_code")
+                        .with("client_id", googleOauthProperties.getClientId())
+                        .with("client_secret", googleOauthProperties.getClientSecret())
+                        .with("redirect_uri", googleOauthProperties.getRedirectUri()) // 인가 때와 반드시 동일
+                        .with("code", code)
+                )\
                 .retrieve()
                 .bodyToMono(GoogleTokenResDto.class)
                 .map(GoogleTokenResDto::accessToken)
@@ -45,7 +47,7 @@ public class GoogleApiClient implements SocialApiClient {
 
     private SocialUserInfo getUserInfo(String accessToken) {
         GoogleUserResDto response = webClient.get()
-                .uri("https://www.googleapis.com/oauth2/v2/userinfo")
+                .uri("https://www.googleapis.com/oauth2/v3/userinfo")
                 .headers(h -> h.setBearerAuth(accessToken))
                 .retrieve()
                 .bodyToMono(GoogleUserResDto.class)
