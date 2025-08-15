@@ -74,6 +74,10 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }} # Docker Hub 사용자 이름
           password: ${{ secrets.DOCKER_PASSWORD }} # Docker Hub 비밀번호
 
+      - name: Free disk space
+        run: |
+          docker system prune -af --volumes
+
       # 빌드된 Docker 이미지를 Docker Hub에 푸시합니다.
       - name: docker Hub push
         run: docker push ${{ secrets.DOCKER_USERNAME }}/github-actions-iamsouf
