@@ -151,6 +151,9 @@ public class MemberServiceImpl implements MemberService {
     //인증번호 전송
     @Override
     public void sendSignupEmailVerification(SendEmailReqDto reqDto) {
+        if (redisTemplate.hasKey("email:withdraw:" + reqDto.email())) {
+            throw new NotAllowedSignupException();
+        }
         if (memberRepository.existsByEmail(reqDto.email())) {
             throw new NotAvailableEmailException();
         }
@@ -345,7 +348,9 @@ public class MemberServiceImpl implements MemberService {
             throw new NotMatchPasswordException();
         }
 
-        member.softDelete();
+        String redisKey = "email:withdraw:" + member.getEmail();
+        redisTemplate.opsForValue().set(redisKey, "CanNotSignedUpFor7Days", 7, TimeUnit.DAYS);
+        memberRepository.delete(member);
 
         indexEventPublisherHelper.publishIndexEvent(
                 EntityType.MEMBER,
