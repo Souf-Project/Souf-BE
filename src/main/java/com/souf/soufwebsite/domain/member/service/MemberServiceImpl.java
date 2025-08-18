@@ -111,6 +111,9 @@ public class MemberServiceImpl implements MemberService {
     //로그인
     @Override
     public TokenDto signin(SigninReqDto reqDto, HttpServletResponse response) {
+        if (redisTemplate.hasKey("email:withdraw:" + reqDto.email())) {
+            throw new NotAllowedSignupException();
+        }
 
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(reqDto.email(), reqDto.password());
 
@@ -350,7 +353,8 @@ public class MemberServiceImpl implements MemberService {
 
         String redisKey = "email:withdraw:" + member.getEmail();
         redisTemplate.opsForValue().set(redisKey, "CanNotSignedUpFor7Days", 7, TimeUnit.DAYS);
-        memberRepository.delete(member);
+//        memberRepository.delete(member); // 탈퇴하면 삭제가 아닌 개인정보 들만 교체
+        member.softDelete();
 
         indexEventPublisherHelper.publishIndexEvent(
                 EntityType.MEMBER,
