@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.member.service;
+package com.souf.soufwebsite.domain.member.service.general;
 
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 

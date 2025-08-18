@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.member.service;
+package com.souf.soufwebsite.domain.member.service.favorite;
 
 import com.souf.soufwebsite.domain.member.dto.ReqDto.FavoriteMemberReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
