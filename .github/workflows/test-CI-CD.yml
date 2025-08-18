@@ -17,6 +17,10 @@ jobs:
       # 리포지토리의 코드를 체크아웃합니다.
       - uses: actions/checkout@v3
 
+      - name: Free disk space
+        run: |
+          docker system prune -af --volumes
+
       # JDK 17을 설치하고 환경을 설정합니다.
       - name: Set up JDK 17
         uses: actions/setup-java@v3

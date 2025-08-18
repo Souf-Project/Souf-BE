@@ -93,6 +93,7 @@ public class SecurityConfig {
 
                                 .requestMatchers("/v1/normal/check").permitAll()
                                 .requestMatchers("/api/v1/auth/**").permitAll()
+                                .requestMatchers("/api/v1/social/**").permitAll()
                                 .requestMatchers("/api/v1/recruit/popular", "/api/v1/feed/popular")
                                 .permitAll()
 

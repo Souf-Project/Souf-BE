@@ -86,7 +86,12 @@ public class MemberServiceImpl implements MemberService {
 
         String encodedPassword = passwordEncoder.encode(reqDto.password());
 
-        Member member = new Member(reqDto.email(), encodedPassword, reqDto.username(), reqDto.nickname(), role);
+        // 개인 정보 동의 확인
+        if (reqDto.isPersonalInfoAgreed().equals(Boolean.FALSE)) {
+            throw new NotAgreedPersonalInfoException();
+        }
+
+        Member member = new Member(reqDto.email(), encodedPassword, reqDto.username(), reqDto.nickname(), role, reqDto.isMarketingAgreed());
 
         injectCategories(reqDto, member);
 
@@ -146,6 +151,9 @@ public class MemberServiceImpl implements MemberService {
     //인증번호 전송
     @Override
     public void sendSignupEmailVerification(SendEmailReqDto reqDto) {
+        if (redisTemplate.hasKey("email:withdraw:" + reqDto.email())) {
+            throw new NotAllowedSignupException();
+        }
         if (memberRepository.existsByEmail(reqDto.email())) {
             throw new NotAvailableEmailException();
         }
@@ -299,7 +307,7 @@ public class MemberServiceImpl implements MemberService {
         Member member = getCurrentUser();
         Member myMember = memberRepository.findById(member.getId()).orElseThrow(NotFoundMemberException::new); // 지연 로딩 오류 해결
         String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
-        return MemberResDto.from(myMember, myMember.getCategories(), mediaUrl);
+        return MemberResDto.from(myMember, myMember.getCategories(), mediaUrl, member.isMarketingAgreement());
     }
 
     //회원 조회
@@ -309,7 +317,7 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findById(id).orElseThrow(NotFoundMemberException::new);
         String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-        return MemberResDto.from(member, member.getCategories(), mediaUrl);
+        return MemberResDto.from(member, member.getCategories(), mediaUrl, false);
     }
 
 //    @Override
@@ -340,7 +348,9 @@ public class MemberServiceImpl implements MemberService {
             throw new NotMatchPasswordException();
         }
 
-        member.softDelete();
+        String redisKey = "email:withdraw:" + member.getEmail();
+        redisTemplate.opsForValue().set(redisKey, "CanNotSignedUpFor7Days", 7, TimeUnit.DAYS);
+        memberRepository.delete(member);
 
         indexEventPublisherHelper.publishIndexEvent(
                 EntityType.MEMBER,
