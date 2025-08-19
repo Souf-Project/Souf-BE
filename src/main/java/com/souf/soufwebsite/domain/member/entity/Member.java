@@ -79,6 +79,9 @@ public class Member extends BaseEntity {
     @Column(name = "marketing_agreement", nullable = false)
     private boolean marketingAgreement = false;
 
+    @Column(name = "cumulative_report_count")
+    private int cumulativeReportCount;
+
     @Builder
     public Member(String email, String password, String username, String nickname, RoleType role, Boolean marketingAgreement) {
         this.email = email;
@@ -88,6 +91,7 @@ public class Member extends BaseEntity {
         this.role = role;
         this.personalInfoAgreement = true;
         this.marketingAgreement = marketingAgreement;
+        this.cumulativeReportCount = 0;
     }
 
     // 회원 정보 업데이트 (업데이트 가능한 필드만 반영)
