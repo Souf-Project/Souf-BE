@@ -111,15 +111,23 @@ public class SecurityConfig {
 
                                 // 5) 쓰기 권한(POST/PUT/PATCH/DELETE) — 리소스별로 묶어서
                                 .requestMatchers(HttpMethod.PATCH, "/api/v1/feed/*/like").hasAnyRole("MEMBER","ADMIN","STUDENT")
-                                .requestMatchers(HttpMethod.POST,   "/api/v1/recruit/**", "/api/v1/feed/**", "/api/v1/post/**")
-                                .hasAnyRole("MEMBER","ADMIN","STUDENT")
-                                .requestMatchers(HttpMethod.PUT,    "/api/v1/recruit/**", "/api/v1/feed/**", "/api/v1/post/**")
-                                .hasAnyRole("MEMBER","ADMIN","STUDENT")
-                                .requestMatchers(HttpMethod.DELETE, "/api/v1/recruit/**", "/api/v1/feed/**", "/api/v1/post/**")
-                                .hasAnyRole("MEMBER","ADMIN","STUDENT")
+                                // recruit: MEMBER, ADMIN만 쓰기 허용
+                                .requestMatchers(HttpMethod.POST,   "/api/v1/recruit/**").hasAnyRole("MEMBER","ADMIN")
+                                .requestMatchers(HttpMethod.PUT,    "/api/v1/recruit/**").hasAnyRole("MEMBER","ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/recruit/**").hasAnyRole("MEMBER","ADMIN")
+
+                                // feed: STUDENT만(또는 운영 포함하려면 STUDENT, ADMIN)
+                                .requestMatchers(HttpMethod.POST,   "/api/v1/feed/**").hasAnyRole("STUDENT","ADMIN")
+                                .requestMatchers(HttpMethod.PUT,    "/api/v1/feed/**").hasAnyRole("STUDENT","ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/feed/**").hasAnyRole("STUDENT","ADMIN")
+
+                                // post: 기존 정책에 맞게 별도로
+                                .requestMatchers(HttpMethod.POST,   "/api/v1/post/**").hasAnyRole("MEMBER","ADMIN","STUDENT")
+                                .requestMatchers(HttpMethod.PUT,    "/api/v1/post/**").hasAnyRole("MEMBER","ADMIN","STUDENT")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/post/**").hasAnyRole("MEMBER","ADMIN","STUDENT")
 
                                 // 6) 관리자 전용
-                                .requestMatchers("/api/v1/admin/bulk-reindex").hasRole("ADMIN")
+                                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
 
                                 // 7) 나머지
                                 .anyRequest().authenticated()
