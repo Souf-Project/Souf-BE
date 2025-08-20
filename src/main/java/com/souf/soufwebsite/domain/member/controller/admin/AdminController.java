@@ -55,10 +55,10 @@ public class AdminController implements AdminApiSpecification{
 
     @GetMapping("/report")
     public SuccessResponse<Page<AdminReportResDto>> getReports(
-            @RequestParam(name = "postType") PostType postType,
-            @RequestParam(name = "startDate") LocalDate startDate,
-            @RequestParam(name = "endDate") LocalDate endDate,
-            @RequestParam(name = "nickname") String nickname,
+            @RequestParam(name = "postType", required = false) PostType postType,
+            @RequestParam(name = "startDate", required = false) LocalDate startDate,
+            @RequestParam(name = "endDate", required = false) LocalDate endDate,
+            @RequestParam(name = "nickname", required = false) String nickname,
             @PageableDefault Pageable pageable
     ) {
         Page<AdminReportResDto> reports = adminService.getReports(postType, startDate, endDate, nickname, pageable);
