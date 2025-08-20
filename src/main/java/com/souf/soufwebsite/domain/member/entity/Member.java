@@ -80,7 +80,7 @@ public class Member extends BaseEntity {
     private boolean marketingAgreement = false;
 
     @Column(name = "cumulative_report_count")
-    private int cumulativeReportCount;
+    private Integer cumulativeReportCount;
 
     @Builder
     public Member(String email, String password, String username, String nickname, RoleType role, Boolean marketingAgreement) {
