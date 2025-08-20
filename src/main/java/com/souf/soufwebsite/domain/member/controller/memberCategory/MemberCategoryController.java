@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.domain.member.controller.memberCategory;
 
-import com.souf.soufwebsite.domain.member.service.MemberCategoryService;
+import com.souf.soufwebsite.domain.member.service.general.MemberCategoryService;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.dto.CategoryUpdateReqDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
