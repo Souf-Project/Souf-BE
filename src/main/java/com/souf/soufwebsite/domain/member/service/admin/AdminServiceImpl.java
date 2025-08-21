@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.member.service.admin;
 
+import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminMemberResDto;
@@ -7,6 +8,7 @@ import com.souf.soufwebsite.domain.member.dto.ResDto.AdminPostResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminReportResDto;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
 import com.souf.soufwebsite.domain.report.repository.ReportRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +31,19 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public Page<AdminPostResDto> getPosts(PostType postType, String writer, String title, Pageable pageable) {
-        return null;
+        log.info("postType: {}, writer: {}, title: {}", postType, writer, title);
+
+        if(postType.equals(PostType.FEED)){
+            Page<Feed> feeds = feedRepository.findByMemberAndTopic(writer, title, pageable);
+            return feeds.map(
+                    AdminPostResDto::fromFeed
+            );
+        }
+
+        Page<Recruit> recruits = recruitRepository.findByMemberAndTopic(writer, title, pageable);
+        return recruits.map(
+                AdminPostResDto::fromRecruit
+        );
     }
 
     @Override
