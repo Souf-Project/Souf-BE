@@ -8,8 +8,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -35,13 +33,10 @@ public class Report extends BaseEntity {
     @JoinColumn(name = "reporter_id", nullable = false)
     private Member reporter;
 
-    /** 신고당한 회원 (대상이 회원인 경우 세팅) - 현재 설계는 Post 기준이지만 스냅샷/조인 최적화를 위해 둠 */
+    /** 신고당한 회원 (대상이 회원인 경우 세팅) */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reported_member_id")
     private Member reportedMember;
-
-    @Column(nullable = false)
-    private LocalDateTime reportDate;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -53,14 +48,14 @@ public class Report extends BaseEntity {
     @Column
     private String postTitle;
 
-    public Report(ReportReason reportReason, String description, Member reportingPerson, Member reportedPerson, LocalDateTime reportDate, PostType postType, Long postId, String postTitle) {
+    public Report(ReportReason reportReason, String description, Member reportingPerson, Member reportedPerson, PostType postType, Long postId, String postTitle) {
         this.reportReason = reportReason;
         this.description = description;
         this.reporter = reportingPerson;
         this.reportedMember = reportedPerson;
-        this.reportDate = reportDate;
         this.postType = postType;
         this.postId = postId;
         this.postTitle = postTitle;
+        this.status = ReportStatus.REVIEWING;
     }
 }

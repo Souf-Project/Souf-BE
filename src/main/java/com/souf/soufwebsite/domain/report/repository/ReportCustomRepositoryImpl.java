@@ -54,7 +54,7 @@ public class ReportCustomRepositoryImpl implements ReportCustomRepository {
                                 report.reportedMember.nickname,
                                 report.reporter.id,
                                 report.reporter.nickname,
-                                report.reportDate,
+                                report.createdTime,
                                 report.reportReason,
                                 report.description,
                                 report.status

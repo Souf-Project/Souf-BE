@@ -3,6 +3,8 @@ package com.souf.soufwebsite.domain.report.entity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Arrays;
+
 @Getter
 @AllArgsConstructor
 public enum ReportReason {
@@ -18,5 +20,12 @@ public enum ReportReason {
 
     private final Long reasonId;
     private final String reason;
+
+    public static ReportReason of(Long reasonId) {
+        return Arrays.stream(ReportReason.values())
+                .filter(v -> v.getReasonId().equals(reasonId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Invalid code: " + reasonId));
+    }
 
 }
