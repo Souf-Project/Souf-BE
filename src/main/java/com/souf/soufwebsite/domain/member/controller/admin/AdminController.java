@@ -19,8 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 
-import static com.souf.soufwebsite.domain.member.controller.admin.AdminSuccessMessage.MEMBER_GET_SUCCESS;
-import static com.souf.soufwebsite.domain.member.controller.admin.AdminSuccessMessage.REPORT_GET_SUCCESS;
+import static com.souf.soufwebsite.domain.member.controller.admin.AdminSuccessMessage.*;
 
 @Slf4j
 @RestController
@@ -38,7 +37,9 @@ public class AdminController implements AdminApiSpecification{
             @PageableDefault Pageable pageable
     ) {
 
-        return null;
+        Page<AdminPostResDto> posts = adminService.getPosts(postType, writer, title, pageable);
+
+        return new SuccessResponse<>(posts, POST_GET_SUCCESS.getMessage());
     }
 
     @GetMapping("/member")
