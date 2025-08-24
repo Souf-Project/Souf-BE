@@ -6,7 +6,10 @@ import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.report.dto.ReportReqDto;
 import com.souf.soufwebsite.domain.report.entity.Report;
 import com.souf.soufwebsite.domain.report.entity.ReportReason;
+import com.souf.soufwebsite.domain.report.entity.ReportReasonMapping;
+import com.souf.soufwebsite.domain.report.exception.NotFoundReportReasonException;
 import com.souf.soufwebsite.domain.report.exception.NotMatchedReportOwnerException;
+import com.souf.soufwebsite.domain.report.repository.ReportReasonRepository;
 import com.souf.soufwebsite.domain.report.repository.ReportRepository;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,7 @@ public class ReportServiceImpl implements ReportService {
 
     private final MemberRepository memberRepository;
     private final ReportRepository reportRepository;
+    private final ReportReasonRepository reportReasonRepository;
 
     private Member getCurrentMember() {
         return SecurityUtils.getCurrentMember();
@@ -38,10 +42,16 @@ public class ReportServiceImpl implements ReportService {
             throw new NotMatchedReportOwnerException();
         }
 
-        ReportReason reportReason = ReportReason.of(reqDto.reasonId());
-        Report report = new Report(reportReason, reqDto.description(), reporter, reportedMember,
+        Report report = new Report(reqDto.description(), reporter, reportedMember,
                 reqDto.postType(), reqDto.postId(), reqDto.title());
         reportRepository.save(report);
+
+        for (Long reasonId : reqDto.reasons()){
+            ReportReason reportReason = reportReasonRepository.findById(reasonId)
+                    .orElseThrow(NotFoundReportReasonException::new);
+            ReportReasonMapping reportReasonMapping = new ReportReasonMapping(report, reportReason);
+            report.addReportReasonMapping(reportReasonMapping);
+        }
         log.info("신고글이 생성되었습니다!: {}", report);
     }
 
