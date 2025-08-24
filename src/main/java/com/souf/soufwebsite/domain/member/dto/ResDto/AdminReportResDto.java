@@ -1,11 +1,11 @@
 package com.souf.soufwebsite.domain.member.dto.ResDto;
 
 import com.souf.soufwebsite.domain.file.entity.PostType;
-import com.souf.soufwebsite.domain.report.entity.ReportReason;
 import com.souf.soufwebsite.domain.report.entity.ReportStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record AdminReportResDto(
 
@@ -29,12 +29,13 @@ public record AdminReportResDto(
         String reportingPersonNickname, // 신고한 사용자 닉네
         @Schema(description = "신고 날짜", example = "2025-08-20'T'23:15:00")
         LocalDateTime reportedDate,
-        @Schema(description = "신고 사유", example = "VIOLENT")
-        ReportReason reportReason,
         @Schema(description = "신고 상세 설명", example = "이 사람 너무 이상해요")
         String description,
         @Schema(description = "신고 처리 상태", example = "REVIEWING")
-        ReportStatus status
+        ReportStatus status,
+
+        @Schema(description = "신고 처리 사유", example = "[1, 2, 3]")
+        List<Long> reasons
 
 ) {
 }

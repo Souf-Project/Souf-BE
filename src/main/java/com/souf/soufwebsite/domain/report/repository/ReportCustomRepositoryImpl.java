@@ -14,10 +14,16 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import static com.querydsl.core.group.GroupBy.groupBy;
+import static com.querydsl.core.types.Projections.list;
+import static com.souf.soufwebsite.domain.member.entity.QMember.member;
 import static com.souf.soufwebsite.domain.report.entity.QReport.report;
+import static com.souf.soufwebsite.domain.report.entity.QReportReason.reportReason;
+import static com.souf.soufwebsite.domain.report.entity.QReportReasonMapping.reportReasonMapping;
 
 @Repository
 @RequiredArgsConstructor
@@ -43,38 +49,70 @@ public class ReportCustomRepositoryImpl implements ReportCustomRepository {
             condition.and(nicknameCondition);
         }
 
-        List<AdminReportResDto> reportResDtos = queryFactory.select(
-                        Projections.constructor(
-                                AdminReportResDto.class,
-                                report.id,
-                                report.postId,
-                                report.postType,
-                                report.postTitle,
-                                report.reportedMember.id,
-                                report.reportedMember.nickname,
-                                report.reporter.id,
-                                report.reporter.nickname,
-                                report.createdTime,
-                                report.reportReason,
-                                report.description,
-                                report.status
-                        )
-                )
+        List<Long> reportIds = queryFactory
+                .select(report.id)
                 .from(report)
                 .where(condition)
+                .orderBy(report.createdTime.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
+        if (reportIds.isEmpty()){
+           return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+
+        List<AdminReportResDto> resDtoList = queryFactory
+                .from(report)
+                .join(report.reportedMember, member)
+                .join(report.reporter, member)
+                .leftJoin(report.reportReasonMappings, reportReasonMapping)
+                .leftJoin(reportReasonMapping.reasonReason, reportReason)
+                .where(report.id.in(reportIds))
+                .transform(
+                        groupBy(report.id).list(
+                                Projections.constructor(
+                                        AdminReportResDto.class,
+                                        report.id,
+                                        report.postId,
+                                        report.postType,
+                                        report.postTitle,
+                                        report.reportedMember.id,
+                                        report.reportedMember.nickname,
+                                        report.reporter.id,
+                                        report.reporter.nickname,
+                                        report.createdTime,
+                                        report.description,
+                                        report.status,
+                                        // 사유 리스트
+                                        list(reportReason.id)
+                                )
+                        )
+                );
+
+        Map<Long, AdminReportResDto> byId = resDtoList.stream()
+                .collect(Collectors.toMap(AdminReportResDto::reportId, Function.identity()));
+
+        List<AdminReportResDto> content = reportIds.stream()
+                .map(byId::get)
+                .filter(Objects::nonNull)
+                .map(dto -> // 만약 혹시 모를 중복이 걱정되면 한 번 더 distinct 안전망
+                        new AdminReportResDto(
+                                dto.reportId(), dto.postId(), dto.postType(), dto.postTitle(),
+                                dto.reportedPersonId(), dto.reportedPersonNickname(),
+                                dto.reportingPersonId(), dto.reportingPersonNickname(),
+                                dto.reportedDate(), dto.description(), dto.status(),
+                                dto.reportId() == null ? List.of()
+                                        : dto.reasons().stream().distinct().toList()
+                        )
+                )
+                .toList();
+
         long total = Optional.ofNullable(
-                queryFactory
-                        .select(report.count())
-                        .from(report)
-                        .where(condition)
-                        .fetchOne()
+                queryFactory.select(report.count()).from(report).where(condition).fetchOne()
         ).orElse(0L);
 
-        return new PageImpl<>(reportResDtos, pageable, total);
+        return new PageImpl<>(content, pageable, total);
     }
 
     private BooleanExpression extractedPostType(PostType postType) {
@@ -89,11 +127,11 @@ public class ReportCustomRepositoryImpl implements ReportCustomRepository {
         BooleanExpression predicate = null;
 
         if (startDate != null) {
-            predicate = report.reportDate.goe(startDate.atStartOfDay());
+            predicate = report.createdTime.goe(startDate.atStartOfDay());
         }
         if (endDate != null) {
             BooleanExpression endPredicate =
-                    report.reportDate.loe(endDate.atTime(LocalTime.MAX));
+                    report.createdTime.loe(endDate.atTime(LocalTime.MAX));
             predicate = predicate == null ? endPredicate : predicate.and(endPredicate);
         }
         return predicate;
