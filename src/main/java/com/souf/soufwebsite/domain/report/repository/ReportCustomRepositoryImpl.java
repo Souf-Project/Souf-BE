@@ -1,11 +1,15 @@
 package com.souf.soufwebsite.domain.report.repository;
 
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Projections;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminReportResDto;
+import com.souf.soufwebsite.domain.member.entity.QMember;
+import com.souf.soufwebsite.domain.report.entity.QReportReason;
+import com.souf.soufwebsite.domain.report.entity.QReportReasonMapping;
+import com.souf.soufwebsite.domain.report.entity.ReportStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -13,11 +17,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static com.souf.soufwebsite.domain.report.entity.QReport.report;
+import static com.souf.soufwebsite.domain.report.entity.QReportReasonMapping.reportReasonMapping;
 
 @Repository
 @RequiredArgsConstructor
@@ -27,6 +32,10 @@ public class ReportCustomRepositoryImpl implements ReportCustomRepository {
 
     @Override
     public Page<AdminReportResDto> getReportListInAdmin(PostType postType, LocalDate startDate, LocalDate endDate, String nickname, Pageable pageable) {
+        QMember reportedMember = new QMember("reportedMember");
+        QMember reporter       = new QMember("reporter");
+        QReportReasonMapping rrm = QReportReasonMapping.reportReasonMapping;
+        QReportReason reason = QReportReason.reportReason;
 
         BooleanBuilder condition = new BooleanBuilder();
         BooleanExpression postTypeCondition = extractedPostType(postType);
@@ -43,38 +52,107 @@ public class ReportCustomRepositoryImpl implements ReportCustomRepository {
             condition.and(nicknameCondition);
         }
 
-        List<AdminReportResDto> reportResDtos = queryFactory.select(
-                        Projections.constructor(
-                                AdminReportResDto.class,
-                                report.id,
-                                report.postId,
-                                report.postType,
-                                report.postTitle,
-                                report.reportedMember.id,
-                                report.reportedMember.nickname,
-                                report.reporter.id,
-                                report.reporter.nickname,
-                                report.createdTime,
-                                report.reportReason,
-                                report.description,
-                                report.status
-                        )
-                )
+        // where절에 일치하는 report의 아이디 리스트를 가져옴.
+        List<Long> reportIds = queryFactory
+                .select(report.id)
                 .from(report)
                 .where(condition)
+                .orderBy(report.createdTime.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
+        if (reportIds.isEmpty()) {
+            long total0 = Optional.ofNullable(
+                    queryFactory.select(report.count()).from(report).where(condition).fetchOne()
+            ).orElse(0L);
+            return new PageImpl<>(Collections.emptyList(), pageable, total0);
+        }
+
+        // reportIds의 아이디 값을 통해 report를 reason 빼고 Tuple로 가져오기.
+        List<Tuple> baseRows = queryFactory
+                .select(
+                        report.id,
+                        report.postId,
+                        report.postType,
+                        report.postTitle,
+                        reportedMember.id,
+                        reportedMember.nickname,
+                        reporter.id,
+                        reporter.nickname,
+                        report.createdTime,
+                        report.description,
+                        report.status
+                )
+                .from(report)
+                .join(report.reportedMember, reportedMember)
+                .join(report.reporter, reporter)
+                .leftJoin(report.reportReasonMappings, reportReasonMapping)
+                .where(report.id.in(reportIds))
+                .fetch();
+
+        record Base(
+                Long id, Long postId, PostType postType, String postTitle,
+                Long reportedMemberId, String reportedMemberNickname,
+                Long reporterId, String reporterNickname,
+                LocalDateTime createdTime, String description, ReportStatus status
+        ) {}
+
+        Map<Long, Base> baseMap = new HashMap<>(baseRows.size() * 2);
+
+        // dto를 통해 Tuple을 감싼 후에 Map에 저장
+        for (Tuple t : baseRows) {
+            Base b = new Base(
+                    t.get(report.id),
+                    t.get(report.postId),
+                    t.get(report.postType),
+                    t.get(report.postTitle),
+                    t.get(reportedMember.id),
+                    t.get(reportedMember.nickname),
+                    t.get(reporter.id),
+                    t.get(reporter.nickname),
+                    t.get(report.createdTime),
+                    t.get(report.description),
+                    t.get(report.status)
+            );
+            baseMap.put(b.id(), b);
+        }
+
+        // reportIds를 기반으로 mapping 엔티티와 reportReason 엔티티 조회
+        List<Tuple> reasonRows = queryFactory
+                .select(rrm.report.id, reason.id)
+                .from(rrm)
+                .join(rrm.reportReason, reason)
+                .where(rrm.report.id.in(reportIds))
+                .fetch();
+
+        Map<Long, LinkedHashSet<Long>> reasonMap = new HashMap<>();
+        for (Tuple t : reasonRows) {
+            Long rid = t.get(rrm.report.id);
+            Long reasonId = t.get(reason.id);
+            if (rid == null || reasonId == null) continue; // leftJoin인 경우 방어
+            reasonMap.computeIfAbsent(rid, k -> new LinkedHashSet<>()).add(reasonId);
+        }
+
+        // 원래 페이징 순서대로 DTO 조립 (List<Long>만 담음)
+        List<AdminReportResDto> content = reportIds.stream()
+                .map(baseMap::get)
+                .filter(Objects::nonNull)
+                .map(b -> new AdminReportResDto(
+                        b.id(), b.postId(), b.postType(), b.postTitle(),
+                        b.reportedMemberId(), b.reportedMemberNickname(),
+                        b.reporterId(), b.reporterNickname(),
+                        b.createdTime(), b.description(), b.status(),
+                        reasonMap.getOrDefault(b.id(), new LinkedHashSet<>()).stream().toList() // List<Long>
+                ))
+                .toList();
+
+        // total count
         long total = Optional.ofNullable(
-                queryFactory
-                        .select(report.count())
-                        .from(report)
-                        .where(condition)
-                        .fetchOne()
+                queryFactory.select(report.count()).from(report).where(condition).fetchOne()
         ).orElse(0L);
 
-        return new PageImpl<>(reportResDtos, pageable, total);
+        return new PageImpl<>(content, pageable, total);
     }
 
     private BooleanExpression extractedPostType(PostType postType) {
@@ -89,11 +167,11 @@ public class ReportCustomRepositoryImpl implements ReportCustomRepository {
         BooleanExpression predicate = null;
 
         if (startDate != null) {
-            predicate = report.reportDate.goe(startDate.atStartOfDay());
+            predicate = report.createdTime.goe(startDate.atStartOfDay());
         }
         if (endDate != null) {
             BooleanExpression endPredicate =
-                    report.reportDate.loe(endDate.atTime(LocalTime.MAX));
+                    report.createdTime.loe(endDate.atTime(LocalTime.MAX));
             predicate = predicate == null ? endPredicate : predicate.and(endPredicate);
         }
         return predicate;
