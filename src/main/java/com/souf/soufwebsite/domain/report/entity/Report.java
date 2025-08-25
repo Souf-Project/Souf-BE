@@ -25,7 +25,7 @@ public class Report extends BaseEntity {
     private ReportStatus status;
 
     @Column(nullable = false)
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReportReasonMapping> reportReasonMappings = new ArrayList<>();
 
     @Column(nullable = false)
