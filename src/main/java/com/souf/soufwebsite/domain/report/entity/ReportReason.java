@@ -5,9 +5,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 
 @Entity
 @Getter
@@ -20,10 +17,6 @@ public class ReportReason {
 
     @Column(nullable = false)
     private String reason;
-
-    @Column(nullable = false)
-    @OneToMany(mappedBy = "reportReason", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ReportReasonMapping> reportReasonMappings = new ArrayList<>();
 }
 /*
 PERSONAL_INFO_EXPOSURE(1L, "개인정보 노출"),

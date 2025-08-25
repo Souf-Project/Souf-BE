@@ -18,10 +18,10 @@ public class ReportReasonMapping {
     private Report report;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private ReportReason reasonReason;
+    private ReportReason reportReason;
 
-    public ReportReasonMapping(Report report, ReportReason reasonReason) {
+    public ReportReasonMapping(Report report, ReportReason reportReason) {
         this.report = report;
-        this.reasonReason = reasonReason;
+        this.reportReason = reportReason;
     }
 }

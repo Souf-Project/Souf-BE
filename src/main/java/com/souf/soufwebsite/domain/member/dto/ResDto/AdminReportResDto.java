@@ -38,4 +38,10 @@ public record AdminReportResDto(
         List<Long> reasons
 
 ) {
+
+        public void addReportReasons(Long id){
+                if (!this.reasons.contains(id)){
+                        this.reasons.add(id);
+                }
+        }
 }

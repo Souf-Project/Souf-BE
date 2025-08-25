@@ -1,11 +1,15 @@
 package com.souf.soufwebsite.domain.report.repository;
 
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Projections;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminReportResDto;
+import com.souf.soufwebsite.domain.member.entity.QMember;
+import com.souf.soufwebsite.domain.report.entity.QReportReason;
+import com.souf.soufwebsite.domain.report.entity.QReportReasonMapping;
+import com.souf.soufwebsite.domain.report.entity.ReportStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -13,16 +17,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
-import static com.querydsl.core.group.GroupBy.groupBy;
-import static com.querydsl.core.types.Projections.list;
-import static com.souf.soufwebsite.domain.member.entity.QMember.member;
 import static com.souf.soufwebsite.domain.report.entity.QReport.report;
-import static com.souf.soufwebsite.domain.report.entity.QReportReason.reportReason;
 import static com.souf.soufwebsite.domain.report.entity.QReportReasonMapping.reportReasonMapping;
 
 @Repository
@@ -33,6 +32,8 @@ public class ReportCustomRepositoryImpl implements ReportCustomRepository {
 
     @Override
     public Page<AdminReportResDto> getReportListInAdmin(PostType postType, LocalDate startDate, LocalDate endDate, String nickname, Pageable pageable) {
+        QMember reportedMember = new QMember("reportedMember");
+        QMember reporter       = new QMember("reporter");
 
         BooleanBuilder condition = new BooleanBuilder();
         BooleanExpression postTypeCondition = extractedPostType(postType);
@@ -58,56 +59,94 @@ public class ReportCustomRepositoryImpl implements ReportCustomRepository {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        if (reportIds.isEmpty()){
-           return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        if (reportIds.isEmpty()) {
+            long total0 = Optional.ofNullable(
+                    queryFactory.select(report.count()).from(report).where(condition).fetchOne()
+            ).orElse(0L);
+            return new PageImpl<>(Collections.emptyList(), pageable, total0);
         }
 
-        List<AdminReportResDto> resDtoList = queryFactory
-                .from(report)
-                .join(report.reportedMember, member)
-                .join(report.reporter, member)
-                .leftJoin(report.reportReasonMappings, reportReasonMapping)
-                .leftJoin(reportReasonMapping.reasonReason, reportReason)
-                .where(report.id.in(reportIds))
-                .transform(
-                        groupBy(report.id).list(
-                                Projections.constructor(
-                                        AdminReportResDto.class,
-                                        report.id,
-                                        report.postId,
-                                        report.postType,
-                                        report.postTitle,
-                                        report.reportedMember.id,
-                                        report.reportedMember.nickname,
-                                        report.reporter.id,
-                                        report.reporter.nickname,
-                                        report.createdTime,
-                                        report.description,
-                                        report.status,
-                                        // 사유 리스트
-                                        list(reportReason.id)
-                                )
-                        )
-                );
-
-        Map<Long, AdminReportResDto> byId = resDtoList.stream()
-                .collect(Collectors.toMap(AdminReportResDto::reportId, Function.identity()));
-
-        List<AdminReportResDto> content = reportIds.stream()
-                .map(byId::get)
-                .filter(Objects::nonNull)
-                .map(dto -> // 만약 혹시 모를 중복이 걱정되면 한 번 더 distinct 안전망
-                        new AdminReportResDto(
-                                dto.reportId(), dto.postId(), dto.postType(), dto.postTitle(),
-                                dto.reportedPersonId(), dto.reportedPersonNickname(),
-                                dto.reportingPersonId(), dto.reportingPersonNickname(),
-                                dto.reportedDate(), dto.description(), dto.status(),
-                                dto.reportId() == null ? List.of()
-                                        : dto.reasons().stream().distinct().toList()
-                        )
+        // reason 빼고 Tuple로 가져오기.
+        List<Tuple> baseRows = queryFactory
+                .select(
+                        report.id,
+                        report.postId,
+                        report.postType,
+                        report.postTitle,
+                        reportedMember.id,
+                        reportedMember.nickname,
+                        reporter.id,
+                        reporter.nickname,
+                        report.createdTime,
+                        report.description,
+                        report.status
                 )
+                .from(report)
+                .join(report.reportedMember, reportedMember)
+                .join(report.reporter, reporter)
+                .leftJoin(report.reportReasonMappings, reportReasonMapping)
+                .where(report.id.in(reportIds))
+                .fetch();
+
+        Map<Long, AdminReportResDto> resDtoMap = new HashMap<>();
+
+        record Base(
+                Long id, Long postId, PostType postType, String postTitle,
+                Long reportedMemberId, String reportedMemberNickname,
+                Long reporterId, String reporterNickname,
+                LocalDateTime createdTime, String description, ReportStatus status
+        ) {}
+        Map<Long, Base> baseMap = new HashMap<>(baseRows.size() * 2);
+        for (Tuple t : baseRows) {
+            Base b = new Base(
+                    t.get(report.id),
+                    t.get(report.postId),
+                    t.get(report.postType),
+                    t.get(report.postTitle),
+                    t.get(reportedMember.id),
+                    t.get(reportedMember.nickname),
+                    t.get(reporter.id),
+                    t.get(reporter.nickname),
+                    t.get(report.createdTime),
+                    t.get(report.description),
+                    t.get(report.status)
+            );
+            baseMap.put(b.id(), b);
+        }
+
+        // 사유 ID만 별도 조회 → 자바에서 그룹핑(중복 제거)
+        QReportReasonMapping rrm = QReportReasonMapping.reportReasonMapping;
+        QReportReason reason = QReportReason.reportReason;
+
+        List<Tuple> reasonRows = queryFactory
+                .select(rrm.report.id, reason.id)
+                .from(rrm)
+                .join(rrm.reportReason, reason)
+                .where(rrm.report.id.in(reportIds))
+                .fetch();
+
+        Map<Long, LinkedHashSet<Long>> reasonMap = new HashMap<>();
+        for (Tuple t : reasonRows) {
+            Long rid = t.get(rrm.report.id);
+            Long reasonId = t.get(reason.id);
+            if (rid == null || reasonId == null) continue; // leftJoin인 경우 방어
+            reasonMap.computeIfAbsent(rid, k -> new LinkedHashSet<>()).add(reasonId);
+        }
+
+        // 원래 페이징 순서대로 DTO 조립 (List<Long>만 담음)
+        List<AdminReportResDto> content = reportIds.stream()
+                .map(baseMap::get)
+                .filter(Objects::nonNull)
+                .map(b -> new AdminReportResDto(
+                        b.id(), b.postId(), b.postType(), b.postTitle(),
+                        b.reportedMemberId(), b.reportedMemberNickname(),
+                        b.reporterId(), b.reporterNickname(),
+                        b.createdTime(), b.description(), b.status(),
+                        reasonMap.getOrDefault(b.id(), new LinkedHashSet<>()).stream().toList() // List<Long>
+                ))
                 .toList();
 
+        // total count
         long total = Optional.ofNullable(
                 queryFactory.select(report.count()).from(report).where(condition).fetchOne()
         ).orElse(0L);
