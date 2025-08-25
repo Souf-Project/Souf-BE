@@ -34,6 +34,8 @@ public class ReportCustomRepositoryImpl implements ReportCustomRepository {
     public Page<AdminReportResDto> getReportListInAdmin(PostType postType, LocalDate startDate, LocalDate endDate, String nickname, Pageable pageable) {
         QMember reportedMember = new QMember("reportedMember");
         QMember reporter       = new QMember("reporter");
+        QReportReasonMapping rrm = QReportReasonMapping.reportReasonMapping;
+        QReportReason reason = QReportReason.reportReason;
 
         BooleanBuilder condition = new BooleanBuilder();
         BooleanExpression postTypeCondition = extractedPostType(postType);
@@ -115,8 +117,6 @@ public class ReportCustomRepositoryImpl implements ReportCustomRepository {
         }
 
         // 사유 ID만 별도 조회 → 자바에서 그룹핑(중복 제거)
-        QReportReasonMapping rrm = QReportReasonMapping.reportReasonMapping;
-        QReportReason reason = QReportReason.reportReason;
 
         List<Tuple> reasonRows = queryFactory
                 .select(rrm.report.id, reason.id)
