@@ -52,6 +52,7 @@ public class ReportCustomRepositoryImpl implements ReportCustomRepository {
             condition.and(nicknameCondition);
         }
 
+        // where절에 일치하는 report의 아이디 리스트를 가져옴.
         List<Long> reportIds = queryFactory
                 .select(report.id)
                 .from(report)
@@ -68,7 +69,7 @@ public class ReportCustomRepositoryImpl implements ReportCustomRepository {
             return new PageImpl<>(Collections.emptyList(), pageable, total0);
         }
 
-        // reason 빼고 Tuple로 가져오기.
+        // reportIds의 아이디 값을 통해 report를 reason 빼고 Tuple로 가져오기.
         List<Tuple> baseRows = queryFactory
                 .select(
                         report.id,
@@ -90,15 +91,16 @@ public class ReportCustomRepositoryImpl implements ReportCustomRepository {
                 .where(report.id.in(reportIds))
                 .fetch();
 
-        Map<Long, AdminReportResDto> resDtoMap = new HashMap<>();
-
         record Base(
                 Long id, Long postId, PostType postType, String postTitle,
                 Long reportedMemberId, String reportedMemberNickname,
                 Long reporterId, String reporterNickname,
                 LocalDateTime createdTime, String description, ReportStatus status
         ) {}
+
         Map<Long, Base> baseMap = new HashMap<>(baseRows.size() * 2);
+
+        // dto를 통해 Tuple을 감싼 후에 Map에 저장
         for (Tuple t : baseRows) {
             Base b = new Base(
                     t.get(report.id),
@@ -116,8 +118,7 @@ public class ReportCustomRepositoryImpl implements ReportCustomRepository {
             baseMap.put(b.id(), b);
         }
 
-        // 사유 ID만 별도 조회 → 자바에서 그룹핑(중복 제거)
-
+        // reportIds를 기반으로 mapping 엔티티와 reportReason 엔티티 조회
         List<Tuple> reasonRows = queryFactory
                 .select(rrm.report.id, reason.id)
                 .from(rrm)
