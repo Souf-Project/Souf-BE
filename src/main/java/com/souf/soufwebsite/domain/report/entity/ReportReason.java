@@ -5,6 +5,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Entity
 @Getter
@@ -18,9 +21,9 @@ public class ReportReason {
     @Column(nullable = false)
     private String reason;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "report_id", nullable = false)
-    private Report report;
+    @Column(nullable = false)
+    @OneToMany(mappedBy = "reportReason", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReportReasonMapping> reportReasonMappings = new ArrayList<>();
 }
 /*
 PERSONAL_INFO_EXPOSURE(1L, "개인정보 노출"),
