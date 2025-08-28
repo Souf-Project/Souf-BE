@@ -1,6 +1,7 @@
 package com.souf.soufwebsite.global.config;
 
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.domain.report.service.BanService;
 import com.souf.soufwebsite.global.jwt.JwtAuthenticationFilter;
 import com.souf.soufwebsite.global.jwt.JwtLogoutHandler;
 import com.souf.soufwebsite.global.jwt.JwtServiceImpl;
@@ -48,6 +49,7 @@ public class SecurityConfig {
     private final JwtServiceImpl jwtService;
     private final RedisTemplate<String, String> redisTemplate;
 
+    private final BanService banService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -67,6 +69,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+//                .addFilterAfter(new BanCheckFilter(banService), JwtAuthenticationFilter.class);
 
         http
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->

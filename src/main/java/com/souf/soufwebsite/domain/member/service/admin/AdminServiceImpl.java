@@ -10,12 +10,17 @@ import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
+import com.souf.soufwebsite.domain.report.entity.Report;
+import com.souf.soufwebsite.domain.report.entity.ReportStatus;
+import com.souf.soufwebsite.domain.report.exception.NotFoundReportException;
 import com.souf.soufwebsite.domain.report.repository.ReportRepository;
+import com.souf.soufwebsite.domain.report.service.StrikeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
@@ -28,6 +33,8 @@ public class AdminServiceImpl implements AdminService {
     private final FeedRepository feedRepository;
     private final RecruitRepository recruitRepository;
     private final ReportRepository reportRepository;
+
+    private final StrikeService strikeService;
 
     @Override
     public Page<AdminPostResDto> getPosts(PostType postType, String writer, String title, Pageable pageable) {
@@ -56,5 +63,20 @@ public class AdminServiceImpl implements AdminService {
     public Page<AdminReportResDto> getReports(PostType postType, LocalDate startDate, LocalDate endDate, String nickname, Pageable pageable) {
         log.info("postType: {}, startDate: {}, endDate: {}, nickname: {}", postType, startDate, endDate, nickname);
         return reportRepository.getReportListInAdmin(postType, startDate, endDate, nickname, pageable);
+    }
+
+    @Transactional
+    @Override
+    public void updateReportStatus(Long reportId, ReportStatus reportStatus) {
+        Report report = findIfReportExists(reportId);
+        report.updateStatus(reportStatus);
+
+        if (reportStatus.equals(ReportStatus.RESOLVED) && report.getReportedMember().getId() != null) {
+            strikeService.addStrike(report.getReportedMember().getId(), report.getId());
+        }
+    }
+
+    private Report findIfReportExists(Long reportId) {
+        return reportRepository.findById(reportId).orElseThrow(NotFoundReportException::new);
     }
 }

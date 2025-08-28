@@ -8,6 +8,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -22,8 +25,8 @@ public class Report extends BaseEntity {
     private ReportStatus status;
 
     @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private ReportReason reportReason;
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReportReasonMapping> reportReasonMappings = new ArrayList<>();
 
     @Column(nullable = false)
     private String description;
@@ -48,14 +51,21 @@ public class Report extends BaseEntity {
     @Column
     private String postTitle;
 
-    public Report(ReportReason reportReason, String description, Member reportingPerson, Member reportedPerson, PostType postType, Long postId, String postTitle) {
-        this.reportReason = reportReason;
+    public Report(String description, Member reportingPerson, Member reportedPerson, PostType postType, Long postId, String postTitle) {
         this.description = description;
         this.reporter = reportingPerson;
         this.reportedMember = reportedPerson;
         this.postType = postType;
         this.postId = postId;
         this.postTitle = postTitle;
-        this.status = ReportStatus.REVIEWING;
+        this.status = ReportStatus.PENDING;
+    }
+
+    public void addReportReasonMapping(ReportReasonMapping reportReasonMapping) {
+        this.reportReasonMappings.add(reportReasonMapping);
+    }
+
+    public void updateStatus(ReportStatus status) {
+        this.status = status;
     }
 }
