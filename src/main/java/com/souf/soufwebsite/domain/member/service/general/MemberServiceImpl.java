@@ -111,6 +111,7 @@ public class MemberServiceImpl implements MemberService {
     //로그인
     @Override
     public TokenDto signin(SigninReqDto reqDto, HttpServletResponse response) {
+        log.info("email: {}, password: {}", reqDto.email(), reqDto.password());
         if (redisTemplate.hasKey("email:withdraw:" + reqDto.email())) {
             throw new NotAllowedSignupException();
         }
