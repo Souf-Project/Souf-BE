@@ -114,7 +114,6 @@ public class FeedServiceImpl implements FeedService {
     @Transactional(readOnly = true)
     @Override
     public FeedDetailResDto getFeedById(Long memberId, Long feedId) {
-        Member currentUser = getCurrentUser();
 
         Member member = findIfMemberExists(memberId);
         Feed feed = findIfFeedExist(feedId);
@@ -124,7 +123,7 @@ public class FeedServiceImpl implements FeedService {
         Long viewCountFromRedis = redisUtil.get(feedViewKey);
 
         Long likedCount = likedFeedRepository.countByFeedId(feedId).orElse(0L);
-        Boolean liked = getLiked(currentUser.getId(), feedId);
+        Boolean liked = getLiked(member.getId(), feedId);
 
         Long commentCount = commentRepository.countByFeed(feed).orElse(0L);
 

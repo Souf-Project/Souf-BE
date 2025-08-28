@@ -22,4 +22,26 @@ public interface RecruitRepository extends JpaRepository<Recruit, Long>, Recruit
     Page<Recruit> findByMember(Member member, Pageable pageable);
 
     List<Recruit> findByRecruitableTrue();
+
+    // 관리자 페이지 피드 조회
+    @Query(
+            value = """
+                SELECT r
+                FROM Recruit r
+                    JOIN FETCH r.member m
+                 WHERE (:nickname is null or m.nickname = :nickname)
+                      and (:title is null or r.title = :title)
+        """,
+            countQuery = """
+        SELECT COUNT(r)
+        FROM Recruit r
+        JOIN r.member m
+        WHERE (:nickname is null or m.nickname = :nickname)
+                      and (:title is null or r.title = :title)
+        """
+    )
+    Page<Recruit> findByMemberAndTopic(
+            @Param("nickname") String nickname,
+            @Param("title") String title,
+            Pageable pageable);
 }

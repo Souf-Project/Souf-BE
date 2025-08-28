@@ -10,9 +10,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.time.Duration;
 import java.util.Date;
 import java.util.Optional;
 
@@ -28,6 +30,9 @@ public class JwtServiceImpl implements JwtService {
 
     @Value("${jwt.refresh.expiration}")
     private long refreshTokenExpireTime;
+
+    @Value("${spring.profiles.active}")
+    private String activeProfile;
 
     @Value("${jwt.access.header}")
     private String accessTokenHeader;
@@ -133,18 +138,39 @@ public class JwtServiceImpl implements JwtService {
         }
     }
 
-    public void sendAccessAndRefreshToken(HttpServletResponse response,
+//    public void sendAccessAndRefreshToken(HttpServletResponse response,
+//                                          String accessToken,
+//                                          String refreshToken) {
+//        response.setHeader("Authorization", "Bearer " + accessToken);
+//
+//        Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
+//        refreshCookie.setHttpOnly(true);
+//        refreshCookie.setSecure(false); // 추후 true로 변경 필요 (HTTPS 환경에서만)
+//        refreshCookie.setPath("/");
+//        refreshCookie.setMaxAge((int) (refreshTokenExpireTime / 1000)); // 초 단위로 설정
+//
+//        response.addCookie(refreshCookie);
+//    }
+
+
+    public void sendAccessAndRefreshToken(HttpServletResponse res,
                                           String accessToken,
                                           String refreshToken) {
-        response.setHeader("Authorization", "Bearer " + accessToken);
 
-        Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setSecure(false); // 추후 true로 변경 필요 (HTTPS 환경에서만)
-        refreshCookie.setPath("/");
-        refreshCookie.setMaxAge((int) (refreshTokenExpireTime / 1000)); // 초 단위로 설정
+        boolean isProd = "prod".equalsIgnoreCase(activeProfile);
 
-        response.addCookie(refreshCookie);
+        String sameSite = isProd ? "None" : "Lax";
+
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(isProd)
+                .path("/")
+                .maxAge(Duration.ofMillis(refreshTokenExpireTime))
+                .sameSite(sameSite)
+                .build();
+
+        res.setHeader("Authorization", "Bearer " + accessToken);
+        res.addHeader("Set-Cookie", cookie.toString());
     }
 
     @Override

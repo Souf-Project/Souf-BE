@@ -1,5 +1,8 @@
 package com.souf.soufwebsite.domain.member.repository;
 
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
@@ -7,6 +10,7 @@ import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberSearchReqDto;
+import com.souf.soufwebsite.domain.member.dto.ResDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
@@ -18,6 +22,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.souf.soufwebsite.domain.member.entity.QMember.member;
 import static com.souf.soufwebsite.domain.member.entity.QMemberCategoryMapping.memberCategoryMapping;
@@ -125,6 +130,77 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
                 .toList();
 
         return new PageImpl<>(result, pageable, memberIds.size());
+    }
+
+    @Override
+    public Page<AdminMemberResDto> getMemberListInAdmin(RoleType memberType, String username, String nickname, Pageable pageable) {
+
+        BooleanBuilder condition = new BooleanBuilder();
+        BooleanExpression roleCondition = extractedRoleType(memberType);
+        BooleanExpression usernameCondition = extractedUsername(username);
+        BooleanExpression nicknameCondition = extractedNickname(nickname);
+
+        if (roleCondition != null) {
+            condition.and(roleCondition);
+        }
+        if (usernameCondition != null) {
+            condition.and(usernameCondition);
+        }
+        if (nicknameCondition != null) {
+            condition.and(nicknameCondition);
+        }
+
+        List<AdminMemberResDto> members = queryFactory
+                .select(
+                        Projections.constructor(
+                                AdminMemberResDto.class,
+                                member.id,
+                                member.role,
+                                member.username,
+                                member.nickname,
+                                member.email,
+                                member.cumulativeReportCount,
+                                member.isDeleted
+                        )
+                ).from(member)
+                .where(condition)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        long total = Optional.ofNullable(
+                queryFactory
+                        .select(member.count())
+                        .from(member)
+                        .where(condition)
+                        .fetchOne()
+        ).orElse(0L);
+
+        return new PageImpl<>(members, pageable, total);
+    }
+
+    private BooleanExpression extractedRoleType(RoleType memberType) {
+        if(memberType == null){
+            return null;
+        }
+
+        return member.role.eq(memberType);
+    }
+
+    private BooleanExpression extractedUsername(String username) {
+        if(username == null){
+            return null;
+        }
+
+        return member.username.eq(username);
+    }
+
+    private BooleanExpression extractedNickname(String nickname) {
+        if(nickname == null){
+            return null;
+        }
+
+        return member.nickname.eq(nickname);
     }
 
 }

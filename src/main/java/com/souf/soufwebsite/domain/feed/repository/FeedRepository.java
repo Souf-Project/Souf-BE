@@ -24,5 +24,27 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, FeedCustomRep
     Page<Feed> findByOrderByViewCountDesc(Pageable pageable);
 
     List<Feed> findTop3ByMemberOrderByViewCountDesc(Member member);
+
+    // 관리자 페이지 피드 조회
+    @Query(
+            value = """
+                SELECT f
+                FROM Feed f
+                    JOIN FETCH f.member m
+                WHERE (:nickname is null or m.nickname = :nickname)
+                      and (:title is null or f.topic = :title)
+        """,
+            countQuery = """
+        SELECT COUNT(f)
+        FROM Feed f
+        JOIN f.member m
+         WHERE (:nickname is null or m.nickname = :nickname)
+                      and (:title is null or f.topic = :title)
+        """
+    )
+    Page<Feed> findByMemberAndTopic(
+            @Param("nickname") String nickname,
+            @Param("title") String title,
+            Pageable pageable);
 }
 
