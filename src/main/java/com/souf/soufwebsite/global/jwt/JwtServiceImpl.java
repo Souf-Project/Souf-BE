@@ -160,13 +160,12 @@ public class JwtServiceImpl implements JwtService {
         boolean isProd = "prod".equalsIgnoreCase(activeProfile);
 
         String sameSite = isProd ? "None" : "Lax";
-        boolean secure  = !isProd;
 
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
-                .secure(secure)
+                .secure(isProd)
                 .path("/")
-                .maxAge(Duration.ofMillis(refreshTokenExpireTime / 1000))
+                .maxAge(Duration.ofMillis(refreshTokenExpireTime))
                 .sameSite(sameSite)
                 .build();
 
