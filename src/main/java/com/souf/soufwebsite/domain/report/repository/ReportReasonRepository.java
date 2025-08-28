@@ -1,7 +1,11 @@
 package com.souf.soufwebsite.domain.report.repository;
 
-import com.souf.soufwebsite.domain.report.entity.ReportReason;
+import com.souf.soufwebsite.domain.report.entity.Reason;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ReportReasonRepository extends JpaRepository<ReportReason, Long> {
+import java.util.List;
+
+public interface ReportReasonRepository extends JpaRepository<Reason, Long> {
+
+    List<Reason> findByIdIn(List<Long> ids);
 }

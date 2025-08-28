@@ -58,10 +58,14 @@ public class Report extends BaseEntity {
         this.postType = postType;
         this.postId = postId;
         this.postTitle = postTitle;
-        this.status = ReportStatus.REVIEWING;
+        this.status = ReportStatus.PENDING;
     }
 
     public void addReportReasonMapping(ReportReasonMapping reportReasonMapping) {
         this.reportReasonMappings.add(reportReasonMapping);
+    }
+
+    public void updateStatus(ReportStatus status) {
+        this.status = status;
     }
 }

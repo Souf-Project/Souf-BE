@@ -7,7 +7,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminReportResDto;
 import com.souf.soufwebsite.domain.member.entity.QMember;
-import com.souf.soufwebsite.domain.report.entity.QReportReason;
+import com.souf.soufwebsite.domain.report.entity.QReason;
 import com.souf.soufwebsite.domain.report.entity.QReportReasonMapping;
 import com.souf.soufwebsite.domain.report.entity.ReportStatus;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +35,7 @@ public class ReportCustomRepositoryImpl implements ReportCustomRepository {
         QMember reportedMember = new QMember("reportedMember");
         QMember reporter       = new QMember("reporter");
         QReportReasonMapping rrm = QReportReasonMapping.reportReasonMapping;
-        QReportReason reason = QReportReason.reportReason;
+        QReason reason = QReason.reason1;
 
         BooleanBuilder condition = new BooleanBuilder();
         BooleanExpression postTypeCondition = extractedPostType(postType);
@@ -122,7 +122,7 @@ public class ReportCustomRepositoryImpl implements ReportCustomRepository {
         List<Tuple> reasonRows = queryFactory
                 .select(rrm.report.id, reason.id)
                 .from(rrm)
-                .join(rrm.reportReason, reason)
+                .join(rrm.reason, reason)
                 .where(rrm.report.id.in(reportIds))
                 .fetch();
 

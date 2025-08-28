@@ -4,10 +4,9 @@ import com.souf.soufwebsite.domain.feed.exception.NotFoundFeedException;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.report.dto.ReportReqDto;
+import com.souf.soufwebsite.domain.report.entity.Reason;
 import com.souf.soufwebsite.domain.report.entity.Report;
-import com.souf.soufwebsite.domain.report.entity.ReportReason;
 import com.souf.soufwebsite.domain.report.entity.ReportReasonMapping;
-import com.souf.soufwebsite.domain.report.exception.NotFoundReportReasonException;
 import com.souf.soufwebsite.domain.report.exception.NotMatchedReportOwnerException;
 import com.souf.soufwebsite.domain.report.repository.ReportReasonRepository;
 import com.souf.soufwebsite.domain.report.repository.ReportRepository;
@@ -16,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -46,10 +47,9 @@ public class ReportServiceImpl implements ReportService {
                 reqDto.postType(), reqDto.postId(), reqDto.title());
         reportRepository.save(report);
 
-        for (Long reasonId : reqDto.reasons()){
-            ReportReason reportReason = reportReasonRepository.findById(reasonId)
-                    .orElseThrow(NotFoundReportReasonException::new);
-            ReportReasonMapping reportReasonMapping = new ReportReasonMapping(report, reportReason);
+        List<Reason> reasons = reportReasonRepository.findByIdIn(reqDto.reasons());
+        for(Reason reason : reasons) {
+            ReportReasonMapping reportReasonMapping = new ReportReasonMapping(report, reason);
             report.addReportReasonMapping(reportReasonMapping);
         }
         log.info("신고글이 생성되었습니다!: {}", report);

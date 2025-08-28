@@ -10,18 +10,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ReportReasonMapping {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @EmbeddedId
+    private ReportReasonId id;
 
+    @MapsId("reportId")
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "report_id")
     private Report report;
 
+    @MapsId("reasonId")
     @ManyToOne(fetch = FetchType.LAZY)
-    private ReportReason reportReason;
+    @JoinColumn(name = "reason_id")
+    private Reason reason;
 
-    public ReportReasonMapping(Report report, ReportReason reportReason) {
+    public ReportReasonMapping(Report report, Reason reason) {
         this.report = report;
-        this.reportReason = reportReason;
+        this.reason = reason;
     }
 }
