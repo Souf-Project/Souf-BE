@@ -2,7 +2,7 @@ package com.souf.soufwebsite.domain.member.controller.auth;
 
 import com.souf.soufwebsite.domain.member.dto.ReqDto.*;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
-import com.souf.soufwebsite.domain.member.service.MemberService;
+import com.souf.soufwebsite.domain.member.service.general.MemberService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;

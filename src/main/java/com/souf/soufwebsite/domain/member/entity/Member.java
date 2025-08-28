@@ -6,6 +6,7 @@ import com.souf.soufwebsite.global.common.BaseEntity;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.exception.NotDuplicateCategoryException;
 import com.souf.soufwebsite.global.common.category.exception.NotExceedCategoryLimitException;
+import com.souf.soufwebsite.global.util.HashUtil;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
@@ -71,13 +72,26 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Feed> feeds = new ArrayList<>();
 
+    // 이용약관 동의서 속성
+    @Column(name = "personal_info_agreement", nullable = false)
+    private boolean personalInfoAgreement = false;
+
+    @Column(name = "marketing_agreement", nullable = false)
+    private boolean marketingAgreement = false;
+
+    @Column(name = "cumulative_report_count")
+    private Integer cumulativeReportCount;
+
     @Builder
-    public Member(String email, String password, String username, String nickname, RoleType role) {
+    public Member(String email, String password, String username, String nickname, RoleType role, Boolean marketingAgreement) {
         this.email = email;
         this.password = password;
         this.username = username;
         this.nickname = nickname;
         this.role = role;
+        this.personalInfoAgreement = true;
+        this.marketingAgreement = marketingAgreement;
+        this.cumulativeReportCount = 0;
     }
 
     // 회원 정보 업데이트 (업데이트 가능한 필드만 반영)
@@ -86,6 +100,7 @@ public class Member extends BaseEntity {
         if (dto.nickname() != null) this.nickname = dto.nickname();
         if (dto.intro() != null) this.intro = dto.intro();
         if (dto.personalUrl() != null) this.personalUrl = dto.personalUrl();
+        if (dto.marketingAgreement() != null) this.marketingAgreement = dto.marketingAgreement();
     }
 
     public void updateRole(RoleType newRole) {
@@ -129,7 +144,11 @@ public class Member extends BaseEntity {
         categories.clear();
     }
 
-    public void softDelete() {
+    public void softDelete() { // SHA-256 같은 방식
+        this.email = "deleted:" + HashUtil.sha256(this.email);
+        this.username = "탈퇴한 회원";
+        this.intro = "탈퇴한 회원입니다.";
+        this.personalUrl = null;
         this.isDeleted = true;
         this.deletedAt = LocalDateTime.now();
     }

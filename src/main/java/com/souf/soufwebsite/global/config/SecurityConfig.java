@@ -81,46 +81,60 @@ public class SecurityConfig {
                                         "/error"
                                 ).permitAll()
 
-                                .requestMatchers(
-                                        HttpMethod.GET,
-                                        "/api/v1/feed",
-                                        "/api/v1/recruit",
-                                        "/api/v1/member",
-                                        "/api/v1/search",
-                                        "/api/v1/view/**"
-                                ).permitAll()
-
                                 .requestMatchers("/v1/normal/check").permitAll()
                                 .requestMatchers("/api/v1/auth/**").permitAll()
-                                .requestMatchers("/api/v1/recruit/popular", "/api/v1/feed/popular")
-                                .permitAll()
+                                .requestMatchers("/api/v1/social/**").permitAll()
+                                .requestMatchers("/api/v1/recruit/popular", "/api/v1/feed/popular").permitAll()
 
-                                // 2) STUDENT 전용: apply, withdraw, 내 지원 내역
-                                .requestMatchers(HttpMethod.POST,   "/api/v1/applications/*/apply")
-                                .hasRole("STUDENT")
-                                .requestMatchers(HttpMethod.DELETE, "/api/v1/applications/*/apply")
-                                .hasRole("STUDENT")
-                                .requestMatchers(HttpMethod.GET,    "/api/v1/applications/my")
-                                .hasRole("STUDENT")
-
-                                // 3) MEMBER(=공고 작성자) 전용: 지원자 목록, 승인·거절
-                                .requestMatchers(HttpMethod.GET,  "/api/v1/applications/*/applicants")
-                                .hasAnyRole("MEMBER","ADMIN")
-                                .requestMatchers(HttpMethod.POST, "/api/v1/applications/*/approve",
-                                        "/api/v1/applications/*/reject")
-                                .hasAnyRole("MEMBER","ADMIN")
-
-                                // 4) 기타 GET 엔드포인트: 로그인된 모든 사용자
+                                // 1) 인증 필요한 특정 GET (더 구체적인 경로를 먼저!)
                                 .requestMatchers(HttpMethod.GET,
-                                        "/api/v1/feed/**",
-                                        "/api/v1/recruit/**",
-                                        "/api/v1/member/**"
+                                        "/api/v1/recruit/my",
+                                        "/api/v1/member/**",
+                                        "/api/v1/notifications/**"
                                 ).authenticated()
 
-                                // 5) POST/PUT/DELETE 등 기타 공고·피드 엔드포인트
-                                .requestMatchers("/api/v1/recruit/**").hasAnyRole("MEMBER", "ADMIN")
-                                .requestMatchers("/api/v1/feed/**").hasAnyRole("STUDENT", "ADMIN")
-                                .requestMatchers("/api/v1/admin/bulk-reindex").hasAnyRole("ADMIN")
+                                // 2) 공개 GET (그 다음에 포괄적인 공개 GET)
+                                .requestMatchers(HttpMethod.GET,
+                                        "/api/v1/feed/**",
+                                        "api/v1/feed/*/*",
+                                        "/api/v1/recruit/**",
+                                        "/api/v1/view/**",
+                                        "/api/v1/post/**",
+                                        "/api/v1/search",
+                                        "/api/v1/member" // 주의: member/**는 위에서 authenticated 처리
+                                ).permitAll()
+
+                                // 3) STUDENT 전용
+                                .requestMatchers(HttpMethod.POST,   "/api/v1/applications/*/apply").hasRole("STUDENT")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/applications/*/apply").hasRole("STUDENT")
+                                .requestMatchers(HttpMethod.GET,    "/api/v1/applications/my").hasRole("STUDENT")
+
+                                // 4) MEMBER/ADMIN 전용
+                                .requestMatchers(HttpMethod.GET,  "/api/v1/applications/*/applicants").hasAnyRole("MEMBER","ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/v1/applications/*/approve", "/api/v1/applications/*/reject")
+                                .hasAnyRole("MEMBER","ADMIN")
+
+                                // 5) 쓰기 권한(POST/PUT/PATCH/DELETE) — 리소스별로 묶어서
+                                .requestMatchers(HttpMethod.PATCH, "/api/v1/feed/*/like").hasAnyRole("MEMBER","ADMIN","STUDENT")
+                                // recruit: MEMBER, ADMIN만 쓰기 허용
+                                .requestMatchers(HttpMethod.POST,   "/api/v1/recruit/**").hasAnyRole("MEMBER","ADMIN")
+                                .requestMatchers(HttpMethod.PUT,    "/api/v1/recruit/**").hasAnyRole("MEMBER","ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/recruit/**").hasAnyRole("MEMBER","ADMIN")
+
+                                // feed: STUDENT만(또는 운영 포함하려면 STUDENT, ADMIN)
+                                .requestMatchers(HttpMethod.POST,   "/api/v1/feed/**").hasAnyRole("STUDENT","ADMIN")
+                                .requestMatchers(HttpMethod.PUT,    "/api/v1/feed/**").hasAnyRole("STUDENT","ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/feed/**").hasAnyRole("STUDENT","ADMIN")
+
+                                // post: 기존 정책에 맞게 별도로
+                                .requestMatchers(HttpMethod.POST,   "/api/v1/post/**").hasAnyRole("MEMBER","ADMIN","STUDENT")
+                                .requestMatchers(HttpMethod.PUT,    "/api/v1/post/**").hasAnyRole("MEMBER","ADMIN","STUDENT")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/post/**").hasAnyRole("MEMBER","ADMIN","STUDENT")
+
+                                // 6) 관리자 전용
+                                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+
+                                // 7) 나머지
                                 .anyRequest().authenticated()
                 );
 

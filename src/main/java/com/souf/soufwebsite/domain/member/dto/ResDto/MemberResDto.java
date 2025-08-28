@@ -38,10 +38,13 @@ public record MemberResDto(
         String profileImageUrl,
 
         @Schema(description = "회원이 설정한 카테고리")
-        List<CategoryDto> categoryDtoList
+        List<CategoryDto> categoryDtoList,
+
+        @Schema(description = "회원이 설정한 마케팅 수신 동의 여부")
+        Boolean marketingAgreement
 
 ) {
-    public static MemberResDto from(Member member, List<MemberCategoryMapping> categories, String profileImageUrl) {
+    public static MemberResDto from(Member member, List<MemberCategoryMapping> categories, String profileImageUrl, Boolean marketingAgreement) {
         return new MemberResDto(
                 member.getId(),
                 member.getEmail(),
@@ -51,7 +54,8 @@ public record MemberResDto(
                 member.getPersonalUrl(),
                 member.getRole(),
                 profileImageUrl,
-                convertToCategoryDto(categories)
+                convertToCategoryDto(categories),
+                marketingAgreement
         );
     }
 

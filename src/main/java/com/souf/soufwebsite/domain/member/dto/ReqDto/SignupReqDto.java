@@ -29,6 +29,14 @@ public record SignupReqDto(
         @NotEmpty String passwordCheck,
 
         @Schema(description = "카테고리 목록", example = "[{\"firstCategory\": 1, \"secondCategory\": 1, \"thirdCategory\": 1}]")
-        List<CategoryDto> categoryDtos
+        List<CategoryDto> categoryDtos,
+
+        @NotNull
+        @Schema(description = "개인정보 동의서 확인 여부", example = "true여야 합니다.")
+        Boolean isPersonalInfoAgreed,
+
+        @Schema(description = "마케팅 동의 확인 여부", example = "true or false")
+        Boolean isMarketingAgreed
+
 ) {
 }

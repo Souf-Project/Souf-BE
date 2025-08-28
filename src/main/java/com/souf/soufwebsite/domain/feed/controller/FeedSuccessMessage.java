@@ -12,7 +12,10 @@ public enum FeedSuccessMessage {
     FEED_GET("피드를 조회하였습니다."),
     FEED_GET_POPULATION("인기있는 공고문을 조회하였습니다."),
     FEED_UPDATE("피드를 수정하였습니다."),
-    FEED_DELETE("피드를 삭제하였습니다.");
+    FEED_DELETE("피드를 삭제하였습니다."),
+
+    /* ================================== Like Message =============================== */
+    FEED_LIKE_UPDATE_SUCCESS("피드 좋아요가 업데이트 되었습니다!");
 
     private final String message;
 

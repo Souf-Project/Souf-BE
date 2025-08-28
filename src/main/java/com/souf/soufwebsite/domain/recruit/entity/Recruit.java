@@ -1,7 +1,7 @@
 package com.souf.soufwebsite.domain.recruit.entity;
 
 import com.souf.soufwebsite.domain.city.entity.City;
-import com.souf.soufwebsite.domain.citydetail.entity.CityDetail;
+import com.souf.soufwebsite.domain.city.entity.CityDetail;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
 import com.souf.soufwebsite.global.common.BaseEntity;

@@ -26,6 +26,13 @@ spring:
             enable: true
     default-encoding: UTF-8
 
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: "/"
+
 jwt:
   secret: ${JWT_SECRET}
   access:
@@ -66,3 +73,17 @@ opensearch:
 
   index:
     name: souf-website-index
+
+oauth:
+  kakao:
+    clientId: ${KAKAO_CLIENT_ID}
+    redirectUri: ${KAKAO_REDIRECT_URI}
+    tokenUri: https://kauth.kakao.com/oauth/token
+    userInfoUri: https://kapi.kakao.com/v2/user/me
+
+  google:
+    clientId: ${GOOGLE_CLIENT_ID}
+    clientSecret: ${GOOGLE_CLIENT_SECRET}
+    redirectUri: ${GOOGLE_REDIRECT_URI}
+    tokenUri: https://oauth2.googleapis.com/token
+    userInfoUri: https://www.googleapis.com/oauth2/v3/userinfo

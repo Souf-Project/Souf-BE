@@ -24,4 +24,6 @@ public interface FeedService {
     List<FeedSimpleResDto> getPopularFeeds(Pageable pageable);
 
     Slice<FeedDetailResDto> getFeeds(Long first, Pageable pageable);
+
+    void updateLikedCount(Long feedId, LikeFeedReqDto likeFeedReqDto);
 }

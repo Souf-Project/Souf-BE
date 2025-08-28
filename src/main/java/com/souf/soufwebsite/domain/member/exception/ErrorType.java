@@ -15,7 +15,13 @@ public enum ErrorType {
 
     // ----------------------------------- Favorite --------------------------------
 
-    NOT_FOUND_FAVORITE(404, "즐겨찾기 목록에서 찾을 수 없습니다.");
+    NOT_FOUND_FAVORITE(404, "즐겨찾기 목록에서 찾을 수 없습니다."),
+
+    // ----------------------------------- Agreement -------------------------------
+
+    NOT_AGREED_PERSONAL_INFO(404, "개인정보 동의서에 동의하지 않았습니다."),
+    NOT_ALLOW_SIGNUP(404, "가입이 제한된 이메일입니다.");
+
 
     private final int code;
     private final String message;
