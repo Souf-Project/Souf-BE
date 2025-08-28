@@ -2,6 +2,7 @@ package com.souf.soufwebsite.global.config;
 
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.report.service.BanService;
+import com.souf.soufwebsite.global.jwt.BanCheckFilter;
 import com.souf.soufwebsite.global.jwt.JwtAuthenticationFilter;
 import com.souf.soufwebsite.global.jwt.JwtLogoutHandler;
 import com.souf.soufwebsite.global.jwt.JwtServiceImpl;
@@ -68,8 +69,8 @@ public class SecurityConfig {
 
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-//                .addFilterAfter(new BanCheckFilter(banService), JwtAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(new BanCheckFilter(banService), JwtAuthenticationFilter.class);
 
         http
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->

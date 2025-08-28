@@ -8,7 +8,7 @@ import com.souf.soufwebsite.domain.report.entity.Reason;
 import com.souf.soufwebsite.domain.report.entity.Report;
 import com.souf.soufwebsite.domain.report.entity.ReportReasonMapping;
 import com.souf.soufwebsite.domain.report.exception.NotMatchedReportOwnerException;
-import com.souf.soufwebsite.domain.report.repository.ReportReasonRepository;
+import com.souf.soufwebsite.domain.report.repository.ReasonRepository;
 import com.souf.soufwebsite.domain.report.repository.ReportRepository;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ public class ReportServiceImpl implements ReportService {
 
     private final MemberRepository memberRepository;
     private final ReportRepository reportRepository;
-    private final ReportReasonRepository reportReasonRepository;
+    private final ReasonRepository reasonRepository;
 
     private Member getCurrentMember() {
         return SecurityUtils.getCurrentMember();
@@ -45,13 +45,13 @@ public class ReportServiceImpl implements ReportService {
 
         Report report = new Report(reqDto.description(), reporter, reportedMember,
                 reqDto.postType(), reqDto.postId(), reqDto.title());
-        reportRepository.save(report);
 
-        List<Reason> reasons = reportReasonRepository.findByIdIn(reqDto.reasons());
+        List<Reason> reasons = reasonRepository.findByIdIn(reqDto.reasons());
         for(Reason reason : reasons) {
             ReportReasonMapping reportReasonMapping = new ReportReasonMapping(report, reason);
             report.addReportReasonMapping(reportReasonMapping);
         }
+        reportRepository.save(report);
         log.info("신고글이 생성되었습니다!: {}", report);
     }
 

@@ -5,6 +5,7 @@ import com.souf.soufwebsite.global.exception.AuthorizedException;
 import com.souf.soufwebsite.global.security.UserDetailsImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -32,5 +33,18 @@ public class SecurityUtils {
 
         // 그 외에는 예외 처리
         throw new AuthorizedException();
+    }
+
+    public static Member getCurrentMemberOrNull() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || authentication instanceof AnonymousAuthenticationToken) {
+            return null;
+        }
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof Member m) return m;
+        if (principal instanceof UserDetailsImpl u) return u.getMember();
+        return null;
     }
 }
