@@ -22,10 +22,14 @@ public class Sanction extends BaseEntity {
     private Long memberId; // 신고받은 인원
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private SanctionType sanctionType;
 
+    @Column
     private Instant untilAt; // 1, 2회 신고 적발 시 사용할 컬럼
+    @Column
     private Long reportId;
+    @Column
     private String reason; // 어떤 게시글로 제재되었는지 표기
 
     private Sanction(Long memberId, SanctionType type,
