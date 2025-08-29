@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 public class ReportReasonMapping {
 
     @EmbeddedId
-    private ReportReasonId id;
+    private ReportReasonId id = new ReportReasonId();
 
     @MapsId("reportId")
     @ManyToOne(fetch = FetchType.LAZY)

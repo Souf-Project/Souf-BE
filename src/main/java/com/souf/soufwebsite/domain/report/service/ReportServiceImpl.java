@@ -48,6 +48,7 @@ public class ReportServiceImpl implements ReportService {
 
         List<Reason> reasons = reasonRepository.findByIdIn(reqDto.reasons());
         for(Reason reason : reasons) {
+            log.info("reason: {}", reason.getId());
             ReportReasonMapping reportReasonMapping = new ReportReasonMapping(report, reason);
             report.addReportReasonMapping(reportReasonMapping);
         }
