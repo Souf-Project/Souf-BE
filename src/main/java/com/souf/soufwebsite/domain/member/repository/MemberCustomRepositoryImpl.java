@@ -1,7 +1,6 @@
 package com.souf.soufwebsite.domain.member.repository;
 
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
@@ -14,6 +13,7 @@ import com.souf.soufwebsite.domain.member.dto.ResDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
+import com.souf.soufwebsite.domain.report.repository.SanctionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -33,6 +33,7 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
 
     private final JPAQueryFactory queryFactory;
     private final FeedRepository feedRepository;
+    private final SanctionRepository sanctionRepository;
     private final FileService fileService;
 
 //    @Override
@@ -150,23 +151,21 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
             condition.and(nicknameCondition);
         }
 
-        List<AdminMemberResDto> members = queryFactory
-                .select(
-                        Projections.constructor(
-                                AdminMemberResDto.class,
-                                member.id,
-                                member.role,
-                                member.username,
-                                member.nickname,
-                                member.email,
-                                member.cumulativeReportCount,
-                                member.isDeleted
-                        )
-                ).from(member)
+        List<Member> members = queryFactory
+                .selectFrom(member)
                 .where(condition)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
+
+        List<AdminMemberResDto> result = members.stream().map(
+                m -> {
+                    int strikes = sanctionRepository.countStrikes(m.getId());
+
+                    return new AdminMemberResDto(m.getId(), m.getRole(), m.getUsername(), m.getNickname(),
+                            m.getEmail(), strikes, m.isDeleted());
+                }
+        ).toList();
 
         long total = Optional.ofNullable(
                 queryFactory
@@ -176,7 +175,7 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
                         .fetchOne()
         ).orElse(0L);
 
-        return new PageImpl<>(members, pageable, total);
+        return new PageImpl<>(result, pageable, total);
     }
 
     private BooleanExpression extractedRoleType(RoleType memberType) {
