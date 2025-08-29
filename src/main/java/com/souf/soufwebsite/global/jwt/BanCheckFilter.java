@@ -8,12 +8,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Optional;
 
+@Slf4j
 @RequiredArgsConstructor
 public class BanCheckFilter extends OncePerRequestFilter {
 
@@ -24,7 +26,7 @@ public class BanCheckFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        Member member = SecurityUtils.getCurrentMember();
+        Member member = SecurityUtils.getCurrentMemberOrNull();
         if(member != null && banService.isBanned(member.getId())) {
             Optional<Duration> remaining = banService.remaining(member.getId());
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -37,9 +39,9 @@ public class BanCheckFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-//    @Override
-//    protected boolean shouldNotFilter(HttpServletRequest request) {
-//        String requestURI = request.getRequestURI();
-//        return requestURI.startsWith("/health") || requestURI.startsWith("/auth/**");
-//    }
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String requestURI = request.getRequestURI();
+        return requestURI.startsWith("/v1/normal/check");
+    }
 }

@@ -70,6 +70,8 @@ public class AdminController implements AdminApiSpecification{
             @PathVariable(name = "reportId") Long reportId,
             @RequestParam(name = "reportStatus") ReportStatus status
     ) {
-        return null;
+        adminService.updateReportStatus(reportId, status);
+
+        return new SuccessResponse(REPORT_UPDATE_SUCCESS.getMessage());
     }
 }

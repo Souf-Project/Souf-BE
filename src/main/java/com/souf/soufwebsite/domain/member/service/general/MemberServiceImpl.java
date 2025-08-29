@@ -17,6 +17,8 @@ import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.opensearch.EntityType;
 import com.souf.soufwebsite.domain.opensearch.OperationType;
 import com.souf.soufwebsite.domain.opensearch.event.IndexEventPublisherHelper;
+import com.souf.soufwebsite.domain.report.exception.DeclaredMemberException;
+import com.souf.soufwebsite.domain.report.service.BanService;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
@@ -41,6 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -58,6 +61,7 @@ public class MemberServiceImpl implements MemberService {
     private final SlackService slackService;
 
     private final SesMailService mailService;
+    private final BanService banService;
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
@@ -111,6 +115,7 @@ public class MemberServiceImpl implements MemberService {
     //로그인
     @Override
     public TokenDto signin(SigninReqDto reqDto, HttpServletResponse response) {
+        log.info("email: {}, password: {}", reqDto.email(), reqDto.password());
         if (redisTemplate.hasKey("email:withdraw:" + reqDto.email())) {
             throw new NotAllowedSignupException();
         }
@@ -122,6 +127,12 @@ public class MemberServiceImpl implements MemberService {
 
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(NotFoundMemberException::new);
+
+        if(banService.isBanned(member.getId())){
+            Optional<Duration> remaining = banService.remaining(member.getId());
+            String msg = remaining.map(duration -> "remaining: " + duration.toHours() + "h").orElse("permanent");
+            throw new DeclaredMemberException(msg);
+        }
 
         String accessToken = jwtService.createAccessToken(member);
         String refreshToken = jwtService.createRefreshToken(member);

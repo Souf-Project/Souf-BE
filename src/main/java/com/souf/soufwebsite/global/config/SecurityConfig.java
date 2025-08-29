@@ -2,6 +2,7 @@ package com.souf.soufwebsite.global.config;
 
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.report.service.BanService;
+import com.souf.soufwebsite.global.jwt.BanCheckFilter;
 import com.souf.soufwebsite.global.jwt.JwtAuthenticationFilter;
 import com.souf.soufwebsite.global.jwt.JwtLogoutHandler;
 import com.souf.soufwebsite.global.jwt.JwtServiceImpl;
@@ -68,8 +69,8 @@ public class SecurityConfig {
 
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-//                .addFilterAfter(new BanCheckFilter(banService), JwtAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(new BanCheckFilter(banService), JwtAuthenticationFilter.class);
 
         http
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
@@ -87,7 +88,7 @@ public class SecurityConfig {
                                 .requestMatchers("/v1/normal/check").permitAll()
                                 .requestMatchers("/api/v1/auth/**").permitAll()
                                 .requestMatchers("/api/v1/social/**").permitAll()
-                                .requestMatchers("/api/v1/recruit/popular", "/api/v1/feed/popular").permitAll()
+                                .requestMatchers("/api/v1/recruit/popular", "/api/v1/feed/popular", "/api/v1/member").permitAll()
 
                                 // 1) 인증 필요한 특정 GET (더 구체적인 경로를 먼저!)
                                 .requestMatchers(HttpMethod.GET,
@@ -103,8 +104,7 @@ public class SecurityConfig {
                                         "/api/v1/recruit/**",
                                         "/api/v1/view/**",
                                         "/api/v1/post/**",
-                                        "/api/v1/search",
-                                        "/api/v1/member" // 주의: member/**는 위에서 authenticated 처리
+                                        "/api/v1/search" // 주의: member/**는 위에서 authenticated 처리
                                 ).permitAll()
 
                                 // 3) STUDENT 전용

@@ -16,7 +16,8 @@ public enum ErrorType {
 
     /* ============================= 재제 예외 -------------------------------------- */
 
-    DUPLICATE_SANCTION(404, "동일한 내역이 이미 존재합니다.");
+    DUPLICATE_SANCTION(404, "동일한 내역이 이미 존재합니다."),
+    DECLARED_MEMBER(423, "S423");
 
     private final int code;
     private final String message;
