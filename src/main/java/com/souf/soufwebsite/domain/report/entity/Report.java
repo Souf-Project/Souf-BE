@@ -8,8 +8,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -26,7 +26,7 @@ public class Report extends BaseEntity {
 
     @Column(nullable = false)
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ReportReasonMapping> reportReasonMappings = new ArrayList<>();
+    private Set<ReportReasonMapping> reportReasonMappings = new LinkedHashSet<>();
 
     @Column(nullable = false)
     private String description;

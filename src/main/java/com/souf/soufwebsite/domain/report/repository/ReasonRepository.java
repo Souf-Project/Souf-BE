@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface ReportReasonRepository extends JpaRepository<Reason, Long> {
+public interface ReasonRepository extends JpaRepository<Reason, Long> {
 
     List<Reason> findByIdIn(List<Long> ids);
 }
