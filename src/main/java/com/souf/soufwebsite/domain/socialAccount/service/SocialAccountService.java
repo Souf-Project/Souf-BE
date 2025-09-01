@@ -96,9 +96,17 @@ public class SocialAccountService {
         if (account != null) {
             Member member = account.getMember();
             TokenDto token = issueTokens(member); // 아래 헬퍼 참고
-            return new SocialLoginResDto(false, token, null,
-                    new SocialPrefill(member.getEmail(), member.getUsername(),
-                            info.profileImageUrl(), request.provider().name()));
+            return SocialLoginResDto.loggedIn(token, new SocialPrefill(
+                    member.getEmail(), member.getUsername(), info.profileImageUrl(), request.provider().name()
+            ));
+        }
+
+        // 1-2) 소셜 연결은 없고, 이메일이 있고, 그 이메일로 기존 회원이 있으면 → 연결 필요
+        if (info.email() != null && memberRepository.findByEmail(info.email()).isPresent()) {
+            return SocialLoginResDto.requiresLink(
+                    /* message */ "이미 가입된 이메일입니다. 기존 계정으로 로그인 후 '마이페이지 > 소셜 연결'에서 연동해 주세요.",
+                    /* prefill */ new SocialPrefill(info.email(), info.name(), info.profileImageUrl(), request.provider().name())
+            );
         }
 
         // 2) 연결이 없으면 → 온보딩 필요 (DB 생성 금지!)
@@ -116,12 +124,9 @@ public class SocialAccountService {
         redisTemplate.opsForHash().putAll("social:reg:" + registrationToken, payload);
         redisTemplate.expire("social:reg:" + registrationToken, java.time.Duration.ofMinutes(10));
 
-        return new SocialLoginResDto(
-                true,                      // requiresSignup
-                null,                      // token 없음
-                registrationToken,         // 프론트가 들고 온보딩 완료 호출에 사용
-                new SocialPrefill(info.email(), info.name(),
-                        info.profileImageUrl(), request.provider().name())
+        return SocialLoginResDto.requiresSignup(
+                registrationToken,
+                new SocialPrefill(info.email(), info.name(), info.profileImageUrl(), request.provider().name())
         );
     }
 
