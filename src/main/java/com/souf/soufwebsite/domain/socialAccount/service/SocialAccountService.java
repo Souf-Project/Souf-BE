@@ -96,7 +96,7 @@ public class SocialAccountService {
         if (account != null) {
             Member member = account.getMember();
             TokenDto token = issueTokens(member); // 아래 헬퍼 참고
-            return SocialLoginResDto.loggedIn(token, /*prefill*/ new SocialPrefill(
+            return SocialLoginResDto.loggedIn(token, new SocialPrefill(
                     member.getEmail(), member.getUsername(), info.profileImageUrl(), request.provider().name()
             ));
         }
