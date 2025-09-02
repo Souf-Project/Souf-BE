@@ -14,6 +14,8 @@ import com.souf.soufwebsite.domain.socialAccount.SocialProvider;
 import com.souf.soufwebsite.domain.socialAccount.client.SocialApiClient;
 import com.souf.soufwebsite.domain.socialAccount.dto.*;
 import com.souf.soufwebsite.domain.socialAccount.entity.SocialAccount;
+import com.souf.soufwebsite.domain.socialAccount.exception.AlreadyLinkedException;
+import com.souf.soufwebsite.domain.socialAccount.exception.AlreadyLinkedOtherUserException;
 import com.souf.soufwebsite.domain.socialAccount.exception.DuplicateEmailException;
 import com.souf.soufwebsite.domain.socialAccount.exception.NotValidAuthenticationException;
 import com.souf.soufwebsite.domain.socialAccount.repository.SocialAccountRepository;
@@ -202,6 +204,50 @@ public class SocialAccountService {
         slackService.sendSlackMessage(member.getNickname() + " 님이 회원가입했습니다.", "signup");
 
         return token;
+    }
+
+    @Transactional
+    public void linkForLoggedIn(Long memberId, SocialLinkReqDto req) {
+        // 1) 현재 로그인 사용자 조회
+        Member me = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalStateException("Member not found"));
+
+        // 2) provider로 토큰 교환 + 사용자 정보 조회
+        SocialApiClient client = clientMap.get(req.provider());
+        if (client == null) throw new IllegalArgumentException("Unsupported provider: " + req.provider());
+
+        SocialUserInfo info = client.getUserInfoByCode(req.code());
+
+        // 3) 이미 다른 멤버에 연결된 소셜인지 방어
+        socialAccountRepository.findByProviderAndProviderUserId(req.provider(), info.socialId())
+                .ifPresent(existing -> {
+                    if (!existing.getMember().getId().equals(memberId)) {
+                        // 다른 계정에 묶인 소셜
+                        throw new AlreadyLinkedOtherUserException();
+                    } else {
+                        // 내 계정에 이미 같은 소셜이 연결돼 있음
+                        throw new AlreadyLinkedException();
+                    }
+                });
+
+        // 4) 내 계정에 같은 provider가 이미 있는지(다른 socialId로) 점검
+        boolean hasSameProvider = socialAccountRepository.findAllByMemberId(memberId).stream()
+                .anyMatch(sa -> sa.getProvider() == req.provider());
+        if (hasSameProvider) {
+            throw new AlreadyLinkedException();
+        }
+
+        // 5) 연결 엔티티 생성
+        SocialAccount link = SocialAccount.builder()
+                .provider(req.provider())
+                .providerUserId(info.socialId())
+                .member(me)
+                .providerEmail(info.email())
+                .displayName(info.name())
+                .profileImageUrl(info.profileImageUrl())
+                .build();
+
+        socialAccountRepository.save(link);
     }
 
     private TokenDto issueTokens(Member member) {
