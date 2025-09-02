@@ -1,6 +1,7 @@
 package com.souf.soufwebsite.global.security;
 
 import com.souf.soufwebsite.domain.member.entity.Member;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -8,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
+@Getter
 public class UserDetailsImpl implements UserDetails {
 
     private final Member member;
@@ -30,7 +32,6 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public String getUsername() { return member.getEmail(); }
 
-    public Member getMember() {
-        return member;
-    }
+    public String getEmail() { return member.getEmail(); }
+
 }
