@@ -69,8 +69,13 @@ public class MemberServiceImpl implements MemberService {
     private final CategoryService categoryService;
 
     //회원가입
+    @Transactional
     @Override
     public void signup(SignupReqDto reqDto) {
+
+        if (redisTemplate.hasKey("email:withdraw:" + reqDto.email())) {
+            throw new NotAllowedSignupException();
+        }
 
         String verifiedKey = "email:verified:" + reqDto.email();
         String isVerified = redisTemplate.opsForValue().get(verifiedKey);
@@ -116,9 +121,6 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public TokenDto signin(SigninReqDto reqDto, HttpServletResponse response) {
         log.info("email: {}, password: {}", reqDto.email(), reqDto.password());
-        if (redisTemplate.hasKey("email:withdraw:" + reqDto.email())) {
-            throw new NotAllowedSignupException();
-        }
 
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(reqDto.email(), reqDto.password());
 

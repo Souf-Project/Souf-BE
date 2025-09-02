@@ -10,20 +10,20 @@ import java.util.List;
 
 public interface RecruitService {
 
-    RecruitCreateResDto createRecruit(RecruitReqDto reqDto);
+    RecruitCreateResDto createRecruit(String email, RecruitReqDto reqDto);
 
     void uploadRecruitMedia(MediaReqDto reqDto);
 
     Page<RecruitSimpleResDto> getRecruits(Long first, Long second, Long third,
                                           RecruitSearchReqDto searchReqDto, Pageable pageable);
 
-    Page<MyRecruitResDto> getMyRecruits(Pageable pageable);
+    Page<MyRecruitResDto> getMyRecruits(String email, Pageable pageable);
 
     RecruitResDto getRecruitById(Long recruitId);
 
-    RecruitCreateResDto updateRecruit(Long recruitId, RecruitReqDto reqDto);
+    RecruitCreateResDto updateRecruit(String email, Long recruitId, RecruitReqDto reqDto);
 
-    void deleteRecruit(Long recruitId);
+    void deleteRecruit(String email, Long recruitId);
 
     List<RecruitPopularityResDto> getPopularRecruits(Pageable pageable);
 
