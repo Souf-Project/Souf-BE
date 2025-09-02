@@ -14,6 +14,7 @@ import com.souf.soufwebsite.domain.socialAccount.SocialProvider;
 import com.souf.soufwebsite.domain.socialAccount.client.SocialApiClient;
 import com.souf.soufwebsite.domain.socialAccount.dto.*;
 import com.souf.soufwebsite.domain.socialAccount.entity.SocialAccount;
+import com.souf.soufwebsite.domain.socialAccount.exception.DuplicateEmailException;
 import com.souf.soufwebsite.domain.socialAccount.exception.NotValidAuthenticationException;
 import com.souf.soufwebsite.domain.socialAccount.repository.SocialAccountRepository;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
@@ -103,10 +104,7 @@ public class SocialAccountService {
 
         // 1-2) 소셜 연결은 없고, 이메일이 있고, 그 이메일로 기존 회원이 있으면 → 연결 필요
         if (info.email() != null && memberRepository.findByEmail(info.email()).isPresent()) {
-            return SocialLoginResDto.requiresLink(
-                    /* message */ "이미 가입된 이메일입니다. 기존 계정으로 로그인 후 '마이페이지 > 소셜 연결'에서 연동해 주세요.",
-                    /* prefill */ new SocialPrefill(info.email(), info.name(), info.profileImageUrl(), request.provider().name())
-            );
+            throw new DuplicateEmailException();
         }
 
         // 2) 연결이 없으면 → 온보딩 필요 (DB 생성 금지!)
