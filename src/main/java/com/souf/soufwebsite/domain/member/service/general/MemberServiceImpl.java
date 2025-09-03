@@ -260,7 +260,7 @@ public class MemberServiceImpl implements MemberService {
     //회원정보 수정
     @Override
     @Transactional
-    public MemberUpdateResDto updateUserInfo(UpdateReqDto reqDto) {
+    public MemberUpdateResDto updateUserInfo(String email, UpdateReqDto reqDto) {
         Long memberId = getCurrentUser().getId();
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(NotFoundMemberException::new);
@@ -319,7 +319,7 @@ public class MemberServiceImpl implements MemberService {
     //내 정보 조회
     @Override
     @Transactional(readOnly = true)
-    public MemberResDto getMyInfo() {
+    public MemberResDto getMyInfo(String email) {
         Member member = getCurrentUser();
         Member myMember = memberRepository.findById(member.getId()).orElseThrow(NotFoundMemberException::new); // 지연 로딩 오류 해결
         String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
@@ -355,7 +355,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public void withdraw(WithdrawReqDto reqDto) {
+    public void withdraw(String email, WithdrawReqDto reqDto) {
         Long memberId = getCurrentUser().getId();
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(NotFoundMemberException::new);

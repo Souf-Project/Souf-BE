@@ -4,6 +4,7 @@ import com.souf.soufwebsite.domain.member.dto.ReqDto.*;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.service.general.MemberService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import com.souf.soufwebsite.global.util.CurrentEmail;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -72,8 +73,10 @@ public class AuthController implements AuthApiSpecification{
     }
 
     @DeleteMapping("/withdraw")
-    public SuccessResponse<?> withdraw(@RequestBody @Valid WithdrawReqDto reqDto) {
-        memberService.withdraw(reqDto);
+    public SuccessResponse<?> withdraw(
+            @CurrentEmail String email,
+            @RequestBody @Valid WithdrawReqDto reqDto) {
+        memberService.withdraw(email, reqDto);
         return new SuccessResponse<>("회원 탈퇴 성공");
     }
 }

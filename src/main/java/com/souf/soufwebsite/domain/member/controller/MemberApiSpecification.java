@@ -7,6 +7,7 @@ import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberUpdateResDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -31,7 +32,9 @@ public interface MemberApiSpecification {
 
     @Operation(summary = "내 정보 조회", description = "로그인된 사용자의 회원 정보를 조회합니다.")
     @GetMapping("/member/myinfo")
-    SuccessResponse<MemberResDto> getMyInfo();
+    SuccessResponse<MemberResDto> getMyInfo(
+            @CurrentEmail String email
+    );
 
     @Operation(summary = "회원 단건 조회", description = "회원 ID로 특정 회원의 상세 정보를 조회합니다.")
     @GetMapping("/member/{id}")
@@ -58,6 +61,7 @@ public interface MemberApiSpecification {
     @Operation(summary = "회원정보 수정", description = "로그인된 사용자의 회원정보를 업데이트합니다.")
     @PutMapping("/update")
     SuccessResponse<MemberUpdateResDto> updateUserInfo(
+            @CurrentEmail String email,
             @RequestBody @Valid UpdateReqDto reqDto
     );
 
