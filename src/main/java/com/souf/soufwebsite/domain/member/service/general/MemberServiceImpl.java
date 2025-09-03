@@ -27,7 +27,6 @@ import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.common.mail.SesMailService;
 import com.souf.soufwebsite.global.jwt.JwtService;
 import com.souf.soufwebsite.global.slack.service.SlackService;
-import com.souf.soufwebsite.global.util.SecurityUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -63,9 +62,6 @@ public class MemberServiceImpl implements MemberService {
     private final SesMailService mailService;
     private final BanService banService;
 
-    private Member getCurrentUser() {
-        return SecurityUtils.getCurrentMember();
-    }
     private final CategoryService categoryService;
 
     //회원가입
@@ -261,7 +257,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public MemberUpdateResDto updateUserInfo(String email, UpdateReqDto reqDto) {
-        Long memberId = getCurrentUser().getId();
+        Long memberId = findIfEmailExists(email).getId();
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(NotFoundMemberException::new);
 
@@ -320,7 +316,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional(readOnly = true)
     public MemberResDto getMyInfo(String email) {
-        Member member = getCurrentUser();
+        Member member = findIfEmailExists(email);
         Member myMember = memberRepository.findById(member.getId()).orElseThrow(NotFoundMemberException::new); // 지연 로딩 오류 해결
         String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
         return MemberResDto.from(myMember, myMember.getCategories(), mediaUrl, member.isMarketingAgreement());
@@ -356,7 +352,8 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public void withdraw(String email, WithdrawReqDto reqDto) {
-        Long memberId = getCurrentUser().getId();
+        Member currentMember = findIfEmailExists(email);
+        Long memberId = currentMember.getId();
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(NotFoundMemberException::new);
 
@@ -387,5 +384,9 @@ public class MemberServiceImpl implements MemberService {
             MemberCategoryMapping mapping = MemberCategoryMapping.of(member, first, second, third);
             member.addCategory(mapping);
         }
+    }
+
+    private Member findIfEmailExists(String email) {
+        return memberRepository.findByEmail(email).orElseThrow(NotFoundMemberException::new);
     }
 }
