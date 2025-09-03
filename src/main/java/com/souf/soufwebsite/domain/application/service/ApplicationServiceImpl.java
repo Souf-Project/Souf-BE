@@ -9,11 +9,12 @@ import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
+import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.mail.SesMailService;
-import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,10 +31,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private final RecruitRepository recruitRepository;
     private final SesMailService emailService;
     private final FileService fileService;
-
-    private Member getCurrentUser() {
-        return SecurityUtils.getCurrentMember();
-    }
+    private final MemberRepository memberRepository;
 
     private void verifyOwner(Recruit recruit, Member member) {
         if (!recruit.getMember().getId().equals(member.getId())) {
@@ -43,8 +41,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public void apply(Long recruitId) {
-        Member member = getCurrentUser();
+    public void apply(String email, Long recruitId) {
+        Member member = findIfEmailExists(email);
         Recruit recruit = recruitRepository.findById(recruitId)
                 .orElseThrow(NotFoundRecruitException::new);
 
@@ -67,8 +65,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public void deleteApplication(Long recruitId) {
-        Member member = getCurrentUser();
+    public void deleteApplication(String email, Long recruitId) {
+        Member member = findIfEmailExists(email);
         Recruit recruit = recruitRepository.findById(recruitId)
                 .orElseThrow(NotFoundRecruitException::new);
 
@@ -81,8 +79,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<MyApplicationResDto> getMyApplications(Pageable pageable) {
-        Member me = getCurrentUser();
+    public Page<MyApplicationResDto> getMyApplications(String email, Pageable pageable) {
+        Member me = findIfEmailExists(email);
         return applicationRepository.findByMember(me, pageable)
                 .map(app -> {
                     Recruit recruit = app.getRecruit();
@@ -109,8 +107,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ApplicantResDto> getApplicantsByRecruit(Long recruitId, Pageable pageable) {
-        Member me = getCurrentUser();
+    public Page<ApplicantResDto> getApplicantsByRecruit(String email, Long recruitId, Pageable pageable) {
+        Member me = findIfEmailExists(email);
         Recruit recruit = recruitRepository.findById(recruitId)
                 .orElseThrow(NotFoundRecruitException::new);
         verifyOwner(recruit, me);
@@ -129,8 +127,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public void reviewApplication(Long applicationId, boolean approve) {
-        Member me = getCurrentUser();
+    public void reviewApplication(String email, Long applicationId, boolean approve) {
+        Member me = findIfEmailExists(email);
 
         Application app = applicationRepository.findById(applicationId)
                 .orElseThrow(NotFoundApplicationException::new);
@@ -146,5 +144,9 @@ public class ApplicationServiceImpl implements ApplicationService {
 
 
         emailService.announceRecruitResult(to, m.getNickname(), title);
+    }
+
+    private Member findIfEmailExists(String email) {
+        return memberRepository.findByEmail(email).orElseThrow(NotFoundMemberException::new);
     }
 }

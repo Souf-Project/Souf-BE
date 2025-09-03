@@ -4,11 +4,14 @@ package com.souf.soufwebsite.domain.application.controller;
 import com.souf.soufwebsite.domain.application.dto.MyApplicationResDto;
 import com.souf.soufwebsite.domain.application.service.ApplicationService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import com.souf.soufwebsite.global.util.CurrentEmail;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
+
+import static com.souf.soufwebsite.domain.application.controller.ApplicationSuccessMessage.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -18,21 +21,28 @@ public class StudentApplicationController implements StudentApplicationApiSpecif
     private final ApplicationService applicationService;
 
     @PostMapping("/{recruitId}/apply")
-    public SuccessResponse<?> apply(@PathVariable Long recruitId) {
-        applicationService.apply(recruitId);
-        return new SuccessResponse<>("지원이 완료되었습니다.");
+    public SuccessResponse<?> apply(
+            @CurrentEmail String email,
+            @PathVariable Long recruitId) {
+        applicationService.apply(email, recruitId);
+        return new SuccessResponse<>(APPLY_SUCCESS.getMessage());
     }
 
     @DeleteMapping("/{recruitId}/apply")
-    public SuccessResponse<?> deleteApplication(@PathVariable Long recruitId) {
-        applicationService.deleteApplication(recruitId);
-        return new SuccessResponse<>("지원이 취소되었습니다.");
+    public SuccessResponse<?> deleteApplication(
+            @CurrentEmail String email,
+            @PathVariable Long recruitId) {
+        applicationService.deleteApplication(email, recruitId);
+        return new SuccessResponse<>(APPLY_CANCELED.getMessage());
     }
 
     @GetMapping("/my")
     public SuccessResponse<Page<MyApplicationResDto>> getMyApplications(
-            @PageableDefault(size = 10) Pageable pageable
+            @CurrentEmail String email,
+            @PageableDefault Pageable pageable
     ) {
-        return new SuccessResponse<>(applicationService.getMyApplications(pageable));
+        return new SuccessResponse<>(
+                applicationService.getMyApplications(email, pageable),
+                MY_APPLICATION_READ_SUCCESS.getMessage());
     }
 }
