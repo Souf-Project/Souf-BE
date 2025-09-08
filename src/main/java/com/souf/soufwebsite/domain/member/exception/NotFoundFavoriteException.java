@@ -6,6 +6,6 @@ import static com.souf.soufwebsite.domain.member.exception.ErrorType.NOT_FOUND_F
 
 public class NotFoundFavoriteException extends BaseErrorException {
     public NotFoundFavoriteException() {
-        super(NOT_FOUND_FAVORITE.getCode(), NOT_FOUND_FAVORITE.getMessage());
+        super(NOT_FOUND_FAVORITE.getCode(), NOT_FOUND_FAVORITE.getMessage(), NOT_FOUND_FAVORITE.getErrorKey());
     }
 }
