@@ -1,28 +1,31 @@
 package com.souf.soufwebsite.global.exception;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ExceptionResponse<T> {
 
     private int code;
     private String message;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String errorKey;
     private T data;
 
-    public ExceptionResponse(int code, String message, T data) {
-        this.code = code;
-        this.message = message;
-        this.data = data;
-    }
-
-    private ExceptionResponse(int code, String message) {
-        this.code = code;
-        this.message = message;
-    }
-
     public static <T> ExceptionResponse<T> fail(int code, String message) {
-        return new ExceptionResponse<>(code, message);
+        return fail(code, message, null);
+    }
+
+    public static <T> ExceptionResponse<T> fail(int code, String message, String errorKey) {
+        return ExceptionResponse.<T>builder()
+                .code(code)
+                .message(message)
+                .errorKey(errorKey)
+                .build();
     }
 }

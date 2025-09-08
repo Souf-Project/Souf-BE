@@ -1,40 +1,47 @@
 package com.souf.soufwebsite.global.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @RestControllerAdvice
 @Slf4j
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    private static final String LOG_FORMAT = "Class : {}, Code : {}, Message : {}";
-    private static final int ERROR_CODE = 400;
+    //private static final String LOG_FORMAT = "Class : {}, Code : {}, Message : {}";
+    private static final int BAD_REQUEST = 400;
     private static final int SERVER_ERROR_CODE = 500;
 
     @ExceptionHandler(BaseErrorException.class)
     public ResponseEntity<ExceptionResponse<Void>> handle(BaseErrorException e) {
-        logWarning(e, e.getErrorCode());
-        ExceptionResponse<Void> response = ExceptionResponse.fail(e.getErrorCode(), e.getMessage());
+        logByStatus(e, e.getCode());
+        ExceptionResponse<Void> response = ExceptionResponse.fail(e.getCode(), e.getMessage(), e.getErrorCode());
 
         return ResponseEntity
-                .status(e.getErrorCode())
+                .status(e.getCode())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(response);
     }
 
     // @Valid 예외 처리 (@NotNull, @Size, etc...) or IllegalArgumentException
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class,
+    MissingServletRequestParameterException.class, HttpMessageNotReadableException.class})
     public ResponseEntity<ExceptionResponse<Void>> handle(MethodArgumentNotValidException e) {
 
-        logWarning(e, ERROR_CODE);
-        ExceptionResponse<Void> response = ExceptionResponse.fail(ERROR_CODE, e.getBindingResult().getAllErrors().get(0).getDefaultMessage());
+        log.warn("Bad Request: {}", e.getMessage(), e);
+
+        ExceptionResponse<Void> response = ExceptionResponse.fail(BAD_REQUEST, "잘못된 요청입니다.");
+
 
         return ResponseEntity
-                .status(ERROR_CODE)
+                .status(BAD_REQUEST)
                 .body(response);
     }
 
@@ -42,16 +49,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ExceptionResponse<Void>> handle(Exception e) {
 
-        logWarning(e, SERVER_ERROR_CODE);
-        ExceptionResponse<Void> response = ExceptionResponse.fail(SERVER_ERROR_CODE, e.getMessage());
+        log.error("Unhandled exception: {}", e.getMessage(), e);
+        ExceptionResponse<Void> response = ExceptionResponse.fail(SERVER_ERROR_CODE, "서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요");
 
         return ResponseEntity
                 .status(SERVER_ERROR_CODE)
                 .body(response);
     }
 
-    private void logWarning(Exception e, int errorCode) {
-        log.warn(e.getMessage(), e);
-        log.warn(LOG_FORMAT, e.getClass().getSimpleName(), errorCode, e.getMessage());
+    private void logByStatus(Exception e, int status) {
+        if (status >= 500) log.error("Class: {}, Code: {}, Msg: {}", e.getClass().getSimpleName(), status, e.getMessage(), e);
+        else log.warn("Class: {}, Code: {}, Msg: {}", e.getClass().getSimpleName(), status, e.getMessage());
     }
 }
