@@ -5,7 +5,7 @@ import com.souf.soufwebsite.global.exception.BaseErrorException;
 import static com.souf.soufwebsite.domain.report.exception.ErrorType.DECLARED_MEMBER;
 
 public class DeclaredMemberException extends BaseErrorException {
-    public DeclaredMemberException(String message) {
-        super(DECLARED_MEMBER.getCode(), message);
+    public DeclaredMemberException(String msg) {
+        super(DECLARED_MEMBER.getCode(), msg, DECLARED_MEMBER.getErrorKey());
     }
 }

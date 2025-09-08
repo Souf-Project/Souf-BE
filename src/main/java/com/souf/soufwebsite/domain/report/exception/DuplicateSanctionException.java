@@ -6,6 +6,6 @@ import static com.souf.soufwebsite.domain.report.exception.ErrorType.DUPLICATE_S
 
 public class DuplicateSanctionException extends BaseErrorException {
     public DuplicateSanctionException() {
-        super(DUPLICATE_SANCTION.getCode(), DUPLICATE_SANCTION.getMessage());
+        super(DUPLICATE_SANCTION.getCode(), DUPLICATE_SANCTION.getMessage(), DUPLICATE_SANCTION.getErrorKey());
     }
 }

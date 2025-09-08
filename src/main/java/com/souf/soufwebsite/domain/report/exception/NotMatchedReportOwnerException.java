@@ -6,6 +6,6 @@ import static com.souf.soufwebsite.domain.report.exception.ErrorType.NOT_MATCHED
 
 public class NotMatchedReportOwnerException extends BaseErrorException {
     public NotMatchedReportOwnerException() {
-        super(NOT_MATCHED_REPORT_OWNER.getCode(), NOT_MATCHED_REPORT_OWNER.getMessage());
+        super(NOT_MATCHED_REPORT_OWNER.getCode(), NOT_MATCHED_REPORT_OWNER.getMessage(), NOT_MATCHED_REPORT_OWNER.getErrorKey());
     }
 }
