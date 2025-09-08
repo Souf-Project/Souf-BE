@@ -6,6 +6,6 @@ import static com.souf.soufwebsite.domain.feed.exception.ErrorType.ALREADY_EXIST
 
 public class AlreadyExistsFeedLikeException extends BaseErrorException {
     public AlreadyExistsFeedLikeException() {
-        super(ALREADY_EXISTS_LIKE.getCode(), ALREADY_EXISTS_LIKE.getMessage());
+        super(ALREADY_EXISTS_LIKE.getCode(), ALREADY_EXISTS_LIKE.getMessage(), ALREADY_EXISTS_LIKE.getErrorKey());
     }
 }

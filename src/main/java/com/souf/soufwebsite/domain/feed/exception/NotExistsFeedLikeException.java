@@ -6,6 +6,6 @@ import static com.souf.soufwebsite.domain.feed.exception.ErrorType.NOT_EXISTS_LI
 
 public class NotExistsFeedLikeException extends BaseErrorException {
     public NotExistsFeedLikeException() {
-        super(NOT_EXISTS_LIKE.getCode(), NOT_EXISTS_LIKE.getMessage());
+        super(NOT_EXISTS_LIKE.getCode(), NOT_EXISTS_LIKE.getMessage(), NOT_EXISTS_LIKE.getErrorKey());
     }
 }
