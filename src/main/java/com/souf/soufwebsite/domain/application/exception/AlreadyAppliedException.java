@@ -6,6 +6,6 @@ import static com.souf.soufwebsite.domain.application.exception.ErrorType.ALREAD
 
 public class AlreadyAppliedException extends BaseErrorException {
     public AlreadyAppliedException() {
-        super(ALREADY_APPLIED.getCode(), ALREADY_APPLIED.getMessage());
+        super(ALREADY_APPLIED.getCode(), ALREADY_APPLIED.getMessage(), ALREADY_APPLIED.getErrorKey());
     }
 }

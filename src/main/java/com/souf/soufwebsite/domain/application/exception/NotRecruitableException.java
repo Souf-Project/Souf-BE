@@ -6,6 +6,6 @@ import static com.souf.soufwebsite.domain.application.exception.ErrorType.NOT_RE
 
 public class NotRecruitableException extends BaseErrorException {
     public NotRecruitableException() {
-        super(NOT_RECRUITABLE.getCode(), NOT_RECRUITABLE.getMessage());
+        super(NOT_RECRUITABLE.getCode(), NOT_RECRUITABLE.getMessage(), NOT_RECRUITABLE.getErrorKey());
     }
 }

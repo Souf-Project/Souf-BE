@@ -12,6 +12,7 @@ import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
+import com.souf.soufwebsite.domain.recruit.exception.NotFoundRecruitException;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.mail.SesMailService;
@@ -44,7 +45,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     public void apply(String email, Long recruitId) {
         Member member = findIfEmailExists(email);
         Recruit recruit = recruitRepository.findById(recruitId)
-                .orElseThrow(NotFoundRecruitException::new);
+                .orElseThrow(com.souf.soufwebsite.domain.recruit.exception.NotFoundRecruitException::new);
 
         if (recruit.getMember().getId().equals(member.getId())) {
             throw new NotApplyMyRecruitException();
