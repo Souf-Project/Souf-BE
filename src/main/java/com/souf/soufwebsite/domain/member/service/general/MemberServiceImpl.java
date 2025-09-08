@@ -116,7 +116,7 @@ public class MemberServiceImpl implements MemberService {
     //로그인
     @Override
     public TokenDto signin(SigninReqDto reqDto, HttpServletResponse response) {
-        log.info("email: {}, password: {}", reqDto.email(), reqDto.password());
+        log.info("email: {}", reqDto.email());
 
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(reqDto.email(), reqDto.password());
 

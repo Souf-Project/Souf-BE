@@ -27,9 +27,9 @@ public class AuthController implements AuthApiSpecification{
 
     @PostMapping("/login")
     public SuccessResponse<TokenDto> signin(@RequestBody @Valid SigninReqDto reqDto, HttpServletResponse response) {
-        log.info("로그인 요청: {}", reqDto);
+        //log.info("로그인 요청: {}", reqDto);
         TokenDto tokenDto = memberService.signin(reqDto, response);
-        log.info("로그인 성공: {}", tokenDto);
+        //log.info("로그인 성공: {}", tokenDto);
         return new SuccessResponse<>(tokenDto);
     }
 

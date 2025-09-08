@@ -19,6 +19,7 @@ import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.opensearch.EntityType;
 import com.souf.soufwebsite.domain.opensearch.OperationType;
@@ -247,7 +248,7 @@ public class FeedServiceImpl implements FeedService {
     }
 
     private Member findIfMemberIdExists(Long memberId) {
-        return memberRepository.findById(memberId).orElseThrow(NotFoundFeedException::new);
+        return memberRepository.findById(memberId).orElseThrow(NotFoundMemberException::new);
     }
 
     private Member findIfEmailExists(String email) {
