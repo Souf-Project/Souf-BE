@@ -3,14 +3,13 @@ package com.souf.soufwebsite.global.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.support.MethodArgumentNotValidException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @RestControllerAdvice
 @Slf4j
-public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+public class GlobalExceptionHandler {
 
     //private static final String LOG_FORMAT = "Class : {}, Code : {}, Message : {}";
     private static final int BAD_REQUEST = 400;
@@ -31,9 +30,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ExceptionResponse<Void>> handle(MethodArgumentNotValidException e) {
 
-        log.warn("Bad Request: {}", e.getMessage(), e);
+        String msg = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+        log.warn("Bad Request: {}", msg, e);
 
-        ExceptionResponse<Void> response = ExceptionResponse.fail(BAD_REQUEST, "잘못된 요청입니다.");
+        ExceptionResponse<Void> response = ExceptionResponse.fail(BAD_REQUEST, msg);
 
 
         return ResponseEntity
