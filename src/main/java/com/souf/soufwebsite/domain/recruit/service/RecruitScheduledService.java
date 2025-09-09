@@ -1,5 +1,7 @@
 package com.souf.soufwebsite.domain.recruit.service;
 
+import com.souf.soufwebsite.domain.file.entity.PostType;
+import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.recruit.dto.RecruitPopularityResDto;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
@@ -25,6 +27,7 @@ public class RecruitScheduledService {
     private final RecruitRepository recruitRepository;
     private final RedisUtil redisUtil;
     private final CacheManager cacheManager;
+    private final FileService fileService;
 
     @Transactional
     public void syncViewCountsToDB() {
@@ -64,14 +67,16 @@ public class RecruitScheduledService {
             return;
         }
 
-        Pageable pageable = PageRequest.of(0, 10);
+        Pageable pageable = PageRequest.of(0, 5);
 
         Page<Recruit> recruits = recruitRepository.findByRecruitableTrueOrderByViewCountDesc(pageable);
 
-        List<RecruitPopularityResDto> dto = recruits.getContent().stream()
-                .map(RecruitPopularityResDto::of).toList();
+        Page<RecruitPopularityResDto> results = recruits.map(r -> {
+            String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, r.getMember().getId());
+            return RecruitPopularityResDto.of(r, mediaUrl);
+        });
 
-        cache.put(buildKey(pageable), dto);
+        cache.put(buildKey(pageable), results.getContent());
     }
 
     private String buildKey(Pageable pageable) {

@@ -10,16 +10,24 @@ public record RecruitPopularityResDto(
         String content,
         Long firstCategory,
         Long secondCategory,
-        LocalDateTime deadLine
+        LocalDateTime deadLine,
+        String minPayment,
+        String maxPayment,
+        String nickname,
+        String profile
 ) {
-    public static RecruitPopularityResDto of(Recruit recruit) {
+    public static RecruitPopularityResDto of(Recruit recruit, String profile) {
         return new RecruitPopularityResDto(
                 recruit.getId(),
                 recruit.getTitle(),
                 recruit.getContent(),
                 recruit.getCategories().get(0).getFirstCategory().getId(),
                 recruit.getCategories().get(0).getSecondCategory().getId(),
-                recruit.getDeadline()
+                recruit.getDeadline(),
+                recruit.getMinPayment(),
+                recruit.getMaxPayment(),
+                recruit.getMember().getNickname(),
+                profile
         );
     }
 }
