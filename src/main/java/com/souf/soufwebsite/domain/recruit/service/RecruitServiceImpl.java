@@ -207,8 +207,13 @@ public class RecruitServiceImpl implements RecruitService {
 
         log.info("공고문 로직 실행 중");
 
-        return popularRecruits.getContent().stream()
-                .map(RecruitPopularityResDto::of).toList();
+        Page<RecruitPopularityResDto> recruitPopularityResDtos = popularRecruits.map(r -> {
+            String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, r.getMember().getId());
+            return RecruitPopularityResDto.of(r, mediaUrl);
+        });
+        log.info("size: {}", recruitPopularityResDtos.getSize());
+
+        return recruitPopularityResDtos.getContent();
     }
 
     @Transactional

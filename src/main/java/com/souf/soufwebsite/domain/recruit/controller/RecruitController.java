@@ -81,7 +81,7 @@ public class RecruitController implements RecruitApiSpecification{
 
     @GetMapping("/popular")
     public SuccessResponse<List<RecruitPopularityResDto>> getPopularRecruits(
-            @PageableDefault(size = 10) Pageable pageable
+            @PageableDefault(size = 5) Pageable pageable
     ) {
 
         log.info("공고문 캐싱 조회");
