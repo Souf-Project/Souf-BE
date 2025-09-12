@@ -6,6 +6,6 @@ import static com.souf.soufwebsite.global.common.category.exception.ErrorType.NO
 
 public class NotDuplicateCategoryException extends BaseErrorException {
     public NotDuplicateCategoryException() {
-        super(NOT_DUPLICATE_CATEGORY.getCode(), NOT_DUPLICATE_CATEGORY.getMessage());
+        super(NOT_DUPLICATE_CATEGORY.getCode(), NOT_DUPLICATE_CATEGORY.getMessage(), NOT_DUPLICATE_CATEGORY.getErrorKey());
     }
 }

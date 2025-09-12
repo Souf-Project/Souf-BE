@@ -5,6 +5,7 @@ import com.souf.soufwebsite.domain.comment.dto.CommentResDto;
 import com.souf.soufwebsite.domain.comment.dto.CommentUpdateReqDto;
 import com.souf.soufwebsite.domain.comment.service.CommentService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import com.souf.soufwebsite.global.util.CurrentEmail;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -64,19 +65,21 @@ public class CommentController implements CommentApiSpecification{
 
     @PatchMapping
     public SuccessResponse updateComment(
+            @CurrentEmail String email,
             @PathVariable(name = "postId") Long postId,
             @Valid @RequestBody CommentUpdateReqDto reqDto) {
-        commentService.updateComment(postId, reqDto);
+        commentService.updateComment(email, postId, reqDto);
 
         return new SuccessResponse(UPDATE_COMMENT_SUCCESS.getMessage());
     }
 
     @DeleteMapping("/{commentId}")
     public SuccessResponse deleteComment(
+            @CurrentEmail String email,
             @PathVariable(name = "postId") Long postId,
             @PathVariable(name = "commentId") Long commentId) {
 
-        commentService.deleteComment(postId, commentId);
+        commentService.deleteComment(email, postId, commentId);
 
         return new SuccessResponse(DELETE_COMMENT_SUCCESS.getMessage());
     }

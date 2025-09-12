@@ -4,5 +4,5 @@ import com.souf.soufwebsite.domain.report.dto.ReportReqDto;
 
 public interface ReportService {
 
-    void createReport(ReportReqDto reqDto);
+    void createReport(String email, ReportReqDto reqDto);
 }

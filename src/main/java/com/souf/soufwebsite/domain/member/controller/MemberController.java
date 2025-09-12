@@ -9,6 +9,7 @@ import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberUpdateResDto;
 import com.souf.soufwebsite.domain.member.service.general.MemberService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import com.souf.soufwebsite.global.util.CurrentEmail;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,8 +40,10 @@ public class MemberController implements MemberApiSpecification{
     }
 
     @GetMapping("/myinfo")
-    public SuccessResponse<MemberResDto> getMyInfo() {
-        MemberResDto meDto = memberService.getMyInfo();
+    public SuccessResponse<MemberResDto> getMyInfo(
+            @CurrentEmail String email
+    ) {
+        MemberResDto meDto = memberService.getMyInfo(email);
         return new SuccessResponse<>(meDto);
     }
 
@@ -72,8 +75,10 @@ public class MemberController implements MemberApiSpecification{
 //    }
 
     @PutMapping("/update")
-    public SuccessResponse<MemberUpdateResDto> updateUserInfo(@RequestBody UpdateReqDto reqDto) {
-        MemberUpdateResDto resDto = memberService.updateUserInfo(reqDto);
+    public SuccessResponse<MemberUpdateResDto> updateUserInfo(
+            @CurrentEmail String email,
+            @RequestBody UpdateReqDto reqDto) {
+        MemberUpdateResDto resDto = memberService.updateUserInfo(email, reqDto);
         return new SuccessResponse<>(resDto, "회원정보 수정 성공");
     }
 

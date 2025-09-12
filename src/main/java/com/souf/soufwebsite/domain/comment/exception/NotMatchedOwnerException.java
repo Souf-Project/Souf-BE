@@ -6,6 +6,6 @@ import static com.souf.soufwebsite.domain.comment.exception.ErrorType.NOT_MATCHE
 
 public class NotMatchedOwnerException extends BaseErrorException {
     public NotMatchedOwnerException() {
-        super(NOT_MATCHED_OWNER.getCode(), NOT_MATCHED_OWNER.getMessage());
+        super(NOT_MATCHED_OWNER.getCode(), NOT_MATCHED_OWNER.getMessage(), NOT_MATCHED_OWNER.getErrorKey());
     }
 }

@@ -13,8 +13,8 @@ import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
-import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
@@ -32,10 +32,6 @@ public class CommentServiceImpl implements CommentService {
     private final FeedRepository feedRepository;
     private final MemberRepository memberRepository;
     private final FileService fileService;
-
-    private Member getCurrentUser() {
-        return SecurityUtils.getCurrentMember();
-    }
 
     @Override
     public void createComment(Long postId, CommentReqDto reqDto) {
@@ -69,8 +65,8 @@ public class CommentServiceImpl implements CommentService {
 
     @Transactional
     @Override
-    public void deleteComment(Long postId, Long commentId) {
-        Member member = getCurrentUser();
+    public void deleteComment(String email, Long postId, Long commentId) {
+        Member member = findIfEmailExists(email);
         Comment comment = findIfCommentExists(commentId);
 
         validatedIfCommentMine(member, comment); // 현재 사용자와 댓글 작성자의 아이디가 일치하지 않으면 예외 발생
@@ -80,8 +76,8 @@ public class CommentServiceImpl implements CommentService {
 
     @Transactional
     @Override
-    public void updateComment(Long postId, CommentUpdateReqDto reqDto) {
-        Member member = getCurrentUser();
+    public void updateComment(String email, Long postId, CommentUpdateReqDto reqDto) {
+        Member member = findIfEmailExists(email);
         Comment comment = findIfCommentExists(reqDto.commentId());
 
         validatedIfCommentMine(member, comment); // 현재 사용자와 댓글 작성자의 아이디가 일치하지 않으면 예외 발생
@@ -138,6 +134,10 @@ public class CommentServiceImpl implements CommentService {
 
     private Comment findIfCommentExists(Long commentId) {
         return commentRepository.findById(commentId).orElseThrow(NotFoundCommentException::new);
+    }
+
+    private Member findIfEmailExists(String email) {
+        return memberRepository.findByEmail(email).orElseThrow(NotFoundMemberException::new);
     }
 
     private static void validatedIfCommentMine(Member member, Comment comment) {

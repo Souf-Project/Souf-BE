@@ -10,7 +10,6 @@ import com.souf.soufwebsite.domain.report.entity.ReportReasonMapping;
 import com.souf.soufwebsite.domain.report.exception.NotMatchedReportOwnerException;
 import com.souf.soufwebsite.domain.report.repository.ReasonRepository;
 import com.souf.soufwebsite.domain.report.repository.ReportRepository;
-import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,14 +26,10 @@ public class ReportServiceImpl implements ReportService {
     private final ReportRepository reportRepository;
     private final ReasonRepository reasonRepository;
 
-    private Member getCurrentMember() {
-        return SecurityUtils.getCurrentMember();
-    }
-
     @Transactional
     @Override
-    public void createReport(ReportReqDto reqDto) {
-        Member currentMember = getCurrentMember();
+    public void createReport(String email, ReportReqDto reqDto) {
+        Member currentMember = findIfEmailExists(email);
 
         Member reporter = findIfMemberExists(reqDto.reporterId());
         Member reportedMember = findIfMemberExists(reqDto.reportedMemberId());
@@ -58,5 +53,9 @@ public class ReportServiceImpl implements ReportService {
 
     private Member findIfMemberExists(Long memberId) {
         return memberRepository.findById(memberId).orElseThrow(NotFoundFeedException::new);
+    }
+
+    private Member findIfEmailExists(String email) {
+        return memberRepository.findByEmail(email).orElseThrow(NotFoundFeedException::new);
     }
 }

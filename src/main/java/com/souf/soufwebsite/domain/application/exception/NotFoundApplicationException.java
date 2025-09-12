@@ -6,6 +6,6 @@ import static com.souf.soufwebsite.domain.application.exception.ErrorType.NOT_FO
 
 public class NotFoundApplicationException extends BaseErrorException {
     public NotFoundApplicationException() {
-        super(NOT_FOUND_APPLICATION.getCode(), NOT_FOUND_APPLICATION.getMessage());
+        super(NOT_FOUND_APPLICATION.getCode(), NOT_FOUND_APPLICATION.getMessage(), NOT_FOUND_APPLICATION.getErrorKey());
     }
 }
