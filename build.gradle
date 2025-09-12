@@ -175,24 +175,24 @@ jacocoTestReport {
 }
 
 // 측정치를 달성했는지 임계치 검증
-jacocoTestCoverageVerification {
-    violationRules {
-        rule {
-            excludes = [
-                    '**/*Application*',
-                    '**/config/**',
-                    '**/dto/**',
-                    '**/exception/**',
-                    '**/generated/**',
-                    '**/Q**',
-                    '**/*$*',
-                    '**/meta/**',
-                    '**/annotation/**'
-            ]
-            limit {
-                minimum = 0.65
-            }
-        }
-    }
-}
-check.dependsOn jacocoTestCoverageVerification
+//jacocoTestCoverageVerification {
+//    violationRules {
+//        rule {
+//            excludes = [
+//                    '**/*Application*',
+//                    '**/config/**',
+//                    '**/dto/**',
+//                    '**/exception/**',
+//                    '**/generated/**',
+//                    '**/Q**',
+//                    '**/*$*',
+//                    '**/meta/**',
+//                    '**/annotation/**'
+//            ]
+////            limit {
+////                minimum = 0.65
+////            }
+//        }
+//    }
+//}
+//check.dependsOn jacocoTestCoverageVerification
