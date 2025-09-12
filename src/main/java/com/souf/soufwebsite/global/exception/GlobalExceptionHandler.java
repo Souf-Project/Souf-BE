@@ -18,7 +18,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BaseErrorException.class)
     public ResponseEntity<ExceptionResponse<Void>> handle(BaseErrorException e) {
         logByStatus(e, e.getCode());
-        ExceptionResponse<Void> response = ExceptionResponse.fail(e.getCode(), e.getMessage(), e.getErrorCode());
+        ExceptionResponse<Void> response = ExceptionResponse.fail(e.getCode(), e.getMessage(), e.getErrorKey());
 
         return ResponseEntity
                 .status(e.getCode())
