@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 public record FeedSimpleResDto(
         Long feedId,
+        String title,
         Long memberId,
         String nickname,
         List<Long> firstCategories,
@@ -22,6 +23,7 @@ public record FeedSimpleResDto(
 
         return new FeedSimpleResDto(
                 feed.getId(),
+                feed.getTopic(),
                 feed.getMember().getId(),
                 feed.getMember().getNickname(),
                 firstCategoryIds,
