@@ -9,17 +9,17 @@ import java.util.List;
 
 public interface FeedService {
 
-    FeedResDto createFeed(FeedReqDto reqDto);
+    FeedResDto createFeed(String email, FeedReqDto reqDto);
 
     void uploadFeedMedia(MediaReqDto mediaReqDto);
 
     MemberFeedResDto getStudentFeeds(Long memberId, Pageable pageable);
 
-    FeedDetailResDto getFeedById(Long memberId, Long feedId);
+    FeedDetailResDto getFeedById(String email, Long memberId, Long feedId);
 
-    FeedResDto updateFeed(Long feedId, FeedReqDto reqDto);
+    FeedResDto updateFeed(String email, Long feedId, FeedReqDto reqDto);
 
-    void deleteFeed(Long feedId);
+    void deleteFeed(String email, Long feedId);
 
     List<FeedSimpleResDto> getPopularFeeds(Pageable pageable);
 

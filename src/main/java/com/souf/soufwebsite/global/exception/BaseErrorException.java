@@ -5,10 +5,12 @@ import lombok.Getter;
 @Getter
 public class BaseErrorException extends RuntimeException{
 
-    private final int errorCode;
+    private final int code;
+    private final String errorKey;
 
-    public BaseErrorException(int errorCode, String errorMessage) {
+    public BaseErrorException(int code, String errorMessage, String errorKey) {
         super(errorMessage);
-        this.errorCode = errorCode;
+        this.code = code;
+        this.errorKey = errorKey;
     }
 }

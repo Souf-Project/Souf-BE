@@ -3,6 +3,7 @@ package com.souf.soufwebsite.domain.member.controller.auth;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.*;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
@@ -58,5 +59,11 @@ public interface AuthApiSpecification {
     SuccessResponse<Boolean> isNicknameAvailable(
             @RequestParam @NotEmpty String nickname
     );
+
+    @Operation(summary = "회원 탈퇴", description = "더이상 서비스를 사용하지 않을 유저가 스프를 탈퇴합니다.")
+    @DeleteMapping("/withdraw")
+    SuccessResponse<?> withdraw(
+            @CurrentEmail String email,
+            @RequestBody @Valid WithdrawReqDto reqDto);
 
 }

@@ -7,6 +7,6 @@ import static com.souf.soufwebsite.global.common.category.exception.ErrorType.NO
 public class NotMatchedCategoryException extends BaseErrorException {
     public NotMatchedCategoryException(String message) {
 
-        super(NOT_MATCHED_CATEGORY.getCode(), message);
+        super(NOT_MATCHED_CATEGORY.getCode(), message, NOT_MATCHED_CATEGORY.getErrorKey());
     }
 }

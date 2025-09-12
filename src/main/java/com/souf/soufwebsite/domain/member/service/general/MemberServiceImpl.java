@@ -27,7 +27,6 @@ import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.common.mail.SesMailService;
 import com.souf.soufwebsite.global.jwt.JwtService;
 import com.souf.soufwebsite.global.slack.service.SlackService;
-import com.souf.soufwebsite.global.util.SecurityUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -63,14 +62,16 @@ public class MemberServiceImpl implements MemberService {
     private final SesMailService mailService;
     private final BanService banService;
 
-    private Member getCurrentUser() {
-        return SecurityUtils.getCurrentMember();
-    }
     private final CategoryService categoryService;
 
     //회원가입
+    @Transactional
     @Override
     public void signup(SignupReqDto reqDto) {
+
+        if (redisTemplate.hasKey("email:withdraw:" + reqDto.email())) {
+            throw new NotAllowedSignupException();
+        }
 
         String verifiedKey = "email:verified:" + reqDto.email();
         String isVerified = redisTemplate.opsForValue().get(verifiedKey);
@@ -115,10 +116,7 @@ public class MemberServiceImpl implements MemberService {
     //로그인
     @Override
     public TokenDto signin(SigninReqDto reqDto, HttpServletResponse response) {
-        log.info("email: {}, password: {}", reqDto.email(), reqDto.password());
-        if (redisTemplate.hasKey("email:withdraw:" + reqDto.email())) {
-            throw new NotAllowedSignupException();
-        }
+        log.info("email: {}", reqDto.email());
 
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(reqDto.email(), reqDto.password());
 
@@ -258,8 +256,8 @@ public class MemberServiceImpl implements MemberService {
     //회원정보 수정
     @Override
     @Transactional
-    public MemberUpdateResDto updateUserInfo(UpdateReqDto reqDto) {
-        Long memberId = getCurrentUser().getId();
+    public MemberUpdateResDto updateUserInfo(String email, UpdateReqDto reqDto) {
+        Long memberId = findIfEmailExists(email).getId();
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(NotFoundMemberException::new);
 
@@ -317,8 +315,8 @@ public class MemberServiceImpl implements MemberService {
     //내 정보 조회
     @Override
     @Transactional(readOnly = true)
-    public MemberResDto getMyInfo() {
-        Member member = getCurrentUser();
+    public MemberResDto getMyInfo(String email) {
+        Member member = findIfEmailExists(email);
         Member myMember = memberRepository.findById(member.getId()).orElseThrow(NotFoundMemberException::new); // 지연 로딩 오류 해결
         String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
         return MemberResDto.from(myMember, myMember.getCategories(), mediaUrl, member.isMarketingAgreement());
@@ -353,8 +351,9 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public void withdraw(WithdrawReqDto reqDto) {
-        Long memberId = getCurrentUser().getId();
+    public void withdraw(String email, WithdrawReqDto reqDto) {
+        Member currentMember = findIfEmailExists(email);
+        Long memberId = currentMember.getId();
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(NotFoundMemberException::new);
 
@@ -385,5 +384,9 @@ public class MemberServiceImpl implements MemberService {
             MemberCategoryMapping mapping = MemberCategoryMapping.of(member, first, second, third);
             member.addCategory(mapping);
         }
+    }
+
+    private Member findIfEmailExists(String email) {
+        return memberRepository.findByEmail(email).orElseThrow(NotFoundMemberException::new);
     }
 }

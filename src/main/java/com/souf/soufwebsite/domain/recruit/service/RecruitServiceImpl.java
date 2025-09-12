@@ -29,7 +29,6 @@ import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import com.souf.soufwebsite.global.slack.service.SlackService;
-import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -56,14 +55,10 @@ public class RecruitServiceImpl implements RecruitService {
     private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final SlackService slackService;
 
-    private Member getCurrentUser() {
-        return SecurityUtils.getCurrentMember();
-    }
-
     @Override
     @Transactional
-    public RecruitCreateResDto createRecruit(RecruitReqDto reqDto) {
-        Member member = getCurrentUser();
+    public RecruitCreateResDto createRecruit(String email, RecruitReqDto reqDto) {
+        Member member = findIfEmailExists(email);
 
         City city = cityRepository.findById(reqDto.cityId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 City ID입니다."));
@@ -96,7 +91,7 @@ public class RecruitServiceImpl implements RecruitService {
     @Transactional
     public void uploadRecruitMedia(MediaReqDto reqDto) {
         Recruit recruit = findIfRecruitExist(reqDto.postId());
-        List<Media> mediaList = fileService.uploadMetadata(reqDto, PostType.RECRUIT, recruit.getId());
+        fileService.uploadMetadata(reqDto, PostType.RECRUIT, recruit.getId());
     }
 
     @Transactional(readOnly = true)
@@ -127,8 +122,8 @@ public class RecruitServiceImpl implements RecruitService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<MyRecruitResDto> getMyRecruits(Pageable pageable) {
-        Member me = getCurrentUser();
+    public Page<MyRecruitResDto> getMyRecruits(String email, Pageable pageable) {
+        Member me = findIfEmailExists(email);
         return recruitRepository.findByMember(me, pageable)
                 .map(r -> {
                     String status = r.isRecruitable() ? "모집 중" : "마감";
@@ -154,8 +149,8 @@ public class RecruitServiceImpl implements RecruitService {
 
     @Transactional
     @Override
-    public RecruitCreateResDto updateRecruit(Long recruitId, RecruitReqDto reqDto) {
-        Member member = getCurrentUser();
+    public RecruitCreateResDto updateRecruit(String email, Long recruitId, RecruitReqDto reqDto) {
+        Member member = findIfEmailExists(email);
         Recruit recruit = findIfRecruitExist(recruitId);
         verifyIfRecruitIsMine(recruit, member);
 
@@ -181,8 +176,8 @@ public class RecruitServiceImpl implements RecruitService {
     }
 
     @Override
-    public void deleteRecruit(Long recruitId) {
-        Member member = getCurrentUser();
+    public void deleteRecruit(String email, Long recruitId) {
+        Member member = findIfEmailExists(email);
         Recruit recruit = findIfRecruitExist(recruitId);
         verifyIfRecruitIsMine(recruit, member);
 
@@ -227,6 +222,9 @@ public class RecruitServiceImpl implements RecruitService {
         recruit.updateRecruitable();
     }
 
+    private Member findIfEmailExists(String email) {
+        return memberRepository.findByEmail(email).orElseThrow(NotFoundMemberException::new);
+    }
 
     private void verifyIfRecruitIsMine(Recruit recruit, Member member) {
         if(!recruit.getMember().getId().equals(member.getId())){

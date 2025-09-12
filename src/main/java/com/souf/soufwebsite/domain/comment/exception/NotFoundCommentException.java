@@ -6,6 +6,6 @@ import static com.souf.soufwebsite.domain.comment.exception.ErrorType.NOT_FOUND_
 
 public class NotFoundCommentException extends BaseErrorException {
     public NotFoundCommentException() {
-        super(NOT_FOUND_COMMENT.getCode(), NOT_FOUND_COMMENT.getMessage());
+        super(NOT_FOUND_COMMENT.getCode(), NOT_FOUND_COMMENT.getMessage(), NOT_FOUND_COMMENT.getErrorKey());
     }
 }

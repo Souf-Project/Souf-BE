@@ -7,6 +7,6 @@ import static com.souf.soufwebsite.domain.chat.exception.ErrorType.NOT_FOUND_CHA
 
 public class NotFoundChatMessageException extends BaseErrorException {
     public NotFoundChatMessageException() {
-        super(NOT_FOUND_CHAT_MESSAGE.getCode(), NOT_FOUND_CHAT_MESSAGE.getMessage());
+        super(NOT_FOUND_CHAT_MESSAGE.getCode(), NOT_FOUND_CHAT_MESSAGE.getMessage(), NOT_FOUND_CHAT_MESSAGE.getErrorKey());
     }
 }

@@ -6,9 +6,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface ApplicationService {
-    void apply(Long recruitId);
-    void deleteApplication(Long recruitId);
-    Page<MyApplicationResDto> getMyApplications(Pageable pageable);
-    Page<ApplicantResDto> getApplicantsByRecruit(Long recruitId, Pageable pageable);
-    void reviewApplication(Long applicationId, boolean approve);
+    void apply(String email, Long recruitId);
+    void deleteApplication(String email, Long recruitId);
+    Page<MyApplicationResDto> getMyApplications(String email, Pageable pageable);
+    Page<ApplicantResDto> getApplicantsByRecruit(String email, Long recruitId, Pageable pageable);
+    void reviewApplication(String email, Long applicationId, boolean approve);
 }

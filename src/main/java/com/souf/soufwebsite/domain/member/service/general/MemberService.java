@@ -25,13 +25,13 @@ public interface MemberService {
 
     boolean verifyEmail(VerifyEmailReqDto reqDto);
 
-    MemberUpdateResDto updateUserInfo(UpdateReqDto reqDto);
+    MemberUpdateResDto updateUserInfo(String email, UpdateReqDto reqDto);
 
     void uploadProfileImage(MediaReqDto reqDto);
 
     Page<MemberSimpleResDto> getMembers(Long first, Long second, Long third, MemberSearchReqDto searchReqDto, Pageable pageable);
 
-    MemberResDto getMyInfo();
+    MemberResDto getMyInfo(String email);
 
     MemberResDto getMemberById(Long id);
 
@@ -41,5 +41,5 @@ public interface MemberService {
 
     boolean isNicknameAvailable(String nickname);
 
-    void withdraw(WithdrawReqDto reqDto);
+    void withdraw(String email, WithdrawReqDto reqDto);
 }

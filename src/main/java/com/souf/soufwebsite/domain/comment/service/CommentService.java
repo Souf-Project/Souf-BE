@@ -13,9 +13,9 @@ public interface CommentService {
 
     void createReply(Long postId, CommentReqDto reqDto);
 
-    void deleteComment(Long postId, Long commentId);
+    void deleteComment(String email, Long postId, Long commentId);
 
-    void updateComment(Long postId, CommentUpdateReqDto reqDto);
+    void updateComment(String email, Long postId, CommentUpdateReqDto reqDto);
 
     Slice<CommentResDto> getComments(Long postId, Pageable pageable);
 
