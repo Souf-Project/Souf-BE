@@ -108,14 +108,12 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
 
     private NumberExpression<Integer> maxPaymentNumber() {
         return Expressions.numberTemplate(Integer.class,
-                // 공백 제거 + '만원' 제거 + 콤마 제거 -> 빈 문자열이면 NULL -> integer 캐스팅
                 "cast(nullif(replace(replace(trim({0}), '만원', ''), ',', ''), '') as integer)",
                 recruit.maxPayment
         );
     }
 
     private OrderSpecifier<?>[] buildOrderSpecifiers(RecruitSearchReqDto req) {
-        System.out.println("buildOrderSpecifiers called with sortKey: " + req.sortKey() + ", sortDir: " + req.sortDir());
         RecruitSearchReqDto.SortKey key = req.sortKeyOrDefault();
         RecruitSearchReqDto.SortDir dir = req.sortDirOrDefault();
         Order o = (dir == RecruitSearchReqDto.SortDir.ASC) ? Order.ASC : Order.DESC;
