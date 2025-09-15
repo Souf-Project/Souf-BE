@@ -6,6 +6,6 @@ import static com.souf.soufwebsite.domain.report.exception.ErrorType.NOT_FOUND_R
 
 public class NotFoundReportReasonException extends BaseErrorException {
     public NotFoundReportReasonException() {
-        super(NOT_FOUND_REPORT_REASON.getCode(), NOT_FOUND_REPORT_REASON.getMessage());
+        super(NOT_FOUND_REPORT_REASON.getCode(), NOT_FOUND_REPORT_REASON.getMessage(), NOT_FOUND_REPORT_REASON.getErrorKey());
     }
 }

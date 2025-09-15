@@ -19,6 +19,7 @@ import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.opensearch.EntityType;
 import com.souf.soufwebsite.domain.opensearch.OperationType;
@@ -30,7 +31,6 @@ import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import com.souf.soufwebsite.global.slack.service.SlackService;
-import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -59,14 +59,10 @@ public class FeedServiceImpl implements FeedService {
     private final LikedFeedRepository likedFeedRepository;
     private final CommentRepository commentRepository;
 
-    private Member getCurrentUser() {
-        return SecurityUtils.getCurrentMember();
-    }
-
     @Override
     @Transactional
-    public FeedResDto createFeed(FeedReqDto reqDto) {
-        Member member = getCurrentUser();
+    public FeedResDto createFeed(String email, FeedReqDto reqDto) {
+        Member member = findIfEmailExists(email);
 
         Feed feed = Feed.of(reqDto, member);
         injectCategories(reqDto, feed);
@@ -93,6 +89,7 @@ public class FeedServiceImpl implements FeedService {
         return new FeedResDto(feed.getId(), presignedUrlResDtos, videoDto);
     }
 
+
     @Override
     public void uploadFeedMedia(MediaReqDto mediaReqDto) {
         Feed feed = findIfFeedExist(mediaReqDto.postId());
@@ -102,7 +99,7 @@ public class FeedServiceImpl implements FeedService {
     @Transactional(readOnly = true)
     @Override
     public MemberFeedResDto getStudentFeeds(Long memberId, Pageable pageable) {
-        Member member = findIfMemberExists(memberId);
+        Member member = findIfMemberIdExists(memberId);
         String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
         Page<FeedSimpleResDto> feedSimpleResDtos = feedRepository.findAllByMemberOrderByIdDesc(member, pageable)
                 .map(feedConverter::getFeedSimpleResDto);
@@ -113,9 +110,13 @@ public class FeedServiceImpl implements FeedService {
 
     @Transactional(readOnly = true)
     @Override
-    public FeedDetailResDto getFeedById(Long memberId, Long feedId) {
+    public FeedDetailResDto getFeedById(String email, Long memberId, Long feedId) {
 
-        Member member = findIfMemberExists(memberId);
+        // 현재 사용자
+        Member currentMember = memberRepository.findByEmail(email).orElse(null);
+
+        // 피드 소유자
+        Member member = findIfMemberIdExists(memberId);
         Feed feed = findIfFeedExist(feedId);
 
         String feedViewKey = getFeedViewKey(feed.getId());
@@ -123,7 +124,10 @@ public class FeedServiceImpl implements FeedService {
         Long viewCountFromRedis = redisUtil.get(feedViewKey);
 
         Long likedCount = likedFeedRepository.countByFeedId(feedId).orElse(0L);
-        Boolean liked = getLiked(member.getId(), feedId);
+        Boolean liked = false;
+        if(currentMember != null) {
+            liked = getLiked(currentMember.getId(), feedId);
+        }
 
         Long commentCount = commentRepository.countByFeed(feed).orElse(0L);
 
@@ -135,8 +139,8 @@ public class FeedServiceImpl implements FeedService {
 
     @Transactional
     @Override
-    public FeedResDto updateFeed(Long feedId, FeedReqDto reqDto) {
-        Member member = getCurrentUser();
+    public FeedResDto updateFeed(String email, Long feedId, FeedReqDto reqDto) {
+        Member member = findIfEmailExists(email);
         Feed feed = findIfFeedExist(feedId);
         verifyIfFeedIsMine(feed, member);
 
@@ -160,8 +164,8 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public void deleteFeed(Long feedId) {
-        Member member = getCurrentUser();
+    public void deleteFeed(String email, Long feedId) {
+        Member member = findIfEmailExists(email);
         Feed feed = findIfFeedExist(feedId);
         verifyIfFeedIsMine(feed, member);
 
@@ -217,7 +221,7 @@ public class FeedServiceImpl implements FeedService {
     @Override
     public void updateLikedCount(Long feedId, LikeFeedReqDto likeFeedReqDto) {
         Feed feed = findIfFeedExist(feedId);
-        Member member = findIfMemberExists(likeFeedReqDto.memberId());
+        Member member = findIfMemberIdExists(likeFeedReqDto.memberId());
 
         // 좋아요를 누를 경우
         if(likeFeedReqDto.isLiked().equals(Boolean.TRUE)){
@@ -243,8 +247,12 @@ public class FeedServiceImpl implements FeedService {
         return feedRepository.findById(id).orElseThrow(NotFoundFeedException::new);
     }
 
-    private Member findIfMemberExists(Long memberId) {
-        return memberRepository.findById(memberId).orElseThrow(NotFoundFeedException::new);
+    private Member findIfMemberIdExists(Long memberId) {
+        return memberRepository.findById(memberId).orElseThrow(NotFoundMemberException::new);
+    }
+
+    private Member findIfEmailExists(String email) {
+        return memberRepository.findByEmail(email).orElseThrow(NotFoundFeedException::new);
     }
 
     private String getFeedViewKey(Long feedId) {

@@ -4,6 +4,7 @@ import com.souf.soufwebsite.domain.feed.dto.*;
 import com.souf.soufwebsite.domain.feed.service.FeedService;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import com.souf.soufwebsite.global.util.CurrentEmail;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +27,9 @@ public class FeedController implements FeedApiSpecification{
 
     @PostMapping
     public SuccessResponse<FeedResDto> createFeed(
+            @CurrentEmail String email,
             @RequestBody @Valid FeedReqDto feedReqDto) {
-        FeedResDto feedResDto = feedService.createFeed(feedReqDto);
+        FeedResDto feedResDto = feedService.createFeed(email, feedReqDto);
 
         return new SuccessResponse<>(feedResDto, FEED_CREATE.getMessage());
     }
@@ -48,22 +50,26 @@ public class FeedController implements FeedApiSpecification{
 
     @GetMapping("/{memberId}/{feedId}")
     public SuccessResponse<FeedDetailResDto> getDetailedFeed(
+            @CurrentEmail String email,
             @PathVariable(name = "memberId") Long memberId,
             @PathVariable(name = "feedId") Long feedId) {
-        return new SuccessResponse<>(feedService.getFeedById(memberId, feedId), FEED_GET.getMessage());
+        return new SuccessResponse<>(feedService.getFeedById(email, memberId, feedId), FEED_GET.getMessage());
     }
 
     @PatchMapping("/{feedId}")
     public SuccessResponse<FeedResDto> updateFeed(
+            @CurrentEmail String email,
             @PathVariable(name = "feedId") Long feedId,
             @RequestBody @Valid FeedReqDto reqDto) {
-        FeedResDto feedResDto = feedService.updateFeed(feedId, reqDto);
+        FeedResDto feedResDto = feedService.updateFeed(email, feedId, reqDto);
         return new SuccessResponse<>(feedResDto, FEED_UPDATE.getMessage());
     }
 
     @DeleteMapping("/{feedId}")
-    public SuccessResponse<?> deleteFeed(@PathVariable(name = "feedId") Long feedId) {
-        feedService.deleteFeed(feedId);
+    public SuccessResponse<?> deleteFeed(
+            @CurrentEmail String email,
+            @PathVariable(name = "feedId") Long feedId) {
+        feedService.deleteFeed(email, feedId);
         return new SuccessResponse<>(FEED_DELETE.getMessage());
     }
 

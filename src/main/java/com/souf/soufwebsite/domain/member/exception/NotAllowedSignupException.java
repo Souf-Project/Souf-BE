@@ -6,6 +6,6 @@ import static com.souf.soufwebsite.domain.member.exception.ErrorType.NOT_ALLOW_S
 
 public class NotAllowedSignupException extends BaseErrorException {
     public NotAllowedSignupException() {
-        super(NOT_ALLOW_SIGNUP.getCode(), NOT_ALLOW_SIGNUP.getMessage());
+        super(NOT_ALLOW_SIGNUP.getCode(), NOT_ALLOW_SIGNUP.getMessage(), NOT_ALLOW_SIGNUP.getErrorKey());
     }
 }

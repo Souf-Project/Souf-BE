@@ -7,6 +7,6 @@ import static com.souf.soufwebsite.domain.member.exception.ErrorType.NOT_FOUND_M
 public class NotFoundMemberException extends BaseErrorException {
 
     public NotFoundMemberException() {
-        super(NOT_FOUND_MEMBER.getCode(), NOT_FOUND_MEMBER.getMessage());
+        super(NOT_FOUND_MEMBER.getCode(), NOT_FOUND_MEMBER.getMessage(), NOT_FOUND_MEMBER.getErrorKey());
     }
 }

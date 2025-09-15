@@ -6,6 +6,6 @@ import static com.souf.soufwebsite.domain.feed.exception.ErrorType.NOT_FOUND_FEE
 
 public class NotFoundFeedException extends BaseErrorException {
     public NotFoundFeedException() {
-        super(NOT_FOUND_FEED.getCode(), NOT_FOUND_FEED.getMessage());
+        super(NOT_FOUND_FEED.getCode(), NOT_FOUND_FEED.getMessage(), NOT_FOUND_FEED.getErrorKey());
     }
 }

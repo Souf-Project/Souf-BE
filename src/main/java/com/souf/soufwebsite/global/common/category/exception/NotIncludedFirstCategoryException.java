@@ -7,6 +7,6 @@ import static com.souf.soufwebsite.global.common.category.exception.ErrorType.NO
 public class NotIncludedFirstCategoryException extends BaseErrorException {
     public NotIncludedFirstCategoryException() {
 
-        super(NOT_INCLUDED_FIRST_CATEGORY.getCode(), NOT_INCLUDED_FIRST_CATEGORY.getMessage());
+        super(NOT_INCLUDED_FIRST_CATEGORY.getCode(), NOT_INCLUDED_FIRST_CATEGORY.getMessage(), NOT_INCLUDED_FIRST_CATEGORY.getErrorKey());
     }
 }

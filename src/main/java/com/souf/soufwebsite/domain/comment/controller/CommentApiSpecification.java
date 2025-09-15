@@ -4,6 +4,7 @@ import com.souf.soufwebsite.domain.comment.dto.CommentReqDto;
 import com.souf.soufwebsite.domain.comment.dto.CommentResDto;
 import com.souf.soufwebsite.domain.comment.dto.CommentUpdateReqDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
@@ -45,12 +46,14 @@ public interface CommentApiSpecification {
     @Operation(summary = "댓글 수정", description = "사용자가 작성한 댓글을 수정합니다.")
     @PatchMapping
     SuccessResponse updateComment(
+            @CurrentEmail String email,
             @PathVariable Long postId,
             @RequestBody CommentUpdateReqDto reqDto);
 
     @Operation(summary = "댓글 삭제", description = "사용자가 작성한 댓글을 삭제합니다.")
     @DeleteMapping("/{commentId}")
     SuccessResponse deleteComment(
+            @CurrentEmail String email,
             @PathVariable Long postId,
             @PathVariable(name = "commentId") Long commentId);
 }

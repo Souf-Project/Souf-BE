@@ -7,6 +7,6 @@ import static com.souf.soufwebsite.global.common.category.exception.ErrorType.NO
 public class NotExceedCategoryLimitException extends BaseErrorException {
 
     public NotExceedCategoryLimitException() {
-        super(NOT_EXCEED_CATEGORY_LIMIT.getCode(), NOT_EXCEED_CATEGORY_LIMIT.getMessage());
+        super(NOT_EXCEED_CATEGORY_LIMIT.getCode(), NOT_EXCEED_CATEGORY_LIMIT.getMessage(), NOT_EXCEED_CATEGORY_LIMIT.getErrorKey());
     }
 }

@@ -6,6 +6,7 @@ import com.souf.soufwebsite.domain.recruit.dto.*;
 import com.souf.soufwebsite.domain.recruit.service.RecruitService;
 import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import com.souf.soufwebsite.global.util.CurrentEmail;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,8 +29,10 @@ public class RecruitController implements RecruitApiSpecification{
     private final RedisUtil redisUtil;
 
     @PostMapping
-    public SuccessResponse<RecruitCreateResDto> createRecruit(@Valid @RequestBody RecruitReqDto recruitReqDto) {
-        RecruitCreateResDto recruitCreateResDto = recruitService.createRecruit(recruitReqDto);
+    public SuccessResponse<RecruitCreateResDto> createRecruit(
+            @CurrentEmail String email,
+            @Valid @RequestBody RecruitReqDto recruitReqDto) {
+        RecruitCreateResDto recruitCreateResDto = recruitService.createRecruit(email, recruitReqDto);
 
         return new SuccessResponse<>(recruitCreateResDto, RECRUIT_CREATE.getMessage());
     }
@@ -61,27 +64,34 @@ public class RecruitController implements RecruitApiSpecification{
     }
 
     @GetMapping("/my")
-    public SuccessResponse<Page<MyRecruitResDto>> getMyRecruits(@PageableDefault(size = 10) Pageable pageable) {
+    public SuccessResponse<Page<MyRecruitResDto>> getMyRecruits(
+            @CurrentEmail String email,
+            @PageableDefault Pageable pageable) {
         // 페이징 10으로 설정, 추후 검토 후 수정 필요
-        return new SuccessResponse<>(recruitService.getMyRecruits(pageable), RECRUIT_GET.getMessage());
+        return new SuccessResponse<>(recruitService.getMyRecruits(email, pageable), RECRUIT_GET.getMessage());
     }
 
     @PatchMapping("/{recruitId}")
-    public SuccessResponse updateRecruit(@PathVariable(name = "recruitId") Long recruitId, @Valid @RequestBody RecruitReqDto recruitReqDto) {
-        RecruitCreateResDto recruitUpdateDto = recruitService.updateRecruit(recruitId, recruitReqDto);
+    public SuccessResponse updateRecruit(
+            @CurrentEmail String email,
+            @PathVariable(name = "recruitId") Long recruitId,
+            @Valid @RequestBody RecruitReqDto recruitReqDto) {
+        RecruitCreateResDto recruitUpdateDto = recruitService.updateRecruit(email, recruitId, recruitReqDto);
 
         return new SuccessResponse<>(recruitUpdateDto, RECRUIT_UPDATE.getMessage());
     }
 
     @DeleteMapping("/{recruitId}")
-    public SuccessResponse deleteRecruit(@PathVariable(name = "recruitId") Long recruitId) {
-        recruitService.deleteRecruit(recruitId);
+    public SuccessResponse deleteRecruit(
+            @CurrentEmail String email,
+            @PathVariable(name = "recruitId") Long recruitId) {
+        recruitService.deleteRecruit(email, recruitId);
         return new SuccessResponse(RECRUIT_DELETE.getMessage());
     }
 
     @GetMapping("/popular")
     public SuccessResponse<List<RecruitPopularityResDto>> getPopularRecruits(
-            @PageableDefault(size = 5) Pageable pageable
+            @PageableDefault Pageable pageable
     ) {
 
         log.info("공고문 캐싱 조회");

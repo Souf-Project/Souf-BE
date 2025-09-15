@@ -31,3 +31,9 @@ spring:
 
 slack:
   token: ${SLACK_TOKEN}
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

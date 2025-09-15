@@ -6,6 +6,6 @@ import static com.souf.soufwebsite.domain.member.exception.ErrorType.NOT_AGREED_
 
 public class NotAgreedPersonalInfoException extends BaseErrorException {
     public NotAgreedPersonalInfoException() {
-        super(NOT_AGREED_PERSONAL_INFO.getCode(), NOT_AGREED_PERSONAL_INFO.getMessage());
+        super(NOT_AGREED_PERSONAL_INFO.getCode(), NOT_AGREED_PERSONAL_INFO.getMessage(), NOT_AGREED_PERSONAL_INFO.getErrorKey());
     }
 }

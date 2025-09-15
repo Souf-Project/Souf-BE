@@ -6,6 +6,6 @@ import static com.souf.soufwebsite.domain.application.exception.ErrorType.NOT_AP
 
 public class NotApplyMyRecruitException extends BaseErrorException {
     public NotApplyMyRecruitException() {
-        super(NOT_APPLY_MY_RECRUIT.getCode(), NOT_APPLY_MY_RECRUIT.getMessage());
+        super(NOT_APPLY_MY_RECRUIT.getCode(), NOT_APPLY_MY_RECRUIT.getMessage(), NOT_APPLY_MY_RECRUIT.getErrorKey());
     }
 }
