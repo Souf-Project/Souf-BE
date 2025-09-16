@@ -6,14 +6,24 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitSearchReqDto;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitSimpleResDto;
+import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.domain.recruit.dto.req.MyRecruitReqDto;
+import com.souf.soufwebsite.domain.recruit.dto.res.MyRecruitResDto;
+import com.souf.soufwebsite.domain.recruit.dto.req.RecruitSearchReqDto;
+import com.souf.soufwebsite.domain.recruit.dto.res.RecruitSimpleResDto;
+import com.souf.soufwebsite.domain.recruit.entity.Recruit;
+import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
+import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
+import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
+import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -26,7 +36,7 @@ import static com.souf.soufwebsite.domain.recruit.entity.QRecruitCategoryMapping
 public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
 
     private final JPAQueryFactory queryFactory;
-
+    private final MemberRepository memberRepository;
 
     @Override
     public Page<RecruitSimpleResDto> getRecruitList(Long first, Long second, Long third,
@@ -106,6 +116,57 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
         return new PageImpl<>(paged, pageable, mergedList.size());
     }
 
+    @Override
+    public Page<MyRecruitResDto> getMyRecruits(Member me, MyRecruitReqDto req, Pageable pageable) {
+        OrderSpecifier<?>[] orderSpecifiers = buildMyOrderSpecifiers(req);
+
+        List<Recruit> rows = queryFactory
+                .selectFrom(recruit)
+                .where(recruit.member.eq(me))
+                .orderBy(orderSpecifiers)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long total = queryFactory
+                .select(recruit.count())
+                .from(recruit)
+                .where(recruit.member.eq(me))
+                .fetchOne();
+
+        List<MyRecruitResDto> content = rows.stream()
+                .map(r -> {
+                    String status = r.isRecruitable() ? "모집 중" : "마감";
+                    List<CategoryDto> categories = r.getCategories().stream()
+                            .map(m -> new CategoryDto(
+                                    idOrNull(m.getFirstCategory()),
+                                    idOrNull(m.getSecondCategory()),
+                                    idOrNull(m.getThirdCategory())
+                            ))
+                            .toList();
+
+                    return new MyRecruitResDto(
+                            r.getId(),
+                            r.getTitle(),
+                            r.getDeadline(),
+                            categories,
+                            status,
+                            r.getRecruitCount()
+                    );
+                })
+                .toList();
+
+        return new PageImpl<>(content, pageable, total == null ? 0 : total);
+    }
+
+    private static Long idOrNull(Object c) {
+        if (c == null) return null;
+        if (c instanceof FirstCategory fc)  return fc.getId();
+        if (c instanceof SecondCategory sc) return sc.getId();
+        if (c instanceof ThirdCategory tc)  return tc.getId();
+        return null;
+    }
+
     private NumberExpression<Integer> maxPaymentNumber() {
         return Expressions.numberTemplate(Integer.class,
                 "cast(nullif(replace(replace(trim({0}), '만원', ''), ',', ''), '') as integer)",
@@ -127,6 +188,27 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                     new OrderSpecifier<>(o, maxPaymentNumber()),
                     new OrderSpecifier<>(Order.DESC, recruit.lastModifiedTime) };
             case RECENT  -> new OrderSpecifier<?>[]{ new OrderSpecifier<>(o, recruit.lastModifiedTime) };
+        };
+    }
+
+    private OrderSpecifier<?>[] buildMyOrderSpecifiers(MyRecruitReqDto req) {
+        MyRecruitReqDto.MySortKey key = req.sortKeyOrDefault();
+        MyRecruitReqDto.MySortDir dir = req.sortDirOrDefault();
+
+        Order o = (dir == MyRecruitReqDto.MySortDir.ASC) ? Order.ASC : Order.DESC;
+
+        return switch (key) {
+            case RECENT -> new OrderSpecifier<?>[]{
+                    new OrderSpecifier<>(o, recruit.lastModifiedTime)
+            };
+            case VIEWS  -> new OrderSpecifier<?>[]{
+                    new OrderSpecifier<>(o, recruit.viewCount),
+                    new OrderSpecifier<>(Order.DESC, recruit.lastModifiedTime)
+            };
+            case COUNT  -> new OrderSpecifier<?>[]{
+                    new OrderSpecifier<>(o, recruit.recruitCount),
+                    new OrderSpecifier<>(Order.DESC, recruit.lastModifiedTime)
+            };
         };
     }
 }

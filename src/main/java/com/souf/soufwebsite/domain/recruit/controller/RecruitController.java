@@ -2,7 +2,10 @@ package com.souf.soufwebsite.domain.recruit.controller;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberIdReqDto;
-import com.souf.soufwebsite.domain.recruit.dto.*;
+import com.souf.soufwebsite.domain.recruit.dto.req.MyRecruitReqDto;
+import com.souf.soufwebsite.domain.recruit.dto.req.RecruitReqDto;
+import com.souf.soufwebsite.domain.recruit.dto.req.RecruitSearchReqDto;
+import com.souf.soufwebsite.domain.recruit.dto.res.*;
 import com.souf.soufwebsite.domain.recruit.service.RecruitService;
 import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import com.souf.soufwebsite.global.success.SuccessResponse;
@@ -66,9 +69,10 @@ public class RecruitController implements RecruitApiSpecification{
     @GetMapping("/my")
     public SuccessResponse<Page<MyRecruitResDto>> getMyRecruits(
             @CurrentEmail String email,
+            @ModelAttribute MyRecruitReqDto myRecruitReqDto,
             @PageableDefault Pageable pageable) {
-        // 페이징 10으로 설정, 추후 검토 후 수정 필요
-        return new SuccessResponse<>(recruitService.getMyRecruits(email, pageable), RECRUIT_GET.getMessage());
+
+        return new SuccessResponse<>(recruitService.getMyRecruits(email, myRecruitReqDto, pageable), RECRUIT_GET.getMessage());
     }
 
     @PatchMapping("/{recruitId}")

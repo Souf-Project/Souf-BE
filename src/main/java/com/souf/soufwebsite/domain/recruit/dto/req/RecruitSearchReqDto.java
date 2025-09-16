@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.recruit.dto;
+package com.souf.soufwebsite.domain.recruit.dto.req;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

@@ -2,7 +2,7 @@ package com.souf.soufwebsite.domain.recruit.service;
 
 import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitPopularityResDto;
+import com.souf.soufwebsite.domain.recruit.dto.res.RecruitPopularityResDto;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
 import com.souf.soufwebsite.global.redis.util.RedisUtil;
