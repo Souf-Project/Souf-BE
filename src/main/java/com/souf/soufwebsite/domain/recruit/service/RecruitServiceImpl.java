@@ -132,7 +132,7 @@ public class RecruitServiceImpl implements RecruitService {
                             .map(m -> new CategoryDto(
                                     m.getFirstCategory().getId(),
                                     m.getSecondCategory().getId(),
-                                    m.getThirdCategory().getId()
+                                    m.getThirdCategory() == null ? null : m.getThirdCategory().getId()
                             ))
                             .collect(Collectors.toList());
 
