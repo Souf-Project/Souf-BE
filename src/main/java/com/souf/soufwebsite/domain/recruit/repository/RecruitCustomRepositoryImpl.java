@@ -8,11 +8,14 @@ import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.domain.recruit.dto.SortOption;
 import com.souf.soufwebsite.domain.recruit.dto.req.MyRecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.res.MyRecruitResDto;
 import com.souf.soufwebsite.domain.recruit.dto.req.RecruitSearchReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.res.RecruitSimpleResDto;
+import com.souf.soufwebsite.domain.recruit.entity.MyRecruitSortKey;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
+import com.souf.soufwebsite.domain.recruit.entity.RecruitSortKey;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
@@ -22,8 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -36,7 +39,6 @@ import static com.souf.soufwebsite.domain.recruit.entity.QRecruitCategoryMapping
 public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
 
     private final JPAQueryFactory queryFactory;
-    private final MemberRepository memberRepository;
 
     @Override
     public Page<RecruitSimpleResDto> getRecruitList(Long first, Long second, Long third,
@@ -175,9 +177,9 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
     }
 
     private OrderSpecifier<?>[] buildOrderSpecifiers(RecruitSearchReqDto req) {
-        RecruitSearchReqDto.SortKey key = req.sortKeyOrDefault();
-        RecruitSearchReqDto.SortDir dir = req.sortDirOrDefault();
-        Order o = (dir == RecruitSearchReqDto.SortDir.ASC) ? Order.ASC : Order.DESC;
+        RecruitSortKey key = req.sortOption().sortKeyOrDefault(RecruitSortKey.RECENT);
+        SortOption.SortDir dir = req.sortOption().sortDirOrDefault();
+        Order o = (dir == SortOption.SortDir.ASC) ? Order.ASC : Order.DESC;
 
         // 1차 정렬 기준 + 동점시 최신순 보정
         return switch (key) {
@@ -192,10 +194,9 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
     }
 
     private OrderSpecifier<?>[] buildMyOrderSpecifiers(MyRecruitReqDto req) {
-        MyRecruitReqDto.MySortKey key = req.sortKeyOrDefault();
-        MyRecruitReqDto.MySortDir dir = req.sortDirOrDefault();
-
-        Order o = (dir == MyRecruitReqDto.MySortDir.ASC) ? Order.ASC : Order.DESC;
+        MyRecruitSortKey key = req.sortOption().sortKey();
+        SortOption.SortDir dir = req.sortOption().sortDirOrDefault();
+        Order o = (dir == SortOption.SortDir.ASC) ? Order.ASC : Order.DESC;
 
         return switch (key) {
             case RECENT -> new OrderSpecifier<?>[]{
