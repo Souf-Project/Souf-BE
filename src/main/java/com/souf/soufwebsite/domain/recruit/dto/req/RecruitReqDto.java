@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.recruit.dto;
+package com.souf.soufwebsite.domain.recruit.dto.req;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.souf.soufwebsite.domain.recruit.entity.WorkType;

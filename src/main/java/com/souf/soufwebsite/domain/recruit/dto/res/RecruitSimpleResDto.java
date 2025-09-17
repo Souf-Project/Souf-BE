@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.recruit.dto;
+package com.souf.soufwebsite.domain.recruit.dto.res;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
