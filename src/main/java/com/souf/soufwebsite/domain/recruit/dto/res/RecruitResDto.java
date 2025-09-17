@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.recruit.dto;
+package com.souf.soufwebsite.domain.recruit.dto.res;
 
 import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;

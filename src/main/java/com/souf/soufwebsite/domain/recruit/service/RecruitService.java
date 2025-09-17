@@ -2,7 +2,10 @@ package com.souf.soufwebsite.domain.recruit.service;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberIdReqDto;
-import com.souf.soufwebsite.domain.recruit.dto.*;
+import com.souf.soufwebsite.domain.recruit.dto.req.MyRecruitReqDto;
+import com.souf.soufwebsite.domain.recruit.dto.req.RecruitReqDto;
+import com.souf.soufwebsite.domain.recruit.dto.req.RecruitSearchReqDto;
+import com.souf.soufwebsite.domain.recruit.dto.res.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -17,7 +20,7 @@ public interface RecruitService {
     Page<RecruitSimpleResDto> getRecruits(Long first, Long second, Long third,
                                           RecruitSearchReqDto searchReqDto, Pageable pageable);
 
-    Page<MyRecruitResDto> getMyRecruits(String email, Pageable pageable);
+    Page<MyRecruitResDto> getMyRecruits(String email, MyRecruitReqDto reqDto, Pageable pageable);
 
     RecruitResDto getRecruitById(Long recruitId);
 

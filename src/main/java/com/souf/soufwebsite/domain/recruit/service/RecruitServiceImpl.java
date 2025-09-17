@@ -16,7 +16,10 @@ import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.opensearch.EntityType;
 import com.souf.soufwebsite.domain.opensearch.OperationType;
 import com.souf.soufwebsite.domain.opensearch.event.IndexEventPublisherHelper;
-import com.souf.soufwebsite.domain.recruit.dto.*;
+import com.souf.soufwebsite.domain.recruit.dto.req.MyRecruitReqDto;
+import com.souf.soufwebsite.domain.recruit.dto.req.RecruitReqDto;
+import com.souf.soufwebsite.domain.recruit.dto.req.RecruitSearchReqDto;
+import com.souf.soufwebsite.domain.recruit.dto.res.*;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.entity.RecruitCategoryMapping;
 import com.souf.soufwebsite.domain.recruit.exception.NotFoundRecruitException;
@@ -38,7 +41,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -122,29 +124,9 @@ public class RecruitServiceImpl implements RecruitService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<MyRecruitResDto> getMyRecruits(String email, Pageable pageable) {
+    public Page<MyRecruitResDto> getMyRecruits(String email, MyRecruitReqDto reqDto, Pageable pageable) {
         Member me = findIfEmailExists(email);
-        return recruitRepository.findByMember(me, pageable)
-                .map(r -> {
-                    String status = r.isRecruitable() ? "모집 중" : "마감";
-
-                    List<CategoryDto> categories = r.getCategories().stream()
-                            .map(m -> new CategoryDto(
-                                    m.getFirstCategory().getId(),
-                                    m.getSecondCategory().getId(),
-                                    m.getThirdCategory() == null ? null : m.getThirdCategory().getId()
-                            ))
-                            .collect(Collectors.toList());
-
-                    return new MyRecruitResDto(
-                            r.getId(),
-                            r.getTitle(),
-                            r.getDeadline(),
-                            categories,
-                            status,
-                            r.getRecruitCount()
-                    );
-                });
+        return recruitRepository.getMyRecruits(me, reqDto, pageable);
     }
 
     @Transactional
