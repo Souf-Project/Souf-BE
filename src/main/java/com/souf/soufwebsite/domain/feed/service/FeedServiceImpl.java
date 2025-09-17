@@ -252,7 +252,7 @@ public class FeedServiceImpl implements FeedService {
     }
 
     private Member findIfEmailExists(String email) {
-        return memberRepository.findByEmail(email).orElseThrow(NotFoundFeedException::new);
+        return memberRepository.findByEmail(email).orElseThrow(NotFoundMemberException::new);
     }
 
     private String getFeedViewKey(Long feedId) {

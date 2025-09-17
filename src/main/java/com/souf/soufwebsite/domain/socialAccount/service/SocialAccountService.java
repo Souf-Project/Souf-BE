@@ -1,6 +1,5 @@
 package com.souf.soufwebsite.domain.socialAccount.service;
 
-import com.souf.soufwebsite.domain.member.dto.ReqDto.SignupReqDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
@@ -27,7 +26,6 @@ import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.jwt.JwtService;
 import com.souf.soufwebsite.global.slack.service.SlackService;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -38,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.UUID.randomUUID;
 
 @Service
 public class SocialAccountService {
