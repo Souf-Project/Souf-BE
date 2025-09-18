@@ -36,7 +36,6 @@ public interface FeedApiSpecification {
     @Operation(summary = "특정 피드 상세 조회", description = "특정 피드에 대한 상세 정보를 조회합니다.")
     @GetMapping("/{memberId}/{feedId}")
     SuccessResponse<FeedDetailResDto> getDetailedFeed(
-            @CurrentEmail String email,
             @PathVariable(name = "memberId") Long memberId,
             @PathVariable(name = "feedId") Long feedId);
 

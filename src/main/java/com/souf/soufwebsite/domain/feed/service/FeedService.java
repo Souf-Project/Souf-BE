@@ -15,7 +15,7 @@ public interface FeedService {
 
     MemberFeedResDto getStudentFeeds(Long memberId, Pageable pageable);
 
-    FeedDetailResDto getFeedById(String email, Long memberId, Long feedId);
+    FeedDetailResDto getFeedById(Long memberId, Long feedId);
 
     FeedResDto updateFeed(String email, Long feedId, FeedReqDto reqDto);
 

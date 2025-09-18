@@ -50,10 +50,10 @@ public class FeedController implements FeedApiSpecification{
 
     @GetMapping("/{memberId}/{feedId}")
     public SuccessResponse<FeedDetailResDto> getDetailedFeed(
-            @CurrentEmail String email,
             @PathVariable(name = "memberId") Long memberId,
             @PathVariable(name = "feedId") Long feedId) {
-        return new SuccessResponse<>(feedService.getFeedById(email, memberId, feedId), FEED_GET.getMessage());
+
+        return new SuccessResponse<>(feedService.getFeedById(memberId, feedId), FEED_GET.getMessage());
     }
 
     @PatchMapping("/{feedId}")
