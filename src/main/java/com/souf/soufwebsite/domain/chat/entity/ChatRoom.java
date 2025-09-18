@@ -36,11 +36,4 @@ public class ChatRoom extends BaseEntity {
         return Objects.equals(this.getSender().getId(), member.getId()) ||
                 Objects.equals(this.getReceiver().getId(), member.getId());
     }
-
-
-    public Member getOpponent(Member me) {
-        if (me.equals(sender)) return receiver;
-        if (me.equals(receiver)) return sender;
-        throw new IllegalArgumentException("이 채팅방에 속하지 않은 유저입니다.");
-    }
 }

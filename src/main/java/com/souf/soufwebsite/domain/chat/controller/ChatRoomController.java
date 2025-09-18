@@ -6,16 +6,17 @@ import com.souf.soufwebsite.domain.chat.dto.ChatRoomResDto;
 import com.souf.soufwebsite.domain.chat.dto.ChatRoomSummaryDto;
 import com.souf.soufwebsite.domain.chat.entity.ChatMessage;
 import com.souf.soufwebsite.domain.chat.entity.ChatRoom;
+import com.souf.soufwebsite.domain.chat.exception.NotChatRoomParticipantException;
 import com.souf.soufwebsite.domain.chat.service.ChatMessageService;
 import com.souf.soufwebsite.domain.chat.service.ChatRoomService;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.global.security.UserDetailsImpl;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,7 +44,7 @@ public class ChatRoomController implements ChatRoomApiSpecificaton {
 
         Member sender = userDetails.getMember();
         Member receiver = memberRepository.findById(request.receiverId())
-                .orElseThrow(() -> new IllegalArgumentException("상대방을 찾을 수 없습니다"));
+                .orElseThrow(NotFoundMemberException::new);
 
         ChatRoom room = chatRoomService.findOrCreateRoom(sender, receiver);
 
@@ -67,7 +68,7 @@ public class ChatRoomController implements ChatRoomApiSpecificaton {
         ChatRoom room = chatRoomService.getRoomById(roomId);
 
         if (!room.hasParticipant(me)) {
-            throw new AccessDeniedException("채팅방에 참여한 유저만 조회할 수 있습니다.");
+            throw new NotChatRoomParticipantException();
         }
 
         List<ChatMessage> messages = chatMessageService.getMessages(roomId);
