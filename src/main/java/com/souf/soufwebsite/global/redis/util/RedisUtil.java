@@ -2,6 +2,7 @@ package com.souf.soufwebsite.global.redis.util;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -12,6 +13,7 @@ import java.util.Set;
 public class RedisUtil {
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
 
     public void set(String key) {
         redisTemplate.opsForValue().set(key, 0L);
@@ -35,7 +37,6 @@ public class RedisUtil {
     public void increaseCount(String key){
         redisTemplate.opsForValue().increment(key);
     }
-
     public void deleteKey(String key){
         redisTemplate.delete(key);
     }
