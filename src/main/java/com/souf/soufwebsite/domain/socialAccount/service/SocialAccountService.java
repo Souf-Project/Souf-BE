@@ -5,6 +5,7 @@ import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.exception.NotAgreedPersonalInfoException;
+import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.opensearch.EntityType;
 import com.souf.soufwebsite.domain.opensearch.OperationType;
@@ -13,10 +14,7 @@ import com.souf.soufwebsite.domain.socialAccount.SocialProvider;
 import com.souf.soufwebsite.domain.socialAccount.client.SocialApiClient;
 import com.souf.soufwebsite.domain.socialAccount.dto.*;
 import com.souf.soufwebsite.domain.socialAccount.entity.SocialAccount;
-import com.souf.soufwebsite.domain.socialAccount.exception.AlreadyLinkedException;
-import com.souf.soufwebsite.domain.socialAccount.exception.AlreadyLinkedOtherUserException;
-import com.souf.soufwebsite.domain.socialAccount.exception.DuplicateEmailException;
-import com.souf.soufwebsite.domain.socialAccount.exception.NotValidAuthenticationException;
+import com.souf.soufwebsite.domain.socialAccount.exception.*;
 import com.souf.soufwebsite.domain.socialAccount.repository.SocialAccountRepository;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
@@ -132,7 +130,7 @@ public class SocialAccountService {
     public TokenDto completeSignup(SocialCompleteSignupReqDto reqDto, HttpServletResponse response) {
         String key = "social:reg:" + reqDto.registrationToken();
         if (!redisTemplate.hasKey(key)) {
-            throw new IllegalStateException("registrationToken expired or invalid");
+            throw new NotValidTokenException();
         }
 
         // Redis에서 소셜 식별 정보 로드
@@ -207,11 +205,11 @@ public class SocialAccountService {
     public void linkForLoggedIn(Long memberId, SocialLinkReqDto req) {
         // 1) 현재 로그인 사용자 조회
         Member me = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalStateException("Member not found"));
+                .orElseThrow(NotFoundMemberException::new);
 
         // 2) provider로 토큰 교환 + 사용자 정보 조회
         SocialApiClient client = clientMap.get(req.provider());
-        if (client == null) throw new IllegalArgumentException("Unsupported provider: " + req.provider());
+        if (client == null) throw new NotValidProviderException();
 
         SocialUserInfo info = client.getUserInfoByCode(req.code());
 
