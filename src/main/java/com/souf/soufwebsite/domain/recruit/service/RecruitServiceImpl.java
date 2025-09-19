@@ -2,6 +2,9 @@ package com.souf.soufwebsite.domain.recruit.service;
 
 import com.souf.soufwebsite.domain.city.entity.City;
 import com.souf.soufwebsite.domain.city.entity.CityDetail;
+import com.souf.soufwebsite.domain.city.exception.NotFoundCityDetailException;
+import com.souf.soufwebsite.domain.city.exception.NotFoundCityException;
+import com.souf.soufwebsite.domain.city.exception.RequiredCityDetailException;
 import com.souf.soufwebsite.domain.city.repository.CityDetailRepository;
 import com.souf.soufwebsite.domain.city.repository.CityRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
@@ -68,7 +71,7 @@ public class RecruitServiceImpl implements RecruitService {
         Member member = findIfEmailExists(email);
 
         City city = cityRepository.findById(reqDto.cityId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 City ID입니다."));
+                .orElseThrow(NotFoundCityException::new);
         CityDetail cityDetail = validateCityOrThrow(city, reqDto.cityDetailId());
 
         Recruit recruit = Recruit.of(reqDto, member, city, cityDetail);
@@ -139,7 +142,7 @@ public class RecruitServiceImpl implements RecruitService {
         verifyIfRecruitIsMine(recruit, member);
 
         City city = cityRepository.findById(reqDto.cityId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 City ID입니다."));
+                .orElseThrow(NotFoundCityException::new);
         CityDetail cityDetail = validateCityOrThrow(city, reqDto.cityDetailId());
 
         updateRemainingImages(reqDto, recruit);
@@ -244,10 +247,10 @@ public class RecruitServiceImpl implements RecruitService {
             return null;
         }
         if (cityDetailId == null) {
-            throw new IllegalArgumentException("세부 지역은 필수입니다.");
+            throw new RequiredCityDetailException();
         }
         return cityDetailRepository.findById(cityDetailId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 cityDetail ID입니다."));
+                .orElseThrow(NotFoundCityDetailException::new);
     }
 
     private void updateRemainingImages(RecruitReqDto reqDto, Recruit recruit) {
