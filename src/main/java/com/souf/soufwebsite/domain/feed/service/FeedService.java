@@ -21,7 +21,7 @@ public interface FeedService {
 
     void deleteFeed(String email, Long feedId);
 
-    List<FeedSimpleResDto> getPopularFeeds(Pageable pageable);
+    List<FeedSimpleResDto> getPopularFeeds();
 
     Slice<FeedDetailResDto> getFeeds(Long first, Pageable pageable);
 

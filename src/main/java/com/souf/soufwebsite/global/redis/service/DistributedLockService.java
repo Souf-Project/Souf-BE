@@ -24,12 +24,19 @@ public class DistributedLockService {
     private final ViewCountService viewCountService;
     private final SlackService slackService;
 
+    /* ------------------------------ Feed --------------------------------------- */
     @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
     public void syncFeedView(){
-        distributedLock("sync:feed:lock", feedScheduledService::syncViewCountsToDB);
+        distributedLock("sync:total:feed:lock", feedScheduledService::syncTotalViewCountsToDB);
+    }
+
+    @Scheduled(cron = "0 5 0 * * 1")
+    public void syncFeedWeeklyView(){
+        distributedLock("sync:feed:lock", feedScheduledService::syncWeeklyViewCountsToDB);
         distributedLock("sync:popular:feed:lock", feedScheduledService::refreshPopularFeeds);
     }
 
+    /* --------------------------------- Recruit --------------------------------- */
     @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
     public void syncRecruitView(){
         distributedLock("sync:recruit:lock", recruitScheduledService::syncViewCountsToDB);
@@ -65,7 +72,7 @@ public class DistributedLockService {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             log.error("락 대기 중 인터럽트 발생", e);
-            slackService.sendSlackMessage("스케줄 작업 중 오류가 발생했어요!", "error");
+            slackService.sendSlackMessage("스케줄링 작업 중 현재 스레드에서 오류가 발생했어요!", "error");
         } catch (Exception e) {
             log.error("스케줄 작업 중 예외 발생", e);
             slackService.sendSlackMessage("스케줄 작업 중 오류가 발생했어요!", "error");

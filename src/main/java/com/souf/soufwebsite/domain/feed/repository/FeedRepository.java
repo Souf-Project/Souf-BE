@@ -19,9 +19,15 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, FeedCustomRep
     @Transactional
     @Modifying
     @Query("update Feed f set f.viewCount = f.viewCount + :count where f.id = :feedId")
-    void increaseViewCount(@Param("feedId") Long feedId, @Param("count") Long count);
+    void increaseTotalViewCount(@Param("feedId") Long feedId, @Param("count") Long count);
 
-    Page<Feed> findByOrderByViewCountDesc(Pageable pageable);
+    @Transactional
+    @Modifying
+    @Query("update Feed f set f.weeklyViews = f.weeklyViews + :count where f.id = :feedId")
+    void increaseWeeklyViewCount(@Param("feedId") Long feedId, @Param("count") Long count);
+
+    @Query("select f from Feed f join fetch f.member m order by f.weeklyViews desc limit 6")
+    List<Feed> findTop6ByOrderByWeeklyViewCountDesc();
 
     List<Feed> findTop3ByMemberOrderByViewCountDesc(Member member);
 

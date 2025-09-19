@@ -125,10 +125,7 @@ public class FeedServiceImpl implements FeedService {
         Member member = findIfMemberIdExists(memberId);
         Feed feed = findIfFeedExist(feedId);
 
-
-        stringRedisTemplate.opsForZSet().incrementScore(WEEKLY_ZSET, String.valueOf(feedId), 1D); // 주간 조회수 카운트
-        Long totalViewCount = stringRedisTemplate.opsForHash().increment(TOTAL_HASH, String.valueOf(feedId), 1L)
-                + feed.getViewCount(); // 누적 조회수 카운트
+        Long totalViewCount = updateViewCount(feedId, feed);
 
         Long likedCount = likedFeedRepository.countByFeedId(feedId).orElse(0L);
         Boolean liked = false;
@@ -177,7 +174,7 @@ public class FeedServiceImpl implements FeedService {
         verifyIfFeedIsMine(feed, member);
 
         stringRedisTemplate.opsForZSet().remove(WEEKLY_ZSET, String.valueOf(feedId));
-        stringRedisTemplate.opsForZSet().remove(TOTAL_HASH, String.valueOf(feedId));
+        stringRedisTemplate.opsForHash().delete(TOTAL_HASH, String.valueOf(feedId));
 
         feedRepository.delete(feed);
 
@@ -190,14 +187,15 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     @Cacheable(value = "popularFeeds",
-            key = "'page:' + #pageable.pageNumber + ':' + #pageable.pageSize")
-    public List<FeedSimpleResDto> getPopularFeeds(Pageable pageable) {
-        Page<Feed> popularFeeds = feedRepository.findByOrderByViewCountDesc(pageable);
+            key = "'feed:popular'")
+    public List<FeedSimpleResDto> getPopularFeeds() {
+        List<Feed> popularFeeds = feedRepository.findTop6ByOrderByWeeklyViewCountDesc();
 
         log.info("피드 서비스 로직 실행");
 
-         return popularFeeds.getContent().stream()
+         return popularFeeds.stream()
                  .map(feedConverter::getFeedSimpleResDto)
                  .toList();
     }
@@ -243,6 +241,8 @@ public class FeedServiceImpl implements FeedService {
         }
     }
 
+    /* ============================= private method ======================================== */
+
     private void verifyIfFeedIsMine(Feed feed, Member member) {
         log.info("currentMember: {}, feedMember: {}", member, feed.getMember());
         if(!feed.getMember().getId().equals(member.getId())){
@@ -287,5 +287,13 @@ public class FeedServiceImpl implements FeedService {
     @NotNull
     private Boolean getLiked(Long memberId, Long feedId) {
         return likedFeedRepository.existsByFeedIdAndMemberId(feedId, memberId);
+    }
+
+    private Long updateViewCount(Long feedId, Feed feed) {
+        stringRedisTemplate.opsForZSet().incrementScore(WEEKLY_ZSET, String.valueOf(feedId), 1D); // 주간 조회수 카운트
+
+        // 누적 조회수 카운트
+        return stringRedisTemplate.opsForHash().increment(TOTAL_HASH, String.valueOf(feedId), 1L)
+                + feed.getViewCount();
     }
 }
