@@ -50,8 +50,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         recruit.title,
                         recruitCategoryMapping.secondCategory.id,
                         recruit.content,
-                        recruit.minPayment,
-                        recruit.maxPayment,
+                        recruit.price,
                         recruit.city.name,
                         recruit.cityDetail.name,
                         recruit.deadline,
@@ -90,8 +89,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         t.get(recruit.title),
                         secondCatId,
                         t.get(recruit.content),
-                        t.get(recruit.minPayment),
-                        t.get(recruit.maxPayment),
+                        t.get(recruit.price),
                         cityName,
                         cityDetailName,
                         t.get(recruit.deadline),
@@ -170,7 +168,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
     private NumberExpression<Integer> maxPaymentNumber() {
         return Expressions.numberTemplate(Integer.class,
                 "cast(nullif(replace(replace(trim({0}), '만원', ''), ',', ''), '') as integer)",
-                recruit.maxPayment
+                recruit.price
         );
     }
 

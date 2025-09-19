@@ -37,9 +37,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -56,6 +58,9 @@ public class RecruitServiceImpl implements RecruitService {
     private final RedisUtil redisUtil;
     private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final SlackService slackService;
+    private final StringRedisTemplate stringRedisTemplate;
+
+    public static final String TOTAL_HASH = "recruit:views:total:";
 
     @Override
     @Transactional
@@ -76,9 +81,6 @@ public class RecruitServiceImpl implements RecruitService {
                 "Recruit",
                 recruit
         );
-
-        String recruitViewKey = getRecruitViewKey(recruit.getId());
-        redisUtil.set(recruitViewKey);
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("recruit", reqDto.originalFileNames());
 
@@ -114,12 +116,12 @@ public class RecruitServiceImpl implements RecruitService {
         Recruit recruit = findIfRecruitExist(recruitId);
         Member recruitMember = recruit.getMember();
 
-        String recruitViewKey = getRecruitViewKey(recruit.getId());
-        redisUtil.increaseCount(recruitViewKey);
+        long totalViewCount = stringRedisTemplate.opsForHash().increment(TOTAL_HASH, String.valueOf(recruit.getId()), 1L)
+                + recruit.getViewCount();
 
         List<Media> mediaList = fileService.getMediaList(PostType.RECRUIT, recruitId);
 
-        return RecruitResDto.from(recruitMember.getId(), recruit, recruitMember.getNickname(), mediaList);
+        return RecruitResDto.from(recruitMember.getId(), recruit, totalViewCount, recruitMember.getNickname(), mediaList);
     }
 
     @Transactional(readOnly = true)
@@ -178,19 +180,22 @@ public class RecruitServiceImpl implements RecruitService {
 
     @Override
     @Cacheable(value = "popularRecruits",
-            key = "'page:' + #pageable.pageNumber + ':' + #pageable.pageSize")
-    public List<RecruitPopularityResDto> getPopularRecruits(Pageable pageable) {
-        Page<Recruit> popularRecruits = recruitRepository.findByRecruitableTrueOrderByViewCountDesc(pageable);
+            key = "'recruit:popular'")
+    public List<RecruitPopularityResDto> getPopularRecruits() {
+        LocalDateTime now = LocalDateTime.now();
+        List<Recruit> popularRecruits = recruitRepository.findTop5ByRecruitableAndDeadlineAfterOrderByDeadlineDesc(now);
 
         log.info("공고문 로직 실행 중");
 
-        Page<RecruitPopularityResDto> recruitPopularityResDtos = popularRecruits.map(r -> {
-            String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, r.getMember().getId());
-            return RecruitPopularityResDto.of(r, mediaUrl);
-        });
-        log.info("size: {}", recruitPopularityResDtos.getSize());
+        List<RecruitPopularityResDto> recruitPopularityResDtos = popularRecruits.stream().map(
+                r -> {
+                    String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, r.getMember().getId());
+                    return RecruitPopularityResDto.of(r, mediaUrl);
+                }
+        ).toList();
+        log.info("size: {}", recruitPopularityResDtos.size());
 
-        return recruitPopularityResDtos.getContent();
+        return recruitPopularityResDtos;
     }
 
     @Transactional
