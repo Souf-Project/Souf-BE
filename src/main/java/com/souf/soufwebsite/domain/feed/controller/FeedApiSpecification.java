@@ -54,8 +54,7 @@ public interface FeedApiSpecification {
 
     @Operation(summary = "인기있는 피드 조회", description = "인기있는 피드를 조회합니다.")
     @GetMapping("/popular")
-    SuccessResponse<List<FeedSimpleResDto>> getPopularFeeds(
-            @PageableDefault(size = 6) Pageable pageable);
+    SuccessResponse<List<FeedSimpleResDto>> getPopularFeeds();
 
     @Operation(summary = "대학생 피드 조회", description = "피드들을 조회합니다.")
     @GetMapping

@@ -74,11 +74,10 @@ public class FeedController implements FeedApiSpecification{
     }
 
     @GetMapping("/popular")
-    public SuccessResponse<List<FeedSimpleResDto>> getPopularFeeds(
-            @PageableDefault(size = 6) Pageable pageable){
+    public SuccessResponse<List<FeedSimpleResDto>> getPopularFeeds(){
 
         log.info("피드 캐싱 조회");
-        return new SuccessResponse<>(feedService.getPopularFeeds(pageable),
+        return new SuccessResponse<>(feedService.getPopularFeeds(),
                 FEED_GET_POPULATION.getMessage());
     }
 
