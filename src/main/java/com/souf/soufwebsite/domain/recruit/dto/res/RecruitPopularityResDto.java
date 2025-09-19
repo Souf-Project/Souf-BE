@@ -32,6 +32,6 @@ public record RecruitPopularityResDto(
 
     private static long leftDays(LocalDateTime deadline) {
         LocalDateTime now = LocalDateTime.now();
-        return ChronoUnit.DAYS.between(now, deadline);
+        return ChronoUnit.DAYS.between(deadline, now);
     }
 }
