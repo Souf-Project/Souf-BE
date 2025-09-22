@@ -15,13 +15,13 @@ public interface FeedService {
 
     MemberFeedResDto getStudentFeeds(Long memberId, Pageable pageable);
 
-    FeedDetailResDto getFeedById(String email, Long memberId, Long feedId);
+    FeedDetailResDto getFeedById(Long memberId, Long feedId);
 
     FeedResDto updateFeed(String email, Long feedId, FeedReqDto reqDto);
 
     void deleteFeed(String email, Long feedId);
 
-    List<FeedSimpleResDto> getPopularFeeds(Pageable pageable);
+    List<FeedSimpleResDto> getPopularFeeds();
 
     Slice<FeedDetailResDto> getFeeds(Long first, Pageable pageable);
 
