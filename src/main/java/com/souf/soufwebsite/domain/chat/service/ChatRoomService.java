@@ -4,6 +4,9 @@ import com.souf.soufwebsite.domain.chat.dto.ChatRoomSummaryDto;
 import com.souf.soufwebsite.domain.chat.entity.ChatMessage;
 import com.souf.soufwebsite.domain.chat.entity.ChatParticipant;
 import com.souf.soufwebsite.domain.chat.entity.ChatRoom;
+import com.souf.soufwebsite.domain.chat.exception.NotChatMyselfException;
+import com.souf.soufwebsite.domain.chat.exception.NotFoundChatRoomException;
+import com.souf.soufwebsite.domain.chat.exception.NotFoundParticipantException;
 import com.souf.soufwebsite.domain.chat.repository.ChatMessageRepository;
 import com.souf.soufwebsite.domain.chat.repository.ChatParticipantRepository;
 import com.souf.soufwebsite.domain.chat.repository.ChatRoomNativeRepository;
@@ -27,7 +30,7 @@ public class ChatRoomService {
     @Transactional
     public ChatRoom findOrCreateRoom(Member sender, Member receiver) {
         if (sender.equals(receiver)) {
-            throw new IllegalArgumentException("자기 자신과는 채팅할 수 없습니다.");
+            throw new NotChatMyselfException();
         }
 
         Optional<ChatRoom> existingRoomOpt = chatRoomRepository.findBySenderAndReceiver(sender, receiver)
@@ -56,13 +59,13 @@ public class ChatRoomService {
 
     public ChatRoom getRoomById(Long roomId) {
         return chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 채팅방이 존재하지 않습니다."));
+                .orElseThrow(NotFoundChatRoomException::new);
     }
 
     @Transactional
     public void exitChatRoom(Member member, Long roomId) {
         chatParticipantRepository.findByChatRoomIdAndMemberId(roomId, member.getId())
-                .orElseThrow(() -> new IllegalArgumentException("참여자 없음"))
+                .orElseThrow(NotFoundParticipantException::new)
                 .exit(); // exited = true로 변경
     }
 

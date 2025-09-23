@@ -21,8 +21,8 @@ public class CacheWarmUpRunner implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         viewCountService.refreshViewCountCache();
-        feedScheduledService.refreshPopularFeeds();
-        recruitScheduledService.refreshPopularRecruits();
+//        feedScheduledService.refreshPopularFeeds();
+//        recruitScheduledService.refreshPopularRecruits();
         log.info("인기 게시글 캐싱 완료");
     }
 }

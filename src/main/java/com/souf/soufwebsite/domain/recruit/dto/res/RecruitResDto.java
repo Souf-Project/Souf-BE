@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.recruit.dto;
+package com.souf.soufwebsite.domain.recruit.dto.res;
 
 import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
@@ -20,15 +20,15 @@ public record RecruitResDto(
         String cityName,
         String cityDetailName,
         String deadline,
-        String minPayment,
-        String maxPayment,
+        String price,
+        Long totalViewCount,
         String preferentialTreatment,
         String nickname,
         boolean recruitable,
         List<CategoryDto> categoryDtoList,
         List<MediaResDto> mediaResDtos
 ) {
-    public static RecruitResDto from(Long memberId, Recruit recruit, String nickname, List<Media> mediaList) {
+    public static RecruitResDto from(Long memberId, Recruit recruit, Long totalViewCount, String nickname, List<Media> mediaList) {
         return new RecruitResDto(
                 memberId,
                 recruit.getId(),
@@ -37,8 +37,8 @@ public record RecruitResDto(
                 recruit.getCity().getName(),
                 recruit.getCityDetail() != null ? recruit.getCityDetail().getName() : null,
                 convertToDateTime(recruit.getDeadline()),
-                recruit.getMinPayment(),
-                recruit.getMaxPayment(),
+                recruit.getPrice(),
+                totalViewCount,
                 recruit.getPreferentialTreatment(),
                 nickname,
                 recruit.isRecruitable(),

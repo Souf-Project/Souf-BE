@@ -37,6 +37,10 @@ public class Feed extends BaseEntity {
     @Column(nullable = false)
     private Long viewCount;
 
+    @NotNull
+    @Column(nullable = false)
+    private Long weeklyViews;
+
     @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
@@ -53,6 +57,7 @@ public class Feed extends BaseEntity {
         this.content = content;
         this.member = member;
         this.viewCount = 0L;
+        this.weeklyViews = 0L;
     }
 
     public static Feed of(FeedReqDto createReqDto, Member member) {

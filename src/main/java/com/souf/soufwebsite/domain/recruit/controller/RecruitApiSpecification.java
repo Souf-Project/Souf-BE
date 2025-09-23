@@ -2,7 +2,10 @@ package com.souf.soufwebsite.domain.recruit.controller;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberIdReqDto;
-import com.souf.soufwebsite.domain.recruit.dto.*;
+import com.souf.soufwebsite.domain.recruit.dto.req.MyRecruitReqDto;
+import com.souf.soufwebsite.domain.recruit.dto.req.RecruitReqDto;
+import com.souf.soufwebsite.domain.recruit.dto.req.RecruitSearchReqDto;
+import com.souf.soufwebsite.domain.recruit.dto.res.*;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,6 +47,7 @@ public interface RecruitApiSpecification {
     @GetMapping("/my")
     SuccessResponse<Page<MyRecruitResDto>> getMyRecruits(
             @CurrentEmail String email,
+            @ModelAttribute MyRecruitReqDto myRecruitReqDto,
             @PageableDefault Pageable pageable);
 
     @Operation(summary = "특정 공고문 수정", description = "사용자 본인이 소유한 공고문에 대해 수정합니다.")
@@ -61,8 +65,7 @@ public interface RecruitApiSpecification {
 
     @Operation(summary = "인기있는 공고문 조회", description = "사용자 조회 수 별로 인기있는 공고문을 조회합니다.")
     @GetMapping("/popular")
-    SuccessResponse<List<RecruitPopularityResDto>> getPopularRecruits(
-            @PageableDefault Pageable pageable);
+    SuccessResponse<List<RecruitPopularityResDto>> getPopularRecruits();
 
     @Operation(summary = "공고문 마감하기", description = "마감기한 전에 매칭된 공고문에 대해 소유자가 마감합니다.")
     @PatchMapping("/closure/{recruitId}")

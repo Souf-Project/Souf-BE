@@ -2,22 +2,21 @@ package com.souf.soufwebsite.domain.recruit.service;
 
 import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitPopularityResDto;
+import com.souf.soufwebsite.domain.recruit.dto.res.RecruitPopularityResDto;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
-import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -25,27 +24,34 @@ import java.util.Set;
 public class RecruitScheduledService {
 
     private final RecruitRepository recruitRepository;
-    private final RedisUtil redisUtil;
+    private final StringRedisTemplate redisTemplate;
     private final CacheManager cacheManager;
     private final FileService fileService;
 
+    public static final String TOTAL_HASH = "recruit:views:total:";
+
     @Transactional
     public void syncViewCountsToDB() {
-        Set<String> keys = redisUtil.getKeys("recruit:view:*");
+        Map<Object, Object> entries = redisTemplate.opsForHash().entries(TOTAL_HASH);
 
-        if (keys == null || keys.isEmpty()) return;
-
-        for (String key : keys) {
-            Long recruitId = Long.parseLong(key.replace("recruit:view:", ""));
-            Long viewCountInRedis = redisUtil.get(key);
-            if (viewCountInRedis == null || viewCountInRedis == 0L) continue;
-
-            // DB의 기존 viewCount에 더해줌
-            recruitRepository.increaseViewCount(recruitId, viewCountInRedis);
-
-            // Redis 값 0으로 초기화
-            redisUtil.set(key);
+        if(entries.isEmpty()) {
+            return;
         }
+
+        for(Object key : entries.keySet()) {
+            Object value = entries.get(key);
+            if(value == null)
+                continue;
+
+            Long recruitId = Long.valueOf(String.valueOf(key));
+            Long totalViewCount = Long.valueOf(String.valueOf(value));
+            recruitRepository.findById(recruitId).ifPresent(recruit -> {
+                recruitRepository.increaseViewCount(recruitId, totalViewCount);
+            });
+        }
+
+        redisTemplate.delete(TOTAL_HASH);
+
         log.info("공고문 조회수 스케줄링 작업 완료");
     }
 
@@ -67,16 +73,20 @@ public class RecruitScheduledService {
             return;
         }
 
-        Pageable pageable = PageRequest.of(0, 5);
+        LocalDateTime now = LocalDateTime.now();
+        List<Recruit> popularRecruits = recruitRepository.findTop5ByRecruitableAndDeadlineAfterOrderByDeadlineDesc(now);
 
-        Page<Recruit> recruits = recruitRepository.findByRecruitableTrueOrderByViewCountDesc(pageable);
+        log.info("공고문 로직 실행 중");
 
-        Page<RecruitPopularityResDto> results = recruits.map(r -> {
-            String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, r.getMember().getId());
-            return RecruitPopularityResDto.of(r, mediaUrl);
-        });
+        List<RecruitPopularityResDto> results = popularRecruits.stream().map(
+                r -> {
+                    String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, r.getMember().getId());
+                    return RecruitPopularityResDto.of(r, mediaUrl);
+                }
+        ).toList();
+        log.info("popular Recruit size: {}", results.size());
 
-        cache.put(buildKey(pageable), results.getContent());
+        cache.put("recruit:popular", results);
     }
 
     private String buildKey(Pageable pageable) {

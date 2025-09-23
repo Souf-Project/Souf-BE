@@ -3,7 +3,7 @@ package com.souf.soufwebsite.domain.recruit.entity;
 import com.souf.soufwebsite.domain.city.entity.City;
 import com.souf.soufwebsite.domain.city.entity.CityDetail;
 import com.souf.soufwebsite.domain.member.entity.Member;
-import com.souf.soufwebsite.domain.recruit.dto.RecruitReqDto;
+import com.souf.soufwebsite.domain.recruit.dto.req.RecruitReqDto;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -38,19 +38,18 @@ public class Recruit extends BaseEntity {
     private City city;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cityDetail_id", nullable = true)
+    @JoinColumn(name = "cityDetail_id")
     private CityDetail cityDetail;
 
+    @Column
+    private LocalDateTime startTime;
 
     // 마감일자
     @Column
     private LocalDateTime deadline;
 
     @Column(nullable = false)
-    private String minPayment;
-
-    @Column(nullable = false)
-    private String maxPayment;
+    private String price;
 
     @Column
     private String preferentialTreatment;
@@ -85,8 +84,7 @@ public class Recruit extends BaseEntity {
                 .city(city)
                 .cityDetail(cityDetail)
                 .deadline(reqDto.deadline())
-                .minPayment(reqDto.minPayment())
-                .maxPayment(reqDto.maxPayment())
+                .price(reqDto.price())
                 .preferentialTreatment(reqDto.preferentialTreatment())
                 .recruitCount(0L)
                 .viewCount(0L)
@@ -101,8 +99,7 @@ public class Recruit extends BaseEntity {
         this.city = city;
         this.cityDetail = cityDetail;
         this.deadline = reqDto.deadline();
-        this.minPayment = reqDto.minPayment();
-        this.maxPayment = reqDto.maxPayment();
+        this.price = reqDto.price();
         this.workType = reqDto.workType();
         this.preferentialTreatment = reqDto.preferentialTreatment();
     }

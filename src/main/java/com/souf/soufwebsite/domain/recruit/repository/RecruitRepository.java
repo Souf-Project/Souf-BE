@@ -1,6 +1,5 @@
 package com.souf.soufwebsite.domain.recruit.repository;
 
-import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface RecruitRepository extends JpaRepository<Recruit, Long>, RecruitCustomRepository {
@@ -17,23 +17,9 @@ public interface RecruitRepository extends JpaRepository<Recruit, Long>, Recruit
     @Query("update Recruit r set r.viewCount = r.viewCount + :count where r.id = :recruitId")
     void increaseViewCount(@Param("recruitId") Long recruitId, @Param("count") Long count);
 
-    @Query(
-            value = """
-                SELECT DISTINCT r
-                FROM Recruit r
-                JOIN FETCH r.member m
-                WHERE r.recruitable = true
-                ORDER BY r.viewCount DESC, r.id DESC
-            """,
-            countQuery = """
-                SELECT COUNT(r)
-                FROM Recruit r
-                WHERE r.recruitable = true
-            """
-    )
-    Page<Recruit> findByRecruitableTrueOrderByViewCountDesc(Pageable pageable);
+    @Query("select r from Recruit r where r.recruitable=true and r.deadline > :now order by r.deadline limit 5")
+    List<Recruit> findTop5ByRecruitableAndDeadlineAfterOrderByDeadlineDesc(@Param("now") LocalDateTime now);
 
-    Page<Recruit> findByMember(Member member, Pageable pageable);
 
     List<Recruit> findByRecruitableTrue();
 

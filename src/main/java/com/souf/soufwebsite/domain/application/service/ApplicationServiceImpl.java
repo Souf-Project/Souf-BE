@@ -45,7 +45,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     public void apply(String email, Long recruitId) {
         Member member = findIfEmailExists(email);
         Recruit recruit = recruitRepository.findById(recruitId)
-                .orElseThrow(com.souf.soufwebsite.domain.recruit.exception.NotFoundRecruitException::new);
+                .orElseThrow(NotFoundRecruitException::new);
 
         if (recruit.getMember().getId().equals(member.getId())) {
             throw new NotApplyMyRecruitException();

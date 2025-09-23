@@ -2,6 +2,9 @@ package com.souf.soufwebsite.domain.recruit.service;
 
 import com.souf.soufwebsite.domain.city.entity.City;
 import com.souf.soufwebsite.domain.city.entity.CityDetail;
+import com.souf.soufwebsite.domain.city.exception.NotFoundCityDetailException;
+import com.souf.soufwebsite.domain.city.exception.NotFoundCityException;
+import com.souf.soufwebsite.domain.city.exception.RequiredCityDetailException;
 import com.souf.soufwebsite.domain.city.repository.CityDetailRepository;
 import com.souf.soufwebsite.domain.city.repository.CityRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
@@ -16,7 +19,10 @@ import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.opensearch.EntityType;
 import com.souf.soufwebsite.domain.opensearch.OperationType;
 import com.souf.soufwebsite.domain.opensearch.event.IndexEventPublisherHelper;
-import com.souf.soufwebsite.domain.recruit.dto.*;
+import com.souf.soufwebsite.domain.recruit.dto.req.MyRecruitReqDto;
+import com.souf.soufwebsite.domain.recruit.dto.req.RecruitReqDto;
+import com.souf.soufwebsite.domain.recruit.dto.req.RecruitSearchReqDto;
+import com.souf.soufwebsite.domain.recruit.dto.res.*;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.entity.RecruitCategoryMapping;
 import com.souf.soufwebsite.domain.recruit.exception.NotFoundRecruitException;
@@ -34,11 +40,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -54,6 +61,9 @@ public class RecruitServiceImpl implements RecruitService {
     private final RedisUtil redisUtil;
     private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final SlackService slackService;
+    private final StringRedisTemplate stringRedisTemplate;
+
+    public static final String TOTAL_HASH = "recruit:views:total:";
 
     @Override
     @Transactional
@@ -61,7 +71,7 @@ public class RecruitServiceImpl implements RecruitService {
         Member member = findIfEmailExists(email);
 
         City city = cityRepository.findById(reqDto.cityId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 City ID입니다."));
+                .orElseThrow(NotFoundCityException::new);
         CityDetail cityDetail = validateCityOrThrow(city, reqDto.cityDetailId());
 
         Recruit recruit = Recruit.of(reqDto, member, city, cityDetail);
@@ -74,9 +84,6 @@ public class RecruitServiceImpl implements RecruitService {
                 "Recruit",
                 recruit
         );
-
-        String recruitViewKey = getRecruitViewKey(recruit.getId());
-        redisUtil.set(recruitViewKey);
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("recruit", reqDto.originalFileNames());
 
@@ -112,39 +119,19 @@ public class RecruitServiceImpl implements RecruitService {
         Recruit recruit = findIfRecruitExist(recruitId);
         Member recruitMember = recruit.getMember();
 
-        String recruitViewKey = getRecruitViewKey(recruit.getId());
-        redisUtil.increaseCount(recruitViewKey);
+        long totalViewCount = stringRedisTemplate.opsForHash().increment(TOTAL_HASH, String.valueOf(recruit.getId()), 1L)
+                + recruit.getViewCount();
 
         List<Media> mediaList = fileService.getMediaList(PostType.RECRUIT, recruitId);
 
-        return RecruitResDto.from(recruitMember.getId(), recruit, recruitMember.getNickname(), mediaList);
+        return RecruitResDto.from(recruitMember.getId(), recruit, totalViewCount, recruitMember.getNickname(), mediaList);
     }
 
     @Transactional(readOnly = true)
     @Override
-    public Page<MyRecruitResDto> getMyRecruits(String email, Pageable pageable) {
+    public Page<MyRecruitResDto> getMyRecruits(String email, MyRecruitReqDto reqDto, Pageable pageable) {
         Member me = findIfEmailExists(email);
-        return recruitRepository.findByMember(me, pageable)
-                .map(r -> {
-                    String status = r.isRecruitable() ? "모집 중" : "마감";
-
-                    List<CategoryDto> categories = r.getCategories().stream()
-                            .map(m -> new CategoryDto(
-                                    m.getFirstCategory().getId(),
-                                    m.getSecondCategory().getId(),
-                                    m.getThirdCategory().getId()
-                            ))
-                            .collect(Collectors.toList());
-
-                    return new MyRecruitResDto(
-                            r.getId(),
-                            r.getTitle(),
-                            r.getDeadline(),
-                            categories,
-                            status,
-                            r.getRecruitCount()
-                    );
-                });
+        return recruitRepository.getMyRecruits(me, reqDto, pageable);
     }
 
     @Transactional
@@ -155,7 +142,7 @@ public class RecruitServiceImpl implements RecruitService {
         verifyIfRecruitIsMine(recruit, member);
 
         City city = cityRepository.findById(reqDto.cityId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 City ID입니다."));
+                .orElseThrow(NotFoundCityException::new);
         CityDetail cityDetail = validateCityOrThrow(city, reqDto.cityDetailId());
 
         updateRemainingImages(reqDto, recruit);
@@ -196,19 +183,22 @@ public class RecruitServiceImpl implements RecruitService {
 
     @Override
     @Cacheable(value = "popularRecruits",
-            key = "'page:' + #pageable.pageNumber + ':' + #pageable.pageSize")
-    public List<RecruitPopularityResDto> getPopularRecruits(Pageable pageable) {
-        Page<Recruit> popularRecruits = recruitRepository.findByRecruitableTrueOrderByViewCountDesc(pageable);
+            key = "'recruit:popular'")
+    public List<RecruitPopularityResDto> getPopularRecruits() {
+        LocalDateTime now = LocalDateTime.now();
+        List<Recruit> popularRecruits = recruitRepository.findTop5ByRecruitableAndDeadlineAfterOrderByDeadlineDesc(now);
 
         log.info("공고문 로직 실행 중");
 
-        Page<RecruitPopularityResDto> recruitPopularityResDtos = popularRecruits.map(r -> {
-            String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, r.getMember().getId());
-            return RecruitPopularityResDto.of(r, mediaUrl);
-        });
-        log.info("size: {}", recruitPopularityResDtos.getSize());
+        List<RecruitPopularityResDto> recruitPopularityResDtos = popularRecruits.stream().map(
+                r -> {
+                    String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, r.getMember().getId());
+                    return RecruitPopularityResDto.of(r, mediaUrl);
+                }
+        ).toList();
+        log.info("size: {}", recruitPopularityResDtos.size());
 
-        return recruitPopularityResDtos.getContent();
+        return recruitPopularityResDtos;
     }
 
     @Transactional
@@ -257,10 +247,10 @@ public class RecruitServiceImpl implements RecruitService {
             return null;
         }
         if (cityDetailId == null) {
-            throw new IllegalArgumentException("세부 지역은 필수입니다.");
+            throw new RequiredCityDetailException();
         }
         return cityDetailRepository.findById(cityDetailId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 cityDetail ID입니다."));
+                .orElseThrow(NotFoundCityDetailException::new);
     }
 
     private void updateRemainingImages(RecruitReqDto reqDto, Recruit recruit) {
