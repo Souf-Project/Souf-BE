@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.global.common.category.service;
 
+import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
 import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
@@ -9,6 +10,8 @@ import com.souf.soufwebsite.global.common.category.repository.SecondCategoryRepo
 import com.souf.soufwebsite.global.common.category.repository.ThirdCategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -55,6 +58,16 @@ public class CategoryService {
 
         if (firstId != null && !firstCategoryRepository.existsById(firstId)) {
             throw new NotFoundFirstCategoryException();
+        }
+    }
+
+    public void validate(List<CategoryDto> categories) {
+        if (categories == null || categories.isEmpty()) {
+            throw new IllegalArgumentException("카테고리 조합이 비어 있습니다.");
+        }
+
+        for (CategoryDto c : categories) {
+            validate(c.firstCategory(), c.secondCategory(), c.thirdCategory());
         }
     }
 }

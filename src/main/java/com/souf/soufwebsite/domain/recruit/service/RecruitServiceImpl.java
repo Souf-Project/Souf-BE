@@ -104,7 +104,11 @@ public class RecruitServiceImpl implements RecruitService {
                                                  Long third,
                                                  RecruitSearchReqDto reqDto,
                                                  Pageable pageable) {
-        categoryService.validate(first, second, third);
+        if (reqDto.categories() != null && !reqDto.categories().isEmpty()) {
+            categoryService.validate(reqDto.categories());
+        } else {
+            categoryService.validate(first, second, third);
+        }
 
         return recruitRepository.getRecruitList(first, second, third, reqDto, pageable);
     }
