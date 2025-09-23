@@ -95,14 +95,13 @@ public class RecruitController implements RecruitApiSpecification{
 
     @GetMapping("/popular")
     public SuccessResponse<List<RecruitPopularityResDto>> getPopularRecruits(
-            @PageableDefault Pageable pageable
     ) {
 
         log.info("공고문 캐싱 조회");
         redisUtil.increaseCount("view:main:totalCount");
 
         return new SuccessResponse<>(
-                recruitService.getPopularRecruits(pageable),
+                recruitService.getPopularRecruits(),
                 RECRUIT_GET_POPULATION.getMessage());
     }
 

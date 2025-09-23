@@ -1,7 +1,7 @@
 package com.souf.soufwebsite.domain.report.service;
 
-import com.souf.soufwebsite.domain.feed.exception.NotFoundFeedException;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.report.dto.ReportReqDto;
 import com.souf.soufwebsite.domain.report.entity.Reason;
@@ -52,10 +52,10 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private Member findIfMemberExists(Long memberId) {
-        return memberRepository.findById(memberId).orElseThrow(NotFoundFeedException::new);
+        return memberRepository.findById(memberId).orElseThrow(NotFoundMemberException::new);
     }
 
     private Member findIfEmailExists(String email) {
-        return memberRepository.findByEmail(email).orElseThrow(NotFoundFeedException::new);
+        return memberRepository.findByEmail(email).orElseThrow(NotFoundMemberException::new);
     }
 }

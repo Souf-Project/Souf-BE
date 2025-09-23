@@ -28,7 +28,7 @@ public interface RecruitService {
 
     void deleteRecruit(String email, Long recruitId);
 
-    List<RecruitPopularityResDto> getPopularRecruits(Pageable pageable);
+    List<RecruitPopularityResDto> getPopularRecruits();
 
     void updateRecruitable(Long recruitId, MemberIdReqDto reqDto);
 }

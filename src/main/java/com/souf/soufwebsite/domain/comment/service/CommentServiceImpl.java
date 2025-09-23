@@ -129,7 +129,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private Member findIfMemberExists(Long memberId) {
-        return memberRepository.findById(memberId).orElseThrow(NotFoundFeedException::new);
+        return memberRepository.findById(memberId).orElseThrow(NotFoundMemberException::new);
     }
 
     private Comment findIfCommentExists(Long commentId) {

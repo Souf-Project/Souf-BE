@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.3.9'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco'
 }
 
 group = 'com.souf'
@@ -120,6 +121,7 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport // test 뒤에 jacocoTestReport가 실행되도록 선언
 }
 
 // querydsl 추가 시작
@@ -136,3 +138,60 @@ clean.doLast {
     file(querydslDir).deleteDir()
 }
 // querydsl 추가 끝
+
+// jacoco 추가 시작
+jacoco {
+    toolVersion = "0.8.12"
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        html.required = true
+        xml.required = true
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
+    }
+
+    // 불필요한 클래스 커버리지 제외
+    def excludes = [
+            '**/*Application*',
+            '**/config/**',
+            '**/dto/**',
+            '**/exception/**',
+            '**/generated/**',
+            '**/Q**',
+            '**/*$*',
+            '**/meta/**',
+            '**/annotation/**'
+    ]
+
+    classDirectories.setFrom(
+            files(classDirectories.files.collect {
+                dir -> fileTree(dir: dir, exclude: excludes)
+            })
+    )
+}
+
+// 측정치를 달성했는지 임계치 검증
+//jacocoTestCoverageVerification {
+//    violationRules {
+//        rule {
+//            excludes = [
+//                    '**/*Application*',
+//                    '**/config/**',
+//                    '**/dto/**',
+//                    '**/exception/**',
+//                    '**/generated/**',
+//                    '**/Q**',
+//                    '**/*$*',
+//                    '**/meta/**',
+//                    '**/annotation/**'
+//            ]
+////            limit {
+////                minimum = 0.65
+////            }
+//        }
+//    }
+//}
+//check.dependsOn jacocoTestCoverageVerification

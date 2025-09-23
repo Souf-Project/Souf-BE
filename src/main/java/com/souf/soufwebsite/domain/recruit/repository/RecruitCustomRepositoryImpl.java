@@ -9,9 +9,9 @@ import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.recruit.dto.SortOption;
 import com.souf.soufwebsite.domain.recruit.dto.req.MyRecruitReqDto;
-import com.souf.soufwebsite.domain.recruit.dto.res.MyRecruitResDto;
 import com.souf.soufwebsite.domain.recruit.dto.req.RecruitSearchReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.res.RecruitSimpleResDto;
 import com.souf.soufwebsite.domain.recruit.entity.MyRecruitSortKey;
@@ -82,8 +82,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         recruit.title,
                         recruitCategoryMapping.secondCategory.id,
                         recruit.content,
-                        recruit.minPayment,
-                        recruit.maxPayment,
+                        recruit.price,
                         recruit.city.name,
                         recruit.cityDetail.name,
                         recruit.deadline,
@@ -117,6 +116,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         t.get(recruit.maxPayment),
                         city,
                         cityDetail,
+                        t.get(recruit.price),
                         t.get(recruit.deadline),
                         t.get(recruit.recruitCount),
                         Boolean.TRUE.equals(t.get(recruit.recruitable)),
@@ -191,7 +191,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
     private NumberExpression<Integer> maxPaymentNumber() {
         return Expressions.numberTemplate(Integer.class,
                 "cast(nullif(replace(replace(trim({0}), '만원', ''), ',', ''), '') as integer)",
-                recruit.maxPayment
+                recruit.price
         );
     }
 

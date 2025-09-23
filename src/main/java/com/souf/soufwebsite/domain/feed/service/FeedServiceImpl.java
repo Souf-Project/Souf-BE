@@ -29,8 +29,8 @@ import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
 import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
-import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import com.souf.soufwebsite.global.slack.service.SlackService;
+import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -38,6 +38,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,12 +53,20 @@ public class FeedServiceImpl implements FeedService {
     private final MemberRepository memberRepository;
     private final CategoryService categoryService;
     private final FileService fileService;
-    private final RedisUtil redisUtil;
     private final FeedConverter feedConverter;
     private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final SlackService slackService;
     private final LikedFeedRepository likedFeedRepository;
     private final CommentRepository commentRepository;
+
+    private final StringRedisTemplate stringRedisTemplate;
+
+    public static final String WEEKLY_ZSET = "feed:views:weekly:";
+    public static final String TOTAL_HASH = "feed:views:total:";
+
+    public Member getCurrentMember() {
+        return SecurityUtils.getCurrentMemberOrNull();
+    }
 
     @Override
     @Transactional
@@ -74,9 +83,6 @@ public class FeedServiceImpl implements FeedService {
                 "Feed",
                 feed
         );
-
-        String feedViewKey = getFeedViewKey(feed.getId());
-        redisUtil.set(feedViewKey);
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
         VideoDto videoDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.FEED);
@@ -110,18 +116,16 @@ public class FeedServiceImpl implements FeedService {
 
     @Transactional(readOnly = true)
     @Override
-    public FeedDetailResDto getFeedById(String email, Long memberId, Long feedId) {
+    public FeedDetailResDto getFeedById(Long memberId, Long feedId) {
 
         // 현재 사용자
-        Member currentMember = memberRepository.findByEmail(email).orElse(null);
+        Member currentMember = getCurrentMember();
 
         // 피드 소유자
         Member member = findIfMemberIdExists(memberId);
         Feed feed = findIfFeedExist(feedId);
 
-        String feedViewKey = getFeedViewKey(feed.getId());
-        redisUtil.increaseCount(feedViewKey);
-        Long viewCountFromRedis = redisUtil.get(feedViewKey);
+        Long totalViewCount = updateViewCount(feedId, feed);
 
         Long likedCount = likedFeedRepository.countByFeedId(feedId).orElse(0L);
         Boolean liked = false;
@@ -134,7 +138,7 @@ public class FeedServiceImpl implements FeedService {
         List<Media> mediaList = fileService.getMediaList(PostType.FEED, feedId);
         String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-        return FeedDetailResDto.from(member, profileImageUrl, feed, viewCountFromRedis, likedCount, liked, commentCount, mediaList);
+        return FeedDetailResDto.from(member, profileImageUrl, feed, totalViewCount, likedCount, liked, commentCount, mediaList);
     }
 
     @Transactional
@@ -169,8 +173,8 @@ public class FeedServiceImpl implements FeedService {
         Feed feed = findIfFeedExist(feedId);
         verifyIfFeedIsMine(feed, member);
 
-        String feedViewKey = getFeedViewKey(feed.getId());
-        redisUtil.deleteKey(feedViewKey);
+        stringRedisTemplate.opsForZSet().remove(WEEKLY_ZSET, String.valueOf(feedId));
+        stringRedisTemplate.opsForHash().delete(TOTAL_HASH, String.valueOf(feedId));
 
         feedRepository.delete(feed);
 
@@ -183,14 +187,15 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     @Cacheable(value = "popularFeeds",
-            key = "'page:' + #pageable.pageNumber + ':' + #pageable.pageSize")
-    public List<FeedSimpleResDto> getPopularFeeds(Pageable pageable) {
-        Page<Feed> popularFeeds = feedRepository.findByOrderByViewCountDesc(pageable);
+            key = "'feed:popular'")
+    public List<FeedSimpleResDto> getPopularFeeds() {
+        List<Feed> popularFeeds = feedRepository.findTop6ByOrderByWeeklyViewCountDesc();
 
         log.info("피드 서비스 로직 실행");
 
-         return popularFeeds.getContent().stream()
+         return popularFeeds.stream()
                  .map(feedConverter::getFeedSimpleResDto)
                  .toList();
     }
@@ -203,8 +208,8 @@ public class FeedServiceImpl implements FeedService {
 
         return feeds.map(
                 feed -> {
-                    String feedViewKey = getFeedViewKey(feed.getId());
-                    Long viewCountFromRedis = redisUtil.get(feedViewKey);
+                    Object viewCountFromRedis = stringRedisTemplate.opsForHash().get(TOTAL_HASH, String.valueOf(feed.getId()));
+                    Long viewCount = (viewCountFromRedis == null) ? 0L : Long.parseLong((String) viewCountFromRedis);
                     List<Media> mediaList = fileService.getMediaList(PostType.FEED, feed.getId());
                     Member member = feed.getMember();
                     String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
@@ -212,7 +217,7 @@ public class FeedServiceImpl implements FeedService {
                     Long likedCount = likedFeedRepository.countByFeedId(feed.getId()).orElse(0L);
                     Long commentCount = commentRepository.countByFeed(feed).orElse(0L);
 
-                    return FeedDetailResDto.from(feed.getMember(), profileImageUrl, feed, viewCountFromRedis, likedCount, false, commentCount, mediaList);
+                    return FeedDetailResDto.from(feed.getMember(), profileImageUrl, feed, viewCount, likedCount, false, commentCount, mediaList);
                 }
         );
     }
@@ -236,6 +241,8 @@ public class FeedServiceImpl implements FeedService {
         }
     }
 
+    /* ============================= private method ======================================== */
+
     private void verifyIfFeedIsMine(Feed feed, Member member) {
         log.info("currentMember: {}, feedMember: {}", member, feed.getMember());
         if(!feed.getMember().getId().equals(member.getId())){
@@ -252,11 +259,7 @@ public class FeedServiceImpl implements FeedService {
     }
 
     private Member findIfEmailExists(String email) {
-        return memberRepository.findByEmail(email).orElseThrow(NotFoundFeedException::new);
-    }
-
-    private String getFeedViewKey(Long feedId) {
-        return "feed:view:" + feedId;
+        return memberRepository.findByEmail(email).orElseThrow(NotFoundMemberException::new);
     }
 
     private void injectCategories(FeedReqDto reqDto, Feed feed) {
@@ -284,5 +287,13 @@ public class FeedServiceImpl implements FeedService {
     @NotNull
     private Boolean getLiked(Long memberId, Long feedId) {
         return likedFeedRepository.existsByFeedIdAndMemberId(feedId, memberId);
+    }
+
+    private Long updateViewCount(Long feedId, Feed feed) {
+        stringRedisTemplate.opsForZSet().incrementScore(WEEKLY_ZSET, String.valueOf(feedId), 1D); // 주간 조회수 카운트
+
+        // 누적 조회수 카운트
+        return stringRedisTemplate.opsForHash().increment(TOTAL_HASH, String.valueOf(feedId), 1L)
+                + feed.getViewCount();
     }
 }

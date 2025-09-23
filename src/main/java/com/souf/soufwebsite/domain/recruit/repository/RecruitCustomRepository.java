@@ -2,8 +2,8 @@ package com.souf.soufwebsite.domain.recruit.repository;
 
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.recruit.dto.req.MyRecruitReqDto;
-import com.souf.soufwebsite.domain.recruit.dto.res.MyRecruitResDto;
 import com.souf.soufwebsite.domain.recruit.dto.req.RecruitSearchReqDto;
+import com.souf.soufwebsite.domain.recruit.dto.res.MyRecruitResDto;
 import com.souf.soufwebsite.domain.recruit.dto.res.RecruitSimpleResDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
