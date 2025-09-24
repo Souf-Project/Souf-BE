@@ -12,4 +12,12 @@ public record RecruitSearchReqDto(
         @Schema(description = "내용") String content,
         List<CategoryDto> categories,
         SortOption<RecruitSortKey> sortOption
-) {}
+) {
+    public RecruitSearchReqDto {
+        if (sortOption == null) {
+            sortOption = new SortOption<>(RecruitSortKey.RECENT, SortOption.SortDir.DESC);
+        } else if (sortOption.sortKey() == null) {
+            sortOption = new SortOption<>(RecruitSortKey.RECENT, sortOption.sortDir());
+        }
+    }
+}
