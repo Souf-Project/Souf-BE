@@ -13,6 +13,7 @@ import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.recruit.dto.SortOption;
 import com.souf.soufwebsite.domain.recruit.dto.req.MyRecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.req.RecruitSearchReqDto;
+import com.souf.soufwebsite.domain.recruit.dto.res.MyRecruitResDto;
 import com.souf.soufwebsite.domain.recruit.dto.res.RecruitSimpleResDto;
 import com.souf.soufwebsite.domain.recruit.entity.MyRecruitSortKey;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
@@ -42,14 +43,11 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<RecruitSimpleResDto> getRecruitList(Long first,
-                                                    Long second,
-                                                    Long third,
-                                                    RecruitSearchReqDto req,
+    public Page<RecruitSimpleResDto> getRecruitList(RecruitSearchReqDto req,
                                                     Pageable pageable) {
 
         // 1) 동적 where (EXISTS 기반)
-        BooleanExpression where = buildWhere(first, second, third, req);
+        BooleanExpression where = buildWhere(req);
 
         OrderSpecifier<?>[] orderSpecifiers = buildOrderSpecifiers(req);
 
@@ -112,11 +110,9 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         t.get(recruit.title),
                         secondCatId,
                         t.get(recruit.content),
-                        t.get(recruit.minPayment),
-                        t.get(recruit.maxPayment),
+                        t.get(recruit.price),
                         city,
                         cityDetail,
-                        t.get(recruit.price),
                         t.get(recruit.deadline),
                         t.get(recruit.recruitCount),
                         Boolean.TRUE.equals(t.get(recruit.recruitable)),
@@ -232,7 +228,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
         };
     }
 
-    private BooleanExpression buildWhere(Long first, Long second, Long third, RecruitSearchReqDto req) {
+    private BooleanExpression buildWhere(RecruitSearchReqDto req) {
         List<BooleanExpression> ands = new ArrayList<>();
 
         // 텍스트 필터
@@ -246,10 +242,6 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
         // 카테고리(리스트 우선)
         if (req.categories() != null && !req.categories().isEmpty()) {
             ands.add(buildCategoryExistsOr(req.categories()));
-        } else {
-            if (first != null)  ands.add(existsCategory(first, null, null));
-            if (second != null) ands.add(existsCategory(null, second, null));
-            if (third != null)  ands.add(existsCategory(null, null, third));
         }
 
         // AND 결합

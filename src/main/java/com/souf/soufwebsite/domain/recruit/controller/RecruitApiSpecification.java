@@ -33,10 +33,7 @@ public interface RecruitApiSpecification {
 
     @Operation(summary = "공고문 리스트 조회", description = "카테고리에 걸맞는 공고문 리스트를 조회합니다.")
     @GetMapping
-    SuccessResponse<Page<RecruitSimpleResDto>> getRecruits(@RequestParam(name = "firstCategory") Long first,
-                                                           @RequestParam(name = "secondCategory") Long second,
-                                                           @RequestParam(name = "thirdCategory") Long third,
-                                                           @RequestBody RecruitSearchReqDto recruitSearchReqDto,
+    SuccessResponse<Page<RecruitSimpleResDto>> getRecruits(@RequestBody RecruitSearchReqDto recruitSearchReqDto,
                                                            @PageableDefault(size = 12) Pageable pageable);
 
     @Operation(summary = "특정 공고문 상세 조회", description = "특정 공고문에 대한 상세 정보를 조회합니다.")
