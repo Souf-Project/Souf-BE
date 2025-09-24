@@ -10,6 +10,10 @@ public record SortOption<T extends Enum<T>>(
 ) {
     public enum SortDir { ASC, DESC }
 
+    public SortOption {
+        if (sortDir == null) sortDir = SortDir.DESC;
+    }
+
     public T sortKeyOrDefault(T defaultKey) {
         return sortKey == null ? defaultKey : sortKey;
     }
