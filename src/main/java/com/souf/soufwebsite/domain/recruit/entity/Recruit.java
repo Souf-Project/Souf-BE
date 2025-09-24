@@ -83,6 +83,7 @@ public class Recruit extends BaseEntity {
                 .content(reqDto.content())
                 .city(city)
                 .cityDetail(cityDetail)
+                .startTime(reqDto.startDate())
                 .deadline(reqDto.deadline())
                 .price(reqDto.price())
                 .preferentialTreatment(reqDto.preferentialTreatment())
