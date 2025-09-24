@@ -41,8 +41,8 @@ public class Recruit extends BaseEntity {
     @JoinColumn(name = "cityDetail_id")
     private CityDetail cityDetail;
 
-    @Column
-    private LocalDateTime startTime;
+    @Column(nullable = true)
+    private LocalDateTime startDate;
 
     // 마감일자
     @Column
@@ -83,6 +83,7 @@ public class Recruit extends BaseEntity {
                 .content(reqDto.content())
                 .city(city)
                 .cityDetail(cityDetail)
+                .startDate(reqDto.startDate())
                 .deadline(reqDto.deadline())
                 .price(reqDto.price())
                 .preferentialTreatment(reqDto.preferentialTreatment())
