@@ -4,6 +4,7 @@ import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.entity.RecruitCategoryMapping;
+import com.souf.soufwebsite.domain.recruit.entity.WorkType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 
 import java.time.LocalDateTime;
@@ -25,6 +26,7 @@ public record RecruitResDto(
         String preferentialTreatment,
         String nickname,
         boolean recruitable,
+        WorkType workType,
         List<CategoryDto> categoryDtoList,
         List<MediaResDto> mediaResDtos
 ) {
@@ -42,6 +44,7 @@ public record RecruitResDto(
                 recruit.getPreferentialTreatment(),
                 nickname,
                 recruit.isRecruitable(),
+                recruit.getWorkType(),
                 convertToCategoryDto(recruit.getCategories()),
                 convertToMediaResDto(mediaList)
         );
