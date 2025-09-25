@@ -5,6 +5,7 @@ import com.souf.soufwebsite.domain.feed.service.FeedService;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,9 +52,15 @@ public class FeedController implements FeedApiSpecification{
     @GetMapping("/{memberId}/{feedId}")
     public SuccessResponse<FeedDetailResDto> getDetailedFeed(
             @PathVariable(name = "memberId") Long memberId,
-            @PathVariable(name = "feedId") Long feedId) {
+            @PathVariable(name = "feedId") Long feedId,
+            HttpServletRequest request) {
 
-        return new SuccessResponse<>(feedService.getFeedById(memberId, feedId), FEED_GET.getMessage());
+        String ip = request.getRemoteAddr();
+        String userAgent = request.getHeader("User-Agent");
+
+        FeedDetailResDto result = feedService.getFeedById(memberId, feedId, ip, userAgent);
+
+        return new SuccessResponse<>(result, FEED_GET.getMessage());
     }
 
     @PatchMapping("/{feedId}")
