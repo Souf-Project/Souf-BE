@@ -63,7 +63,7 @@ public class CategoryService {
 
     public void validate(List<CategoryDto> categories) {
         if (categories == null || categories.isEmpty()) {
-            throw new IllegalArgumentException("카테고리 조합이 비어 있습니다.");
+            throw new NotFoundCategoryMappingException();
         }
 
         for (CategoryDto c : categories) {
