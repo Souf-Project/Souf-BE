@@ -310,7 +310,7 @@ public class FeedServiceImpl implements FeedService {
                     + feed.getViewCount();
         }
 
-        log.info("조회수 중복 방지");
+        log.info("피드 조회수 중복 방지");
         Object viewCount = stringRedisTemplate.opsForHash().get(TOTAL_HASH, String.valueOf(feedId));
         long redisFeedViewCount = 0L;
         if(viewCount != null){

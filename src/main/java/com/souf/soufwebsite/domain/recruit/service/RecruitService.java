@@ -22,7 +22,7 @@ public interface RecruitService {
 
     Page<MyRecruitResDto> getMyRecruits(String email, MyRecruitReqDto reqDto, Pageable pageable);
 
-    RecruitResDto getRecruitById(Long recruitId);
+    RecruitResDto getRecruitById(Long recruitId, String ip, String userAgent);
 
     RecruitCreateResDto updateRecruit(String email, Long recruitId, RecruitReqDto reqDto);
 

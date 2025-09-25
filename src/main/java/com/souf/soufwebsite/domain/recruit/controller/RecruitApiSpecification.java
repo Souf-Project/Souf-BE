@@ -10,6 +10,7 @@ import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,7 +42,9 @@ public interface RecruitApiSpecification {
 
     @Operation(summary = "특정 공고문 상세 조회", description = "특정 공고문에 대한 상세 정보를 조회합니다.")
     @GetMapping("/{recruitId}")
-    SuccessResponse<RecruitResDto> getRecruitById(@PathVariable(name = "recruitId") Long recruitId);
+    SuccessResponse<RecruitResDto> getRecruitById(
+            @PathVariable(name = "recruitId") Long recruitId,
+            HttpServletRequest request);
 
     @Operation(summary = "내 공고문 리스트 조회", description = "사용자 본인이 작성한 공고문 리스트를 조회합니다.")
     @GetMapping("/my")
