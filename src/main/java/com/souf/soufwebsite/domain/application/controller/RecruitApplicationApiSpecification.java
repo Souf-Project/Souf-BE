@@ -24,7 +24,7 @@ public interface RecruitApplicationApiSpecification {
 
     @Operation(summary = "지원 승인", description = "특정 지원자의 지원을 승인합니다.")
     @PostMapping("/{applicationId}/approve")
-    SuccessResponse<?> reviewApplication(
+    SuccessResponse<?> approveApplication(
             @CurrentEmail String email,
             @PathVariable Long applicationId);
 

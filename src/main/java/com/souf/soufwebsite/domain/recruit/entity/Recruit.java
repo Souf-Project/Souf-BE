@@ -4,6 +4,9 @@ import com.souf.soufwebsite.domain.city.entity.City;
 import com.souf.soufwebsite.domain.city.entity.CityDetail;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.recruit.dto.req.RecruitReqDto;
+import com.souf.soufwebsite.domain.recruit.exception.NotBlankPriceException;
+import com.souf.soufwebsite.domain.recruit.exception.NotValidPricePolicyException;
+import com.souf.soufwebsite.domain.socialAccount.exception.NotValidProviderException;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -150,16 +153,15 @@ public class Recruit extends BaseEntity {
     private void validatePricePolicy() {
         if (this.pricePolicy == PricePolicy.FIXED) {
             if (isBlank(this.price)) {
-                throw new IllegalStateException("FIXED 정책에서는 price가 필수입니다.");
+                throw new NotBlankPriceException();
             }
         } else if (this.pricePolicy == PricePolicy.OFFER) {
             this.price = null;
         } else {
-            throw new IllegalStateException("알 수 없는 PricePolicy입니다.");
+            throw new NotValidPricePolicyException();
         }
     }
 
-    // ====== 헬퍼 ======
     public boolean isFixedPrice() { return this.pricePolicy == PricePolicy.FIXED; }
     public boolean isOfferPrice() { return this.pricePolicy == PricePolicy.OFFER; }
 

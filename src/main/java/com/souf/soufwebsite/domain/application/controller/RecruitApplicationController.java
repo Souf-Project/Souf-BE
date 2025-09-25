@@ -31,7 +31,7 @@ public class RecruitApplicationController implements RecruitApplicationApiSpecif
     }
 
     @PostMapping("/{applicationId}/approve")
-    public SuccessResponse<?> reviewApplication(
+    public SuccessResponse<?> approveApplication(
             @CurrentEmail String email,
             @PathVariable Long applicationId) {
         applicationService.reviewApplication(email, applicationId, true);
