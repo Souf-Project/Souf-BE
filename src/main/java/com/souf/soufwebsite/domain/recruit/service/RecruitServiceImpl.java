@@ -109,14 +109,13 @@ public class RecruitServiceImpl implements RecruitService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<RecruitSimpleResDto> getRecruits(Long first,
-                                                 Long second,
-                                                 Long third,
-                                                 RecruitSearchReqDto reqDto,
+    public Page<RecruitSimpleResDto> getRecruits(RecruitSearchReqDto reqDto,
                                                  Pageable pageable) {
-        categoryService.validate(first, second, third);
+        if (reqDto.categories() != null && !reqDto.categories().isEmpty()) {
+            categoryService.validate(reqDto.categories());
+        }
 
-        return recruitRepository.getRecruitList(first, second, third, reqDto, pageable);
+        return recruitRepository.getRecruitList(reqDto, pageable);
     }
 
     @Transactional(readOnly = true)
