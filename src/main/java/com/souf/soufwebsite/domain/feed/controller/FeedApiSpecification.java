@@ -6,6 +6,7 @@ import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -37,7 +38,9 @@ public interface FeedApiSpecification {
     @GetMapping("/{memberId}/{feedId}")
     SuccessResponse<FeedDetailResDto> getDetailedFeed(
             @PathVariable(name = "memberId") Long memberId,
-            @PathVariable(name = "feedId") Long feedId);
+            @PathVariable(name = "feedId") Long feedId,
+            HttpServletRequest request
+    );
 
     @Operation(summary = "특정 피드 수정", description = "사용자 본인이 소유한 피드에 대해 수정합니다.")
     @PatchMapping("/{feedId}")

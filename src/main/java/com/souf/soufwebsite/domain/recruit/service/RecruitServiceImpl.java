@@ -35,6 +35,7 @@ import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import com.souf.soufwebsite.global.slack.service.SlackService;
+import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -44,6 +45,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -64,6 +66,10 @@ public class RecruitServiceImpl implements RecruitService {
     private final StringRedisTemplate stringRedisTemplate;
 
     public static final String TOTAL_HASH = "recruit:views:total:";
+
+    public Member getCurrentMember() {
+        return SecurityUtils.getCurrentMemberOrNull();
+    }
 
     @Override
     @Transactional
@@ -114,12 +120,13 @@ public class RecruitServiceImpl implements RecruitService {
 
     @Transactional(readOnly = true)
     @Override
-    public RecruitResDto getRecruitById(Long recruitId) {
+    public RecruitResDto getRecruitById(Long recruitId, String ip, String userAgent) {
+        Member currentMember = getCurrentMember();
+
         Recruit recruit = findIfRecruitExist(recruitId);
         Member recruitMember = recruit.getMember();
 
-        long totalViewCount = stringRedisTemplate.opsForHash().increment(TOTAL_HASH, String.valueOf(recruit.getId()), 1L)
-                + recruit.getViewCount();
+        long totalViewCount = updateTotalViewCount(currentMember, recruit, ip, userAgent);
 
         List<Media> mediaList = fileService.getMediaList(PostType.RECRUIT, recruitId);
 
@@ -259,6 +266,34 @@ public class RecruitServiceImpl implements RecruitService {
                 fileService.deleteMedia(media);  // DB에서만 삭제되도록 수정
             }
         }
+    }
+
+    private long updateTotalViewCount(Member member, Recruit recruit, String ip, String userAgent) {
+
+        String userKey;
+        if(member != null){
+            userKey = "member:" + member.getId();
+        } else {
+            userKey = "guest:" + ip + ":" + userAgent.hashCode();
+        }
+
+        String redisKey = "recruit:view:" + recruit.getId() + ":" +userKey;
+
+        Boolean isNew = stringRedisTemplate.opsForValue().setIfAbsent(redisKey, "1", Duration.ofMinutes(10));
+
+        if (Boolean.TRUE.equals(isNew)){
+            return stringRedisTemplate.opsForHash().increment(TOTAL_HASH, String.valueOf(recruit.getId()), 1L)
+                    + recruit.getViewCount();
+        }
+
+        log.info("공고문 조회수 중복 방지");
+        Object viewCount = stringRedisTemplate.opsForHash().get(TOTAL_HASH, String.valueOf(recruit.getId()));
+        long redisFeedViewCount = 0L;
+        if(viewCount != null){
+            redisFeedViewCount = Long.parseLong(viewCount.toString());
+        }
+
+        return redisFeedViewCount + recruit.getViewCount();
     }
 
 }
