@@ -279,7 +279,7 @@ public class RecruitServiceImpl implements RecruitService {
 
         String redisKey = "recruit:view:" + recruit.getId() + ":" +userKey;
 
-        Boolean isNew = stringRedisTemplate.opsForValue().setIfAbsent(redisKey, "1", Duration.ofMinutes(30));
+        Boolean isNew = stringRedisTemplate.opsForValue().setIfAbsent(redisKey, "1", Duration.ofMinutes(10));
 
         if (Boolean.TRUE.equals(isNew)){
             return stringRedisTemplate.opsForHash().increment(TOTAL_HASH, String.valueOf(recruit.getId()), 1L)

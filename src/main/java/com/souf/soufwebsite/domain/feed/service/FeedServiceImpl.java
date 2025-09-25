@@ -301,7 +301,7 @@ public class FeedServiceImpl implements FeedService {
 
         String redisKey = "feed:view:" + feed.getId() + ":" + userKey;
 
-        Boolean isNew = stringRedisTemplate.opsForValue().setIfAbsent(redisKey, "1", Duration.ofMinutes(30));
+        Boolean isNew = stringRedisTemplate.opsForValue().setIfAbsent(redisKey, "1", Duration.ofMinutes(10));
 
         // 새로운 사람일 경우 추가
         if(Boolean.TRUE.equals(isNew)){
