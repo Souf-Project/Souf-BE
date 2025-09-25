@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.domain.application.controller;
 
-import com.souf.soufwebsite.domain.application.dto.ApplicantResDto;
+import com.souf.soufwebsite.domain.application.dto.res.ApplicantResDto;
 import com.souf.soufwebsite.domain.application.service.ApplicationService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;

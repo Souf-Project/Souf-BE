@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.application.dto;
+package com.souf.soufwebsite.domain.application.dto.res;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
