@@ -68,6 +68,9 @@ public class Recruit extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private WorkType workType;
 
+    @Column
+    private boolean isTaskCompleted; // 작업 완료 여부
+
     @Builder.Default
     @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
     List<RecruitCategoryMapping> categories = new ArrayList<>();
@@ -91,6 +94,7 @@ public class Recruit extends BaseEntity {
                 .viewCount(0L)
                 .recruitable(true)
                 .workType(reqDto.workType())
+                .isTaskCompleted(false)
                 .member(member)
                 .build();
     }
