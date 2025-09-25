@@ -1,6 +1,7 @@
 package com.souf.soufwebsite.domain.application.entity;
 
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.recruit.entity.PricePolicy;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
@@ -27,6 +28,12 @@ public class Application extends BaseEntity {
     private Recruit recruit;
 
     @Column(nullable = false)
+    private String priceOffer;
+
+    @Column
+    private String priceReason;
+
+    @Column(nullable = false)
     private LocalDateTime appliedAt;
 
     @Enumerated(EnumType.STRING)
@@ -34,15 +41,33 @@ public class Application extends BaseEntity {
     private ApplicationStatus status;
 
     @Builder
-    private Application(Member member, Recruit recruit) {
+    private Application(Member member, Recruit recruit, String priceOffer, String priceReason) {
         this.member = member;
         this.recruit = recruit;
+        this.priceOffer = priceOffer;
+        this.priceReason = priceReason;
         this.status = ApplicationStatus.PENDING;
         this.appliedAt = LocalDateTime.now();
     }
 
-    public static Application of(Member member, Recruit recruit) {
-        return new Application(member, recruit);
+    /** FIXED 정책 지원용 팩토리 (가격/사유 입력 불필요) */
+    public static Application applyFixed(Member member, Recruit recruit) {
+        return Application.builder()
+                .member(member)
+                .recruit(recruit)
+                .priceOffer(recruit.getPrice())
+                .priceReason(null)
+                .build();
+    }
+
+    /** OFFER 정책 지원용 팩토리 (지원자가 가격/사유 입력) */
+    public static Application applyOffer(Member member, Recruit recruit, String priceOffer, String priceReason) {
+        return Application.builder()
+                .member(member)
+                .recruit(recruit)
+                .priceOffer(priceOffer)
+                .priceReason(priceReason)
+                .build();
     }
 
     public void accept() {
@@ -51,5 +76,29 @@ public class Application extends BaseEntity {
 
     public void reject() {
         this.status = ApplicationStatus.REJECTED;
+    }
+
+    @PrePersist
+    @PreUpdate
+    private void validateByPricePolicy() {
+        PricePolicy policy = recruit.getPricePolicy();
+        if (policy == PricePolicy.FIXED) {
+            if (isBlank(recruit.getPrice())) {
+                throw new IllegalStateException("FIXED 정책: Recruit.price 가 비어있습니다.");
+            }
+        } else if (policy == PricePolicy.OFFER) {
+            if (isBlank(this.priceOffer)) {
+                throw new IllegalStateException("OFFER 정책: 지원자 제안 가격(appliedPrice)은 필수입니다.");
+            }
+            if (isBlank(this.priceReason)) {
+                throw new IllegalStateException("OFFER 정책: 가격 사유(priceReason)는 필수입니다.");
+            }
+        } else {
+            throw new IllegalStateException("알 수 없는 PricePolicy 입니다.");
+        }
+    }
+
+    private static boolean isBlank(String s) {
+        return s == null || s.isBlank();
     }
 }
