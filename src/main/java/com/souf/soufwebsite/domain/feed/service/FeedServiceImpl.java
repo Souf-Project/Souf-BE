@@ -42,6 +42,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.List;
 
 @Service
@@ -116,7 +117,7 @@ public class FeedServiceImpl implements FeedService {
 
     @Transactional(readOnly = true)
     @Override
-    public FeedDetailResDto getFeedById(Long memberId, Long feedId) {
+    public FeedDetailResDto getFeedById(Long memberId, Long feedId, String ip, String userAgent) {
 
         // 현재 사용자
         Member currentMember = getCurrentMember();
@@ -125,7 +126,7 @@ public class FeedServiceImpl implements FeedService {
         Member member = findIfMemberIdExists(memberId);
         Feed feed = findIfFeedExist(feedId);
 
-        Long totalViewCount = updateViewCount(feedId, feed);
+        Long totalViewCount = updateViewCount(currentMember, feedId, feed, ip, userAgent);
 
         Long likedCount = likedFeedRepository.countByFeedId(feedId).orElse(0L);
         Boolean liked = false;
@@ -289,11 +290,33 @@ public class FeedServiceImpl implements FeedService {
         return likedFeedRepository.existsByFeedIdAndMemberId(feedId, memberId);
     }
 
-    private Long updateViewCount(Long feedId, Feed feed) {
-        stringRedisTemplate.opsForZSet().incrementScore(WEEKLY_ZSET, String.valueOf(feedId), 1D); // 주간 조회수 카운트
+    private Long updateViewCount(Member member, Long feedId, Feed feed, String ip, String userAgent) {
 
-        // 누적 조회수 카운트
-        return stringRedisTemplate.opsForHash().increment(TOTAL_HASH, String.valueOf(feedId), 1L)
-                + feed.getViewCount();
+        String userKey;
+        if(member != null){
+            userKey = "member:" + member.getId();
+        } else {
+            userKey = "guest:" + ip + ":" + userAgent.hashCode();
+        }
+
+        String redisKey = "feed:view:" + feed.getId() + ":" + userKey;
+
+        Boolean isNew = stringRedisTemplate.opsForValue().setIfAbsent(redisKey, "1", Duration.ofMinutes(30));
+
+        // 새로운 사람일 경우 추가
+        if(Boolean.TRUE.equals(isNew)){
+            stringRedisTemplate.opsForZSet().incrementScore(WEEKLY_ZSET, String.valueOf(feedId), 1D); // 주간 조회수 카운트
+            return stringRedisTemplate.opsForHash().increment(TOTAL_HASH, String.valueOf(feedId), 1L)
+                    + feed.getViewCount();
+        }
+
+        log.info("조회수 중복 방지");
+        Object viewCount = stringRedisTemplate.opsForHash().get(TOTAL_HASH, String.valueOf(feedId));
+        long redisFeedViewCount = 0L;
+        if(viewCount != null){
+            redisFeedViewCount = Long.parseLong(viewCount.toString());
+        }
+
+        return redisFeedViewCount + feed.getViewCount();
     }
 }
