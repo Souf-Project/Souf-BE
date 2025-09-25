@@ -48,8 +48,15 @@ public class Recruit extends BaseEntity {
     @Column
     private LocalDateTime deadline;
 
-    @Column(nullable = false)
+    // 가격 (FIXED일 때만 값이 있음, OFFER면 null)
+    @Column
     private String price;
+
+    // 가격 정책
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PricePolicy pricePolicy;
 
     @Column
     private String preferentialTreatment;
@@ -78,6 +85,7 @@ public class Recruit extends BaseEntity {
     private Member member;
 
     public static Recruit of(RecruitReqDto reqDto, Member member, City city, CityDetail cityDetail) {
+        PricePolicy pricePolicy = resolvePolicy(reqDto.price());
         return Recruit.builder()
                 .title(reqDto.title())
                 .content(reqDto.content())
@@ -86,6 +94,7 @@ public class Recruit extends BaseEntity {
                 .startDate(reqDto.startDate())
                 .deadline(reqDto.deadline())
                 .price(reqDto.price())
+                .pricePolicy(pricePolicy)
                 .preferentialTreatment(reqDto.preferentialTreatment())
                 .recruitCount(0L)
                 .viewCount(0L)
@@ -99,6 +108,7 @@ public class Recruit extends BaseEntity {
         this.content = reqDto.content();
         this.city = city;
         this.cityDetail = cityDetail;
+        this.startDate = reqDto.startDate();
         this.deadline = reqDto.deadline();
         this.price = reqDto.price();
         this.workType = reqDto.workType();
@@ -132,5 +142,32 @@ public class Recruit extends BaseEntity {
 
     public void updateRecruitable() {
         this.recruitable = false;
+    }
+
+    // ====== 정책 검증 ======
+    @PrePersist
+    @PreUpdate
+    private void validatePricePolicy() {
+        if (this.pricePolicy == PricePolicy.FIXED) {
+            if (isBlank(this.price)) {
+                throw new IllegalStateException("FIXED 정책에서는 price가 필수입니다.");
+            }
+        } else if (this.pricePolicy == PricePolicy.OFFER) {
+            this.price = null;
+        } else {
+            throw new IllegalStateException("알 수 없는 PricePolicy입니다.");
+        }
+    }
+
+    // ====== 헬퍼 ======
+    public boolean isFixedPrice() { return this.pricePolicy == PricePolicy.FIXED; }
+    public boolean isOfferPrice() { return this.pricePolicy == PricePolicy.OFFER; }
+
+    private static PricePolicy resolvePolicy(String price) {
+        return isBlank(price) ? PricePolicy.OFFER : PricePolicy.FIXED;
+    }
+
+    private static boolean isBlank(String s) {
+        return s == null || s.isBlank();
     }
 }
