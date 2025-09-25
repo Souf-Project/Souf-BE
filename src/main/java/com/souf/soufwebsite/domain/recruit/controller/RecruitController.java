@@ -47,15 +47,12 @@ public class RecruitController implements RecruitApiSpecification{
         return new SuccessResponse(RECRUIT_FILE_METADATA_CREATE.getMessage());
     }
 
-    @GetMapping
+    @PostMapping("/search")
     public SuccessResponse<Page<RecruitSimpleResDto>> getRecruits(
-            @RequestParam(required = false, name = "firstCategory") Long first,
-            @RequestParam(required = false, name = "secondCategory") Long second,
-            @RequestParam(required = false, name = "thirdCategory") Long third,
-            @ModelAttribute RecruitSearchReqDto recruitSearchReqDto,
+            @RequestBody RecruitSearchReqDto recruitSearchReqDto,
             @PageableDefault(size = 12) Pageable pageable) {
         return new SuccessResponse<>(
-                recruitService.getRecruits(first, second, third, recruitSearchReqDto, pageable),
+                recruitService.getRecruits(recruitSearchReqDto, pageable),
                 RECRUIT_GET.getMessage());
     }
 

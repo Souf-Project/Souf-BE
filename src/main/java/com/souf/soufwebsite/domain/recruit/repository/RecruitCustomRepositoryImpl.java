@@ -3,10 +3,13 @@ package com.souf.soufwebsite.domain.recruit.repository;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.recruit.dto.SortOption;
 import com.souf.soufwebsite.domain.recruit.dto.req.MyRecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.req.RecruitSearchReqDto;
@@ -27,6 +30,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.souf.soufwebsite.domain.recruit.entity.QRecruit.recruit;
 import static com.souf.soufwebsite.domain.recruit.entity.QRecruitCategoryMapping.recruitCategoryMapping;
@@ -39,11 +43,37 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<RecruitSimpleResDto> getRecruitList(Long first, Long second, Long third,
-                                                    RecruitSearchReqDto searchReqDto, Pageable pageable) {
+    public Page<RecruitSimpleResDto> getRecruitList(RecruitSearchReqDto req,
+                                                    Pageable pageable) {
 
-        OrderSpecifier<?>[] orderSpecifiers = buildOrderSpecifiers(searchReqDto);
+        // 1) 동적 where (EXISTS 기반)
+        BooleanExpression where = buildWhere(req);
 
+        OrderSpecifier<?>[] orderSpecifiers = buildOrderSpecifiers(req);
+
+        // STEP 1. 페이지에 들어갈 recruit.id만 정확히 선별
+        List<Long> pageIds = queryFactory
+                .select(recruit.id)
+                .from(recruit)
+                .where(where)
+                .orderBy(orderSpecifiers)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        if (pageIds.isEmpty()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+
+        // 총 개수
+        Long total = queryFactory
+                .select(recruit.id.countDistinct())
+                .from(recruit)
+                .where(where)
+                .fetchOne();
+        long totalCount = total == null ? 0L : total;
+
+        // STEP 2. 선별된 ID들로 상세 재조회(조인/병합)
         List<Tuple> tuples = queryFactory
                 .select(
                         recruit.id,
@@ -62,56 +92,45 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                 .join(recruit.categories, recruitCategoryMapping)
                 .leftJoin(recruit.city)
                 .leftJoin(recruit.cityDetail)
-                .where(
-                        first != null ? recruitCategoryMapping.firstCategory.id.eq(first) : null,
-                        second != null ? recruitCategoryMapping.secondCategory.id.eq(second) : null,
-                        third != null ? recruitCategoryMapping.thirdCategory.id.eq(third) : null,
-                        searchReqDto.title() != null ? recruit.title.contains(searchReqDto.title()) : null,
-                        searchReqDto.content() != null ? recruit.content.contains(searchReqDto.content()) : null
-                )
-                .orderBy(orderSpecifiers)
+                .where(recruit.id.in(pageIds))
                 .fetch();
 
-        // 중복 제거 및 병합 처리
-        Map<Long, RecruitSimpleResDto> mergedMap = new LinkedHashMap<>();
-
+        // 병합
+        Map<Long, RecruitSimpleResDto> byId = new LinkedHashMap<>();
         for (Tuple t : tuples) {
-            Long recruitId = t.get(recruit.id);
-            Long secondCatId = t.get(recruitCategoryMapping.secondCategory.id) == null
-                    ? 0L : t.get(recruitCategoryMapping.secondCategory.id);
+            Long id = t.get(recruit.id);
+            Long secondCatId = Optional.ofNullable(t.get(recruitCategoryMapping.secondCategory.id)).orElse(0L);
 
-            if (!mergedMap.containsKey(recruitId)) {
-                String cityName = Optional.ofNullable(t.get(recruit.city.name)).orElse("");
-                String cityDetailName = Optional.ofNullable(t.get(recruit.cityDetail.name)).orElse("");
+            if (!byId.containsKey(id)) {
+                String city = Optional.ofNullable(t.get(recruit.city.name)).orElse("");
+                String cityDetail = Optional.ofNullable(t.get(recruit.cityDetail.name)).orElse("");
 
                 RecruitSimpleResDto dto = RecruitSimpleResDto.of(
-                        recruitId,
+                        id,
                         t.get(recruit.title),
                         secondCatId,
                         t.get(recruit.content),
                         t.get(recruit.price),
-                        cityName,
-                        cityDetailName,
+                        city,
+                        cityDetail,
                         t.get(recruit.deadline),
                         t.get(recruit.recruitCount),
                         Boolean.TRUE.equals(t.get(recruit.recruitable)),
                         t.get(recruit.lastModifiedTime)
                 );
-                mergedMap.put(recruitId, dto);
+                byId.put(id, dto);
             } else {
-                if(secondCatId != null)
-                    mergedMap.get(recruitId).addSecondCategory(secondCatId);
+                byId.get(id).addSecondCategory(secondCatId);
             }
         }
 
-        List<RecruitSimpleResDto> mergedList = new ArrayList<>(mergedMap.values());
+        // STEP1에서 뽑은 정렬 순서를 보존하기 위해 pageIds 순서대로 재정렬
+        List<RecruitSimpleResDto> ordered = pageIds.stream()
+                .map(byId::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
-        // 수동 페이징 처리
-        int start = (int) pageable.getOffset();
-        int end = Math.min(start + pageable.getPageSize(), mergedList.size());
-        List<RecruitSimpleResDto> paged = mergedList.subList(start, end);
-
-        return new PageImpl<>(paged, pageable, mergedList.size());
+        return new PageImpl<>(ordered, pageable, totalCount);
     }
 
     @Override
@@ -207,5 +226,71 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                     new OrderSpecifier<>(Order.DESC, recruit.lastModifiedTime)
             };
         };
+    }
+
+    private BooleanExpression buildWhere(RecruitSearchReqDto req) {
+        List<BooleanExpression> ands = new ArrayList<>();
+
+        // 텍스트 필터
+        if (req.title() != null && !req.title().isBlank()) {
+            ands.add(recruit.title.contains(req.title()));
+        }
+        if (req.content() != null && !req.content().isBlank()) {
+            ands.add(recruit.content.contains(req.content()));
+        }
+
+        // 카테고리(리스트 우선)
+        if (req.categories() != null && !req.categories().isEmpty()) {
+            ands.add(buildCategoryExistsOr(req.categories()));
+        }
+
+        // AND 결합
+        return ands.stream().filter(Objects::nonNull).reduce(BooleanExpression::and).orElse(null);
+    }
+
+    /**
+     * (F,S,T) 조합들의 OR: 각 조합을 EXISTS(매핑 테이블)로 감싸 중복 없이 필터링
+     *  - (1-2-3) OR (2-*-*) OR (3-1-*)
+     */
+    private BooleanExpression buildCategoryExistsOr(List<CategoryDto> categories) {
+        // 최적화: 전부 first-only면 IN 사용
+        boolean onlyFirst = categories.stream().allMatch(c ->
+                c.firstCategory() != null && c.secondCategory() == null && c.thirdCategory() == null);
+
+        if (onlyFirst) {
+            List<Long> firstIds = categories.stream()
+                    .map(CategoryDto::firstCategory)
+                    .distinct()
+                    .collect(Collectors.toList());
+            return recruit.id.in(
+                    JPAExpressions
+                            .select(recruitCategoryMapping.recruit.id)
+                            .from(recruitCategoryMapping)
+                            .where(recruitCategoryMapping.firstCategory.id.in(firstIds))
+            );
+        }
+
+        // 일반: 각 조합 → EXISTS … AND 묶음 → 전체는 OR
+        List<BooleanExpression> ors = new ArrayList<>();
+        for (CategoryDto c : categories) {
+            ors.add(existsCategory(c.firstCategory(), c.secondCategory(), c.thirdCategory()));
+        }
+        return ors.stream().filter(Objects::nonNull).reduce(BooleanExpression::or).orElse(null);
+    }
+
+    private BooleanExpression existsCategory(Long first, Long second, Long third) {
+        if (first == null && second == null && third == null) {
+            return null;
+        }
+        BooleanExpression cond = recruitCategoryMapping.recruit.id.eq(recruit.id);
+        if (first != null)  cond = cond.and(recruitCategoryMapping.firstCategory.id.eq(first));
+        if (second != null) cond = cond.and(recruitCategoryMapping.secondCategory.id.eq(second));
+        if (third != null)  cond = cond.and(recruitCategoryMapping.thirdCategory.id.eq(third));
+
+        return JPAExpressions
+                .selectOne()
+                .from(recruitCategoryMapping)
+                .where(cond)
+                .exists();
     }
 }

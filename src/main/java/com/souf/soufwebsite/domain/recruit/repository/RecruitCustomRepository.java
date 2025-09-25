@@ -10,8 +10,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface RecruitCustomRepository {
 
-    Page<RecruitSimpleResDto> getRecruitList(Long first, Long second, Long third,
-                                             RecruitSearchReqDto searchReqDto, Pageable pageable);
+    Page<RecruitSimpleResDto> getRecruitList(RecruitSearchReqDto searchReqDto, Pageable pageable);
 
     Page<MyRecruitResDto> getMyRecruits(Member me, MyRecruitReqDto reqDto, Pageable pageable);
 }
