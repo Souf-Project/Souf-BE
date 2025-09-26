@@ -2,6 +2,7 @@ package com.souf.soufwebsite.global.redis.service;
 
 import com.souf.soufwebsite.domain.feed.service.FeedScheduledService;
 import com.souf.soufwebsite.domain.recruit.service.RecruitScheduledService;
+import com.souf.soufwebsite.domain.review.service.ReviewScheduledService;
 import com.souf.soufwebsite.global.common.viewCount.service.ViewCountService;
 import com.souf.soufwebsite.global.slack.service.SlackService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class DistributedLockService {
     private final FeedScheduledService feedScheduledService;
     private final RecruitScheduledService recruitScheduledService;
     private final ViewCountService viewCountService;
+    private final ReviewScheduledService reviewScheduledService;
     private final SlackService slackService;
 
     /* ------------------------------ Feed --------------------------------------- */
@@ -41,6 +43,12 @@ public class DistributedLockService {
     public void syncRecruitView(){
         distributedLock("sync:recruit:lock", recruitScheduledService::syncViewCountsToDB);
         distributedLock("sync:recruit:popular:lock", recruitScheduledService::refreshPopularRecruits);
+    }
+
+    /* --------------------------------- Review ---------------------------------- */
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
+    public void syncReviewView(){
+        distributedLock("sync:review:lock", reviewScheduledService::syncViewCountsToDB);
     }
 
     @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
