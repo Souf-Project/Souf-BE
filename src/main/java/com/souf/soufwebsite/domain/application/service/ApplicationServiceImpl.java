@@ -68,7 +68,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             if (reqDto == null) {
                 throw new OfferRequiredException();
             }
-            application = Application.applyOffer(member, recruit, reqDto.offeredPrice(), reqDto.priceReason());
+            application = Application.applyOffer(member, recruit, reqDto.priceOffer(), reqDto.priceReason());
         }
 
         recruit.increaseRecruitCount();

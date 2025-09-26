@@ -162,9 +162,6 @@ public class Recruit extends BaseEntity {
         }
     }
 
-    public boolean isFixedPrice() { return this.pricePolicy == PricePolicy.FIXED; }
-    public boolean isOfferPrice() { return this.pricePolicy == PricePolicy.OFFER; }
-
     private static PricePolicy resolvePolicy(String price) {
         return isBlank(price) ? PricePolicy.OFFER : PricePolicy.FIXED;
     }

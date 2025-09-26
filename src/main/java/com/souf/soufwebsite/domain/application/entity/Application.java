@@ -88,7 +88,7 @@ public class Application extends BaseEntity {
             }
         } else if (policy == PricePolicy.OFFER) {
             if (isBlank(this.priceOffer)) {
-                throw new IllegalStateException("OFFER 정책: 지원자 제안 가격(appliedPrice)은 필수입니다.");
+                throw new IllegalStateException("OFFER 정책: 지원자 제안 가격(priceOffer)은 필수입니다.");
             }
             if (isBlank(this.priceReason)) {
                 throw new IllegalStateException("OFFER 정책: 가격 사유(priceReason)는 필수입니다.");

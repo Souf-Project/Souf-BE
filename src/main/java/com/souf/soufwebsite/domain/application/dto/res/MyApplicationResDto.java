@@ -24,7 +24,7 @@ public record MyApplicationResDto(
         String status,
 
         @Schema(description="지원 가격 (FIXED일 경우 공고 가격, OFFER일 경우 내가 제안한 견적 가격)", example="400000")
-        String appliedPrice,
+        String priceOffer,
 
         @Schema(description="견적 사유 (OFFER일 경우 내가 작성한 사유)", example="추가 리서치 필요성에 따른 가격 제안")
         String priceReason,
