@@ -48,4 +48,10 @@ public class Review {
         this.recruit = recruit;
         this.member = member;
     }
+
+    public void updateReview(ReviewReqDto reqDto) {
+        this.title = reqDto.title();
+        this.content = reqDto.content();
+        this.score = reqDto.score();
+    }
 }

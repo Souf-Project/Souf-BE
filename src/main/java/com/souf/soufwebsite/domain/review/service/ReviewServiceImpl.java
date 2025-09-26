@@ -1,5 +1,7 @@
 package com.souf.soufwebsite.domain.review.service;
 
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
@@ -10,16 +12,24 @@ import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.exception.NotCompletedTaskException;
 import com.souf.soufwebsite.domain.recruit.exception.NotFoundRecruitException;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
+import com.souf.soufwebsite.domain.review.dto.ReviewCreatedResDto;
+import com.souf.soufwebsite.domain.review.dto.ReviewDetailedResDto;
 import com.souf.soufwebsite.domain.review.dto.ReviewReqDto;
-import com.souf.soufwebsite.domain.review.dto.ReviewResDto;
+import com.souf.soufwebsite.domain.review.dto.ReviewSimpleResDto;
 import com.souf.soufwebsite.domain.review.entity.Review;
 import com.souf.soufwebsite.domain.review.exception.NotFoundReviewException;
+import com.souf.soufwebsite.domain.review.exception.NotValidReviewAuthentication;
 import com.souf.soufwebsite.domain.review.repository.ReviewRepository;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.List;
 
 @Service
@@ -32,13 +42,16 @@ public class ReviewServiceImpl implements ReviewService {
     private final RecruitRepository recruitRepository;
 
     private final FileService fileService;
+    private final StringRedisTemplate stringRedisTemplate;
+
+    public static final String TOTAL_HASH = "review:views:total:";
 
     private Member getCurrentMember() {
         return SecurityUtils.getCurrentMemberOrNull();
     }
 
     @Override
-    public void createReview(String email, ReviewReqDto reviewReqDto) {
+    public ReviewCreatedResDto createReview(String email, ReviewReqDto reviewReqDto) {
         Member currentMember = findIfMemberExists(email);
 
         Recruit recruit = recruitRepository.findById(reviewReqDto.recruitId()).orElseThrow(NotFoundRecruitException::new);
@@ -47,21 +60,73 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         Review review = new Review(reviewReqDto, recruit, currentMember);
-        reviewRepository.save(review);
+        review = reviewRepository.save(review);
+
+        List<PresignedUrlResDto> presignedUrlResDtos =
+                fileService.generatePresignedUrl("review", reviewReqDto.originalFileNames());
         log.info("리뷰가 생성되었습니다! reviewId: {}", review.getId());
+
+        return new ReviewCreatedResDto(review.getId(), presignedUrlResDtos);
     }
 
     @Override
-    public ReviewResDto getDetailedReview(Long reviewId) {
+    public void uploadReviewMedia(String email, MediaReqDto mediaReqDto) {
+        findIfMemberExists(email);
+
+        Review review = findIfReviewExists(mediaReqDto.postId());
+        fileService.uploadMetadata(mediaReqDto, PostType.REVIEW, review.getId());
+    }
+
+    @Override
+    public Slice<ReviewSimpleResDto> getReviews(Pageable pageable) {
+        return null;
+    }
+
+    @Override
+    public ReviewDetailedResDto getDetailedReview(Long reviewId, String ip, String userAgent) {
         Member member = getCurrentMember();
         Review review = findIfReviewExists(reviewId);
         Recruit recruit = review.getRecruit();
 
         List<Media> reviewMediaList = fileService.getMediaList(PostType.REVIEW, review.getId());
 
+        long reviewViewTotalCount = updateTotalViewCount(member, review, ip, userAgent);
+
         String profileUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-        return ReviewResDto.from(review, recruit, member, profileUrl, reviewMediaList);
+        return ReviewDetailedResDto.from(review, recruit, reviewViewTotalCount, member, profileUrl, reviewMediaList);
+    }
+
+    @Transactional
+    @Override
+    public ReviewCreatedResDto updateReview(String email, Long reviewId, ReviewReqDto reviewReqDto) {
+        Member currentMember = findIfMemberExists(email);
+        Review review = findIfReviewExists(reviewId);
+        verifyIfReviewIsMine(review, currentMember);
+
+        review.updateReview(reviewReqDto);
+
+        updatedRemainingUrls(reviewReqDto, review);
+        List<PresignedUrlResDto> presignedUrlResDtos =
+                fileService.generatePresignedUrl("review", reviewReqDto.originalFileNames());
+
+        return new ReviewCreatedResDto(review.getId(), presignedUrlResDtos);
+    }
+
+    @Override
+    public void deleteReview(String email, Long reviewId) {
+        Member currentMember = findIfMemberExists(email);
+        Review review = findIfReviewExists(reviewId);
+        verifyIfReviewIsMine(review, currentMember);
+
+        reviewRepository.delete(review);
+    }
+
+    private void verifyIfReviewIsMine(Review review, Member member) {
+        log.info("currentMember: {}, feedMember: {}", member, review.getMember());
+        if(!review.getMember().getId().equals(member.getId())){
+            throw new NotValidReviewAuthentication();
+        }
     }
 
     private Review findIfReviewExists(Long reviewId) {
@@ -70,5 +135,42 @@ public class ReviewServiceImpl implements ReviewService {
 
     private Member findIfMemberExists(String email) {
         return memberRepository.findByEmail(email).orElseThrow(NotFoundMemberException::new);
+    }
+
+    private void updatedRemainingUrls(ReviewReqDto reqDto, Review review) {
+        List<Media> mediaList = fileService.getMediaList(PostType.REVIEW, review.getId());
+        for (Media media : mediaList) {
+            if (!reqDto.existingImageUrls().contains(media.getOriginalUrl())) {
+                fileService.deleteMedia(media);  // DB에서만 삭제되도록 수정
+            }
+        }
+    }
+
+    private long updateTotalViewCount(Member member, Review review, String ip, String userAgent) {
+
+        String userKey;
+        if(member != null){
+            userKey = "member:" + member.getId();
+        } else {
+            userKey = "guest:" + ip + ":" + userAgent.hashCode();
+        }
+
+        String redisKey = "review:view:" + review.getId() + ":" +userKey;
+
+        Boolean isNew = stringRedisTemplate.opsForValue().setIfAbsent(redisKey, "1", Duration.ofMinutes(10));
+
+        if (Boolean.TRUE.equals(isNew)){
+            return stringRedisTemplate.opsForHash().increment(TOTAL_HASH, String.valueOf(review.getId()), 1L)
+                    + review.getViewTotalCount();
+        }
+
+        log.info("후기 조회수 중복 방지");
+        Object viewCount = stringRedisTemplate.opsForHash().get(TOTAL_HASH, String.valueOf(review.getId()));
+        long redisReviewCount = 0L;
+        if(viewCount != null){
+            redisReviewCount = Long.parseLong(viewCount.toString());
+        }
+
+        return redisReviewCount + review.getViewTotalCount();
     }
 }

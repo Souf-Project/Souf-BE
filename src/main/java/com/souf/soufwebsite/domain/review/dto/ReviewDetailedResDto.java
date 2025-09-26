@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public record ReviewResDto(
+public record ReviewDetailedResDto(
         String title,
         String content,
         Double score,
@@ -35,12 +35,12 @@ public record ReviewResDto(
         String recruiterNickname
 ) {
 
-    public static ReviewResDto from(Review review, Recruit recruit, Member member, String profileImageUrl, List<Media> media) {
-        return new ReviewResDto(
+    public static ReviewDetailedResDto from(Review review, Recruit recruit, Long reviewViewTotalCount, Member member, String profileImageUrl, List<Media> media) {
+        return new ReviewDetailedResDto(
                 review.getTitle(),
                 review.getContent(),
                 review.getScore(),
-                review.getViewTotalCount(),
+                reviewViewTotalCount,
                 convertToMediaResDto(media),
 
                 recruit.getId(),
