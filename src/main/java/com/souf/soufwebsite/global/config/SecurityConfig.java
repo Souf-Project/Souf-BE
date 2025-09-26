@@ -105,6 +105,7 @@ public class SecurityConfig {
                                         "/api/v1/recruit/**",
                                         "/api/v1/view/**",
                                         "/api/v1/post/**",
+                                        "api/v1/review/**",
                                         "/api/v1/search" // 주의: member/**는 위에서 authenticated 처리
                                 ).permitAll()
 
