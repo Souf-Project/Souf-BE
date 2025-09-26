@@ -17,4 +17,5 @@ public enum ErrorType {
     private final int code;
     private final String message;
     private final String errorKey;
+
 }

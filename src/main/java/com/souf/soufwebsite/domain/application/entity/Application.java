@@ -1,8 +1,11 @@
 package com.souf.soufwebsite.domain.application.entity;
 
+import com.souf.soufwebsite.domain.application.exception.OfferRequiredException;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.recruit.entity.PricePolicy;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
+import com.souf.soufwebsite.domain.recruit.exception.NotBlankPriceException;
+import com.souf.soufwebsite.domain.recruit.exception.NotValidPricePolicyException;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -84,17 +87,17 @@ public class Application extends BaseEntity {
         PricePolicy policy = recruit.getPricePolicy();
         if (policy == PricePolicy.FIXED) {
             if (isBlank(recruit.getPrice())) {
-                throw new IllegalStateException("FIXED 정책: Recruit.price 가 비어있습니다.");
+                throw new NotBlankPriceException();
             }
         } else if (policy == PricePolicy.OFFER) {
             if (isBlank(this.priceOffer)) {
-                throw new IllegalStateException("OFFER 정책: 지원자 제안 가격(priceOffer)은 필수입니다.");
+                throw new OfferRequiredException();
             }
             if (isBlank(this.priceReason)) {
-                throw new IllegalStateException("OFFER 정책: 가격 사유(priceReason)는 필수입니다.");
+                throw new OfferRequiredException();
             }
         } else {
-            throw new IllegalStateException("알 수 없는 PricePolicy 입니다.");
+            throw new NotValidPricePolicyException();
         }
     }
 
