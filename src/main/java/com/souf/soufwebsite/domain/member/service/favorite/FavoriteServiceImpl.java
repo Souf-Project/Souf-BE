@@ -1,6 +1,5 @@
 package com.souf.soufwebsite.domain.member.service.favorite;
 
-import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.FavoriteMemberReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
@@ -10,6 +9,7 @@ import com.souf.soufwebsite.domain.member.exception.NotFoundFavoriteException;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.FavoriteMemberRepository;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.global.common.PostType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

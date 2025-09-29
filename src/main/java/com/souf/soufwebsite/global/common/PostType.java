@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.file.entity;
+package com.souf.soufwebsite.global.common;
 
 import lombok.Getter;
 

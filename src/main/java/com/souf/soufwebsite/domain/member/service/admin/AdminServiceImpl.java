@@ -2,7 +2,6 @@ package com.souf.soufwebsite.domain.member.service.admin;
 
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
-import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminPostResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminReportResDto;
@@ -15,6 +14,7 @@ import com.souf.soufwebsite.domain.report.entity.ReportStatus;
 import com.souf.soufwebsite.domain.report.exception.NotFoundReportException;
 import com.souf.soufwebsite.domain.report.repository.ReportRepository;
 import com.souf.soufwebsite.domain.report.service.StrikeService;
+import com.souf.soufwebsite.global.common.PostType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

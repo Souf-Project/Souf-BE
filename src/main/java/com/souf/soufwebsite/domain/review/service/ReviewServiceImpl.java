@@ -3,7 +3,6 @@ package com.souf.soufwebsite.domain.review.service;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
-import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
@@ -20,6 +19,7 @@ import com.souf.soufwebsite.domain.review.entity.Review;
 import com.souf.soufwebsite.domain.review.exception.NotFoundReviewException;
 import com.souf.soufwebsite.domain.review.exception.NotValidReviewAuthentication;
 import com.souf.soufwebsite.domain.review.repository.ReviewRepository;
+import com.souf.soufwebsite.global.common.PostType;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +50,7 @@ public class ReviewServiceImpl implements ReviewService {
         return SecurityUtils.getCurrentMemberOrNull();
     }
 
+    @Transactional
     @Override
     public ReviewCreatedResDto createReview(String email, ReviewReqDto reviewReqDto) {
         Member currentMember = findIfMemberExists(email);
@@ -82,16 +83,18 @@ public class ReviewServiceImpl implements ReviewService {
         return null;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public ReviewDetailedResDto getDetailedReview(Long reviewId, String ip, String userAgent) {
-        Member member = getCurrentMember();
+        Member currentMember = getCurrentMember();
         Review review = findIfReviewExists(reviewId);
         Recruit recruit = review.getRecruit();
 
         List<Media> reviewMediaList = fileService.getMediaList(PostType.REVIEW, review.getId());
 
-        long reviewViewTotalCount = updateTotalViewCount(member, review, ip, userAgent);
+        long reviewViewTotalCount = updateTotalViewCount(currentMember, review, ip, userAgent);
 
+        Member member = recruit.getMember();
         String profileUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
         return ReviewDetailedResDto.from(review, recruit, reviewViewTotalCount, member, profileUrl, reviewMediaList);
