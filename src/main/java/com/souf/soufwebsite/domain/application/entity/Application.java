@@ -30,7 +30,7 @@ public class Application extends BaseEntity {
     @JoinColumn(name = "recruit_id", nullable = false)
     private Recruit recruit;
 
-    @Column(nullable = false)
+    @Column
     private String priceOffer;
 
     @Column
@@ -58,7 +58,7 @@ public class Application extends BaseEntity {
         return Application.builder()
                 .member(member)
                 .recruit(recruit)
-                .priceOffer(recruit.getPrice())
+                .priceOffer(null)
                 .priceReason(null)
                 .build();
     }

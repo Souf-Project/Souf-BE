@@ -13,10 +13,10 @@ public record ApplicantResDto(
         @Schema(description="지원자 정보")
         MemberResDto member,
 
-        @Schema(description="지원 가격 (FIXED일 경우 공고 가격, OFFER일 경우 지원자가 작성한 견적 가격)", example="500000")
+        @Schema(description="지원 가격 (FIXED일 경우 null, OFFER일 경우 지원자가 작성한 견적 가격)", example="500000")
         String priceOffer,
 
-        @Schema(description="견적 사유 (OFFER 정책일 경우 필수, FIXED일 경우 null)", example="작업 범위 확대 요청으로 인한 견적")
+        @Schema(description="견적 사유 (FIXED일 경우 null, OFFER 정책일 경우 필수)", example="작업 범위 확대 요청으로 인한 견적")
         String priceReason,
 
         @Schema(description="지원일시", example="2025-06-01")
