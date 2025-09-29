@@ -28,7 +28,7 @@ public class MemberController implements MemberApiSpecification{
 
     @GetMapping
     public SuccessResponse<Page<MemberSimpleResDto>> getMembers(
-            @RequestParam(name = "firstCategory") Long first,
+            @RequestParam(name = "firstCategory", required = false) Long first,
             @RequestParam(name = "secondCategory", required = false) Long second,
             @RequestParam(name = "thirdCategory", required = false) Long third,
             @RequestParam(name = "keyword", required = false) String keyword,
