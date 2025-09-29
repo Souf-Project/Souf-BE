@@ -112,6 +112,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         t.get(recruit.price),
                         city,
                         cityDetail,
+                        t.get(recruit.startDate),
                         t.get(recruit.deadline),
                         t.get(recruit.recruitCount),
                         Boolean.TRUE.equals(t.get(recruit.recruitable)),
@@ -164,6 +165,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                     return new MyRecruitResDto(
                             r.getId(),
                             r.getTitle(),
+                            r.getStartDate(),
                             r.getDeadline(),
                             categories,
                             status,
