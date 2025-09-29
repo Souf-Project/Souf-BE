@@ -44,7 +44,7 @@ public class Recruit extends BaseEntity {
     @JoinColumn(name = "cityDetail_id")
     private CityDetail cityDetail;
 
-    @Column(nullable = true)
+    @Column
     private LocalDateTime startDate;
 
     // 마감일자
