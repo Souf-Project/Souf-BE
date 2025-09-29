@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.domain.application.controller;
 
-import com.souf.soufwebsite.domain.application.dto.ApplicantResDto;
+import com.souf.soufwebsite.domain.application.dto.res.ApplicantResDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,7 +24,7 @@ public interface RecruitApplicationApiSpecification {
 
     @Operation(summary = "지원 승인", description = "특정 지원자의 지원을 승인합니다.")
     @PostMapping("/{applicationId}/approve")
-    SuccessResponse<?> reviewApplication(
+    SuccessResponse<?> approveApplication(
             @CurrentEmail String email,
             @PathVariable Long applicationId);
 

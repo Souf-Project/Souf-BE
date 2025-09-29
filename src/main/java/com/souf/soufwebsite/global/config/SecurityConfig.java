@@ -109,9 +109,9 @@ public class SecurityConfig {
                                 ).permitAll()
 
                                 // 3) STUDENT 전용
-                                .requestMatchers(HttpMethod.POST,   "/api/v1/applications/*/apply").hasRole("STUDENT")
-                                .requestMatchers(HttpMethod.DELETE, "/api/v1/applications/*/apply").hasRole("STUDENT")
-                                .requestMatchers(HttpMethod.GET,    "/api/v1/applications/my").hasRole("STUDENT")
+                                .requestMatchers(HttpMethod.POST,   "/api/v1/applications/*/apply").hasAnyRole("STUDENT", "ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/applications/*/apply").hasAnyRole("STUDENT", "ADMIN")
+                                .requestMatchers(HttpMethod.GET,    "/api/v1/applications/my").hasAnyRole("STUDENT", "ADMIN")
 
                                 // 4) MEMBER/ADMIN 전용
                                 .requestMatchers(HttpMethod.GET,  "/api/v1/applications/*/applicants").hasAnyRole("MEMBER","ADMIN")
