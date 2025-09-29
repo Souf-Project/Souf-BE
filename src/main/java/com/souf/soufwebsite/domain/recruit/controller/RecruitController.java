@@ -10,6 +10,7 @@ import com.souf.soufwebsite.domain.recruit.service.RecruitService;
 import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,9 +58,16 @@ public class RecruitController implements RecruitApiSpecification{
     }
 
     @GetMapping("/{recruitId}")
-    public SuccessResponse<RecruitResDto> getRecruitById(@PathVariable(name = "recruitId") Long recruitId) {
+    public SuccessResponse<RecruitResDto> getRecruitById(
+            @PathVariable(name = "recruitId") Long recruitId,
+            HttpServletRequest request) {
+
+        String ip = request.getRemoteAddr();
+        String userAgent = request.getHeader("User-Agent");
+        RecruitResDto result = recruitService.getRecruitById(recruitId, ip, userAgent);
+
         return new SuccessResponse<>(
-                recruitService.getRecruitById(recruitId),
+                result,
                 RECRUIT_GET.getMessage());
     }
 
