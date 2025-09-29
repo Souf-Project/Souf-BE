@@ -1,7 +1,7 @@
 package com.souf.soufwebsite.domain.file.repository;
 
 import com.souf.soufwebsite.domain.file.entity.Media;
-import com.souf.soufwebsite.domain.file.entity.PostType;
+import com.souf.soufwebsite.global.common.PostType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

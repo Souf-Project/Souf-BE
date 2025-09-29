@@ -1,8 +1,8 @@
 package com.souf.soufwebsite.domain.member.controller.admin;
 
-import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.report.entity.ReportStatus;
+import com.souf.soufwebsite.global.common.PostType;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

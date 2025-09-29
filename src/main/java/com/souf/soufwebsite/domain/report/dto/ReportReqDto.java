@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.domain.report.dto;
 
-import com.souf.soufwebsite.domain.file.entity.PostType;
+import com.souf.soufwebsite.global.common.PostType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
