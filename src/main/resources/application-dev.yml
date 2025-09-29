@@ -8,9 +8,9 @@ spring:
   data:
     redis:
       port: 6379
-      host: redis-container
       ssl:
         enabled: false
+      host: localhost
 
   jpa:
     hibernate:
