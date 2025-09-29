@@ -11,10 +11,7 @@ import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.exception.NotCompletedTaskException;
 import com.souf.soufwebsite.domain.recruit.exception.NotFoundRecruitException;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
-import com.souf.soufwebsite.domain.review.dto.ReviewCreatedResDto;
-import com.souf.soufwebsite.domain.review.dto.ReviewDetailedResDto;
-import com.souf.soufwebsite.domain.review.dto.ReviewReqDto;
-import com.souf.soufwebsite.domain.review.dto.ReviewSimpleResDto;
+import com.souf.soufwebsite.domain.review.dto.*;
 import com.souf.soufwebsite.domain.review.entity.Review;
 import com.souf.soufwebsite.domain.review.exception.NotFoundReviewException;
 import com.souf.soufwebsite.domain.review.exception.NotValidReviewAuthentication;
@@ -77,8 +74,9 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public Slice<ReviewSimpleResDto> getReviews(Pageable pageable) {
-        return null;
+    public Slice<ReviewSimpleResDto> getReviews(ReviewSearchReqDto reqDto, Pageable pageable) {
+
+        return reviewRepository.getReviewBySlice(reqDto, pageable);
     }
 
     @Transactional(readOnly = true)

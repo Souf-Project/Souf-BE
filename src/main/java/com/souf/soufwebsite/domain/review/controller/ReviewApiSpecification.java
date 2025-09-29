@@ -1,10 +1,7 @@
 package com.souf.soufwebsite.domain.review.controller;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
-import com.souf.soufwebsite.domain.review.dto.ReviewCreatedResDto;
-import com.souf.soufwebsite.domain.review.dto.ReviewDetailedResDto;
-import com.souf.soufwebsite.domain.review.dto.ReviewReqDto;
-import com.souf.soufwebsite.domain.review.dto.ReviewSimpleResDto;
+import com.souf.soufwebsite.domain.review.dto.*;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,8 +31,9 @@ public interface ReviewApiSpecification {
     );
 
     @Operation(summary = "후기 리스트 조회", description = "필터링된 후기 리스트들을 조회합니다.")
-    @GetMapping
+    @PostMapping("/search")
     SuccessResponse<Slice<ReviewSimpleResDto>> getReviews(
+            @RequestBody ReviewSearchReqDto searchReqDto,
             @PageableDefault Pageable pageable
     );
 

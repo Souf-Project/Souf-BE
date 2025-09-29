@@ -1,10 +1,7 @@
 package com.souf.soufwebsite.domain.review.service;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
-import com.souf.soufwebsite.domain.review.dto.ReviewCreatedResDto;
-import com.souf.soufwebsite.domain.review.dto.ReviewDetailedResDto;
-import com.souf.soufwebsite.domain.review.dto.ReviewReqDto;
-import com.souf.soufwebsite.domain.review.dto.ReviewSimpleResDto;
+import com.souf.soufwebsite.domain.review.dto.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
@@ -14,7 +11,7 @@ public interface ReviewService {
 
     void uploadReviewMedia(String email, MediaReqDto mediaReqDto);
 
-    Slice<ReviewSimpleResDto> getReviews(Pageable pageable);
+    Slice<ReviewSimpleResDto> getReviews(ReviewSearchReqDto reqDto, Pageable pageable);
 
     ReviewDetailedResDto getDetailedReview(Long reviewId, String ip, String userAgent);
 

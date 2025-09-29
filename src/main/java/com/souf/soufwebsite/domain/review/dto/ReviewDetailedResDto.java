@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public record ReviewDetailedResDto(
-        String title,
         String content,
         Double score,
         Long viewCount,
@@ -37,7 +36,6 @@ public record ReviewDetailedResDto(
 
     public static ReviewDetailedResDto from(Review review, Recruit recruit, Long reviewViewTotalCount, Member member, String profileImageUrl, List<Media> media) {
         return new ReviewDetailedResDto(
-                review.getTitle(),
                 review.getContent(),
                 review.getScore(),
                 reviewViewTotalCount,

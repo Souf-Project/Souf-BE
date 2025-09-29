@@ -10,10 +10,6 @@ import java.util.List;
 
 public record ReviewReqDto(
 
-        @NotBlank(message = "제목은 10자 이상 입력해주셔야 합니다.")
-        @Size(min = 10)
-        String title,
-
         @NotBlank(message = "후기 내용은 20자 이상 입력해주셔야 합니다.")
         @Size(min = 20)
         String content,

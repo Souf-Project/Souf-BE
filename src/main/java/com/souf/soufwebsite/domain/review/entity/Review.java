@@ -3,6 +3,7 @@ package com.souf.soufwebsite.domain.review.entity;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.review.dto.ReviewReqDto;
+import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -12,14 +13,11 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Review {
+public class Review extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(nullable = false)
-    private String title;
 
     @Column(nullable = false)
     private String content;
@@ -41,7 +39,6 @@ public class Review {
 
     @Builder
     public Review(ReviewReqDto reqDto, Recruit recruit, Member member) {
-        this.title = reqDto.title();
         this.content = reqDto.content();
         this.score = reqDto.score();
         this.viewTotalCount = 0L;
@@ -50,7 +47,6 @@ public class Review {
     }
 
     public void updateReview(ReviewReqDto reqDto) {
-        this.title = reqDto.title();
         this.content = reqDto.content();
         this.score = reqDto.score();
     }

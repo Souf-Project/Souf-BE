@@ -1,10 +1,7 @@
 package com.souf.soufwebsite.domain.review.controller;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
-import com.souf.soufwebsite.domain.review.dto.ReviewCreatedResDto;
-import com.souf.soufwebsite.domain.review.dto.ReviewDetailedResDto;
-import com.souf.soufwebsite.domain.review.dto.ReviewReqDto;
-import com.souf.soufwebsite.domain.review.dto.ReviewSimpleResDto;
+import com.souf.soufwebsite.domain.review.dto.*;
 import com.souf.soufwebsite.domain.review.service.ReviewService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
@@ -46,10 +43,11 @@ public class ReviewController implements ReviewApiSpecification {
         return new SuccessResponse<>(REVIEW_FILE_METADATA_CREATE.getMessage());
     }
 
-    @GetMapping
+    @PostMapping("/search")
     public SuccessResponse<Slice<ReviewSimpleResDto>> getReviews(
+            @RequestParam ReviewSearchReqDto searchReqDto,
             @PageableDefault Pageable pageable) {
-        return null;
+        return new SuccessResponse<>(reviewService.getReviews(searchReqDto, pageable), REVIEW_GET.getMessage());
     }
 
     @GetMapping("/{reviewId}")
