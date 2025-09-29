@@ -10,6 +10,7 @@ import com.souf.soufwebsite.domain.recruit.service.RecruitService;
 import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,22 +48,26 @@ public class RecruitController implements RecruitApiSpecification{
         return new SuccessResponse(RECRUIT_FILE_METADATA_CREATE.getMessage());
     }
 
-    @GetMapping
+    @PostMapping("/search")
     public SuccessResponse<Page<RecruitSimpleResDto>> getRecruits(
-            @RequestParam(required = false, name = "firstCategory") Long first,
-            @RequestParam(required = false, name = "secondCategory") Long second,
-            @RequestParam(required = false, name = "thirdCategory") Long third,
-            @ModelAttribute RecruitSearchReqDto recruitSearchReqDto,
+            @RequestBody RecruitSearchReqDto recruitSearchReqDto,
             @PageableDefault(size = 12) Pageable pageable) {
         return new SuccessResponse<>(
-                recruitService.getRecruits(first, second, third, recruitSearchReqDto, pageable),
+                recruitService.getRecruits(recruitSearchReqDto, pageable),
                 RECRUIT_GET.getMessage());
     }
 
     @GetMapping("/{recruitId}")
-    public SuccessResponse<RecruitResDto> getRecruitById(@PathVariable(name = "recruitId") Long recruitId) {
+    public SuccessResponse<RecruitResDto> getRecruitById(
+            @PathVariable(name = "recruitId") Long recruitId,
+            HttpServletRequest request) {
+
+        String ip = request.getRemoteAddr();
+        String userAgent = request.getHeader("User-Agent");
+        RecruitResDto result = recruitService.getRecruitById(recruitId, ip, userAgent);
+
         return new SuccessResponse<>(
-                recruitService.getRecruitById(recruitId),
+                result,
                 RECRUIT_GET.getMessage());
     }
 

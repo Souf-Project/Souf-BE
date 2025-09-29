@@ -21,11 +21,11 @@ public record FeedReqDto(
         List<String> existingImageUrls,
 
         @Schema(description = "원본 파일 이름", example = "[fileName.jpg, dog.jpg..]")
-        @NotNull(message = "없더라도 빈 값을 넣어주세요.")
+        @NotNull(message = "첨부할 이미지가 없더라도 빈 값을 넣어주세요.")
         List<String> originalFileNames,
 
         @Schema(description = "카테고리 목록", implementation = CategoryDto.class)
-        @NotEmpty(message = "적어도 한 개의 카테고리가 들어있어야 합니다.")
+        @NotNull(message = "적어도 한 개의 카테고리가 들어있어야 합니다.")
         List<CategoryDto> categoryDtos
         ) {
 }

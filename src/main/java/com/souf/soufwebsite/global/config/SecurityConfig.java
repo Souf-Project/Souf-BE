@@ -88,7 +88,8 @@ public class SecurityConfig {
                                 .requestMatchers("/v1/normal/check").permitAll()
                                 .requestMatchers("/api/v1/auth/**").permitAll()
                                 .requestMatchers("/api/v1/social/**").permitAll()
-                                .requestMatchers("/api/v1/recruit/popular", "/api/v1/feed/popular", "/api/v1/member").permitAll()
+                                .requestMatchers("/api/v1/recruit/popular", "/api/v1/feed/popular", "/api/v1/member",
+                                        "/api/v1/recruit/search").permitAll()
 
                                 // 1) 인증 필요한 특정 GET (더 구체적인 경로를 먼저!)
                                 .requestMatchers(HttpMethod.GET,
