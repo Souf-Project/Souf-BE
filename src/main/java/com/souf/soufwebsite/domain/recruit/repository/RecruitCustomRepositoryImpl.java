@@ -82,6 +82,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         recruit.price,
                         recruit.city.name,
                         recruit.cityDetail.name,
+                        recruit.startDate,
                         recruit.deadline,
                         recruit.recruitCount,
                         recruit.recruitable,
