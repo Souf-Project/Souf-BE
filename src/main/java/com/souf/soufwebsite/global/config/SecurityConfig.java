@@ -89,7 +89,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/v1/auth/**").permitAll()
                                 .requestMatchers("/api/v1/social/**").permitAll()
                                 .requestMatchers("/api/v1/recruit/popular", "/api/v1/feed/popular", "/api/v1/member",
-                                        "/api/v1/recruit/search").permitAll()
+                                        "/api/v1/recruit/search", "/api/v1/review/search").permitAll()
 
                                 // 1) 인증 필요한 특정 GET (더 구체적인 경로를 먼저!)
                                 .requestMatchers(HttpMethod.GET,
@@ -101,11 +101,11 @@ public class SecurityConfig {
                                 // 2) 공개 GET (그 다음에 포괄적인 공개 GET)
                                 .requestMatchers(HttpMethod.GET,
                                         "/api/v1/feed/**",
-                                        "api/v1/feed/*/*",
+                                        "/api/v1/feed/*/*",
                                         "/api/v1/recruit/**",
                                         "/api/v1/view/**",
                                         "/api/v1/post/**",
-                                        "api/v1/review/**",
+                                        "/api/v1/review/**",
                                         "/api/v1/search" // 주의: member/**는 위에서 authenticated 처리
                                 ).permitAll()
 
