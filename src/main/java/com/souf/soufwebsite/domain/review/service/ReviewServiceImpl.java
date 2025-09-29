@@ -20,16 +20,15 @@ import com.souf.soufwebsite.domain.review.exception.NotFoundReviewException;
 import com.souf.soufwebsite.domain.review.exception.NotValidReviewAuthentication;
 import com.souf.soufwebsite.domain.review.repository.ReviewRepository;
 import com.souf.soufwebsite.global.common.PostType;
+import com.souf.soufwebsite.global.common.viewCount.service.ViewCountService;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
 import java.util.List;
 
 @Service
@@ -42,9 +41,8 @@ public class ReviewServiceImpl implements ReviewService {
     private final RecruitRepository recruitRepository;
 
     private final FileService fileService;
-    private final StringRedisTemplate stringRedisTemplate;
+    private final ViewCountService viewCountService;
 
-    public static final String TOTAL_HASH = "review:views:total:";
 
     private Member getCurrentMember() {
         return SecurityUtils.getCurrentMemberOrNull();
@@ -92,7 +90,8 @@ public class ReviewServiceImpl implements ReviewService {
 
         List<Media> reviewMediaList = fileService.getMediaList(PostType.REVIEW, review.getId());
 
-        long reviewViewTotalCount = updateTotalViewCount(currentMember, review, ip, userAgent);
+        long reviewViewTotalCount = viewCountService
+                .updateTotalViewCount(currentMember, PostType.REVIEW, review.getId(), review.getViewTotalCount(), ip, userAgent);
 
         Member member = recruit.getMember();
         String profileUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
@@ -147,33 +146,5 @@ public class ReviewServiceImpl implements ReviewService {
                 fileService.deleteMedia(media);  // DB에서만 삭제되도록 수정
             }
         }
-    }
-
-    private long updateTotalViewCount(Member member, Review review, String ip, String userAgent) {
-
-        String userKey;
-        if(member != null){
-            userKey = "member:" + member.getId();
-        } else {
-            userKey = "guest:" + ip + ":" + userAgent.hashCode();
-        }
-
-        String redisKey = "review:view:" + review.getId() + ":" +userKey;
-
-        Boolean isNew = stringRedisTemplate.opsForValue().setIfAbsent(redisKey, "1", Duration.ofMinutes(10));
-
-        if (Boolean.TRUE.equals(isNew)){
-            return stringRedisTemplate.opsForHash().increment(TOTAL_HASH, String.valueOf(review.getId()), 1L)
-                    + review.getViewTotalCount();
-        }
-
-        log.info("후기 조회수 중복 방지");
-        Object viewCount = stringRedisTemplate.opsForHash().get(TOTAL_HASH, String.valueOf(review.getId()));
-        long redisReviewCount = 0L;
-        if(viewCount != null){
-            redisReviewCount = Long.parseLong(viewCount.toString());
-        }
-
-        return redisReviewCount + review.getViewTotalCount();
     }
 }
