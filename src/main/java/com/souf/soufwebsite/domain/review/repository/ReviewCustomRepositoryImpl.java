@@ -49,7 +49,7 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
         List<Long> reviewIds = queryFactory
                 .select(review.id)
                 .from(review)
-                .join(review.recruit, recruit).fetchJoin()
+                .join(review.recruit, recruit)
                 .where(buildCategoryExistsOr)
                 .orderBy(orderSpecifier)
                 .offset(pageable.getOffset())
@@ -61,10 +61,12 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
         }
 
         List<Review> reviewList = queryFactory
-                .selectFrom(review)
+                .select(review)
+                .from(review)
                 .join(review.recruit, recruit).fetchJoin()
                 .join(review.member, member).fetchJoin()
                 .where(review.id.in(reviewIds.subList(0, Math.min(reviewIds.size(), pageable.getPageSize()))))
+                .distinct()
                 .fetch();
 
         List<ReviewSimpleResDto> content = reviewList.stream().map(review -> {
