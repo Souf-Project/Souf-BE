@@ -9,7 +9,6 @@ import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.souf.soufwebsite.domain.member.entity.Member;
-import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.recruit.dto.SortOption;
 import com.souf.soufwebsite.domain.recruit.dto.req.MyRecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.req.RecruitSearchReqDto;
@@ -85,6 +84,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         recruit.cityDetail.name,
                         recruit.deadline,
                         recruit.recruitCount,
+                        recruit.member.nickname,
                         recruit.recruitable,
                         recruit.lastModifiedTime
                 )
@@ -115,6 +115,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         cityDetail,
                         t.get(recruit.deadline),
                         t.get(recruit.recruitCount),
+                        t.get(recruit.member.nickname),
                         Boolean.TRUE.equals(t.get(recruit.recruitable)),
                         t.get(recruit.lastModifiedTime)
                 );
@@ -168,7 +169,8 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                             r.getDeadline(),
                             categories,
                             status,
-                            r.getRecruitCount()
+                            r.getRecruitCount(),
+                            r.getMember().getNickname()
                     );
                 })
                 .toList();
