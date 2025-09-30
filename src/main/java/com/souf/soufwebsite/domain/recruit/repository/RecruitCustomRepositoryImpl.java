@@ -8,6 +8,8 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.souf.soufwebsite.domain.file.entity.PostType;
+import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.recruit.dto.SortOption;
 import com.souf.soufwebsite.domain.recruit.dto.req.MyRecruitReqDto;
@@ -40,6 +42,7 @@ import static com.souf.soufwebsite.domain.recruit.entity.QRecruitCategoryMapping
 public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
 
     private final JPAQueryFactory queryFactory;
+    private final FileService fileService;
 
     @Override
     public Page<RecruitSimpleResDto> getRecruitList(RecruitSearchReqDto req,
@@ -84,9 +87,9 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         recruit.cityDetail.name,
                         recruit.deadline,
                         recruit.recruitCount,
-                        recruit.member.nickname,
                         recruit.recruitable,
-                        recruit.lastModifiedTime
+                        recruit.lastModifiedTime,
+                        recruit.member.id
                 )
                 .from(recruit)
                 .join(recruit.categories, recruitCategoryMapping)
@@ -115,9 +118,9 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         cityDetail,
                         t.get(recruit.deadline),
                         t.get(recruit.recruitCount),
-                        t.get(recruit.member.nickname),
                         Boolean.TRUE.equals(t.get(recruit.recruitable)),
-                        t.get(recruit.lastModifiedTime)
+                        t.get(recruit.lastModifiedTime),
+                        t.get(recruit.member.id)
                 );
                 byId.put(id, dto);
             } else {
@@ -152,6 +155,8 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                 .where(recruit.member.eq(me))
                 .fetchOne();
 
+        String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, me.getId());
+
         List<MyRecruitResDto> content = rows.stream()
                 .map(r -> {
                     String status = r.isRecruitable() ? "모집 중" : "마감";
@@ -170,7 +175,8 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                             categories,
                             status,
                             r.getRecruitCount(),
-                            r.getMember().getNickname()
+                            me.getNickname(),
+                            profileImageUrl
                     );
                 })
                 .toList();

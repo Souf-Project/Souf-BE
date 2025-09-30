@@ -12,6 +12,7 @@ public record MyRecruitResDto(
         List<CategoryDto> categoryDtos,
         String status,
         long recruitCount,
-        String nickname
+        String nickname,
+        String profileImageUrl
 ) {
 }
