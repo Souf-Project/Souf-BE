@@ -22,7 +22,7 @@ public record RecruitResDto(
         String deadline,
         String price,
         Long totalViewCount,
-        String preferentialTreatment,
+        List<String> preferentialTreatment,
         String nickname,
         boolean recruitable,
         List<CategoryDto> categoryDtoList,

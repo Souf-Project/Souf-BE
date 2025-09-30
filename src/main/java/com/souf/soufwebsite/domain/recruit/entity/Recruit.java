@@ -52,7 +52,7 @@ public class Recruit extends BaseEntity {
     private String price;
 
     @Column
-    private String preferentialTreatment;
+    private List<String> preferentialTreatment;
 
     @Column(nullable = false)
     private Long recruitCount;
