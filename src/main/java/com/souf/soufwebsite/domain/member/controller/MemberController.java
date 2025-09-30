@@ -1,7 +1,6 @@
 package com.souf.soufwebsite.domain.member.controller;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberSearchReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.SendModifyEmailReqDto;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
@@ -31,11 +30,9 @@ public class MemberController implements MemberApiSpecification{
             @RequestParam(name = "firstCategory", required = false) Long first,
             @RequestParam(name = "secondCategory", required = false) Long second,
             @RequestParam(name = "thirdCategory", required = false) Long third,
-            @RequestParam(name = "keyword", required = false) String keyword,
             @PageableDefault(size = 6) Pageable pageable) {
 
-        MemberSearchReqDto reqDto = new MemberSearchReqDto(keyword);
-        return new SuccessResponse<>(memberService.getMembers(first, second, third, reqDto, pageable),
+        return new SuccessResponse<>(memberService.getMembers(first, second, third, pageable),
                 "멤버 목록을 조회했습니다.");
     }
 

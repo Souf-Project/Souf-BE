@@ -7,7 +7,6 @@ import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.service.FileService;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberSearchReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
@@ -73,7 +72,7 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
 
     @Override
     public Page<MemberSimpleResDto> getMemberList(Long first, Long second, Long third,
-                                                  MemberSearchReqDto searchReqDto, Pageable pageable) {
+                                                  Pageable pageable) {
 
         List<Long> memberIds = queryFactory
                 .select(member.id)
@@ -81,12 +80,10 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
                 .leftJoin(member.categories, memberCategoryMapping)
                 .where(
                         member.role.eq(RoleType.STUDENT),
+                        member.isDeleted.eq(false),
                         first != null ? memberCategoryMapping.firstCategory.id.eq(first) : null,
                         second != null ? memberCategoryMapping.secondCategory.id.eq(second) : null,
-                        third != null ? memberCategoryMapping.thirdCategory.id.eq(third) : null,
-                        searchReqDto.keyword() != null ? (
-                                member.nickname.contains(searchReqDto.keyword()).or(member.intro.contains(searchReqDto.keyword()))
-                        ) : null
+                        third != null ? memberCategoryMapping.thirdCategory.id.eq(third) : null
                 )
                 .groupBy(member.id)
                 .orderBy(member.lastModifiedTime.desc())
@@ -109,7 +106,6 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
         // 3. DTO 변환
         List<MemberSimpleResDto> result = members.stream()
                 .map(m -> {
-                    Long memberId = m.getId();
                     String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, m.getId());
                     List<Feed> feeds = feedRepository.findTop3ByMemberOrderByViewCountDesc(m);
                     List<MemberSimpleResDto.PopularFeedDto> feedDtos = feeds.stream()
@@ -126,7 +122,7 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
                             .filter(Objects::nonNull)
                             .toList();
 
-                    return new MemberSimpleResDto(memberId, profileImageUrl, m.getNickname(), m.getIntro(), feedDtos);
+                    return MemberSimpleResDto.from(m, profileImageUrl, feedDtos, m.getCategories());
                 })
                 .toList();
 
