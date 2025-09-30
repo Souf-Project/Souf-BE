@@ -304,11 +304,10 @@ public class MemberServiceImpl implements MemberService {
     @Transactional(readOnly = true)
     public Page<MemberSimpleResDto> getMembers(
             Long first, Long second, Long third,
-            MemberSearchReqDto searchReqDto,
             Pageable pageable) {
         categoryService.validate(first, second, third);
 
-        return memberRepository.getMemberList(first, second, third, searchReqDto, pageable);
+        return memberRepository.getMemberList(first, second, third, pageable);
     }
 
 
