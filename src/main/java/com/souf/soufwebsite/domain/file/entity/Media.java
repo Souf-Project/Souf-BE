@@ -1,6 +1,7 @@
 package com.souf.soufwebsite.domain.file.entity;
 
 import com.souf.soufwebsite.global.common.BaseEntity;
+import com.souf.soufwebsite.global.common.PostType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;

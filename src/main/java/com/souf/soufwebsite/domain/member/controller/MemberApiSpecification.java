@@ -26,7 +26,6 @@ public interface MemberApiSpecification {
             @RequestParam(name = "firstCategory") Long first,
             @RequestParam(name = "secondCategory", required = false) Long second,
             @RequestParam(name = "thirdCategory", required = false) Long third,
-            @RequestParam String keyword,
             @PageableDefault(size = 6) Pageable pageable
     );
 

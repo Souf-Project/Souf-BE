@@ -15,7 +15,6 @@ import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
-import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
@@ -24,11 +23,13 @@ import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.opensearch.EntityType;
 import com.souf.soufwebsite.domain.opensearch.OperationType;
 import com.souf.soufwebsite.domain.opensearch.event.IndexEventPublisherHelper;
+import com.souf.soufwebsite.global.common.PostType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
 import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
+import com.souf.soufwebsite.global.common.viewCount.service.ViewCountService;
 import com.souf.soufwebsite.global.slack.service.SlackService;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +43,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
 import java.util.List;
 
 @Service
@@ -54,6 +54,7 @@ public class FeedServiceImpl implements FeedService {
     private final MemberRepository memberRepository;
     private final CategoryService categoryService;
     private final FileService fileService;
+    private final ViewCountService viewCountService;
     private final FeedConverter feedConverter;
     private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final SlackService slackService;
@@ -62,7 +63,6 @@ public class FeedServiceImpl implements FeedService {
 
     private final StringRedisTemplate stringRedisTemplate;
 
-    public static final String WEEKLY_ZSET = "feed:views:weekly:";
     public static final String TOTAL_HASH = "feed:views:total:";
 
     public Member getCurrentMember() {
@@ -126,7 +126,7 @@ public class FeedServiceImpl implements FeedService {
         Member member = findIfMemberIdExists(memberId);
         Feed feed = findIfFeedExist(feedId);
 
-        Long totalViewCount = updateViewCount(currentMember, feedId, feed, ip, userAgent);
+        Long totalViewCount = viewCountService.updateTotalViewCount(currentMember, PostType.FEED, feedId, feed.getViewCount(), ip, userAgent);
 
         Long likedCount = likedFeedRepository.countByFeedId(feedId).orElse(0L);
         Boolean liked = false;
@@ -174,8 +174,7 @@ public class FeedServiceImpl implements FeedService {
         Feed feed = findIfFeedExist(feedId);
         verifyIfFeedIsMine(feed, member);
 
-        stringRedisTemplate.opsForZSet().remove(WEEKLY_ZSET, String.valueOf(feedId));
-        stringRedisTemplate.opsForHash().delete(TOTAL_HASH, String.valueOf(feedId));
+        viewCountService.deleteViewCountFromRedis(PostType.FEED, feedId);
 
         feedRepository.delete(feed);
 
@@ -186,6 +185,8 @@ public class FeedServiceImpl implements FeedService {
                 feed.getId()
         );
     }
+
+
 
     @Override
     @Transactional(readOnly = true)
@@ -288,35 +289,5 @@ public class FeedServiceImpl implements FeedService {
     @NotNull
     private Boolean getLiked(Long memberId, Long feedId) {
         return likedFeedRepository.existsByFeedIdAndMemberId(feedId, memberId);
-    }
-
-    private Long updateViewCount(Member member, Long feedId, Feed feed, String ip, String userAgent) {
-
-        String userKey;
-        if(member != null){
-            userKey = "member:" + member.getId();
-        } else {
-            userKey = "guest:" + ip + ":" + userAgent.hashCode();
-        }
-
-        String redisKey = "feed:view:" + feed.getId() + ":" + userKey;
-
-        Boolean isNew = stringRedisTemplate.opsForValue().setIfAbsent(redisKey, "1", Duration.ofMinutes(10));
-
-        // 새로운 사람일 경우 추가
-        if(Boolean.TRUE.equals(isNew)){
-            stringRedisTemplate.opsForZSet().incrementScore(WEEKLY_ZSET, String.valueOf(feedId), 1D); // 주간 조회수 카운트
-            return stringRedisTemplate.opsForHash().increment(TOTAL_HASH, String.valueOf(feedId), 1L)
-                    + feed.getViewCount();
-        }
-
-        log.info("피드 조회수 중복 방지");
-        Object viewCount = stringRedisTemplate.opsForHash().get(TOTAL_HASH, String.valueOf(feedId));
-        long redisFeedViewCount = 0L;
-        if(viewCount != null){
-            redisFeedViewCount = Long.parseLong(viewCount.toString());
-        }
-
-        return redisFeedViewCount + feed.getViewCount();
     }
 }

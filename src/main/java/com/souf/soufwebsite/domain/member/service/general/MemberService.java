@@ -29,7 +29,7 @@ public interface MemberService {
 
     void uploadProfileImage(MediaReqDto reqDto);
 
-    Page<MemberSimpleResDto> getMembers(Long first, Long second, Long third, MemberSearchReqDto searchReqDto, Pageable pageable);
+    Page<MemberSimpleResDto> getMembers(Long first, Long second, Long third, Pageable pageable);
 
     MemberResDto getMyInfo(String email);
 

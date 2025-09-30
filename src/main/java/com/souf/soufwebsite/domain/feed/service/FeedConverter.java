@@ -4,8 +4,8 @@ import com.souf.soufwebsite.domain.feed.dto.FeedSimpleResDto;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
-import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
+import com.souf.soufwebsite.global.common.PostType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

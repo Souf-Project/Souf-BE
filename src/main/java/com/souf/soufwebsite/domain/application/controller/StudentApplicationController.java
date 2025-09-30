@@ -1,10 +1,12 @@
 package com.souf.soufwebsite.domain.application.controller;
 
 
-import com.souf.soufwebsite.domain.application.dto.MyApplicationResDto;
+import com.souf.soufwebsite.domain.application.dto.req.ApplicationOfferReqDto;
+import com.souf.soufwebsite.domain.application.dto.res.MyApplicationResDto;
 import com.souf.soufwebsite.domain.application.service.ApplicationService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,8 +25,9 @@ public class StudentApplicationController implements StudentApplicationApiSpecif
     @PostMapping("/{recruitId}/apply")
     public SuccessResponse<?> apply(
             @CurrentEmail String email,
-            @PathVariable Long recruitId) {
-        applicationService.apply(email, recruitId);
+            @PathVariable Long recruitId,
+            @RequestBody(required = false) ApplicationOfferReqDto reqDto) {
+        applicationService.apply(email, recruitId, reqDto);
         return new SuccessResponse<>(APPLY_SUCCESS.getMessage());
     }
 

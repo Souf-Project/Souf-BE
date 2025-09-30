@@ -9,7 +9,6 @@ import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.souf.soufwebsite.domain.member.entity.Member;
-import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.recruit.dto.SortOption;
 import com.souf.soufwebsite.domain.recruit.dto.req.MyRecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.req.RecruitSearchReqDto;
@@ -83,6 +82,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         recruit.price,
                         recruit.city.name,
                         recruit.cityDetail.name,
+                        recruit.startDate,
                         recruit.deadline,
                         recruit.recruitCount,
                         recruit.recruitable,
@@ -113,6 +113,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         t.get(recruit.price),
                         city,
                         cityDetail,
+                        t.get(recruit.startDate),
                         t.get(recruit.deadline),
                         t.get(recruit.recruitCount),
                         Boolean.TRUE.equals(t.get(recruit.recruitable)),
@@ -165,6 +166,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                     return new MyRecruitResDto(
                             r.getId(),
                             r.getTitle(),
+                            r.getStartDate(),
                             r.getDeadline(),
                             categories,
                             status,
@@ -215,15 +217,15 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
 
         return switch (key) {
             case RECENT -> new OrderSpecifier<?>[]{
-                    new OrderSpecifier<>(o, recruit.lastModifiedTime)
+                    new OrderSpecifier<>(o, recruit.createdTime)
             };
             case VIEWS  -> new OrderSpecifier<?>[]{
                     new OrderSpecifier<>(o, recruit.viewCount),
-                    new OrderSpecifier<>(Order.DESC, recruit.lastModifiedTime)
+                    new OrderSpecifier<>(Order.DESC, recruit.createdTime)
             };
             case COUNT  -> new OrderSpecifier<?>[]{
                     new OrderSpecifier<>(o, recruit.recruitCount),
-                    new OrderSpecifier<>(Order.DESC, recruit.lastModifiedTime)
+                    new OrderSpecifier<>(Order.DESC, recruit.createdTime)
             };
         };
     }

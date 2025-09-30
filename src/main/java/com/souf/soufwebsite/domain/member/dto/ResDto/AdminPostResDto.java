@@ -1,8 +1,8 @@
 package com.souf.soufwebsite.domain.member.dto.ResDto;
 
 import com.souf.soufwebsite.domain.feed.entity.Feed;
-import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
+import com.souf.soufwebsite.global.common.PostType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
