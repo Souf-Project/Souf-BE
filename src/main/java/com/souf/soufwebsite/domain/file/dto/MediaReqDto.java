@@ -12,7 +12,7 @@ public record MediaReqDto(
         Long postId,
 
         @Schema(description = "해당 파일에 접근할 수 있는 url", example = "https://iamsouf.s3.amazonaws.com/feed/original/example.jpg" )
-        @NotBlank(message = "url은 필수입니다.")
+        @NotNull(message = "url은 필수입니다.")
         List<String> fileUrl,
 
         @Schema(description = "해당 공고문/피드의 원래 파일 이름", example = "[fileName, pictureName, spring, hihi]")
@@ -20,7 +20,7 @@ public record MediaReqDto(
         List<String> fileName,
 
         @Schema(description = "해당 파일의 확장자", example = "[jpg, jpg, png, jpeg]")
-        @NotBlank(message = "파일 확장자는 필수입니다.")
+        @NotNull(message = "파일 확장자는 필수입니다.")
         List<String> fileType
 ) {
 }
