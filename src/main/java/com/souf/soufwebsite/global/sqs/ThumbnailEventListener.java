@@ -45,6 +45,7 @@ public class ThumbnailEventListener {
             }
         } catch (Exception e) {
             log.error("Error Processing Thumbnail SQS message", e);
+            throw e;
         }
     }
 }

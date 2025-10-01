@@ -54,7 +54,6 @@ public class InquiryServiceImpl implements InquiryService {
     }
 
 
-
     private Member findIfMemberExists(String email) {
         return memberRepository.findByEmail(email).orElseThrow(NotFoundMemberException::new);
     }

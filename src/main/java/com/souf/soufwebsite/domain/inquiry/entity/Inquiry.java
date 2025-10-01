@@ -2,6 +2,7 @@ package com.souf.soufwebsite.domain.inquiry.entity;
 
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryReqDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Inquiry {
+public class Inquiry extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

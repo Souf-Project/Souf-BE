@@ -2,6 +2,10 @@ package com.souf.soufwebsite.domain.member.service.admin;
 
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
+import com.souf.soufwebsite.domain.inquiry.dto.InquiryResDto;
+import com.souf.soufwebsite.domain.inquiry.entity.InquiryStatus;
+import com.souf.soufwebsite.domain.inquiry.entity.InquiryType;
+import com.souf.soufwebsite.domain.inquiry.repository.InquiryRepository;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminPostResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminReportResDto;
@@ -33,6 +37,7 @@ public class AdminServiceImpl implements AdminService {
     private final FeedRepository feedRepository;
     private final RecruitRepository recruitRepository;
     private final ReportRepository reportRepository;
+    private final InquiryRepository inquiryRepository;
 
     private final StrikeService strikeService;
 
@@ -63,6 +68,13 @@ public class AdminServiceImpl implements AdminService {
     public Page<AdminReportResDto> getReports(PostType postType, LocalDate startDate, LocalDate endDate, String nickname, Pageable pageable) {
         log.info("postType: {}, startDate: {}, endDate: {}, nickname: {}", postType, startDate, endDate, nickname);
         return reportRepository.getReportListInAdmin(postType, startDate, endDate, nickname, pageable);
+    }
+
+    @Override
+    public Page<InquiryResDto> getInquiries(InquiryType inquiryType, InquiryStatus status, Pageable pageable) {
+        log.info("inquiryType: {}, pageable: {}", inquiryType, pageable);
+
+        return inquiryRepository.getInquiryListInAdmin(inquiryType, status, pageable);
     }
 
     @Transactional
