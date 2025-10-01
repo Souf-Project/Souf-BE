@@ -8,6 +8,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
@@ -91,9 +92,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
         for (Media m : medias) {
             firstMediaUrlByRecruit.computeIfAbsent(
                     m.getPostId(),
-                    k -> (m.getThumbnailUrl() != null && !m.getThumbnailUrl().isBlank())
-                            ? m.getThumbnailUrl()
-                            : m.getOriginalUrl()
+                    k -> MediaResDto.fromMedia(m).fileUrl()
             );
         }
 
@@ -197,9 +196,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
             for (Media m : medias) {
                 firstMediaUrlByRecruit.computeIfAbsent(
                         m.getPostId(),
-                        k -> (m.getThumbnailUrl() != null && !m.getThumbnailUrl().isBlank())
-                                ? m.getThumbnailUrl()
-                                : m.getOriginalUrl()
+                        k-> MediaResDto.fromMedia(m).fileUrl()
                 );
             }
         }
