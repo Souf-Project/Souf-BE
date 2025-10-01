@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -31,6 +33,7 @@ public class MediaCleanupService {
 
     private final MediaRepository mediaRepository;
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(MediaCleanupEvent e) {
         // 1) DB에서 해당 포스트의 미디어 가져오기
@@ -65,7 +68,7 @@ public class MediaCleanupService {
         }
 
         // 4) DB media 레코드 제거
-        mediaRepository.deleteAll(medias);
+        mediaRepository.deleteAllByPostTypeAndPostId(e.postType(), e.postId());
     }
 
     private void addObject(List<ObjectIdentifier> objects, String url) {

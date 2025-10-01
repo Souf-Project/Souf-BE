@@ -11,6 +11,7 @@ import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.service.FileService;
+import com.souf.soufwebsite.domain.file.service.MediaCleanupPublisher;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberIdReqDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
@@ -61,6 +62,7 @@ public class RecruitServiceImpl implements RecruitService {
     private final CategoryService categoryService;
     private final RedisUtil redisUtil;
     private final IndexEventPublisherHelper indexEventPublisherHelper;
+    private final MediaCleanupPublisher mediaCleanupPublisher;
     private final SlackService slackService;
     private final ViewCountService viewCountService;
 
@@ -167,6 +169,7 @@ public class RecruitServiceImpl implements RecruitService {
     }
 
     @Override
+    @Transactional
     public void deleteRecruit(String email, Long recruitId) {
         Member member = findIfEmailExists(email);
         Recruit recruit = findIfRecruitExist(recruitId);
@@ -176,6 +179,8 @@ public class RecruitServiceImpl implements RecruitService {
         redisUtil.deleteKey(recruitViewKey);
 
         recruitRepository.delete(recruit);
+
+        mediaCleanupPublisher.publish(PostType.RECRUIT, recruitId);
 
         indexEventPublisherHelper.publishIndexEvent(
                 EntityType.RECRUIT,

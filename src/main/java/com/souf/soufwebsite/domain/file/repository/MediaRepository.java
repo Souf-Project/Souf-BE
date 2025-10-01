@@ -25,5 +25,4 @@ public interface MediaRepository extends JpaRepository<Media, Long> {
 
     List<Media> findAllByPostTypeAndPostId(PostType postType, Long postId);
 
-    List<Media> findAllByPostTypeAndPostIdIn(PostType postType, Collection<Long> postIds);
 }
