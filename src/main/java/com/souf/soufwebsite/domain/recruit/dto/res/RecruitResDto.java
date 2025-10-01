@@ -58,6 +58,7 @@ public record RecruitResDto(
     }
 
     private static List<MediaResDto> convertToMediaResDto(List<Media> mediaList){
+        if (mediaList == null) return List.of();
         return mediaList.stream()
                 .map(MediaResDto::fromRecruit)
                 .filter(Objects::nonNull)
