@@ -13,6 +13,7 @@ public record MyRecruitResDto(
         String status,
         long recruitCount,
         String nickname,
-        String profileImageUrl
+        String profileImageUrl,
+        String firstMediaUrl
 ) {
 }

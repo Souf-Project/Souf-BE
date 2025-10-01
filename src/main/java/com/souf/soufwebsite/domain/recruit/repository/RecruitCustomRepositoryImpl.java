@@ -8,6 +8,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.entity.Member;
@@ -33,6 +34,7 @@ import org.springframework.stereotype.Repository;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.souf.soufwebsite.domain.file.entity.QMedia.media;
 import static com.souf.soufwebsite.domain.recruit.entity.QRecruit.recruit;
 import static com.souf.soufwebsite.domain.recruit.entity.QRecruitCategoryMapping.recruitCategoryMapping;
 
@@ -75,6 +77,26 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                 .fetchOne();
         long totalCount = total == null ? 0L : total;
 
+        List<Media> medias = queryFactory
+                .selectFrom(media)
+                .where(
+                        media.postType.eq(PostType.RECRUIT),
+                        media.postId.in(pageIds)
+                )
+                .orderBy(media.createdTime.asc(), media.id.asc())
+                .fetch();
+
+        // recruitId -> 첫 URL(썸네일 우선) 매핑
+        Map<Long, String> firstMediaUrlByRecruit = new LinkedHashMap<>();
+        for (Media m : medias) {
+            firstMediaUrlByRecruit.computeIfAbsent(
+                    m.getPostId(),
+                    k -> (m.getThumbnailUrl() != null && !m.getThumbnailUrl().isBlank())
+                            ? m.getThumbnailUrl()
+                            : m.getOriginalUrl()
+            );
+        }
+
         // STEP 2. 선별된 ID들로 상세 재조회(조인/병합)
         List<Tuple> tuples = queryFactory
                 .select(
@@ -107,6 +129,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
             if (!byId.containsKey(id)) {
                 String city = Optional.ofNullable(t.get(recruit.city.name)).orElse("");
                 String cityDetail = Optional.ofNullable(t.get(recruit.cityDetail.name)).orElse("");
+                String firstUrl = firstMediaUrlByRecruit.get(id);
 
                 RecruitSimpleResDto dto = RecruitSimpleResDto.of(
                         id,
@@ -120,7 +143,8 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         t.get(recruit.recruitCount),
                         Boolean.TRUE.equals(t.get(recruit.recruitable)),
                         t.get(recruit.lastModifiedTime),
-                        t.get(recruit.member.id)
+                        t.get(recruit.member.id),
+                        firstUrl
                 );
                 byId.put(id, dto);
             } else {
@@ -157,6 +181,29 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
 
         String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, me.getId());
 
+        List<Long> recruitIds = rows.stream().map(Recruit::getId).toList();
+
+        Map<Long, String> firstMediaUrlByRecruit = new LinkedHashMap<>();
+        if (!recruitIds.isEmpty()) {
+            List<Media> medias = queryFactory
+                    .selectFrom(media)
+                    .where(
+                            media.postType.eq(PostType.RECRUIT),
+                            media.postId.in(recruitIds)
+                    )
+                    .orderBy(media.createdTime.asc(), media.id.asc())
+                    .fetch();
+
+            for (Media m : medias) {
+                firstMediaUrlByRecruit.computeIfAbsent(
+                        m.getPostId(),
+                        k -> (m.getThumbnailUrl() != null && !m.getThumbnailUrl().isBlank())
+                                ? m.getThumbnailUrl()
+                                : m.getOriginalUrl()
+                );
+            }
+        }
+
         List<MyRecruitResDto> content = rows.stream()
                 .map(r -> {
                     String status = r.isRecruitable() ? "모집 중" : "마감";
@@ -167,6 +214,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                                     idOrNull(m.getThirdCategory())
                             ))
                             .toList();
+                    String firstMediaUrl = firstMediaUrlByRecruit.get(r.getId());
 
                     return new MyRecruitResDto(
                             r.getId(),
@@ -176,7 +224,8 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                             status,
                             r.getRecruitCount(),
                             me.getNickname(),
-                            profileImageUrl
+                            profileImageUrl,
+                            firstMediaUrl
                     );
                 })
                 .toList();
