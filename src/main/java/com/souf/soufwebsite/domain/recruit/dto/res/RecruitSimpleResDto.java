@@ -42,7 +42,7 @@ public record RecruitSimpleResDto(
     public RecruitSimpleResDto withWriter(String nickname, String profileImageUrl) {
         return new RecruitSimpleResDto(
                 recruitId, title, secondCategory, content, price,
-                cityName, cityDetailName, deadLine, recruitCount,
+                cityName, cityDetailName, startDate, deadLine, recruitCount,
                 recruitable, lastModified,
                 writerId, nickname, profileImageUrl, firstMediaUrl
         );
