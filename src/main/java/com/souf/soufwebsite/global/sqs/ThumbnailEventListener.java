@@ -33,6 +33,8 @@ public class ThumbnailEventListener {
 
                 String originalFileName = fileName.replace(".png", ""); // 183a-1asjk-..mp4
 
+                log.info("S3 Event Key: {}, fileName: {}", s3Key, fileName);
+
                 Optional<Media> mediaOpt = mediaRepository.findFirstByOriginalUrlEndingWith(originalFileName);
                 if (mediaOpt.isPresent()) {
                     Media media = mediaOpt.get();
