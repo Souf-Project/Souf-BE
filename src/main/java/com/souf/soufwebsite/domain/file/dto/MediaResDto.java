@@ -21,6 +21,23 @@ public record MediaResDto(
         );
     }
 
+    public static MediaResDto fromRecruit(Media media) {
+        MediaType type = media.getMediaType();
+
+        if (type.isDocumentOrEtc()) {
+            return null;
+        }
+
+        if (type.needsThumbnail()) {
+            String url = (media.getThumbnailUrl() != null && !media.getThumbnailUrl().isBlank())
+                    ? media.getThumbnailUrl()
+                    : media.getOriginalUrl();
+            return new MediaResDto(media.getFileName(), url);
+        }
+
+        return new MediaResDto(media.getFileName(), media.getOriginalUrl());
+    }
+
     public static MediaResDto fromMedia(Media media){
         List<MediaType> mediaTypes = List.of(new MediaType[]{MP4, MOV, AVI, MKV, WEBM, FLV, QUICKTIME});
         String originalUrl = media.getOriginalUrl();

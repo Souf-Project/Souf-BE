@@ -86,7 +86,7 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
                         third != null ? memberCategoryMapping.thirdCategory.id.eq(third) : null
                 )
                 .groupBy(member.id)
-                .orderBy(member.lastModifiedTime.desc())
+                .orderBy(member.createdTime.desc())
                 .fetch();
 
 
@@ -99,7 +99,7 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
         List<Member> members = queryFactory
                 .selectFrom(member)
                 .where(member.id.in(pagedIds))
-                .orderBy(member.lastModifiedTime.desc())
+                .orderBy(member.createdTime.desc())
                 .fetch();
 
 

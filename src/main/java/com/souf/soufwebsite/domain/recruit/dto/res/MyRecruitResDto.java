@@ -12,6 +12,9 @@ public record MyRecruitResDto(
         LocalDateTime deadline,
         List<CategoryDto> categoryDtos,
         String status,
-        long recruitCount
+        long recruitCount,
+        String nickname,
+        String profileImageUrl,
+        String firstMediaUrl
 ) {
 }

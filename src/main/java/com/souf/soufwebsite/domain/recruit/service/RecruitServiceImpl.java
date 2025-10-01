@@ -41,12 +41,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -113,7 +117,26 @@ public class RecruitServiceImpl implements RecruitService {
             categoryService.validate(reqDto.categories());
         }
 
-        return recruitRepository.getRecruitList(reqDto, pageable);
+        Page<RecruitSimpleResDto> page = recruitRepository.getRecruitList(reqDto, pageable);
+
+        List<Long> writerIds = page.getContent().stream()
+                .map(RecruitSimpleResDto::writerId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        Map<Long, Member> memberMap = memberRepository.findAllById(writerIds).stream()
+                .collect(Collectors.toMap(Member::getId, m -> m));
+
+        List<RecruitSimpleResDto> enriched = page.getContent().stream()
+                .map(dto -> {
+                    Member m = memberMap.get(dto.writerId());
+                    String profileUrl = fileService.getMediaUrl(PostType.PROFILE, dto.writerId());
+                    return dto.withWriter(m.getNickname(), profileUrl);
+                })
+                .toList();
+
+        return new PageImpl<>(enriched, pageable, page.getTotalElements());
     }
 
     @Transactional(readOnly = true)
