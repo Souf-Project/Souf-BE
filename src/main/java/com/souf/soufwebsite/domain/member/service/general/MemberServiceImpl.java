@@ -2,7 +2,6 @@ package com.souf.soufwebsite.domain.member.service.general;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
-import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.*;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
@@ -19,6 +18,7 @@ import com.souf.soufwebsite.domain.opensearch.OperationType;
 import com.souf.soufwebsite.domain.opensearch.event.IndexEventPublisherHelper;
 import com.souf.soufwebsite.domain.report.exception.DeclaredMemberException;
 import com.souf.soufwebsite.domain.report.service.BanService;
+import com.souf.soufwebsite.global.common.PostType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
@@ -304,11 +304,10 @@ public class MemberServiceImpl implements MemberService {
     @Transactional(readOnly = true)
     public Page<MemberSimpleResDto> getMembers(
             Long first, Long second, Long third,
-            MemberSearchReqDto searchReqDto,
             Pageable pageable) {
         categoryService.validate(first, second, third);
 
-        return memberRepository.getMemberList(first, second, third, searchReqDto, pageable);
+        return memberRepository.getMemberList(first, second, third, pageable);
     }
 
 

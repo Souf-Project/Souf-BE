@@ -1,11 +1,11 @@
 package com.souf.soufwebsite.domain.member.service.admin;
 
-import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminPostResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminReportResDto;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.report.entity.ReportStatus;
+import com.souf.soufwebsite.global.common.PostType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

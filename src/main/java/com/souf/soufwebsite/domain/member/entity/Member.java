@@ -16,7 +16,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Where;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,11 +59,11 @@ public class Member extends BaseEntity {
     @Column(length = 300)
     private String personalUrl;
 
+    @Column(nullable = false)
+    private double temperature;
+
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
-
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberCategoryMapping> categories = new ArrayList<>();
@@ -79,6 +78,7 @@ public class Member extends BaseEntity {
     @Column(name = "marketing_agreement", nullable = false)
     private boolean marketingAgreement = false;
 
+    // 누적 신고 횟수
     @Column(name = "cumulative_report_count")
     private Integer cumulativeReportCount;
 
@@ -92,6 +92,7 @@ public class Member extends BaseEntity {
         this.personalInfoAgreement = true;
         this.marketingAgreement = marketingAgreement;
         this.cumulativeReportCount = 0;
+        this.temperature = 36.5;
     }
 
     // 회원 정보 업데이트 (업데이트 가능한 필드만 반영)
@@ -150,6 +151,5 @@ public class Member extends BaseEntity {
         this.intro = "탈퇴한 회원입니다.";
         this.personalUrl = null;
         this.isDeleted = true;
-        this.deletedAt = LocalDateTime.now();
     }
 }

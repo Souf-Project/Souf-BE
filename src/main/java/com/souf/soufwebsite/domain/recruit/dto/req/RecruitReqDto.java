@@ -39,7 +39,6 @@ public record RecruitReqDto(
         LocalDateTime deadline,
 
         @Schema(description = "최소 제시 금액", example = "100만원")
-        @NotBlank(message = "최소 제시 금액은 필수입니다.")
         String price,
 
         @Schema(description = "우대사항 최대 2개", example = "[\"우대사항 1\", \"우대사항 2\"]")

@@ -8,6 +8,7 @@ import java.util.List;
 public record MyRecruitResDto(
         Long recruitId,
         String title,
+        LocalDateTime startDate,
         LocalDateTime deadline,
         List<CategoryDto> categoryDtos,
         String status,

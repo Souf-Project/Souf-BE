@@ -1,19 +1,21 @@
 package com.souf.soufwebsite.domain.application.service;
 
-import com.souf.soufwebsite.domain.application.dto.ApplicantResDto;
-import com.souf.soufwebsite.domain.application.dto.MyApplicationResDto;
+import com.souf.soufwebsite.domain.application.dto.req.ApplicationOfferReqDto;
+import com.souf.soufwebsite.domain.application.dto.res.ApplicantResDto;
+import com.souf.soufwebsite.domain.application.dto.res.MyApplicationResDto;
 import com.souf.soufwebsite.domain.application.entity.Application;
 import com.souf.soufwebsite.domain.application.exception.*;
 import com.souf.soufwebsite.domain.application.repository.ApplicationRepository;
-import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.domain.recruit.entity.PricePolicy;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.exception.NotFoundRecruitException;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
+import com.souf.soufwebsite.global.common.PostType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.mail.SesMailService;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +44,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public void apply(String email, Long recruitId) {
+    public void apply(String email, Long recruitId, ApplicationOfferReqDto reqDto) {
         Member member = findIfEmailExists(email);
         Recruit recruit = recruitRepository.findById(recruitId)
                 .orElseThrow(NotFoundRecruitException::new);
@@ -59,7 +61,16 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new AlreadyAppliedException();
         }
 
-        Application application = Application.of(member, recruit);
+        Application application;
+        if (recruit.getPricePolicy() == PricePolicy.FIXED) {
+            application = Application.applyFixed(member, recruit);
+        } else { // OFFER
+            if (reqDto == null) {
+                throw new OfferRequiredException();
+            }
+            application = Application.applyOffer(member, recruit, reqDto.priceOffer(), reqDto.priceReason());
+        }
+
         recruit.increaseRecruitCount();
         applicationRepository.save(application);
     }
@@ -101,6 +112,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                             recruit.getMember().getNickname(),
                             categories,
                             status,
+                            app.getPriceOffer(),
+                            app.getPriceReason(),
                             app.getAppliedAt()
                     );
                 });
@@ -121,6 +134,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .map(app -> new ApplicantResDto(
                         app.getId(),
                         MemberResDto.from(app.getMember(), app.getMember().getCategories(), mediaUrl, false),
+                        app.getPriceOffer(),
+                        app.getPriceReason(),
                         app.getAppliedAt(),
                         app.getStatus().name()        // PENDING / ACCEPTED / REJECTED
                 ));

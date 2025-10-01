@@ -1,6 +1,5 @@
 package com.souf.soufwebsite.domain.member.repository;
 
-import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberSearchReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
@@ -11,7 +10,7 @@ public interface MemberCustomRepository {
 //    Page<Member> findByCategory(Long first, Pageable pageable);
 
     Page<MemberSimpleResDto> getMemberList(Long first, Long second, Long third,
-                                           MemberSearchReqDto searchReqDto, Pageable pageable);
+                                           Pageable pageable);
 
     Page<AdminMemberResDto> getMemberListInAdmin(RoleType memberType, String username, String nickname, Pageable pageable);
 }

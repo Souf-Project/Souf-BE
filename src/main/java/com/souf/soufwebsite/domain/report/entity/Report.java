@@ -1,8 +1,8 @@
 package com.souf.soufwebsite.domain.report.entity;
 
-import com.souf.soufwebsite.domain.file.entity.PostType;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.common.BaseEntity;
+import com.souf.soufwebsite.global.common.PostType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

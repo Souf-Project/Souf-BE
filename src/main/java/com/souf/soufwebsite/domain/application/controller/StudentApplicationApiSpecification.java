@@ -1,6 +1,7 @@
 package com.souf.soufwebsite.domain.application.controller;
 
-import com.souf.soufwebsite.domain.application.dto.MyApplicationResDto;
+import com.souf.soufwebsite.domain.application.dto.req.ApplicationOfferReqDto;
+import com.souf.soufwebsite.domain.application.dto.res.MyApplicationResDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
@@ -8,10 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Application", description = "지원 관련 API")
 public interface StudentApplicationApiSpecification {
@@ -20,7 +18,8 @@ public interface StudentApplicationApiSpecification {
     @PostMapping("/{recruitId}/apply")
     SuccessResponse<?> apply(
             @CurrentEmail String email,
-            @PathVariable Long recruitId);
+            @PathVariable Long recruitId,
+            @RequestBody ApplicationOfferReqDto reqDto);
 
     @Operation(summary = "지원 취소", description = "특정 공고문에 대한 지원을 취소합니다.")
     @DeleteMapping("/{recruitId}/apply")

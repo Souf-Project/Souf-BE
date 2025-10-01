@@ -14,6 +14,7 @@ public record RecruitSimpleResDto(
         String price,
         String cityName,
         String cityDetailName,
+        String startDate,
         String deadLine,
         Long recruitCount,
         boolean recruitable,
@@ -25,14 +26,14 @@ public record RecruitSimpleResDto(
 ) {
     public static RecruitSimpleResDto of(Long recruitId, String title, Long secondCategoryId, String content,
                                          String price, String cityName, String cityDetailName,
-                                         LocalDateTime deadLine, Long recruitCount,
+                                         LocalDateTime startDate, LocalDateTime deadLine, Long recruitCount,
                                          boolean recruitable, LocalDateTime lastModified,
                                          Long writerId, String firstMediaUrl) {
         return new RecruitSimpleResDto(
                 recruitId, title,
                 new ArrayList<>(List.of(secondCategoryId)), // 초기 리스트
                 content, price, cityName, cityDetailName,
-                convertToDateTime(deadLine), recruitCount,
+                convertToDateTime(startDate), convertToDateTime(deadLine), recruitCount,
                 recruitable, lastModified,
                 writerId, null, null, firstMediaUrl
         );
