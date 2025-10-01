@@ -113,7 +113,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         recruit.deadline,
                         recruit.recruitCount,
                         recruit.recruitable,
-                        recruit.lastModifiedTime,
+                        recruit.createdTime,
                         recruit.member.id
                 )
                 .from(recruit)
@@ -146,7 +146,7 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
                         t.get(recruit.deadline),
                         t.get(recruit.recruitCount),
                         Boolean.TRUE.equals(t.get(recruit.recruitable)),
-                        t.get(recruit.lastModifiedTime),
+                        t.get(recruit.createdTime),
                         t.get(recruit.member.id),
                         firstUrl
                 );
@@ -263,11 +263,11 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
         return switch (key) {
             case VIEWS   -> new OrderSpecifier<?>[]{
                     new OrderSpecifier<>(o, recruit.viewCount),
-                    new OrderSpecifier<>(Order.DESC, recruit.lastModifiedTime) };
+                    new OrderSpecifier<>(Order.DESC, recruit.createdTime) };
             case PAYMENT -> new OrderSpecifier<?>[]{
                     new OrderSpecifier<>(o, maxPaymentNumber()),
-                    new OrderSpecifier<>(Order.DESC, recruit.lastModifiedTime) };
-            case RECENT  -> new OrderSpecifier<?>[]{ new OrderSpecifier<>(o, recruit.lastModifiedTime) };
+                    new OrderSpecifier<>(Order.DESC, recruit.createdTime) };
+            case RECENT  -> new OrderSpecifier<?>[]{ new OrderSpecifier<>(o, recruit.createdTime) };
         };
     }
 
