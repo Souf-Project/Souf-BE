@@ -92,7 +92,10 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
         for (Media m : medias) {
             firstMediaUrlByRecruit.computeIfAbsent(
                     m.getPostId(),
-                    k -> MediaResDto.fromMedia(m).fileUrl()
+                    k -> {
+                        MediaResDto dto = MediaResDto.fromRecruit(m);
+                        return dto != null ? dto.fileUrl() : null; // 문서 타입이면 null
+                    }
             );
         }
 
@@ -196,7 +199,10 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
             for (Media m : medias) {
                 firstMediaUrlByRecruit.computeIfAbsent(
                         m.getPostId(),
-                        k-> MediaResDto.fromMedia(m).fileUrl()
+                        k -> {
+                            MediaResDto dto = MediaResDto.fromRecruit(m);
+                            return dto != null ? dto.fileUrl() : null; // 문서 타입이면 null
+                        }
                 );
             }
         }

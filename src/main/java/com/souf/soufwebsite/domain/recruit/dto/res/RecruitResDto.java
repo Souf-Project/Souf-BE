@@ -9,6 +9,7 @@ import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public record RecruitResDto(
@@ -57,9 +58,10 @@ public record RecruitResDto(
     }
 
     private static List<MediaResDto> convertToMediaResDto(List<Media> mediaList){
-        return mediaList.stream().map(
-                MediaResDto::fromFeedDetail
-        ).collect(Collectors.toList());
+        return mediaList.stream()
+                .map(MediaResDto::fromRecruit)
+                .filter(Objects::nonNull)
+        .toList();
     }
 
     private static String convertToDateTime(LocalDateTime dateTime){
