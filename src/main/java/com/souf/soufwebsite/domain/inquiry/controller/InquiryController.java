@@ -1,7 +1,6 @@
 package com.souf.soufwebsite.domain.inquiry.controller;
 
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryReqDto;
-import com.souf.soufwebsite.domain.inquiry.entity.Inquiry;
 import com.souf.soufwebsite.domain.inquiry.service.InquiryService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
