@@ -5,7 +5,7 @@ import com.souf.soufwebsite.global.exception.hash.NotAvailableAlgorithmException
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class HashUtil {
+public class HashUtils {
 
     public static String sha256(String input) {
         try {
