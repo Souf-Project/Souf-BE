@@ -8,6 +8,7 @@ import com.souf.soufwebsite.domain.recruit.exception.NotBlankPriceException;
 import com.souf.soufwebsite.domain.recruit.exception.NotValidPricePolicyException;
 import com.souf.soufwebsite.domain.socialAccount.exception.NotValidProviderException;
 import com.souf.soufwebsite.global.common.BaseEntity;
+import com.souf.soufwebsite.global.common.ListToJsonConverter;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -61,8 +62,9 @@ public class Recruit extends BaseEntity {
     @Column(nullable = false)
     private PricePolicy pricePolicy;
 
-    @Column
-    private String preferentialTreatment;
+    @Column(columnDefinition = "json")
+    @Convert(converter = ListToJsonConverter.class)
+    private List<String> preferentialTreatment;
 
     @Column(nullable = false)
     private Long recruitCount;
