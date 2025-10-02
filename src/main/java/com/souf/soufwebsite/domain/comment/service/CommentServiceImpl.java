@@ -11,6 +11,7 @@ import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.exception.NotFoundFeedException;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import com.souf.soufwebsite.domain.file.service.FileService;
+import com.souf.soufwebsite.domain.file.service.MediaCleanupPublisher;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
@@ -32,6 +33,8 @@ public class CommentServiceImpl implements CommentService {
     private final FeedRepository feedRepository;
     private final MemberRepository memberRepository;
     private final FileService fileService;
+
+    private final MediaCleanupPublisher mediaCleanupPublisher;
 
     @Override
     public void createComment(Long postId, CommentReqDto reqDto) {
@@ -72,6 +75,8 @@ public class CommentServiceImpl implements CommentService {
         validatedIfCommentMine(member, comment); // 현재 사용자와 댓글 작성자의 아이디가 일치하지 않으면 예외 발생
 
         commentRepository.delete(comment);
+
+        mediaCleanupPublisher.publish(PostType.COMMENT, commentId);
     }
 
     @Transactional

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +20,10 @@ public interface MediaRepository extends JpaRepository<Media, Long> {
     @Modifying
     @Query("delete from Media m where m.postType = :postType and m.postId = :postId")
     void deleteAllByPostTypeAndPostId(PostType postType, Long postId);
+
+    Optional<Media> findFirstByOriginalUrlEndingWith(String originalUrl);
+
+    List<Media> findAllByPostTypeAndPostId(PostType postType, Long postId);
 
     Optional<Media> findFirstByOriginalUrlEndingWithIgnoreCase(String originalUrl);
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 
 @Component
-public class SesTemplateUtil {
+public class SesTemplateUtils {
 
     @Value("${spring.mail.username}")
     private String mail;
