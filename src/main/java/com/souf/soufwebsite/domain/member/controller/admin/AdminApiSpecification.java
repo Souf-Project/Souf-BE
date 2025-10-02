@@ -1,11 +1,18 @@
 package com.souf.soufwebsite.domain.member.controller.admin;
 
+import com.souf.soufwebsite.domain.inquiry.dto.InquiryResDto;
+import com.souf.soufwebsite.domain.inquiry.entity.InquiryStatus;
+import com.souf.soufwebsite.domain.inquiry.entity.InquiryType;
+import com.souf.soufwebsite.domain.member.dto.ResDto.AdminMemberResDto;
+import com.souf.soufwebsite.domain.member.dto.ResDto.AdminPostResDto;
+import com.souf.soufwebsite.domain.member.dto.ResDto.AdminReportResDto;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.report.entity.ReportStatus;
 import com.souf.soufwebsite.global.common.PostType;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +27,7 @@ public interface AdminApiSpecification {
 
     @Operation(summary = "게시글 관리", description = "게시글 리스트를 조회합니다.")
     @GetMapping("/post")
-    SuccessResponse<?> getPosts(
+    SuccessResponse<Page<AdminPostResDto>> getPosts(
             @RequestParam(name = "postType") PostType postType,
             @RequestParam(name = "writer", required = false) String writer,
             @RequestParam(name = "title", required = false) String title,
@@ -29,7 +36,7 @@ public interface AdminApiSpecification {
 
     @Operation(summary = "회원 관리", description = "회원 리스트를 조회합니다.")
     @GetMapping("/member")
-    SuccessResponse<?> getMembers(
+    SuccessResponse<Page<AdminMemberResDto>> getMembers(
             @RequestParam(name = "memberType") RoleType memberType,
             @RequestParam(name = "username", required = false) String username,
             @RequestParam(name = "nickname", required = false) String nickname,
@@ -38,11 +45,19 @@ public interface AdminApiSpecification {
 
     @Operation(summary = "신고 관리", description = "신고 리스트를 조회합니다.")
     @GetMapping("/report")
-    SuccessResponse<?> getReports(
+    SuccessResponse<Page<AdminReportResDto>> getReports(
             @RequestParam(name = "postType") PostType postType,
             @RequestParam(name = "startDate") LocalDate startDate,
             @RequestParam(name = "endDate") LocalDate endDate,
             @RequestParam(name = "nickname") String nickname,
+            @PageableDefault Pageable pageable
+    );
+
+    @Operation(summary = "문의 관리", description = "문의 리스트를 조회합니다.")
+    @GetMapping("/inquiry")
+    SuccessResponse<Page<InquiryResDto>> getInquiries(
+            @RequestParam(name = "inquiryType", required = false) InquiryType inquiryType,
+            @RequestParam(name = "inquiryStatus", required = false) InquiryStatus inquiryStatus,
             @PageableDefault Pageable pageable
     );
 
