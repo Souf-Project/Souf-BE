@@ -35,7 +35,7 @@ public class ThumbnailEventListener {
 
                 log.info("S3 Event Key: {}, fileName: {}", s3Key, fileName);
 
-                Optional<Media> mediaOpt = mediaRepository.findFirstByOriginalUrlEndingWith(originalFileName);
+                Optional<Media> mediaOpt = mediaRepository.findFirstByOriginalUrlEndingWithIgnoreCase(originalFileName);
                 if (mediaOpt.isPresent()) {
                     Media media = mediaOpt.get();
                     media.addThumbnailUrl(s3Key);
