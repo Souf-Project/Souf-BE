@@ -25,7 +25,7 @@ public record InquiryReqDto(
         @Schema(description = "기존에 존재하는 파일 URL", example = "[\"feed/original/...\", \"feed/original/..\"]")
         List<String> existingImageUrls,
 
-        @Schema(description = "원본 파일 이름", example = "[fileName.jpg, dog.jpg..]")
+        @Schema(description = "원본 파일 이름", example = "[\"fileName.jpg\", \"dog.jpg\"..]")
         List<String> originalFileNames
 ) {
 }
