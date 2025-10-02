@@ -33,7 +33,9 @@ public class ThumbnailEventListener {
 
                 String originalFileName = fileName.replace(".png", ""); // 183a-1asjk-..mp4
 
-                Optional<Media> mediaOpt = mediaRepository.findFirstByOriginalUrlEndingWith(originalFileName);
+                log.info("S3 Event Key: {}, fileName: {}", s3Key, fileName);
+
+                Optional<Media> mediaOpt = mediaRepository.findFirstByOriginalUrlEndingWithIgnoreCase(originalFileName);
                 if (mediaOpt.isPresent()) {
                     Media media = mediaOpt.get();
                     media.addThumbnailUrl(s3Key);
@@ -45,6 +47,7 @@ public class ThumbnailEventListener {
             }
         } catch (Exception e) {
             log.error("Error Processing Thumbnail SQS message", e);
+            throw e;
         }
     }
 }

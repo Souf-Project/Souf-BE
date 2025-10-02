@@ -25,4 +25,5 @@ public interface MediaRepository extends JpaRepository<Media, Long> {
 
     List<Media> findAllByPostTypeAndPostId(PostType postType, Long postId);
 
+    Optional<Media> findFirstByOriginalUrlEndingWithIgnoreCase(String originalUrl);
 }
