@@ -10,7 +10,7 @@ spring:
       port: 6379
       ssl:
         enabled: false
-      host: redis-container
+      host: localhost
 
   jpa:
     hibernate:
