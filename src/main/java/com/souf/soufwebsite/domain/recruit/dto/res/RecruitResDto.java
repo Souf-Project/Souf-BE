@@ -25,7 +25,7 @@ public record RecruitResDto(
         String deadline,
         String price,
         Long totalViewCount,
-        List<String> preferentialTreatment,
+        String preferentialTreatment,
         String nickname,
         boolean recruitable,
         WorkType workType,

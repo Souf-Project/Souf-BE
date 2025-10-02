@@ -42,8 +42,8 @@ public record RecruitReqDto(
         String price,
 
         @Schema(description = "우대사항 최대 2개", example = "[\"우대사항 1\", \"우대사항 2\"]")
-        @Size(max = 2, message = "우대사항은 최대 2개까지만 입력 가능합니다.")
-        List<String> preferentialTreatment,
+        //@Size(max = 2, message = "우대사항은 최대 2개까지만 입력 가능합니다.")
+        String preferentialTreatment,
 
         @Schema(description = "카테고리 목록", implementation = CategoryDto.class)
         @NotEmpty(message = "적어도 한 개의 카테고리가 들어있어야 합니다.")
