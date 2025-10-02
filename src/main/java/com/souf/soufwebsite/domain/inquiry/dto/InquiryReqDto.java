@@ -3,6 +3,7 @@ package com.souf.soufwebsite.domain.inquiry.dto;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.util.List;
@@ -18,7 +19,7 @@ public record InquiryReqDto(
         String content,
 
         @Schema(name = "문의 유형", description = "문의 제목을 적어주세요")
-        @NotBlank(message = "문의 제목은 필수입니다.")
+        @NotNull(message = "문의 유형은 필수입니다.")
         InquiryType type,
 
         @Schema(description = "기존에 존재하는 파일 URL", example = "[\"feed/original/...\", \"feed/original/..\"]")

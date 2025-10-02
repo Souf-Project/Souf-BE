@@ -2,6 +2,7 @@ package com.souf.soufwebsite.domain.inquiry.service;
 
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryReqDto;
+import com.souf.soufwebsite.domain.inquiry.dto.InquiryResDto;
 import com.souf.soufwebsite.domain.inquiry.entity.Inquiry;
 import com.souf.soufwebsite.domain.inquiry.exception.NotFoundInquiryException;
 import com.souf.soufwebsite.domain.inquiry.exception.NotValidAuthenticationException;
@@ -11,8 +12,13 @@ import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -51,6 +57,18 @@ public class InquiryServiceImpl implements InquiryService {
         verifyIfInquiryIsMine(inquiry, currentMember);
 
         inquiryRepository.delete(inquiry);
+    }
+
+    @Override
+    public Page<InquiryResDto> getMyInquiry(String email, Pageable pageable) {
+        Member currentMember = findIfMemberExists(email);
+
+        Page<Inquiry> inquiries = inquiryRepository.findByMember(currentMember.getEmail(), pageable);
+        List<InquiryResDto> result = inquiries.getContent().stream().map(
+                i -> new InquiryResDto(i.getId(), i.getTitle(), i.getContent())
+        ).toList();
+
+        return new PageImpl<>(result, pageable, inquiries.getTotalElements());
     }
 
 

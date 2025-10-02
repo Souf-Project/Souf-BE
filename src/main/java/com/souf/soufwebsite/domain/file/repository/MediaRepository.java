@@ -20,5 +20,5 @@ public interface MediaRepository extends JpaRepository<Media, Long> {
     @Query("delete from Media m where m.postType = :postType and m.postId = :postId")
     void deleteAllByPostTypeAndPostId(PostType postType, Long postId);
 
-    Optional<Media> findFirstByOriginalUrlEndingWith(String originalUrl);
+    Optional<Media> findFirstByOriginalUrlEndingWithIgnoreCase(String originalUrl);
 }

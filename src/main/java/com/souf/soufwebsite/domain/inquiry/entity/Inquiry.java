@@ -42,10 +42,10 @@ public class Inquiry extends BaseEntity {
     private Member member;
 
     @Builder
-    public Inquiry (String title, String content, InquiryType type, Member member) {
+    public Inquiry (String title, String content, InquiryType inquiryType, Member member) {
         this.title = title;
         this.content = content;
-        this.inquiryType = type;
+        this.inquiryType = inquiryType;
         this.member = member;
         this.inquiryStatus = InquiryStatus.PENDING;
     }
@@ -54,7 +54,7 @@ public class Inquiry extends BaseEntity {
         return Inquiry.builder()
                 .title(reqDto.title())
                 .content(reqDto.content())
-                .type(reqDto.type())
+                .inquiryType(reqDto.type())
                 .member(member)
                 .build();
     }
