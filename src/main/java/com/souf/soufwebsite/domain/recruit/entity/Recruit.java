@@ -87,6 +87,9 @@ public class Recruit extends BaseEntity {
     @Column(nullable = false)
     private boolean deleted = false;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @Builder.Default
     @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
     List<RecruitCategoryMapping> categories = new ArrayList<>();
