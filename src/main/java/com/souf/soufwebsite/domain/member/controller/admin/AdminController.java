@@ -1,5 +1,8 @@
 package com.souf.soufwebsite.domain.member.controller.admin;
 
+import com.souf.soufwebsite.domain.inquiry.dto.InquiryResDto;
+import com.souf.soufwebsite.domain.inquiry.entity.InquiryStatus;
+import com.souf.soufwebsite.domain.inquiry.entity.InquiryType;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminPostResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminReportResDto;
@@ -63,6 +66,17 @@ public class AdminController implements AdminApiSpecification{
         Page<AdminReportResDto> reports = adminService.getReports(postType, startDate, endDate, nickname, pageable);
 
         return new SuccessResponse<>(reports, REPORT_GET_SUCCESS.getMessage());
+    }
+
+    @GetMapping("/inquiry")
+    public SuccessResponse<Page<InquiryResDto>> getInquiries(
+            @RequestParam(name = "inquiryType", required = false)InquiryType inquiryType,
+            @RequestParam(name = "inquiryStatus", required = false) InquiryStatus inquiryStatus,
+            @PageableDefault Pageable pageable
+    ) {
+        Page<InquiryResDto> inquiries = adminService.getInquiries(inquiryType, inquiryStatus, pageable);
+
+        return new SuccessResponse<>(inquiries, REPORT_GET_SUCCESS.getMessage());
     }
 
     @PatchMapping("/report/{reportId}")

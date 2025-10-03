@@ -2,7 +2,7 @@ package com.souf.soufwebsite.global.common.mail;
 
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.model.SendTemplatedEmailRequest;
-import com.souf.soufwebsite.global.util.SesTemplateUtil;
+import com.souf.soufwebsite.global.util.SesTemplateUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SesMailService {
 
-    private final SesTemplateUtil templateUtil;
+    private final SesTemplateUtils templateUtil;
     private final AmazonSimpleEmailService emailService;
 
     public void sendEmailAuthenticationCode(String to, String purpose, String authenticationCode) {
