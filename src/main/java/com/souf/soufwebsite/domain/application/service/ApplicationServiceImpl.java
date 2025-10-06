@@ -77,16 +77,21 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public void deleteApplication(String email, Long recruitId) {
-        Member member = findIfEmailExists(email);
-        Recruit recruit = recruitRepository.findById(recruitId)
-                .orElseThrow(NotFoundRecruitException::new);
+    public void deleteApplicationById(String email, Long applicationId) {
+        Member me = findIfEmailExists(email);
 
-        Application application = applicationRepository.findByMemberAndRecruit(member, recruit)
+        Application app = applicationRepository.findById(applicationId)
                 .orElseThrow(NotFoundApplicationException::new);
 
-        applicationRepository.delete(application);
-        recruit.decreaseRecruitCount();
+        if (!app.getMember().getId().equals(me.getId())) {
+            throw new NotValidAuthenticationException();
+        }
+
+        Recruit recruit = app.getRecruit();
+        applicationRepository.delete(app);
+        if (recruit != null) {
+            recruit.decreaseRecruitCount();
+        }
     }
 
     @Override

@@ -8,8 +8,12 @@ import org.springframework.data.domain.Pageable;
 
 public interface ApplicationService {
     void apply(String email, Long recruitId, ApplicationOfferReqDto reqDto);
-    void deleteApplication(String email, Long recruitId);
+
+    void deleteApplicationById(String email, Long recruitId);
+
     Page<MyApplicationResDto> getMyApplications(String email, Pageable pageable);
+
     Page<ApplicantResDto> getApplicantsByRecruit(String email, Long recruitId, Pageable pageable);
+
     void reviewApplication(String email, Long applicationId, boolean approve);
 }
