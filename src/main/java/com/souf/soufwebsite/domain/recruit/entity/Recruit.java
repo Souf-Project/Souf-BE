@@ -63,7 +63,10 @@ public class Recruit extends BaseEntity {
 
     @Column(columnDefinition = "json")
     @Convert(converter = ListToJsonConverter.class)
-    private List<String> preferentialTreatment;
+    private List<String> preferentialTreatmentTags;
+
+    @Column
+    private String preferentialTreatment;
 
     @Column(nullable = false)
     private Long recruitCount;
@@ -102,6 +105,7 @@ public class Recruit extends BaseEntity {
                 .deadline(reqDto.deadline())
                 .price(reqDto.price())
                 .pricePolicy(pricePolicy)
+                .preferentialTreatmentTags(reqDto.preferentialTreatmentTags())
                 .preferentialTreatment(reqDto.preferentialTreatment())
                 .recruitCount(0L)
                 .viewCount(0L)
@@ -120,6 +124,7 @@ public class Recruit extends BaseEntity {
         this.deadline = reqDto.deadline();
         this.price = reqDto.price();
         this.workType = reqDto.workType();
+        this.preferentialTreatmentTags = reqDto.preferentialTreatmentTags();
         this.preferentialTreatment = reqDto.preferentialTreatment();
     }
 
