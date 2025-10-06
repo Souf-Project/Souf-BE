@@ -42,10 +42,8 @@ public class MediaCleanupService {
 
         // 2) URL -> Key 변환(원본+썸네일 모두) → SDK v2의 ObjectIdentifier 리스트 생성
         List<ObjectIdentifier> objects = new ArrayList<>();
-        for (Media m : medias) {
-            addObject(objects, m.getOriginalUrl());
-            addObject(objects, m.getThumbnailUrl()); // 썸네일 필드가 있으면 같이 제거
-            // 파생 사이즈/경로가 더 있다면 여기서 추가
+        for (Media media : medias) {
+            addAllObjects(objects, media);
         }
 
         // 3) S3 일괄 삭제 (키가 하나라도 있으면)
@@ -71,8 +69,14 @@ public class MediaCleanupService {
         mediaRepository.deleteAllByPostTypeAndPostId(e.postType(), e.postId());
     }
 
-    private void addObject(List<ObjectIdentifier> objects, String url) {
-        String key = S3KeyUtils.extractKeyFromUrl(url, bucket); // 정적 유틸 사용 (빈 주입 X)
+    private void addAllObjects(List<ObjectIdentifier> objects, Media media) {
+        addIfPresent(objects, media.getOriginalUrl());
+        addIfPresent(objects, media.getThumbnailUrl());
+    }
+
+    private void addIfPresent(List<ObjectIdentifier> objects, String url) {
+        if (url == null || url.isBlank()) return;
+        String key = S3KeyUtils.extractKeyFromUrl(url, bucket);
         if (key != null && !key.isBlank()) {
             objects.add(ObjectIdentifier.builder().key(key).build());
         }
