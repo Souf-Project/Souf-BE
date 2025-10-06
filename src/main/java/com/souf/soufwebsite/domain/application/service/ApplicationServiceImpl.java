@@ -97,11 +97,24 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .map(app -> {
                     Recruit recruit = app.getRecruit();
 
+                    if (recruit == null) {
+                        return new MyApplicationResDto(
+                                null,
+                                "삭제된 공고입니다",
+                                null,
+                                List.of(),
+                                "삭제됨",
+                                app.getPriceOffer(),
+                                app.getPriceReason(),
+                                app.getAppliedAt()
+                        );
+                    }
+
                     List<CategoryDto> categories = recruit.getCategories().stream()
-                            .map(mapping -> new CategoryDto(
-                                    mapping.getFirstCategory().getId(),
-                                    mapping.getSecondCategory().getId(),
-                                    mapping.getThirdCategory().getId()
+                            .map(m -> new CategoryDto(
+                                    m.getFirstCategory().getId(),
+                                    m.getSecondCategory() != null ? m.getSecondCategory().getId() : null,
+                                    m.getThirdCategory()  != null ? m.getThirdCategory().getId()  : null
                             ))
                             .toList();
 
@@ -148,7 +161,12 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         Application app = applicationRepository.findById(applicationId)
                 .orElseThrow(NotFoundApplicationException::new);
+
         Recruit recruit = app.getRecruit();
+        if (recruit == null) {
+            throw new NotFoundRecruitException();
+        }
+
         verifyOwner(recruit, me);
 
         if (approve) app.accept();
