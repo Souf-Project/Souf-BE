@@ -16,6 +16,7 @@ import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.service.FileService;
+import com.souf.soufwebsite.domain.file.service.MediaCleanupPublisher;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
@@ -57,6 +58,7 @@ public class FeedServiceImpl implements FeedService {
     private final ViewCountService viewCountService;
     private final FeedConverter feedConverter;
 //    private final IndexEventPublisherHelper indexEventPublisherHelper;
+    private final MediaCleanupPublisher mediaCleanupPublisher;
     private final SlackService slackService;
     private final LikedFeedRepository likedFeedRepository;
     private final CommentRepository commentRepository;
@@ -168,6 +170,7 @@ public class FeedServiceImpl implements FeedService {
         return new FeedResDto(feed.getId(), presignedUrlResDtos, videoDto);
     }
 
+    @Transactional
     @Override
     public void deleteFeed(String email, Long feedId) {
         Member member = findIfEmailExists(email);
@@ -184,6 +187,8 @@ public class FeedServiceImpl implements FeedService {
 //                "Feed",
 //                feed.getId()
 //        );
+        mediaCleanupPublisher.publish(PostType.FEED, feedId);
+
     }
 
 
