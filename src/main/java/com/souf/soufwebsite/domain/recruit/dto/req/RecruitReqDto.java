@@ -10,6 +10,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record RecruitReqDto(
+
+        @Schema(description = "개인 및 기업명 작성", example = "ggott")
+        @NotBlank(message = "개인 및 기업명 작성은 필수입니다.")
+        String writerName,
+
+        @Schema(description = "개인 및 기업 간략 소개", example = "저희는 꽃을 주제로 의류를 제작하는 ggott입니다!")
+        @NotBlank(message = "간략 소개는 필수입니다.")
+        String introduction,
+
         @Schema(description = "공고문 제목", example = "[SW] ggott sw 개발자 모집")
         @NotBlank(message = "공고문 제목은 필수입니다.")
         @Size(min = 2)

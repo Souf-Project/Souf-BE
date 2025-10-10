@@ -9,6 +9,7 @@ import com.souf.soufwebsite.domain.city.repository.CityDetailRepository;
 import com.souf.soufwebsite.domain.city.repository.CityRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
+import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.file.service.MediaCleanupPublisher;
@@ -16,9 +17,6 @@ import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberIdReqDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
-//import com.souf.soufwebsite.domain.opensearch.EntityType;
-//import com.souf.soufwebsite.domain.opensearch.OperationType;
-//import com.souf.soufwebsite.domain.opensearch.event.IndexEventPublisherHelper;
 import com.souf.soufwebsite.domain.recruit.dto.req.MyRecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.req.RecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.req.RecruitSearchReqDto;
@@ -96,12 +94,13 @@ public class RecruitServiceImpl implements RecruitService {
 //        );
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("recruit", reqDto.originalFileNames());
+        VideoDto videoDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.RECRUIT);
 
         String slackMsg = member.getNickname() + " 님이 공고문을 작성하였습니다.\n" +
                 "https://www.souf.co.kr/recruitDetails/" + recruit.getId().toString() + "\n" +
                 member.getNickname() + " 님을 다같이 환영해보아요:)";
         slackService.sendSlackMessage(slackMsg, "post");
-        return new RecruitCreateResDto(recruit.getId(), presignedUrlResDtos);
+        return new RecruitCreateResDto(recruit.getId(), presignedUrlResDtos, videoDto);
     }
 
     @Override
@@ -176,6 +175,7 @@ public class RecruitServiceImpl implements RecruitService {
 
         updateRemainingImages(reqDto, recruit);
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("recruit", reqDto.originalFileNames());
+        VideoDto videoDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.RECRUIT);
 
         recruit.updateRecruit(reqDto, city, cityDetail);
         recruit.clearCategories();
@@ -188,7 +188,7 @@ public class RecruitServiceImpl implements RecruitService {
 //                recruit
 //        );
 
-        return new RecruitCreateResDto(recruit.getId(), presignedUrlResDtos);
+        return new RecruitCreateResDto(recruit.getId(), presignedUrlResDtos, videoDto);
     }
 
     @Override
