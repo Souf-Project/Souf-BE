@@ -13,6 +13,7 @@ import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.file.service.MediaCleanupPublisher;
+import com.souf.soufwebsite.domain.file.service.S3UploaderService;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberIdReqDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
@@ -57,6 +58,8 @@ import java.util.stream.Collectors;
 public class RecruitServiceImpl implements RecruitService {
 
     private final FileService fileService;
+    private final S3UploaderService s3UploaderService;
+
     private final RecruitRepository recruitRepository;
     private final MemberRepository memberRepository;
     private final CityRepository cityRepository;
@@ -93,6 +96,12 @@ public class RecruitServiceImpl implements RecruitService {
 //                recruit
 //        );
 
+        PresignedUrlResDto logoResDto = null;
+        if (reqDto.logoOriginalFileName() != null) {
+            logoResDto = s3UploaderService.generatePresignedUploadUrl("logo", reqDto.logoOriginalFileName());
+        }
+
+
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("recruit", reqDto.originalFileNames());
         VideoDto videoDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.RECRUIT);
 
@@ -100,7 +109,8 @@ public class RecruitServiceImpl implements RecruitService {
                 "https://www.souf.co.kr/recruitDetails/" + recruit.getId().toString() + "\n" +
                 member.getNickname() + " 님을 다같이 환영해보아요:)";
         slackService.sendSlackMessage(slackMsg, "post");
-        return new RecruitCreateResDto(recruit.getId(), presignedUrlResDtos, videoDto);
+
+        return new RecruitCreateResDto(recruit.getId(), presignedUrlResDtos, logoResDto, videoDto);
     }
 
     @Override
@@ -151,8 +161,9 @@ public class RecruitServiceImpl implements RecruitService {
         long totalViewCount = viewCountService.updateTotalViewCount(currentMember, PostType.RECRUIT, recruit.getId(), recruit.getViewCount(), ip, userAgent);
 
         List<Media> mediaList = fileService.getMediaList(PostType.RECRUIT, recruitId);
+        String logoUrl = fileService.getMediaUrl(PostType.LOGO, recruit.getId());
 
-        return RecruitResDto.from(recruitMember.getId(), recruit, totalViewCount, recruitMember.getNickname(), mediaList);
+        return RecruitResDto.from(recruitMember.getId(), recruit, totalViewCount, recruitMember.getNickname(), mediaList, logoUrl);
     }
 
     @Transactional(readOnly = true)
@@ -177,6 +188,12 @@ public class RecruitServiceImpl implements RecruitService {
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("recruit", reqDto.originalFileNames());
         VideoDto videoDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.RECRUIT);
 
+        PresignedUrlResDto logoResDto = null;
+        if (reqDto.logoOriginalFileName() != null) {
+            mediaCleanupPublisher.publish(PostType.LOGO, recruitId);
+            logoResDto = s3UploaderService.generatePresignedUploadUrl("logo", reqDto.logoOriginalFileName());
+        }
+
         recruit.updateRecruit(reqDto, city, cityDetail);
         recruit.clearCategories();
         injectCategories(reqDto, recruit);
@@ -188,7 +205,7 @@ public class RecruitServiceImpl implements RecruitService {
 //                recruit
 //        );
 
-        return new RecruitCreateResDto(recruit.getId(), presignedUrlResDtos, videoDto);
+        return new RecruitCreateResDto(recruit.getId(), presignedUrlResDtos, logoResDto, videoDto);
     }
 
     @Override
@@ -211,6 +228,7 @@ public class RecruitServiceImpl implements RecruitService {
 //        );
 
         mediaCleanupPublisher.publish(PostType.RECRUIT, recruitId);
+        mediaCleanupPublisher.publish(PostType.LOGO, recruitId);
     }
 
     @Override

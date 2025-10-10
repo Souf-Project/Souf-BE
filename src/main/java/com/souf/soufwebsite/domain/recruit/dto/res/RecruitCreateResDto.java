@@ -8,6 +8,7 @@ import java.util.List;
 public record RecruitCreateResDto(
         Long recruitId,
         List<PresignedUrlResDto> dtoList,
+        PresignedUrlResDto logoPresignedUrlResDto,
         VideoDto videoDto
 ) {
 }
