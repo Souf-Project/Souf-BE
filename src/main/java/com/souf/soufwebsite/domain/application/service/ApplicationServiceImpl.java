@@ -77,16 +77,21 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public void deleteApplication(String email, Long recruitId) {
-        Member member = findIfEmailExists(email);
-        Recruit recruit = recruitRepository.findById(recruitId)
-                .orElseThrow(NotFoundRecruitException::new);
+    public void deleteApplicationById(String email, Long applicationId) {
+        Member me = findIfEmailExists(email);
 
-        Application application = applicationRepository.findByMemberAndRecruit(member, recruit)
+        Application app = applicationRepository.findById(applicationId)
                 .orElseThrow(NotFoundApplicationException::new);
 
-        applicationRepository.delete(application);
-        recruit.decreaseRecruitCount();
+        if (!app.getMember().getId().equals(me.getId())) {
+            throw new NotValidAuthenticationException();
+        }
+
+        Recruit recruit = app.getRecruit();
+        applicationRepository.delete(app);
+        if (recruit != null) {
+            recruit.decreaseRecruitCount();
+        }
     }
 
     @Override
@@ -97,11 +102,24 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .map(app -> {
                     Recruit recruit = app.getRecruit();
 
+                    if (recruit == null) {
+                        return new MyApplicationResDto(
+                                null,
+                                "삭제된 공고입니다",
+                                null,
+                                List.of(),
+                                "삭제됨",
+                                app.getPriceOffer(),
+                                app.getPriceReason(),
+                                app.getAppliedAt()
+                        );
+                    }
+
                     List<CategoryDto> categories = recruit.getCategories().stream()
-                            .map(mapping -> new CategoryDto(
-                                    mapping.getFirstCategory().getId(),
-                                    mapping.getSecondCategory().getId(),
-                                    mapping.getThirdCategory().getId()
+                            .map(m -> new CategoryDto(
+                                    m.getFirstCategory().getId(),
+                                    m.getSecondCategory() != null ? m.getSecondCategory().getId() : null,
+                                    m.getThirdCategory()  != null ? m.getThirdCategory().getId()  : null
                             ))
                             .toList();
 
@@ -148,7 +166,12 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         Application app = applicationRepository.findById(applicationId)
                 .orElseThrow(NotFoundApplicationException::new);
+
         Recruit recruit = app.getRecruit();
+        if (recruit == null) {
+            throw new NotFoundRecruitException();
+        }
+
         verifyOwner(recruit, me);
 
         if (approve) app.accept();

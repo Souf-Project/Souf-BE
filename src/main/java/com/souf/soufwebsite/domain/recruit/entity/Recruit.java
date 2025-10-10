@@ -6,7 +6,6 @@ import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.recruit.dto.req.RecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.exception.NotBlankPriceException;
 import com.souf.soufwebsite.domain.recruit.exception.NotValidPricePolicyException;
-import com.souf.soufwebsite.domain.socialAccount.exception.NotValidProviderException;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import com.souf.soufwebsite.global.common.ListToJsonConverter;
 import jakarta.persistence.*;
@@ -62,9 +61,12 @@ public class Recruit extends BaseEntity {
     @Column(nullable = false)
     private PricePolicy pricePolicy;
 
-    @Column(columnDefinition = "json")
+    @Column
     @Convert(converter = ListToJsonConverter.class)
-    private List<String> preferentialTreatment;
+    private List<String> preferentialTreatmentTags;
+
+    @Column
+    private String preferentialTreatment;
 
     @Column(nullable = false)
     private Long recruitCount;
@@ -103,6 +105,7 @@ public class Recruit extends BaseEntity {
                 .deadline(reqDto.deadline())
                 .price(reqDto.price())
                 .pricePolicy(pricePolicy)
+                .preferentialTreatmentTags(reqDto.preferentialTreatmentTags())
                 .preferentialTreatment(reqDto.preferentialTreatment())
                 .recruitCount(0L)
                 .viewCount(0L)
@@ -121,6 +124,7 @@ public class Recruit extends BaseEntity {
         this.deadline = reqDto.deadline();
         this.price = reqDto.price();
         this.workType = reqDto.workType();
+        this.preferentialTreatmentTags = reqDto.preferentialTreatmentTags();
         this.preferentialTreatment = reqDto.preferentialTreatment();
     }
 
