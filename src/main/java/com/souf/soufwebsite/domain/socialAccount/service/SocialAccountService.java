@@ -7,9 +7,9 @@ import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.exception.NotAgreedPersonalInfoException;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
-import com.souf.soufwebsite.domain.opensearch.EntityType;
-import com.souf.soufwebsite.domain.opensearch.OperationType;
-import com.souf.soufwebsite.domain.opensearch.event.IndexEventPublisherHelper;
+//import com.souf.soufwebsite.domain.opensearch.EntityType;
+//import com.souf.soufwebsite.domain.opensearch.OperationType;
+//import com.souf.soufwebsite.domain.opensearch.event.IndexEventPublisherHelper;
 import com.souf.soufwebsite.domain.socialAccount.SocialProvider;
 import com.souf.soufwebsite.domain.socialAccount.client.SocialApiClient;
 import com.souf.soufwebsite.domain.socialAccount.dto.*;
@@ -42,7 +42,7 @@ public class SocialAccountService {
     private final SocialAccountRepository socialAccountRepository;
     private final CategoryService categoryService;
     private final JwtService jwtService;
-    private final IndexEventPublisherHelper indexEventPublisherHelper;
+//    private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final SlackService slackService;
 
 
@@ -57,7 +57,7 @@ public class SocialAccountService {
             SocialAccountRepository socialAccountRepository,
             CategoryService categoryService,
             JwtService jwtService,
-            IndexEventPublisherHelper indexEventPublisherHelper,
+//            IndexEventPublisherHelper indexEventPublisherHelper,
             SlackService slackService,
             RedisTemplate<String, String> redisTemplate,
             PasswordEncoder passwordEncoder
@@ -66,7 +66,7 @@ public class SocialAccountService {
         this.socialAccountRepository = socialAccountRepository;
         this.categoryService = categoryService;
         this.jwtService = jwtService;
-        this.indexEventPublisherHelper = indexEventPublisherHelper;
+//        this.indexEventPublisherHelper = indexEventPublisherHelper;
         this.slackService = slackService;
         this.redisTemplate = redisTemplate;
         this.passwordEncoder = passwordEncoder;
@@ -188,12 +188,12 @@ public class SocialAccountService {
         jwtService.sendAccessAndRefreshToken(response, token.accessToken(),
                 redisTemplate.opsForValue().get("refresh:" + member.getEmail()));
 
-        indexEventPublisherHelper.publishIndexEvent(
-                EntityType.MEMBER,
-                OperationType.CREATE,
-                "Member",
-                member
-        );
+//        indexEventPublisherHelper.publishIndexEvent(
+//                EntityType.MEMBER,
+//                OperationType.CREATE,
+//                "Member",
+//                member
+//        );
 
         redisTemplate.delete(key);
         slackService.sendSlackMessage(member.getNickname() + " 님이 회원가입했습니다.", "signup");
