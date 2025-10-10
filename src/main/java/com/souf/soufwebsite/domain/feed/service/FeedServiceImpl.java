@@ -21,9 +21,9 @@ import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
-import com.souf.soufwebsite.domain.opensearch.EntityType;
-import com.souf.soufwebsite.domain.opensearch.OperationType;
-import com.souf.soufwebsite.domain.opensearch.event.IndexEventPublisherHelper;
+//import com.souf.soufwebsite.domain.opensearch.EntityType;
+//import com.souf.soufwebsite.domain.opensearch.OperationType;
+//import com.souf.soufwebsite.domain.opensearch.event.IndexEventPublisherHelper;
 import com.souf.soufwebsite.global.common.PostType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
@@ -57,7 +57,7 @@ public class FeedServiceImpl implements FeedService {
     private final FileService fileService;
     private final ViewCountService viewCountService;
     private final FeedConverter feedConverter;
-    private final IndexEventPublisherHelper indexEventPublisherHelper;
+//    private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final MediaCleanupPublisher mediaCleanupPublisher;
     private final SlackService slackService;
     private final LikedFeedRepository likedFeedRepository;
@@ -80,12 +80,12 @@ public class FeedServiceImpl implements FeedService {
         injectCategories(reqDto, feed);
         feed = feedRepository.save(feed);
 
-        indexEventPublisherHelper.publishIndexEvent(
-                EntityType.FEED,
-                OperationType.CREATE,
-                "Feed",
-                feed
-        );
+//        indexEventPublisherHelper.publishIndexEvent(
+//                EntityType.FEED,
+//                OperationType.CREATE,
+//                "Feed",
+//                feed
+//        );
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
         VideoDto videoDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.FEED);
@@ -160,12 +160,12 @@ public class FeedServiceImpl implements FeedService {
         feed.clearCategories();
         injectCategories(reqDto, feed);
 
-        indexEventPublisherHelper.publishIndexEvent(
-                EntityType.FEED,
-                OperationType.CREATE,
-                "Feed",
-                feed
-        );
+//        indexEventPublisherHelper.publishIndexEvent(
+//                EntityType.FEED,
+//                OperationType.CREATE,
+//                "Feed",
+//                feed
+//        );
 
         return new FeedResDto(feed.getId(), presignedUrlResDtos, videoDto);
     }
@@ -181,14 +181,14 @@ public class FeedServiceImpl implements FeedService {
 
         feedRepository.delete(feed);
 
+//        indexEventPublisherHelper.publishIndexEvent(
+//                EntityType.FEED,
+//                OperationType.DELETE,
+//                "Feed",
+//                feed.getId()
+//        );
         mediaCleanupPublisher.publish(PostType.FEED, feedId);
 
-        indexEventPublisherHelper.publishIndexEvent(
-                EntityType.FEED,
-                OperationType.DELETE,
-                "Feed",
-                feed.getId()
-        );
     }
 
 

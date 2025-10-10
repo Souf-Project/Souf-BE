@@ -16,9 +16,9 @@ import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberIdReqDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
-import com.souf.soufwebsite.domain.opensearch.EntityType;
-import com.souf.soufwebsite.domain.opensearch.OperationType;
-import com.souf.soufwebsite.domain.opensearch.event.IndexEventPublisherHelper;
+//import com.souf.soufwebsite.domain.opensearch.EntityType;
+//import com.souf.soufwebsite.domain.opensearch.OperationType;
+//import com.souf.soufwebsite.domain.opensearch.event.IndexEventPublisherHelper;
 import com.souf.soufwebsite.domain.recruit.dto.req.MyRecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.req.RecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.req.RecruitSearchReqDto;
@@ -65,8 +65,8 @@ public class RecruitServiceImpl implements RecruitService {
     private final CityDetailRepository cityDetailRepository;
     private final CategoryService categoryService;
     private final RedisUtil redisUtil;
-    private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final MediaCleanupPublisher mediaCleanupPublisher;
+//    private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final SlackService slackService;
     private final ViewCountService viewCountService;
 
@@ -88,12 +88,12 @@ public class RecruitServiceImpl implements RecruitService {
         injectCategories(reqDto, recruit);
         recruit = recruitRepository.save(recruit);
 
-        indexEventPublisherHelper.publishIndexEvent(
-                EntityType.RECRUIT,
-                OperationType.CREATE,
-                "Recruit",
-                recruit
-        );
+//        indexEventPublisherHelper.publishIndexEvent(
+//                EntityType.RECRUIT,
+//                OperationType.CREATE,
+//                "Recruit",
+//                recruit
+//        );
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("recruit", reqDto.originalFileNames());
 
@@ -181,12 +181,12 @@ public class RecruitServiceImpl implements RecruitService {
         recruit.clearCategories();
         injectCategories(reqDto, recruit);
 
-        indexEventPublisherHelper.publishIndexEvent(
-                EntityType.RECRUIT,
-                OperationType.UPDATE,
-                "Recruit",
-                recruit
-        );
+//        indexEventPublisherHelper.publishIndexEvent(
+//                EntityType.RECRUIT,
+//                OperationType.UPDATE,
+//                "Recruit",
+//                recruit
+//        );
 
         return new RecruitCreateResDto(recruit.getId(), presignedUrlResDtos);
     }
@@ -203,14 +203,14 @@ public class RecruitServiceImpl implements RecruitService {
 
         recruitRepository.delete(recruit);
 
-        mediaCleanupPublisher.publish(PostType.RECRUIT, recruitId);
+//        indexEventPublisherHelper.publishIndexEvent(
+//                EntityType.RECRUIT,
+//                OperationType.DELETE,
+//                "Recruit",
+//                recruit.getId()
+//        );
 
-        indexEventPublisherHelper.publishIndexEvent(
-                EntityType.RECRUIT,
-                OperationType.DELETE,
-                "Recruit",
-                recruit.getId()
-        );
+        mediaCleanupPublisher.publish(PostType.RECRUIT, recruitId);
     }
 
     @Override
