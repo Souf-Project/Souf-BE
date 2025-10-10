@@ -61,7 +61,7 @@ public class Recruit extends BaseEntity {
     @Column(nullable = false)
     private PricePolicy pricePolicy;
 
-    @Column(columnDefinition = "json")
+    @Column
     @Convert(converter = ListToJsonConverter.class)
     private List<String> preferentialTreatmentTags;
 
