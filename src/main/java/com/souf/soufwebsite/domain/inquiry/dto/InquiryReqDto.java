@@ -9,16 +9,16 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 
 public record InquiryReqDto(
-        @Schema(name = "문의 제목", description = "문의 제목을 적어주세요")
+        @Schema(description = "문의 제목", example = "문의 제목을 적어주세요")
         @NotBlank(message = "문의 제목은 필수입니다.")
         String title,
 
-        @Schema(name = "문의 내용", description = "문의 내용을 적어주세요")
+        @Schema(description = "문의 내용", example = "문의 내용을 적어주세요")
         @NotBlank(message = "문의 내용은 20자 이상이 필수입니다.")
         @Size(min = 20)
         String content,
 
-        @Schema(name = "문의 유형", description = "문의 제목을 적어주세요")
+        @Schema(description = "문의 유형", example = "문의 제목을 적어주세요")
         @NotNull(message = "문의 유형은 필수입니다.")
         InquiryType type,
 
