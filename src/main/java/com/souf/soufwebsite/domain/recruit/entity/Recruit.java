@@ -36,6 +36,12 @@ public class Recruit extends BaseEntity {
     @Column(nullable = false, length = 3000)
     private String content;
 
+    @Column
+    private String hostName;
+
+    @Column
+    private String introduction;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "city_id", nullable = false)
     private City city;
@@ -99,6 +105,8 @@ public class Recruit extends BaseEntity {
         return Recruit.builder()
                 .title(reqDto.title())
                 .content(reqDto.content())
+                .hostName(reqDto.writerName())
+                .introduction(reqDto.introduction())
                 .city(city)
                 .cityDetail(cityDetail)
                 .startDate(reqDto.startDate())
@@ -118,6 +126,8 @@ public class Recruit extends BaseEntity {
     public void updateRecruit(RecruitReqDto reqDto, City city, CityDetail cityDetail) {
         this.title = reqDto.title();
         this.content = reqDto.content();
+        this.hostName = reqDto.writerName();
+        this.introduction = reqDto.introduction();
         this.city = city;
         this.cityDetail = cityDetail;
         this.startDate = reqDto.startDate();
