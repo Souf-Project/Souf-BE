@@ -22,10 +22,11 @@ public record InquiryReqDto(
         @NotNull(message = "문의 유형은 필수입니다.")
         InquiryType type,
 
-        @Schema(description = "기존에 존재하는 파일 URL", example = "[\"feed/original/...\", \"feed/original/..\"]")
+        @Schema(description = "기존에 존재하는 파일 URL", example = "[\"https://s3.../img1.jpg\", \"https://s3.../img2.jpg\"]")
         List<String> existingImageUrls,
 
-        @Schema(description = "원본 파일 이름", example = "[\"fileName.jpg\", \"dog.jpg\"..]")
+        @Schema(description = "원본 파일 이름 리스트, 없으면 [] 이렇게 빈 리스트로 반환해주세요.", example = "[\"fileName.jpg\", \"dog.jpg\"]")
+        @NotNull(message = "첨부할 파일이 없으면 빈 리스트를 주세요")
         List<String> originalFileNames
 ) {
 }
