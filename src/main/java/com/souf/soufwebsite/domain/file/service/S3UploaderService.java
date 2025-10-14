@@ -108,7 +108,11 @@ public class S3UploaderService {
 
     public PresignedUrlResDto generatePresignedUploadUrl(String prefix, String originalFilename) {
         String ext = extractExtension(originalFilename);
-        String fileName = prefix + "/original/" + UUID.randomUUID() + (ext.isEmpty() ? "" : "." + ext);
+        String s = ext.isEmpty() ? "" : "." + ext;
+
+        String fileName = prefix + "/original/" + UUID.randomUUID() + s;
+        if(prefix.equals("logo"))
+            fileName = "recruit/logo/" + UUID.randomUUID() + s;
 
         String mediaType = CONTENT_TYPE_MAP.getOrDefault(ext, "application/octet-stream"); // 기본값 설정
 
@@ -128,29 +132,11 @@ public class S3UploaderService {
         return new PresignedUrlResDto(presignedUrl.toString(), fileName, mediaType);
     }
 
-    public void deleteFromS3(String fileUrl) {
-        String key = extractKeyFromUrl(fileUrl);
-
-        DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
-                .bucket(bucketName)
-                .key(key)
-                .build();
-
-        s3Client.deleteObject(deleteRequest);
-    }
-
     private String extractExtension(String filename) {
         if (filename == null) return "";
         int idx = filename.lastIndexOf('.');
         if (idx == -1) return "";
         return filename.substring(idx + 1).toLowerCase();
-    }
-
-    private String extractKeyFromUrl(String url) {
-        // 예시: https://s3.amazonaws.com/your-bucket/uploads/something.jpg
-        int idx = url.indexOf("uploads/");
-        if (idx == -1) throw new IllegalArgumentException("Invalid URL format: " + url);
-        return url.substring(idx);
     }
 
     private static final Map<String, String> CONTENT_TYPE_MAP = Map.ofEntries(

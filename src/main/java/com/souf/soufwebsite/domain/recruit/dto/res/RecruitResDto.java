@@ -19,37 +19,45 @@ public record RecruitResDto(
         Long recruitId,
         String title,
         String content,
+        String hostName,
+        String introduction,
         String cityName,
         String cityDetailName,
         String startDate,
         String deadline,
         String price,
         Long totalViewCount,
+        List<String> preferentialTreatmentTags,
         String preferentialTreatment,
         String nickname,
         boolean recruitable,
         WorkType workType,
         List<CategoryDto> categoryDtoList,
-        List<MediaResDto> mediaResDtos
+        List<MediaResDto> mediaResDtos,
+        String logoUrl
 ) {
-    public static RecruitResDto from(Long memberId, Recruit recruit, Long totalViewCount, String nickname, List<Media> mediaList) {
+    public static RecruitResDto from(Long memberId, Recruit recruit, Long totalViewCount, String nickname, List<Media> mediaList, String logoUrl) {
         return new RecruitResDto(
                 memberId,
                 recruit.getId(),
                 recruit.getTitle(),
                 recruit.getContent(),
+                recruit.getHostName(),
+                recruit.getIntroduction(),
                 recruit.getCity().getName(),
                 recruit.getCityDetail() != null ? recruit.getCityDetail().getName() : null,
                 convertToDateTime(recruit.getStartDate()),
                 convertToDateTime(recruit.getDeadline()),
                 recruit.getPrice(),
                 totalViewCount,
+                recruit.getPreferentialTreatmentTags(),
                 recruit.getPreferentialTreatment(),
                 nickname,
                 recruit.isRecruitable(),
                 recruit.getWorkType(),
                 convertToCategoryDto(recruit.getCategories()),
-                convertToMediaResDto(mediaList)
+                convertToMediaResDto(mediaList),
+                logoUrl
         );
     }
 

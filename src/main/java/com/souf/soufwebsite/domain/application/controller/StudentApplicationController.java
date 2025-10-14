@@ -31,11 +31,12 @@ public class StudentApplicationController implements StudentApplicationApiSpecif
         return new SuccessResponse<>(APPLY_SUCCESS.getMessage());
     }
 
-    @DeleteMapping("/{recruitId}/apply")
+    @DeleteMapping("/{applicationId}")
     public SuccessResponse<?> deleteApplication(
             @CurrentEmail String email,
-            @PathVariable Long recruitId) {
-        applicationService.deleteApplication(email, recruitId);
+            @PathVariable Long applicationId
+    ) {
+        applicationService.deleteApplicationById(email, applicationId);
         return new SuccessResponse<>(APPLY_CANCELED.getMessage());
     }
 

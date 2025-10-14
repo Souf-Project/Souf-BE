@@ -1,6 +1,9 @@
 package com.souf.soufwebsite.domain.inquiry.service;
 
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.service.FileService;
+import com.souf.soufwebsite.domain.inquiry.dto.InquiryCreateResDto;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryReqDto;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryResDto;
 import com.souf.soufwebsite.domain.inquiry.entity.Inquiry;
@@ -10,6 +13,7 @@ import com.souf.soufwebsite.domain.inquiry.repository.InquiryRepository;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.global.common.PostType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,13 +36,24 @@ public class InquiryServiceImpl implements InquiryService {
     private final FileService fileService;
 
     @Override
-    public void createInquiry(String email, InquiryReqDto inquiryReqDto) {
+    public InquiryCreateResDto createInquiry(String email, InquiryReqDto inquiryReqDto) {
         Member currentMember = findIfMemberExists(email);
 
         Inquiry inquiry = Inquiry.of(inquiryReqDto, currentMember);
-        inquiryRepository.save(inquiry);
+        inquiry = inquiryRepository.save(inquiry);
 
-        fileService.generatePresignedUrl("inquiry", inquiryReqDto.originalFileNames());
+        List<PresignedUrlResDto> inquiryPresignedUrls =
+                fileService.generatePresignedUrl("inquiry", inquiryReqDto.originalFileNames());
+
+        return new InquiryCreateResDto(inquiry.getId(), inquiryPresignedUrls);
+    }
+
+    @Override
+    public void uploadInquiryMedia(String email, MediaReqDto mediaReqDto) {
+        findIfMemberExists(email);
+
+        Inquiry inquiry = findIfInquiryExists(mediaReqDto.postId());
+        fileService.uploadMetadata(mediaReqDto, PostType.INQUIRY, inquiry.getId());
     }
 
     @Override
@@ -59,6 +74,7 @@ public class InquiryServiceImpl implements InquiryService {
         inquiryRepository.delete(inquiry);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Page<InquiryResDto> getMyInquiry(String email, Pageable pageable) {
         Member currentMember = findIfMemberExists(email);

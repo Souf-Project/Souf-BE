@@ -4,6 +4,7 @@ import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.service.FileService;
+import com.souf.soufwebsite.domain.file.service.MediaCleanupPublisher;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
@@ -39,6 +40,8 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final FileService fileService;
     private final ViewCountService viewCountService;
+
+    private final MediaCleanupPublisher mediaCleanupPublisher;
 
 
     private Member getCurrentMember() {
@@ -113,6 +116,7 @@ public class ReviewServiceImpl implements ReviewService {
         return new ReviewCreatedResDto(review.getId(), presignedUrlResDtos);
     }
 
+    @Transactional
     @Override
     public void deleteReview(String email, Long reviewId) {
         Member currentMember = findIfMemberExists(email);
@@ -120,6 +124,8 @@ public class ReviewServiceImpl implements ReviewService {
         verifyIfReviewIsMine(review, currentMember);
 
         reviewRepository.delete(review);
+
+        mediaCleanupPublisher.publish(PostType.REVIEW, reviewId);
     }
 
     private void verifyIfReviewIsMine(Review review, Member member) {

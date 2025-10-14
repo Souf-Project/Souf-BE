@@ -9,15 +9,15 @@ import com.souf.soufwebsite.domain.city.repository.CityDetailRepository;
 import com.souf.soufwebsite.domain.city.repository.CityRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
+import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.service.FileService;
+import com.souf.soufwebsite.domain.file.service.MediaCleanupPublisher;
+import com.souf.soufwebsite.domain.file.service.S3UploaderService;
 import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberIdReqDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
-import com.souf.soufwebsite.domain.opensearch.EntityType;
-import com.souf.soufwebsite.domain.opensearch.OperationType;
-import com.souf.soufwebsite.domain.opensearch.event.IndexEventPublisherHelper;
 import com.souf.soufwebsite.domain.recruit.dto.req.MyRecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.req.RecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.req.RecruitSearchReqDto;
@@ -58,13 +58,16 @@ import java.util.stream.Collectors;
 public class RecruitServiceImpl implements RecruitService {
 
     private final FileService fileService;
+    private final S3UploaderService s3UploaderService;
+
     private final RecruitRepository recruitRepository;
     private final MemberRepository memberRepository;
     private final CityRepository cityRepository;
     private final CityDetailRepository cityDetailRepository;
     private final CategoryService categoryService;
     private final RedisUtil redisUtil;
-    private final IndexEventPublisherHelper indexEventPublisherHelper;
+    private final MediaCleanupPublisher mediaCleanupPublisher;
+//    private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final SlackService slackService;
     private final ViewCountService viewCountService;
 
@@ -86,20 +89,28 @@ public class RecruitServiceImpl implements RecruitService {
         injectCategories(reqDto, recruit);
         recruit = recruitRepository.save(recruit);
 
-        indexEventPublisherHelper.publishIndexEvent(
-                EntityType.RECRUIT,
-                OperationType.CREATE,
-                "Recruit",
-                recruit
-        );
+//        indexEventPublisherHelper.publishIndexEvent(
+//                EntityType.RECRUIT,
+//                OperationType.CREATE,
+//                "Recruit",
+//                recruit
+//        );
+
+        PresignedUrlResDto logoResDto = null;
+        if (reqDto.logoOriginalFileName() != null) {
+            logoResDto = s3UploaderService.generatePresignedUploadUrl("logo", reqDto.logoOriginalFileName());
+        }
+
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("recruit", reqDto.originalFileNames());
+        VideoDto videoDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.RECRUIT);
 
         String slackMsg = member.getNickname() + " 님이 공고문을 작성하였습니다.\n" +
                 "https://www.souf.co.kr/recruitDetails/" + recruit.getId().toString() + "\n" +
                 member.getNickname() + " 님을 다같이 환영해보아요:)";
         slackService.sendSlackMessage(slackMsg, "post");
-        return new RecruitCreateResDto(recruit.getId(), presignedUrlResDtos);
+
+        return new RecruitCreateResDto(recruit.getId(), presignedUrlResDtos, logoResDto, videoDto);
     }
 
     @Override
@@ -150,8 +161,9 @@ public class RecruitServiceImpl implements RecruitService {
         long totalViewCount = viewCountService.updateTotalViewCount(currentMember, PostType.RECRUIT, recruit.getId(), recruit.getViewCount(), ip, userAgent);
 
         List<Media> mediaList = fileService.getMediaList(PostType.RECRUIT, recruitId);
+        String logoUrl = fileService.getMediaUrl(PostType.LOGO, recruit.getId());
 
-        return RecruitResDto.from(recruitMember.getId(), recruit, totalViewCount, recruitMember.getNickname(), mediaList);
+        return RecruitResDto.from(recruitMember.getId(), recruit, totalViewCount, recruitMember.getNickname(), mediaList, logoUrl);
     }
 
     @Transactional(readOnly = true)
@@ -174,22 +186,30 @@ public class RecruitServiceImpl implements RecruitService {
 
         updateRemainingImages(reqDto, recruit);
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("recruit", reqDto.originalFileNames());
+        VideoDto videoDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.RECRUIT);
+
+        PresignedUrlResDto logoResDto = null;
+        if (reqDto.logoOriginalFileName() != null) {
+            mediaCleanupPublisher.publish(PostType.LOGO, recruitId);
+            logoResDto = s3UploaderService.generatePresignedUploadUrl("logo", reqDto.logoOriginalFileName());
+        }
 
         recruit.updateRecruit(reqDto, city, cityDetail);
         recruit.clearCategories();
         injectCategories(reqDto, recruit);
 
-        indexEventPublisherHelper.publishIndexEvent(
-                EntityType.RECRUIT,
-                OperationType.UPDATE,
-                "Recruit",
-                recruit
-        );
+//        indexEventPublisherHelper.publishIndexEvent(
+//                EntityType.RECRUIT,
+//                OperationType.UPDATE,
+//                "Recruit",
+//                recruit
+//        );
 
-        return new RecruitCreateResDto(recruit.getId(), presignedUrlResDtos);
+        return new RecruitCreateResDto(recruit.getId(), presignedUrlResDtos, logoResDto, videoDto);
     }
 
     @Override
+    @Transactional
     public void deleteRecruit(String email, Long recruitId) {
         Member member = findIfEmailExists(email);
         Recruit recruit = findIfRecruitExist(recruitId);
@@ -200,12 +220,15 @@ public class RecruitServiceImpl implements RecruitService {
 
         recruitRepository.delete(recruit);
 
-        indexEventPublisherHelper.publishIndexEvent(
-                EntityType.RECRUIT,
-                OperationType.DELETE,
-                "Recruit",
-                recruit.getId()
-        );
+//        indexEventPublisherHelper.publishIndexEvent(
+//                EntityType.RECRUIT,
+//                OperationType.DELETE,
+//                "Recruit",
+//                recruit.getId()
+//        );
+
+        mediaCleanupPublisher.publish(PostType.RECRUIT, recruitId);
+        mediaCleanupPublisher.publish(PostType.LOGO, recruitId);
     }
 
     @Override
