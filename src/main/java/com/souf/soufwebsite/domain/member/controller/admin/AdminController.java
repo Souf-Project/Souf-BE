@@ -72,9 +72,10 @@ public class AdminController implements AdminApiSpecification{
     public SuccessResponse<Page<InquiryResDto>> getInquiries(
             @RequestParam(name = "inquiryType", required = false)InquiryType inquiryType,
             @RequestParam(name = "inquiryStatus", required = false) InquiryStatus inquiryStatus,
+            @RequestParam(name = "search", required = false) String search,
             @PageableDefault Pageable pageable
     ) {
-        Page<InquiryResDto> inquiries = adminService.getInquiries(inquiryType, inquiryStatus, pageable);
+        Page<InquiryResDto> inquiries = adminService.getInquiries(search, inquiryType, inquiryStatus, pageable);
 
         return new SuccessResponse<>(inquiries, REPORT_GET_SUCCESS.getMessage());
     }

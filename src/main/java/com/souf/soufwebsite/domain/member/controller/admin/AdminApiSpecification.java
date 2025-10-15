@@ -56,8 +56,9 @@ public interface AdminApiSpecification {
     @Operation(summary = "문의 관리", description = "문의 리스트를 조회합니다.")
     @GetMapping("/inquiry")
     SuccessResponse<Page<InquiryResDto>> getInquiries(
-            @RequestParam(name = "inquiryType", required = false) InquiryType inquiryType,
+            @RequestParam(name = "inquiryType", required = false)InquiryType inquiryType,
             @RequestParam(name = "inquiryStatus", required = false) InquiryStatus inquiryStatus,
+            @RequestParam(name = "search", required = false) String search,
             @PageableDefault Pageable pageable
     );
 

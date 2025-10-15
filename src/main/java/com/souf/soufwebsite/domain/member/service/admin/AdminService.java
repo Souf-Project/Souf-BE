@@ -22,7 +22,7 @@ public interface AdminService {
 
     Page<AdminReportResDto> getReports(PostType postType, LocalDate startDate, LocalDate endDate, String nickname, Pageable pageable);
 
-    Page<InquiryResDto> getInquiries(InquiryType inquiryType, InquiryStatus status, Pageable pageable);
+    Page<InquiryResDto> getInquiries(String search, InquiryType inquiryType, InquiryStatus status, Pageable pageable);
 
     void updateReportStatus(Long reportId, ReportStatus reportStatus);
 }

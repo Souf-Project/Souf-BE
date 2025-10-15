@@ -71,10 +71,10 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public Page<InquiryResDto> getInquiries(InquiryType inquiryType, InquiryStatus status, Pageable pageable) {
+    public Page<InquiryResDto> getInquiries(String search, InquiryType inquiryType, InquiryStatus status, Pageable pageable) {
         log.info("inquiryType: {}, pageable: {}", inquiryType, pageable);
 
-        return inquiryRepository.getInquiryListInAdmin(inquiryType, status, pageable);
+        return inquiryRepository.getInquiryListInAdmin(search, inquiryType, status, pageable);
     }
 
     @Transactional
