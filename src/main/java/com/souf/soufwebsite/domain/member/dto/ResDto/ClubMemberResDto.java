@@ -1,44 +1,58 @@
 package com.souf.soufwebsite.domain.member.dto.ResDto;
 
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
 import com.souf.soufwebsite.domain.member.entity.MemberClubMapping;
+import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Builder
-@Schema(description = "동아리 회원 목록 응답 DTO")
+@Schema(description = "동아리 회원 목록 응답 DTO (Member 리스트용 필드 + joinedAt 포함)")
 public record ClubMemberResDto(
-
-        @Schema(description = "학생 ID", example = "12")
-        Long studentId,
-
-        @Schema(description = "학생 닉네임", example = "서정조")
+        Long memberId,
+        Double temperature,
+        String profileImageUrl,
         String nickname,
-
-        @Schema(description = "학생 자기소개", example = "Spring Boot 백엔드 개발자 지망생입니다.")
         String intro,
-
-        @Schema(description = "학생 개인 URL (포트폴리오, SNS 등)", example = "https://example.com/me")
-        String personalUrl,
-
-        @Schema(description = "가입 일자", example = "2025-10-10T15:30:00")
-        LocalDateTime joinedAt
+        List<CategoryDto> categoryDtoList,
+        List<PopularFeedDto> popularFeeds
 ) {
+    public record PopularFeedDto(
+            String imageUrl
+    ) {}
 
-    /**
-     * Entity → DTO 변환
-     */
-    public static ClubMemberResDto from(MemberClubMapping membership) {
-        Member student = membership.getStudent();
+    public static ClubMemberResDto from(
+            MemberClubMapping memberClubMapping,
+            String profileImageUrl,
+            List<PopularFeedDto> popularFeeds,
+            List<MemberCategoryMapping> categories
+    ) {
+        Member student = memberClubMapping.getStudent();
 
         return ClubMemberResDto.builder()
-                .studentId(student.getId())
+                .memberId(student.getId())
+                .temperature(student.getTemperature())
+                .profileImageUrl(profileImageUrl)
                 .nickname(student.getNickname())
                 .intro(student.getIntro())
-                .personalUrl(student.getPersonalUrl())
-                .joinedAt(membership.getJoinedAt())
+                .categoryDtoList(convertToCategoryDto(categories))
+                .popularFeeds(popularFeeds != null ? popularFeeds : List.of())
                 .build();
+    }
+
+    private static List<CategoryDto> convertToCategoryDto(List<MemberCategoryMapping> mappings) {
+        if (mappings == null) return new ArrayList<>();
+        return mappings.stream()
+                .map(m -> new CategoryDto(
+                        m.getFirstCategory().getId(),
+                        m.getSecondCategory() != null ? m.getSecondCategory().getId() : null,
+                        m.getThirdCategory()  != null ? m.getThirdCategory().getId()  : null
+                ))
+                .collect(Collectors.toList());
     }
 }

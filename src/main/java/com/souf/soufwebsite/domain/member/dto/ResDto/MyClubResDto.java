@@ -1,7 +1,5 @@
 package com.souf.soufwebsite.domain.member.dto.ResDto;
 
-package com.souf.soufwebsite.domain.membership.dto.res;
-
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.MemberClubMapping;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,9 +27,6 @@ public record MyClubResDto(
         LocalDateTime joinedAt
 ) {
 
-    /**
-     * Entity → DTO 변환
-     */
     public static MyClubResDto from(MemberClubMapping membership) {
         Member club = membership.getClub();
 
