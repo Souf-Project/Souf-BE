@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Where(clause = "is_deleted = false")
-public class MemberClubMembership extends BaseEntity {
+public class MemberClubMapping extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "membership_id")
@@ -36,13 +36,13 @@ public class MemberClubMembership extends BaseEntity {
     private boolean isDeleted = false;
 
     // 팩토리/검증
-    public static MemberClubMembership create(Member student, Member club, String roleInClub) {
+    public static MemberClubMapping create(Member student, Member club, String roleInClub) {
         if (student == null || student.getRole() != RoleType.STUDENT)
             throw new IllegalArgumentException("학생(Member, role=STUDENT)만 가입할 수 있습니다.");
         if (club == null || club.getRole() != RoleType.CLUB)
             throw new IllegalArgumentException("동아리(Member, role=CLUB)만 수용할 수 있습니다.");
 
-        MemberClubMembership m = new MemberClubMembership();
+        MemberClubMapping m = new MemberClubMapping();
         m.student = student;
         m.club = club;
         m.joinedAt = LocalDateTime.now();

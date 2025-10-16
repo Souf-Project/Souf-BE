@@ -85,11 +85,11 @@ public class Member extends BaseEntity {
     // === 다대다(자기참조) 연결 ===
     @OneToMany(mappedBy = "student", cascade = CascadeType.PERSIST)
     @Where(clause = "is_deleted = false")
-    private List<MemberClubMembership> membershipsAsStudent = new ArrayList<>();
+    private List<MemberClubMapping> membershipsAsStudent = new ArrayList<>();
 
     @OneToMany(mappedBy = "club", cascade = CascadeType.PERSIST)
     @Where(clause = "is_deleted = false")
-    private List<MemberClubMembership> membershipsAsClub = new ArrayList<>();
+    private List<MemberClubMapping> membershipsAsClub = new ArrayList<>();
 
 
     @Builder
@@ -156,7 +156,7 @@ public class Member extends BaseEntity {
     }
 
     // ====== 동아리 가입/탈퇴 편의 메서드 ======
-    public MemberClubMembership joinClub(Member club, String roleInClub) {
+    public MemberClubMapping joinClub(Member club, String roleInClub) {
         if (this.role != RoleType.STUDENT) throw new IllegalStateException("학생만 동아리에 가입할 수 있습니다.");
         if (club == null || club.role != RoleType.CLUB) throw new IllegalArgumentException("유효한 동아리 계정이 아닙니다.");
 
@@ -165,7 +165,7 @@ public class Member extends BaseEntity {
                 .anyMatch(m -> m.getClub().getId().equals(club.getId()));
         if (exists) return null; // 이미 가입됨
 
-        MemberClubMembership m = MemberClubMembership.create(this, club, roleInClub);
+        MemberClubMapping m = MemberClubMapping.create(this, club, roleInClub);
         membershipsAsStudent.add(m);
         club.membershipsAsClub.add(m);
         return m;
@@ -175,7 +175,7 @@ public class Member extends BaseEntity {
         membershipsAsStudent.stream()
                 .filter(m -> m.getClub().equals(club))
                 .findFirst()
-                .ifPresent(MemberClubMembership::softDelete);
+                .ifPresent(MemberClubMapping::softDelete);
     }
 
     public void softDelete() { // SHA-256 같은 방식
@@ -185,7 +185,7 @@ public class Member extends BaseEntity {
         this.personalUrl = null;
         this.isDeleted = true;
 
-        new ArrayList<>(membershipsAsStudent).forEach(MemberClubMembership::softDelete);
-        new ArrayList<>(membershipsAsClub).forEach(MemberClubMembership::softDelete);
+        new ArrayList<>(membershipsAsStudent).forEach(MemberClubMapping::softDelete);
+        new ArrayList<>(membershipsAsClub).forEach(MemberClubMapping::softDelete);
     }
 }
