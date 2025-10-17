@@ -17,8 +17,7 @@ public interface MemberClubApiSpecification {
 
     SuccessResponse<?> joinClub(
             @CurrentEmail String email,
-            @PathVariable @NotNull Long clubId,
-            @RequestParam(required = false, defaultValue = "MEMBER") String roleInClub
+            @PathVariable @NotNull Long clubId
     );
 
     SuccessResponse<?> leaveClub(

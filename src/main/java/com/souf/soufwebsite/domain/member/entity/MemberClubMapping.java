@@ -19,39 +19,60 @@ public class MemberClubMapping extends BaseEntity {
     @Column(name = "membership_id")
     private Long id;
 
-    // 학생
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "student_id", nullable = false)
     private Member student;
 
-    // 동아리
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "club_id", nullable = false)
     private Member club;
 
-    @Column(name = "joined_at", nullable = false)
+    @Column(name = "joined_at")                 // 승인 시점
     private LocalDateTime joinedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 16)
+    private MembershipStatus status;            // PENDING/APPROVED/REJECTED
+
+    @Column(name = "requested_at", nullable = false)
+    private LocalDateTime requestedAt;          // 신청 시각
+
+    @Column(name = "decided_at")
+    private LocalDateTime decidedAt;            // 승인/거절 시각
 
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
 
-    // 팩토리/검증
-    public static MemberClubMapping create(Member student, Member club, String roleInClub) {
+    // 신청 생성: 상태 = PENDING
+    public static MemberClubMapping create(Member student, Member club) {
         if (student == null || student.getRole() != RoleType.STUDENT)
-            throw new IllegalArgumentException("학생(Member, role=STUDENT)만 가입할 수 있습니다.");
+            throw new IllegalArgumentException("학생(Member, role=STUDENT)만 가입 신청 가능합니다.");
         if (club == null || club.getRole() != RoleType.CLUB)
-            throw new IllegalArgumentException("동아리(Member, role=CLUB)만 수용할 수 있습니다.");
+            throw new IllegalArgumentException("동아리(Member, role=CLUB)만 대상입니다.");
 
         MemberClubMapping m = new MemberClubMapping();
         m.student = student;
         m.club = club;
-        m.joinedAt = LocalDateTime.now();
+        m.status = MembershipStatus.PENDING;
+        m.requestedAt = LocalDateTime.now();
         return m;
+    }
+
+    // 승인 처리
+    public void approve(Member approver) {
+        this.status = MembershipStatus.APPROVED;
+        this.joinedAt = LocalDateTime.now();
+        this.decidedAt = this.joinedAt;
+    }
+
+    // 거절 처리
+    public void reject(Member approver) {
+        this.status = MembershipStatus.REJECTED;
+        this.decidedAt = LocalDateTime.now();
     }
 
     public void softDelete() {
         this.isDeleted = true;
-
         if (student != null) student.getMembershipsAsStudent().remove(this);
         if (club != null) club.getMembershipsAsClub().remove(this);
     }
