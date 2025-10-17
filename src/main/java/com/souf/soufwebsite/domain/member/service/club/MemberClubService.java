@@ -114,8 +114,13 @@ public class MemberClubService {
     }
 
     @Transactional(readOnly = true)
-    public Page<MemberClubMapping> getPendingMembers(Long clubId, Pageable pageable) {
-        return mappingRepository
+    public Page<ClubMemberResDto> getPendingMembers(Long clubId, Pageable pageable) {
+        Page<MemberClubMapping> page = mappingRepository
                 .findAllByClubIdAndStatusAndIsDeletedFalse(clubId, MembershipStatus.PENDING, pageable);
+
+        return page.map(mapping -> {
+            Member s = mapping.getStudent();
+            return ClubMemberResDto.from(mapping, s.getPersonalUrl(), List.of(), s.getCategories());
+        });
     }
 }

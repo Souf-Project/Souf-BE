@@ -33,23 +33,13 @@ public class MemberClubController implements MemberClubApiSpecification {
     }
 
     @Override
-    @DeleteMapping("/{clubId}/join")
+    @DeleteMapping("/{clubId}/withdraw")
     public SuccessResponse<?> leaveClub(
             @CurrentEmail String email,
             @PathVariable @NotNull Long clubId
     ) {
         memberClubService.leaveClub(email, clubId);
         return new SuccessResponse<>(LEAVE_CLUB_SUCCESS.getMessage());
-    }
-
-    @Override
-    @GetMapping("/my")
-    public SuccessResponse<Page<MyClubResDto>> getMyClubs(
-            @CurrentEmail String email,
-            @PageableDefault Pageable pageable
-    ) {
-        Page<MyClubResDto> clubs = memberClubService.getMyClubs(email, pageable);
-        return new SuccessResponse<>(clubs, MY_CLUBS_READ_SUCCESS.getMessage());
     }
 
     @Override
@@ -62,30 +52,43 @@ public class MemberClubController implements MemberClubApiSpecification {
         return new SuccessResponse<>(clubMembers, CLUB_MEMBERS_READ_SUCCESS.getMessage());
     }
 
+    @Override
+    @GetMapping("/my")
+    public SuccessResponse<Page<MyClubResDto>> getMyClubs(
+            @CurrentEmail String email,
+            @PageableDefault Pageable pageable
+    ) {
+        Page<MyClubResDto> clubs = memberClubService.getMyClubs(email, pageable);
+        return new SuccessResponse<>(clubs, MY_CLUBS_READ_SUCCESS.getMessage());
+    }
+
 
     // 승인
+    @Override
     @PatchMapping("/{clubId}/members/{studentId}/approve")
     public SuccessResponse<?> approve(@CurrentEmail String clubEmail,
                                       @PathVariable Long clubId,
                                       @PathVariable Long studentId) {
         memberClubService.approveJoin(clubEmail, clubId, studentId);
-        return new SuccessResponse<>("가입 신청을 승인했습니다.");
+        return new SuccessResponse<>(APPROVE_JOIN_SUCCESS.getMessage());
     }
 
     // 거절
+    @Override
     @PatchMapping("/{clubId}/members/{studentId}/reject")
     public SuccessResponse<?> reject(@CurrentEmail String clubEmail,
                                      @PathVariable Long clubId,
                                      @PathVariable Long studentId) {
         memberClubService.rejectJoin(clubEmail, clubId, studentId);
-        return new SuccessResponse<>("가입 신청을 거절했습니다.");
+        return new SuccessResponse<>(REJECT_JOIN_SUCCESS.getMessage());
     }
 
     // 대기 목록 조회
+    @Override
     @GetMapping("/{clubId}/pending")
-    public SuccessResponse<Page<MemberClubMapping>> pending(@PathVariable Long clubId,
+    public SuccessResponse<Page<ClubMemberResDto>> pending(@PathVariable Long clubId,
                                                             @PageableDefault Pageable pageable) {
-        Page<MemberClubMapping> pendingMembers = memberClubService.getPendingMembers(clubId, pageable);
-        return new SuccessResponse<>(pendingMembers, "대기 신청 목록");
+        Page<ClubMemberResDto> pendingMembers = memberClubService.getPendingMembers(clubId, pageable);
+        return new SuccessResponse<>(pendingMembers, PENDING_MEMBERS_READ_SUCCESS.getMessage());
     }
 }
