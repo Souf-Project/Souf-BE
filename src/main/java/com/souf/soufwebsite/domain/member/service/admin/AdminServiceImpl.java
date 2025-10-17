@@ -12,6 +12,7 @@ import com.souf.soufwebsite.domain.member.dto.ReqDto.InquiryAnswerReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminPostResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminReportResDto;
+import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
@@ -22,6 +23,7 @@ import com.souf.soufwebsite.domain.report.exception.NotFoundReportException;
 import com.souf.soufwebsite.domain.report.repository.ReportRepository;
 import com.souf.soufwebsite.domain.report.service.StrikeService;
 import com.souf.soufwebsite.global.common.PostType;
+import com.souf.soufwebsite.global.common.mail.SesMailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -43,6 +45,7 @@ public class AdminServiceImpl implements AdminService {
     private final InquiryRepository inquiryRepository;
 
     private final StrikeService strikeService;
+    private final SesMailService emailService;
 
     @Override
     public Page<AdminPostResDto> getPosts(PostType postType, String writer, String title, Pageable pageable) {
@@ -86,9 +89,11 @@ public class AdminServiceImpl implements AdminService {
         Inquiry inquiry = findIfInquiryExists(inquiryId);
         inquiry.updateAnswer(reqDto);
 
+        Member toMember = inquiry.getMember();
+
         log.info("inquiry named {} was answered", inquiryId);
 
-
+        emailService.sendInquiryResult(toMember.getEmail(), toMember.getNickname(), inquiry.getTitle());
     }
 
     @Transactional
