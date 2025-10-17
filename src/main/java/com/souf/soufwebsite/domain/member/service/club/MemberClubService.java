@@ -123,4 +123,18 @@ public class MemberClubService {
             return ClubMemberResDto.from(mapping, s.getPersonalUrl(), List.of(), s.getCategories());
         });
     }
+
+    @Transactional
+    public void expelMember(String clubEmail, Long clubId, Long studentId) {
+        Member club = memberRepository.findByEmail(clubEmail)
+                .filter(m -> m.getRole() == RoleType.CLUB && m.getId().equals(clubId))
+                .orElseThrow(() -> new IllegalStateException("추방 권한이 없습니다."));
+
+        Member student = memberRepository.findById(studentId)
+                .filter(m -> !m.isDeleted())
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
+
+        mappingRepository.findByStudentAndClubAndStatusAndIsDeletedFalse(student, club, MembershipStatus.APPROVED)
+                .ifPresent(MemberClubMapping::softDelete);
+    }
 }

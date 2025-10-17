@@ -2,7 +2,6 @@ package com.souf.soufwebsite.domain.member.controller.memberClub;
 
 import com.souf.soufwebsite.domain.member.dto.ResDto.ClubMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MyClubResDto;
-import com.souf.soufwebsite.domain.member.entity.MemberClubMapping;
 import com.souf.soufwebsite.domain.member.service.club.MemberClubService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
@@ -91,4 +90,15 @@ public class MemberClubController implements MemberClubApiSpecification {
         Page<ClubMemberResDto> pendingMembers = memberClubService.getPendingMembers(clubId, pageable);
         return new SuccessResponse<>(pendingMembers, PENDING_MEMBERS_READ_SUCCESS.getMessage());
     }
+
+    // 동아리원 추방
+    @Override
+    @PatchMapping("/{clubId}/members/{studentId}/expel")
+    public SuccessResponse<?> expelMember(@CurrentEmail String clubEmail,
+                                        @PathVariable Long clubId,
+                                        @PathVariable Long studentId) {
+        memberClubService.expelMember(clubEmail, clubId, studentId);
+        return new SuccessResponse<>("동아리원 추방이 완료되었습니다.");
+    }
+
 }

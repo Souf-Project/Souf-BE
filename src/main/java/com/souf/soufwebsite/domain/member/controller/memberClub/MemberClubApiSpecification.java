@@ -55,4 +55,10 @@ public interface MemberClubApiSpecification {
             @PathVariable Long clubId,
             @PageableDefault Pageable pageable
     );
+
+    @PatchMapping("/{clubId}/members/{studentId}/expel")
+    SuccessResponse<?> expelMember(@CurrentEmail String clubEmail,
+            @PathVariable Long clubId,
+            @PathVariable Long studentId
+    );
 }
