@@ -9,6 +9,7 @@ import com.souf.soufwebsite.global.jwt.JwtServiceImpl;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -95,8 +96,13 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET,
                                         "/api/v1/recruit/my",
                                         "/api/v1/member/**",
-                                        "/api/v1/notifications/**"
+                                        "/api/v1/notifications/**",
+                                        "/api/v1/clubs/my"
                                 ).authenticated()
+
+                                // 1-1) CLUB 전용 GET (공개 GET 보다 반드시 위에!)
+                                .requestMatchers(HttpMethod.GET,
+                                        "/api/v1/clubs/*/pending").hasAnyRole("CLUB","ADMIN")
 
                                 // 2) 공개 GET (그 다음에 포괄적인 공개 GET)
                                 .requestMatchers(HttpMethod.GET,
@@ -106,6 +112,7 @@ public class SecurityConfig {
                                         "/api/v1/view/**",
                                         "/api/v1/post/**",
                                         "/api/v1/review/**",
+                                        "/api/v1/clubs/**",
                                         "/api/v1/search" // 주의: member/**는 위에서 authenticated 처리
                                 ).permitAll()
 
@@ -113,6 +120,12 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST,   "/api/v1/applications/*/apply").hasAnyRole("STUDENT", "ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/api/v1/applications/*/apply").hasAnyRole("STUDENT", "ADMIN")
                                 .requestMatchers(HttpMethod.GET,    "/api/v1/applications/my").hasAnyRole("STUDENT", "ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/v1/clubs/*/join").hasAnyRole("STUDENT", "ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/clubs/*/withdraw").hasAnyRole("STUDENT", "ADMIN")
+
+                                // 3-1) CLUB 전용
+                                .requestMatchers(HttpMethod.PATCH, "/api/v1/clubs/**").hasAnyRole("CLUB", "ADMIN")
+
 
                                 // 4) MEMBER/ADMIN 전용
                                 .requestMatchers(HttpMethod.GET,  "/api/v1/applications/*/applicants").hasAnyRole("MEMBER","ADMIN")
@@ -120,21 +133,21 @@ public class SecurityConfig {
                                 .hasAnyRole("MEMBER","ADMIN")
 
                                 // 5) 쓰기 권한(POST/PUT/PATCH/DELETE) — 리소스별로 묶어서
-                                .requestMatchers(HttpMethod.PATCH, "/api/v1/feed/*/like").hasAnyRole("MEMBER","ADMIN","STUDENT")
+                                .requestMatchers(HttpMethod.PATCH, "/api/v1/feed/*/like").hasAnyRole("MEMBER", "ADMIN", "STUDENT", "CLUB")
                                 // recruit: MEMBER, ADMIN만 쓰기 허용
                                 .requestMatchers(HttpMethod.POST,   "/api/v1/recruit/**").hasAnyRole("MEMBER","ADMIN")
                                 .requestMatchers(HttpMethod.PUT,    "/api/v1/recruit/**").hasAnyRole("MEMBER","ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/api/v1/recruit/**").hasAnyRole("MEMBER","ADMIN")
 
                                 // feed: STUDENT만(또는 운영 포함하려면 STUDENT, ADMIN)
-                                .requestMatchers(HttpMethod.POST,   "/api/v1/feed/**").hasAnyRole("STUDENT","ADMIN")
-                                .requestMatchers(HttpMethod.PUT,    "/api/v1/feed/**").hasAnyRole("STUDENT","ADMIN")
-                                .requestMatchers(HttpMethod.DELETE, "/api/v1/feed/**").hasAnyRole("STUDENT","ADMIN")
+                                .requestMatchers(HttpMethod.POST,   "/api/v1/feed/**").hasAnyRole("STUDENT","ADMIN", "CLUB")
+                                .requestMatchers(HttpMethod.PUT,    "/api/v1/feed/**").hasAnyRole("STUDENT","ADMIN", "CLUB")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/feed/**").hasAnyRole("STUDENT","ADMIN", "CLUB")
 
                                 // post: 기존 정책에 맞게 별도로
-                                .requestMatchers(HttpMethod.POST,   "/api/v1/post/**").hasAnyRole("MEMBER","ADMIN","STUDENT")
-                                .requestMatchers(HttpMethod.PUT,    "/api/v1/post/**").hasAnyRole("MEMBER","ADMIN","STUDENT")
-                                .requestMatchers(HttpMethod.DELETE, "/api/v1/post/**").hasAnyRole("MEMBER","ADMIN","STUDENT")
+                                .requestMatchers(HttpMethod.POST,   "/api/v1/post/**").hasAnyRole("MEMBER","ADMIN","STUDENT", "CLUB")
+                                .requestMatchers(HttpMethod.PUT,    "/api/v1/post/**").hasAnyRole("MEMBER","ADMIN","STUDENT", "CLUB")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/post/**").hasAnyRole("MEMBER","ADMIN","STUDENT", "CLUB")
 
                                 // 6) 관리자 전용
                                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
