@@ -5,6 +5,7 @@ import com.souf.soufwebsite.domain.feed.entity.FeedCategoryMapping;
 import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -17,6 +18,10 @@ public record FeedDetailResDto(
         Long memberId,
         String nickname,
         String profileImageUrl,
+        String intro,
+        double temperature,
+        List<CategoryDto> studentCategories,
+
         Long feedId,
         String topic,
         String content,
@@ -36,6 +41,10 @@ public record FeedDetailResDto(
                 member.getId(),
                 member.getNickname(),
                 profileImageUrl,
+                member.getIntro(),
+                member.getTemperature(),
+                convertToMemberCategoryDto(member.getCategories()),
+
                 feed.getId(),
                 feed.getTopic(),
             feed.getContent(),
@@ -52,6 +61,15 @@ public record FeedDetailResDto(
         return mediaList.stream().map(
                 MediaResDto::fromFeedDetail
         ).collect(Collectors.toList());
+    }
+
+    private static List<CategoryDto> convertToMemberCategoryDto(List<MemberCategoryMapping> mappings){
+        return mappings.stream().map(
+                m -> new CategoryDto(
+                        m.getFirstCategory().getId(),
+                        m.getSecondCategory() != null ? m.getSecondCategory().getId() : null,
+                        m.getThirdCategory() != null ? m.getThirdCategory().getId() : null
+                )).collect(Collectors.toList());
     }
 
     private static List<CategoryDto> convertToCategoryDto(List<FeedCategoryMapping> mappings){
