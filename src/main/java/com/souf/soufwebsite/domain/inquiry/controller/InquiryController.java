@@ -1,5 +1,7 @@
 package com.souf.soufwebsite.domain.inquiry.controller;
 
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.inquiry.dto.InquiryCreateResDto;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryReqDto;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryResDto;
 import com.souf.soufwebsite.domain.inquiry.service.InquiryService;
@@ -24,13 +26,23 @@ public class InquiryController implements InquiryApiSpecification {
     private final InquiryService inquiryService;
 
     @PostMapping
-    public SuccessResponse<?> createInquiry (
+    public SuccessResponse<InquiryCreateResDto> createInquiry (
             @CurrentEmail String email,
             @Valid @RequestBody InquiryReqDto reqDto) {
 
-        inquiryService.createInquiry(email, reqDto);
+        InquiryCreateResDto result = inquiryService.createInquiry(email, reqDto);
 
-        return new SuccessResponse<>(INQUIRY_CREATE.getMessage());
+        return new SuccessResponse<>(result, INQUIRY_CREATE.getMessage());
+    }
+
+    @PostMapping("/upload")
+    public SuccessResponse<?> uploadMetadata (
+            @CurrentEmail String email,
+            @Valid @RequestBody MediaReqDto reqDto
+    ) {
+        inquiryService.uploadInquiryMedia(email, reqDto);
+
+        return new SuccessResponse<>(INQUIRY_FILE_METADATA_CREATE.getMessage());
     }
 
     @PatchMapping("/{inquiryId}")

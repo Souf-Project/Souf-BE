@@ -66,10 +66,10 @@ websocket:
     username: guest
     password: guest
 
-opensearch:
-  host: ${OPENSEARCH_HOST}
-  username: ${OPENSEARCH_USERNAME}
-  password: ${OPENSEARCH_PASSWORD}
+#opensearch:
+#  host: ${OPENSEARCH_HOST}
+#  username: ${OPENSEARCH_USERNAME}
+#  password: ${OPENSEARCH_PASSWORD}
 
   index:
     name: souf-website-index

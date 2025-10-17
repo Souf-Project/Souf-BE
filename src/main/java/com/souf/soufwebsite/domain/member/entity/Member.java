@@ -6,7 +6,7 @@ import com.souf.soufwebsite.global.common.BaseEntity;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.exception.NotDuplicateCategoryException;
 import com.souf.soufwebsite.global.common.category.exception.NotExceedCategoryLimitException;
-import com.souf.soufwebsite.global.util.HashUtil;
+import com.souf.soufwebsite.global.util.HashUtils;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
@@ -156,7 +156,7 @@ public class Member extends BaseEntity {
     }
 
     public void softDelete() { // SHA-256 같은 방식
-        this.email = "deleted:" + HashUtil.sha256(this.email);
+        this.email = "deleted:" + HashUtils.sha256(this.email);
         this.username = "탈퇴한 회원";
         this.intro = "탈퇴한 회원입니다.";
         this.personalUrl = null;

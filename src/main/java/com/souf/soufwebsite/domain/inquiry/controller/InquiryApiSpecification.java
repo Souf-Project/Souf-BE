@@ -1,11 +1,14 @@
 package com.souf.soufwebsite.domain.inquiry.controller;
 
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.inquiry.dto.InquiryCreateResDto;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryReqDto;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryResDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -16,9 +19,15 @@ public interface InquiryApiSpecification {
 
     @Operation(summary = "문의글 생성", description = "회원이 문의글을 생성합니다.")
     @PostMapping
-    SuccessResponse<?> createInquiry (
+    SuccessResponse<InquiryCreateResDto> createInquiry (
             @CurrentEmail String email,
             @RequestBody InquiryReqDto reqDto);
+
+    @PostMapping("/upload")
+    SuccessResponse<?> uploadMetadata (
+            @CurrentEmail String email,
+            @Valid @RequestBody MediaReqDto reqDto
+    );
 
     @Operation(summary = "문의글 수정", description = "회원이 본인 소유의 문의글을 수정합니다.")
     @PatchMapping("/{inquiryId}")

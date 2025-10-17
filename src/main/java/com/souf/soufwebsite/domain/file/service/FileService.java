@@ -37,7 +37,9 @@ public class FileService {
         String videoString = videoFiles.get(0); // 혹은 여러 개면 join해서
         if (type == PostType.FEED) {
             return s3UploaderService.initiateUpload("feed", videoString);
-        } else {
+        } else if(type == PostType.RECRUIT)
+            return s3UploaderService.initiateUpload("recruit", videoString);
+        else {
             return s3UploaderService.initiateUpload("chat", videoString);
         }
     }

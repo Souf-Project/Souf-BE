@@ -89,7 +89,7 @@ dependencies {
 //    implementation 'org.apache.httpcomponents.client5:httpclient5:5.1.3'
 //
     // SigV4 interceptor를 사용하고 싶다면 (Apache HttpClient-based RestClient 전용)
-    implementation 'software.amazon.awssdk:opensearch'
+//    implementation 'software.amazon.awssdk:opensearch'
 
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'software.amazon.awssdk:apache-client'

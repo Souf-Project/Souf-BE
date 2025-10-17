@@ -7,6 +7,7 @@ import com.souf.soufwebsite.domain.recruit.dto.req.RecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.exception.NotBlankPriceException;
 import com.souf.soufwebsite.domain.recruit.exception.NotValidPricePolicyException;
 import com.souf.soufwebsite.global.common.BaseEntity;
+import com.souf.soufwebsite.global.common.ListToJsonConverter;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -35,6 +36,12 @@ public class Recruit extends BaseEntity {
     @Column(nullable = false, length = 3000)
     private String content;
 
+    @Column
+    private String hostName;
+
+    @Column
+    private String introduction;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "city_id", nullable = false)
     private City city;
@@ -60,8 +67,11 @@ public class Recruit extends BaseEntity {
     @Column(nullable = false)
     private PricePolicy pricePolicy;
 
-    //@Column(columnDefinition = "json")
-    //@Convert(converter = ListToJsonConverter.class)
+    @Column
+    @Convert(converter = ListToJsonConverter.class)
+    private List<String> preferentialTreatmentTags;
+
+    @Column
     private String preferentialTreatment;
 
     @Column(nullable = false)
@@ -95,12 +105,15 @@ public class Recruit extends BaseEntity {
         return Recruit.builder()
                 .title(reqDto.title())
                 .content(reqDto.content())
+                .hostName(reqDto.writerName())
+                .introduction(reqDto.introduction())
                 .city(city)
                 .cityDetail(cityDetail)
                 .startDate(reqDto.startDate())
                 .deadline(reqDto.deadline())
                 .price(reqDto.price())
                 .pricePolicy(pricePolicy)
+                .preferentialTreatmentTags(reqDto.preferentialTreatmentTags())
                 .preferentialTreatment(reqDto.preferentialTreatment())
                 .recruitCount(0L)
                 .viewCount(0L)
@@ -113,12 +126,15 @@ public class Recruit extends BaseEntity {
     public void updateRecruit(RecruitReqDto reqDto, City city, CityDetail cityDetail) {
         this.title = reqDto.title();
         this.content = reqDto.content();
+        this.hostName = reqDto.writerName();
+        this.introduction = reqDto.introduction();
         this.city = city;
         this.cityDetail = cityDetail;
         this.startDate = reqDto.startDate();
         this.deadline = reqDto.deadline();
         this.price = reqDto.price();
         this.workType = reqDto.workType();
+        this.preferentialTreatmentTags = reqDto.preferentialTreatmentTags();
         this.preferentialTreatment = reqDto.preferentialTreatment();
     }
 
