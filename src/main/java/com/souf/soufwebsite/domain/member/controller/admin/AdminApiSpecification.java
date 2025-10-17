@@ -3,6 +3,7 @@ package com.souf.soufwebsite.domain.member.controller.admin;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryResDto;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryStatus;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryType;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.InquiryAnswerReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminPostResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminReportResDto;
@@ -10,15 +11,13 @@ import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.report.entity.ReportStatus;
 import com.souf.soufwebsite.global.common.PostType;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 
@@ -60,6 +59,13 @@ public interface AdminApiSpecification {
             @RequestParam(name = "inquiryStatus", required = false) InquiryStatus inquiryStatus,
             @RequestParam(name = "search", required = false) String search,
             @PageableDefault Pageable pageable
+    );
+
+    @PatchMapping("/inquiry/{inquiryId}")
+    SuccessResponse<?> answerInquiry(
+            @CurrentEmail String email,
+            @PathVariable(name = "inquiryId") Long inquiryId,
+            @RequestBody InquiryAnswerReqDto reqDto
     );
 
     @Operation(summary = "신고 처리", description = "관리자가 신고 게시글에 대한 처리를 결정합니다.")
