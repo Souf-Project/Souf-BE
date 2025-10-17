@@ -7,6 +7,7 @@ import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.MemberClubMapping;
 import com.souf.soufwebsite.domain.member.entity.MembershipStatus;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
+import com.souf.soufwebsite.domain.member.exception.*;
 import com.souf.soufwebsite.domain.member.repository.MemberClubMappingRepository;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,13 +38,13 @@ public class MemberClubService {
     @Transactional
     public void joinClub(String studentEmail, Long clubId) {
         Member student = memberRepository.findByEmail(studentEmail)
-                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
+                .orElseThrow(NotFoundMemberException::new);
         Member club = memberRepository.findById(clubId)
                 .filter(m -> !m.isDeleted())
-                .orElseThrow(() -> new IllegalArgumentException("동아리를 찾을 수 없습니다."));
+                .orElseThrow(NotFoundClubException::new);
 
-        if (student.getRole() != RoleType.STUDENT) throw new IllegalStateException("학생만 신청 가능");
-        if (club.getRole() != RoleType.CLUB) throw new IllegalStateException("동아리 계정만 대상");
+        if (student.getRole() != RoleType.STUDENT) throw new NotValidAuthenticationException();
+        if (club.getRole() != RoleType.CLUB) throw new NotValidAuthenticationException();
 
         // PENDING/APPROVED가 이미 있으면 신규 신청 막기
         boolean existsActive = mappingRepository.existsByStudentAndClubAndStatusInAndIsDeletedFalse(
@@ -59,15 +60,15 @@ public class MemberClubService {
     public void approveJoin(String clubEmail, Long clubId, Long studentId) {
         Member club = memberRepository.findByEmail(clubEmail)
                 .filter(m -> m.getRole() == RoleType.CLUB && m.getId().equals(clubId))
-                .orElseThrow(() -> new IllegalStateException("승인 권한이 없습니다."));
+                .orElseThrow(NotValidManageAuthenticationException::new);
 
         Member student = memberRepository.findById(studentId)
                 .filter(m -> !m.isDeleted())
-                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
+                .orElseThrow(NotFoundMemberException::new);
 
         MemberClubMapping mapping = mappingRepository
                 .findByStudentAndClubAndStatusAndIsDeletedFalse(student, club, MembershipStatus.PENDING)
-                .orElseThrow(() -> new IllegalArgumentException("대기 신청이 없습니다."));
+                .orElseThrow(NotFoundPendingApplyException::new);
 
         mapping.approve(club);
     }
@@ -77,15 +78,15 @@ public class MemberClubService {
     public void rejectJoin(String clubEmail, Long clubId, Long studentId) {
         Member club = memberRepository.findByEmail(clubEmail)
                 .filter(m -> m.getRole() == RoleType.CLUB && m.getId().equals(clubId))
-                .orElseThrow(() -> new IllegalStateException("거절 권한이 없습니다."));
+                .orElseThrow(NotValidManageAuthenticationException::new);
 
         Member student = memberRepository.findById(studentId)
                 .filter(m -> !m.isDeleted())
-                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
+                .orElseThrow(NotFoundMemberException::new);
 
         MemberClubMapping mapping = mappingRepository
                 .findByStudentAndClubAndStatusAndIsDeletedFalse(student, club, MembershipStatus.PENDING)
-                .orElseThrow(() -> new IllegalArgumentException("대기 신청이 없습니다."));
+                .orElseThrow(NotFoundPendingApplyException::new);
 
         mapping.reject(club);
     }
@@ -94,10 +95,10 @@ public class MemberClubService {
     @Transactional
     public void leaveClub(String email, Long clubId) {
         Member student = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
+                .orElseThrow(NotFoundMemberException::new);
         Member club = memberRepository.findById(clubId)
                 .filter(m -> !m.isDeleted())
-                .orElseThrow(() -> new IllegalArgumentException("동아리를 찾을 수 없습니다."));
+                .orElseThrow(NotFoundClubException::new);
 
         mappingRepository.findByStudentAndClubAndStatusAndIsDeletedFalse(student, club, MembershipStatus.APPROVED)
                 .ifPresent(MemberClubMapping::softDelete);
@@ -106,7 +107,7 @@ public class MemberClubService {
     @Transactional(readOnly = true)
     public Page<MyClubResDto> getMyClubs(String email, Pageable pageable) {
         Member student = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
+                .orElseThrow(NotFoundMemberException::new);
 
         Page<MemberClubMapping> page = mappingRepository
                 .findAllByStudentIdAndStatusAndIsDeletedFalse(student.getId(), MembershipStatus.APPROVED, pageable);
@@ -143,11 +144,11 @@ public class MemberClubService {
     public void expelMember(String clubEmail, Long clubId, Long studentId) {
         Member club = memberRepository.findByEmail(clubEmail)
                 .filter(m -> m.getRole() == RoleType.CLUB && m.getId().equals(clubId))
-                .orElseThrow(() -> new IllegalStateException("추방 권한이 없습니다."));
+                .orElseThrow(NotValidManageAuthenticationException::new);
 
         Member student = memberRepository.findById(studentId)
                 .filter(m -> !m.isDeleted())
-                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
+                .orElseThrow(NotFoundMemberException::new);
 
         mappingRepository.findByStudentAndClubAndStatusAndIsDeletedFalse(student, club, MembershipStatus.APPROVED)
                 .ifPresent(MemberClubMapping::softDelete);
