@@ -3,9 +3,12 @@ package com.souf.soufwebsite.domain.member.service.admin;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryResDto;
+import com.souf.soufwebsite.domain.inquiry.entity.Inquiry;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryStatus;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryType;
+import com.souf.soufwebsite.domain.inquiry.exception.NotFoundInquiryException;
 import com.souf.soufwebsite.domain.inquiry.repository.InquiryRepository;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.InquiryAnswerReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminPostResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminReportResDto;
@@ -79,6 +82,17 @@ public class AdminServiceImpl implements AdminService {
 
     @Transactional
     @Override
+    public void answerInquiry(String email, Long inquiryId, InquiryAnswerReqDto reqDto) {
+        Inquiry inquiry = findIfInquiryExists(inquiryId);
+        inquiry.updateAnswer(reqDto);
+
+        log.info("inquiry named {} was answered", inquiryId);
+
+
+    }
+
+    @Transactional
+    @Override
     public void updateReportStatus(Long reportId, ReportStatus reportStatus) {
         Report report = findIfReportExists(reportId);
         report.updateStatus(reportStatus);
@@ -90,5 +104,9 @@ public class AdminServiceImpl implements AdminService {
 
     private Report findIfReportExists(Long reportId) {
         return reportRepository.findById(reportId).orElseThrow(NotFoundReportException::new);
+    }
+
+    private Inquiry findIfInquiryExists(Long inquiryId) {
+        return inquiryRepository.findById(inquiryId).orElseThrow(NotFoundInquiryException::new);
     }
 }
