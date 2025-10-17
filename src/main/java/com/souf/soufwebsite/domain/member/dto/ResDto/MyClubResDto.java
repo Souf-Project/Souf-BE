@@ -10,24 +10,21 @@ import java.time.LocalDateTime;
 @Builder
 @Schema(description = "내 동아리 목록 응답 DTO")
 public record MyClubResDto(
-
         @Schema(description = "동아리 ID", example = "5")
         Long clubId,
-
-        @Schema(description = "동아리 이름", example = "TAVE 16기")
+        @Schema(description = "동아리 이름", example = "TAVE")
         String clubName,
-
         @Schema(description = "동아리 소개", example = "IT, 개발, 디자인이 함께하는 융합 동아리")
         String clubIntro,
-
         @Schema(description = "동아리 프로필 URL", example = "https://example.com/profile.png")
         String clubProfileUrl,
-
         @Schema(description = "가입 일자", example = "2025-10-15T12:30:00")
-        LocalDateTime joinedAt
+        LocalDateTime joinedAt,
+        @Schema(description = "동아리원 수")
+        Long memberCount
 ) {
 
-    public static MyClubResDto from(MemberClubMapping membership) {
+    public static MyClubResDto from(MemberClubMapping membership, Long memberCount) {
         Member club = membership.getClub();
 
         return MyClubResDto.builder()
@@ -36,6 +33,7 @@ public record MyClubResDto(
                 .clubIntro(club.getIntro())
                 .clubProfileUrl(club.getPersonalUrl())
                 .joinedAt(membership.getJoinedAt())
+                .memberCount(memberCount)
                 .build();
     }
 }

@@ -1,6 +1,7 @@
 package com.souf.soufwebsite.domain.member.service.club;
 
 import com.souf.soufwebsite.domain.member.dto.ResDto.ClubMemberResDto;
+import com.souf.soufwebsite.domain.member.dto.ResDto.ClubSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MyClubResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.MemberClubMapping;
@@ -21,6 +22,16 @@ import java.util.List;
 public class MemberClubService {
     private final MemberRepository memberRepository;
     private final MemberClubMappingRepository mappingRepository;
+
+    @Transactional(readOnly = true)
+    public Page<ClubSimpleResDto> getAllClubs(Pageable pageable) {
+        Page<Member> clubs = memberRepository.findAllByRoleAndIsDeletedFalse(RoleType.CLUB, pageable);
+
+        return clubs.map(club -> {
+            Long memberCount = mappingRepository.countApprovedMembersByClubId(club.getId());
+            return ClubSimpleResDto.from(club, memberCount);
+        });
+    }
 
     // 신청: PENDING 생성
     @Transactional
@@ -99,7 +110,11 @@ public class MemberClubService {
 
         Page<MemberClubMapping> page = mappingRepository
                 .findAllByStudentIdAndStatusAndIsDeletedFalse(student.getId(), MembershipStatus.APPROVED, pageable);
-        return page.map(MyClubResDto::from);
+
+        return page.map(mapping -> {
+            Long memberCount = mappingRepository.countApprovedMembersByClubId(mapping.getClub().getId());
+            return MyClubResDto.from(mapping, memberCount);
+        });
     }
 
     @Transactional(readOnly = true)
