@@ -85,11 +85,11 @@ public class Member extends BaseEntity {
     // === 다대다(자기참조) 연결 ===
     @OneToMany(mappedBy = "student", cascade = CascadeType.PERSIST)
     @Where(clause = "is_deleted = false")
-    private List<MemberClubMapping> membershipsAsStudent = new ArrayList<>();
+    private List<MemberClubMapping> enrollmentAsStudent = new ArrayList<>();
 
     @OneToMany(mappedBy = "club", cascade = CascadeType.PERSIST)
     @Where(clause = "is_deleted = false")
-    private List<MemberClubMapping> membershipsAsClub = new ArrayList<>();
+    private List<MemberClubMapping> enrollmentAsClub = new ArrayList<>();
 
 
     @Builder
@@ -162,7 +162,7 @@ public class Member extends BaseEntity {
         this.personalUrl = null;
         this.isDeleted = true;
 
-        new ArrayList<>(membershipsAsStudent).forEach(MemberClubMapping::softDelete);
-        new ArrayList<>(membershipsAsClub).forEach(MemberClubMapping::softDelete);
+        new ArrayList<>(enrollmentAsStudent).forEach(MemberClubMapping::softDelete);
+        new ArrayList<>(enrollmentAsClub).forEach(MemberClubMapping::softDelete);
     }
 }

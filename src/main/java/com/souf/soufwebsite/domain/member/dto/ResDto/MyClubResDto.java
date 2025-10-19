@@ -24,15 +24,15 @@ public record MyClubResDto(
         Long memberCount
 ) {
 
-    public static MyClubResDto from(MemberClubMapping membership, Long memberCount) {
-        Member club = membership.getClub();
+    public static MyClubResDto from(MemberClubMapping mapping, Long memberCount) {
+        Member club = mapping.getClub();
 
         return MyClubResDto.builder()
                 .clubId(club.getId())
                 .clubName(club.getNickname())
                 .clubIntro(club.getIntro())
                 .clubProfileUrl(club.getPersonalUrl())
-                .joinedAt(membership.getJoinedAt())
+                .joinedAt(mapping.getJoinedAt())
                 .memberCount(memberCount)
                 .build();
     }

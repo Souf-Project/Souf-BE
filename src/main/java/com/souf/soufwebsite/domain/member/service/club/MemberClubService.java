@@ -7,9 +7,9 @@ import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.dto.ResDto.ClubSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MyClubResDto;
+import com.souf.soufwebsite.domain.member.entity.EnrollmentStatus;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.MemberClubMapping;
-import com.souf.soufwebsite.domain.member.entity.MembershipStatus;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.exception.*;
 import com.souf.soufwebsite.domain.member.repository.MemberClubMappingRepository;
@@ -57,7 +57,7 @@ public class MemberClubService {
 
         // PENDING/APPROVED가 이미 있으면 신규 신청 막기
         boolean existsActive = mappingRepository.existsByStudentAndClubAndStatusInAndIsDeletedFalse(
-                student, club, List.of(MembershipStatus.PENDING, MembershipStatus.APPROVED));
+                student, club, List.of(EnrollmentStatus.PENDING, EnrollmentStatus.APPROVED));
         if (existsActive) return;
 
         var mapping = MemberClubMapping.create(student, club);
@@ -76,7 +76,7 @@ public class MemberClubService {
                 .orElseThrow(NotFoundMemberException::new);
 
         MemberClubMapping mapping = mappingRepository
-                .findByStudentAndClubAndStatusAndIsDeletedFalse(student, club, MembershipStatus.PENDING)
+                .findByStudentAndClubAndStatusAndIsDeletedFalse(student, club, EnrollmentStatus.PENDING)
                 .orElseThrow(NotFoundPendingApplyException::new);
 
         mapping.approve();
@@ -94,7 +94,7 @@ public class MemberClubService {
                 .orElseThrow(NotFoundMemberException::new);
 
         MemberClubMapping mapping = mappingRepository
-                .findByStudentAndClubAndStatusAndIsDeletedFalse(student, club, MembershipStatus.PENDING)
+                .findByStudentAndClubAndStatusAndIsDeletedFalse(student, club, EnrollmentStatus.PENDING)
                 .orElseThrow(NotFoundPendingApplyException::new);
 
         mapping.reject();
@@ -109,7 +109,7 @@ public class MemberClubService {
                 .filter(m -> !m.isDeleted())
                 .orElseThrow(NotFoundClubException::new);
 
-        mappingRepository.findByStudentAndClubAndStatusAndIsDeletedFalse(student, club, MembershipStatus.APPROVED)
+        mappingRepository.findByStudentAndClubAndStatusAndIsDeletedFalse(student, club, EnrollmentStatus.APPROVED)
                 .ifPresent(MemberClubMapping::softDelete);
     }
 
@@ -119,7 +119,7 @@ public class MemberClubService {
                 .orElseThrow(NotFoundMemberException::new);
 
         Page<MemberClubMapping> page = mappingRepository
-                .findAllByStudentIdAndStatusAndIsDeletedFalse(student.getId(), MembershipStatus.APPROVED, pageable);
+                .findAllByStudentIdAndStatusAndIsDeletedFalse(student.getId(), EnrollmentStatus.APPROVED, pageable);
 
         return page.map(mapping -> {
             Long memberCount = mappingRepository.countApprovedMembersByClubId(mapping.getClub().getId());
@@ -130,7 +130,7 @@ public class MemberClubService {
     @Transactional(readOnly = true)
     public Page<MemberSimpleResDto> getClubMembers(Long clubId, Pageable pageable) {
         Page<MemberClubMapping> page = mappingRepository
-                .findAllByClubIdAndStatusAndIsDeletedFalse(clubId, MembershipStatus.APPROVED, pageable);
+                .findAllByClubIdAndStatusAndIsDeletedFalse(clubId, EnrollmentStatus.APPROVED, pageable);
 
         return page.map(mapping -> {
             Member s = mapping.getStudent();
@@ -167,7 +167,7 @@ public class MemberClubService {
     @Transactional(readOnly = true)
     public Page<MemberSimpleResDto> getPendingMembers(Long clubId, Pageable pageable) {
         Page<MemberClubMapping> page = mappingRepository
-                .findAllByClubIdAndStatusAndIsDeletedFalse(clubId, MembershipStatus.PENDING, pageable);
+                .findAllByClubIdAndStatusAndIsDeletedFalse(clubId, EnrollmentStatus.PENDING, pageable);
 
         return page.map(mapping -> {
             Member s = mapping.getStudent();
@@ -206,7 +206,7 @@ public class MemberClubService {
                 .filter(m -> !m.isDeleted())
                 .orElseThrow(NotFoundMemberException::new);
 
-        mappingRepository.findByStudentAndClubAndStatusAndIsDeletedFalse(student, club, MembershipStatus.APPROVED)
+        mappingRepository.findByStudentAndClubAndStatusAndIsDeletedFalse(student, club, EnrollmentStatus.APPROVED)
                 .ifPresent(MemberClubMapping::softDelete);
     }
 }

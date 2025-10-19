@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 public class MemberClubMapping extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "membership_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -32,7 +31,7 @@ public class MemberClubMapping extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)
-    private MembershipStatus status;            // PENDING/APPROVED/REJECTED
+    private EnrollmentStatus status;            // PENDING/APPROVED/REJECTED
 
     @Column(name = "requested_at", nullable = false)
     private LocalDateTime requestedAt;          // 신청 시각
@@ -50,25 +49,25 @@ public class MemberClubMapping extends BaseEntity {
         MemberClubMapping m = new MemberClubMapping();
         m.student = student;
         m.club = club;
-        m.status = MembershipStatus.PENDING;
+        m.status = EnrollmentStatus.PENDING;
         m.requestedAt = LocalDateTime.now();
         return m;
     }
 
     // 승인 처리
     public void approve() {
-        this.status = MembershipStatus.APPROVED;
+        this.status = EnrollmentStatus.APPROVED;
         this.joinedAt = LocalDateTime.now();
     }
 
     // 거절 처리
     public void reject() {
-        this.status = MembershipStatus.REJECTED;
+        this.status = EnrollmentStatus.REJECTED;
     }
 
     public void softDelete() {
         this.isDeleted = true;
-        if (student != null) student.getMembershipsAsStudent().remove(this);
-        if (club != null) club.getMembershipsAsClub().remove(this);
+        if (student != null) student.getEnrollmentAsStudent().remove(this);
+        if (club != null) club.getEnrollmentAsClub().remove(this);
     }
 }
