@@ -1,6 +1,5 @@
 package com.souf.soufwebsite.domain.member.service.club;
 
-import com.souf.soufwebsite.domain.application.exception.AlreadyAppliedException;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import com.souf.soufwebsite.domain.file.entity.Media;
@@ -58,7 +57,8 @@ public class MemberClubService {
                 student, club, List.of(EnrollmentStatus.PENDING, EnrollmentStatus.APPROVED));
         if (existsActive) throw new AlreadyJoinedClubException();
 
-        var mapping = MemberClubMapping.create(student, club);
+        MemberClubMapping mapping = MemberClubMapping.create(student, club);
+
         mappingRepository.save(mapping);
     }
 

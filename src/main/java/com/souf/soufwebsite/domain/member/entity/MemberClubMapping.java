@@ -39,13 +39,7 @@ public class MemberClubMapping extends BaseEntity {
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
 
-    // 신청 생성: 상태 = PENDING
     public static MemberClubMapping create(Member student, Member club) {
-        if (student == null || student.getRole() != RoleType.STUDENT)
-            throw new IllegalArgumentException("학생(Member, role=STUDENT)만 가입 신청 가능합니다.");
-        if (club == null || club.getRole() != RoleType.CLUB)
-            throw new IllegalArgumentException("동아리(Member, role=CLUB)만 대상입니다.");
-
         MemberClubMapping m = new MemberClubMapping();
         m.student = student;
         m.club = club;
