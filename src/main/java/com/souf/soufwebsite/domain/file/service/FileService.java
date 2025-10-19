@@ -58,7 +58,7 @@ public class FileService {
         List<Media> mediaList = new ArrayList<>();
         for(int i=0;i<files.fileUrl().size();i++){
             PostType temp = postType;
-            if(files.filePurpose().get(i).equals("LOGO")){
+            if(!files.filePurpose().isEmpty() && files.filePurpose().get(i).equals("LOGO")){
                 temp = PostType.LOGO;
             }
             Media media = Media.of(files.fileUrl().get(i), files.fileName().get(i),
