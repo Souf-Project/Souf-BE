@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.member.dto.ReqDto;
 
+import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
@@ -7,6 +8,9 @@ import jakarta.validation.constraints.*;
 import java.util.List;
 
 public record SignupReqDto(
+
+        @Schema(description = "회원 구분 ", example = "STUDENT")
+        @NotEmpty RoleType roleType,
 
         @Schema(description = "사용자 살명", example = "홍길동")
         @NotEmpty String username,
