@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.member.service.club;
 
+import com.souf.soufwebsite.domain.application.exception.AlreadyAppliedException;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import com.souf.soufwebsite.domain.file.entity.Media;
@@ -58,7 +59,7 @@ public class MemberClubService {
         // PENDING/APPROVED가 이미 있으면 신규 신청 막기
         boolean existsActive = mappingRepository.existsByStudentAndClubAndStatusInAndIsDeletedFalse(
                 student, club, List.of(EnrollmentStatus.PENDING, EnrollmentStatus.APPROVED));
-        if (existsActive) return;
+        if (existsActive) throw new AlreadyJoinedClubException();
 
         var mapping = MemberClubMapping.create(student, club);
         mappingRepository.save(mapping);
