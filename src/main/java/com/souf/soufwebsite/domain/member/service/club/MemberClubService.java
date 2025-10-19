@@ -8,10 +8,7 @@ import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.dto.ResDto.ClubSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MyClubResDto;
-import com.souf.soufwebsite.domain.member.entity.EnrollmentStatus;
-import com.souf.soufwebsite.domain.member.entity.Member;
-import com.souf.soufwebsite.domain.member.entity.MemberClubMapping;
-import com.souf.soufwebsite.domain.member.entity.RoleType;
+import com.souf.soufwebsite.domain.member.entity.*;
 import com.souf.soufwebsite.domain.member.exception.*;
 import com.souf.soufwebsite.domain.member.repository.MemberClubMappingRepository;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
@@ -65,9 +62,8 @@ public class MemberClubService {
         mappingRepository.save(mapping);
     }
 
-    // 동아리 계정이 승인
     @Transactional
-    public void approveJoin(String clubEmail, Long clubId, Long studentId) {
+    public void decideJoin(String clubEmail, Long clubId, Long studentId, JoinDecision decision) {
         Member club = memberRepository.findByEmail(clubEmail)
                 .filter(m -> m.getRole() == RoleType.CLUB && m.getId().equals(clubId))
                 .orElseThrow(NotValidManageAuthenticationException::new);
@@ -80,25 +76,11 @@ public class MemberClubService {
                 .findByStudentAndClubAndStatusAndIsDeletedFalse(student, club, EnrollmentStatus.PENDING)
                 .orElseThrow(NotFoundPendingApplyException::new);
 
-        mapping.approve();
-    }
-
-    // 동아리 계정이 거절
-    @Transactional
-    public void rejectJoin(String clubEmail, Long clubId, Long studentId) {
-        Member club = memberRepository.findByEmail(clubEmail)
-                .filter(m -> m.getRole() == RoleType.CLUB && m.getId().equals(clubId))
-                .orElseThrow(NotValidManageAuthenticationException::new);
-
-        Member student = memberRepository.findById(studentId)
-                .filter(m -> !m.isDeleted())
-                .orElseThrow(NotFoundMemberException::new);
-
-        MemberClubMapping mapping = mappingRepository
-                .findByStudentAndClubAndStatusAndIsDeletedFalse(student, club, EnrollmentStatus.PENDING)
-                .orElseThrow(NotFoundPendingApplyException::new);
-
-        mapping.reject();
+        switch (decision) {
+            case APPROVE -> mapping.approve();
+            case REJECT  -> mapping.reject();
+            default -> throw new InvalidJoinDecisionException();
+        }
     }
 
     // 탈퇴(승인된 경우에만 의미)

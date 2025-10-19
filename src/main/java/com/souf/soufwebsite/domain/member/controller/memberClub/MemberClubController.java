@@ -3,6 +3,7 @@ package com.souf.soufwebsite.domain.member.controller.memberClub;
 import com.souf.soufwebsite.domain.member.dto.ResDto.ClubSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MyClubResDto;
+import com.souf.soufwebsite.domain.member.entity.JoinDecision;
 import com.souf.soufwebsite.domain.member.service.club.MemberClubService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
@@ -70,27 +71,19 @@ public class MemberClubController implements MemberClubApiSpecification {
         return new SuccessResponse<>(clubs, MY_CLUBS_READ_SUCCESS.getMessage());
     }
 
-
-    // 승인
     @Override
-    @PatchMapping("/{clubId}/members/{studentId}/approve")
-    public SuccessResponse<?> approve(
+    @PatchMapping("/{clubId}/members/{studentId}")
+    public SuccessResponse<?> decideJoin(
             @CurrentEmail String clubEmail,
             @PathVariable Long clubId,
-            @PathVariable Long studentId) {
-        memberClubService.approveJoin(clubEmail, clubId, studentId);
-        return new SuccessResponse<>(APPROVE_JOIN_SUCCESS.getMessage());
-    }
+            @PathVariable Long studentId,
+            @RequestParam JoinDecision decision) {
 
-    // 거절
-    @Override
-    @PatchMapping("/{clubId}/members/{studentId}/reject")
-    public SuccessResponse<?> reject(
-            @CurrentEmail String clubEmail,
-            @PathVariable Long clubId,
-            @PathVariable Long studentId) {
-        memberClubService.rejectJoin(clubEmail, clubId, studentId);
-        return new SuccessResponse<>(REJECT_JOIN_SUCCESS.getMessage());
+        memberClubService.decideJoin(clubEmail, clubId, studentId, decision);
+        String message = (decision == JoinDecision.APPROVE)
+                ? APPROVE_JOIN_SUCCESS.getMessage()
+                : REJECT_JOIN_SUCCESS.getMessage();
+        return new SuccessResponse<>(message);
     }
 
     // 대기 목록 조회

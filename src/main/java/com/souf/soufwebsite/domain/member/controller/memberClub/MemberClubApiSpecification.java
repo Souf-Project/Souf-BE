@@ -3,6 +3,7 @@ package com.souf.soufwebsite.domain.member.controller.memberClub;
 import com.souf.soufwebsite.domain.member.dto.ResDto.ClubSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MyClubResDto;
+import com.souf.soufwebsite.domain.member.entity.JoinDecision;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,18 +51,13 @@ public interface MemberClubApiSpecification {
             @PageableDefault Pageable pageable
     );
 
-    @Operation(summary = "동아리 가입 승인", description = "동아리 관리자가 특정 회원의 가입 요청을 승인합니다.")
-    @PatchMapping("/{clubId}/members/{studentId}/approve")
-    SuccessResponse<?> approve(@CurrentEmail String clubEmail,
+    @Operation(summary = "동아리 가입 결정", description = "동아리 관리자가 특정 회원의 가입 요청을 승인 또는 거절합니다.")
+    @PatchMapping("/{clubId}/members/{studentId}")
+    SuccessResponse<?> decideJoin(
+            @CurrentEmail String clubEmail,
             @PathVariable Long clubId,
-            @PathVariable Long studentId
-    );
-
-    @Operation(summary = "동아리 가입 거절", description = "동아리 관리자가 특정 회원의 가입 요청을 거절합니다.")
-    @PatchMapping("/{clubId}/members/{studentId}/reject")
-    SuccessResponse<?> reject(@CurrentEmail String clubEmail,
-            @PathVariable Long clubId,
-            @PathVariable Long studentId
+            @PathVariable Long studentId,
+            @RequestParam JoinDecision decision
     );
 
     @Operation(summary = "동아리 가입 대기 회원 목록 조회", description = "특정 동아리에 가입 요청을 한 회원들의 정보를 페이징 처리하여 조회합니다.")
