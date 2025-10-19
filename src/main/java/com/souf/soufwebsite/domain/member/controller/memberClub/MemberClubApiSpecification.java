@@ -1,7 +1,7 @@
 package com.souf.soufwebsite.domain.member.controller.memberClub;
 
-import com.souf.soufwebsite.domain.member.dto.ResDto.ClubMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.ClubSimpleResDto;
+import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MyClubResDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
@@ -38,7 +38,7 @@ public interface MemberClubApiSpecification {
 
     @Operation(summary = "동아리 회원 목록 조회", description = "특정 동아리에 가입한 회원들의 정보를 페이징 처리하여 조회합니다.")
     @GetMapping("/{clubId}/members")
-    SuccessResponse<Page<ClubMemberResDto>> getClubMembers(
+    SuccessResponse<Page<MemberSimpleResDto>> getClubMembers(
             @PathVariable @NotNull Long clubId,
             @PageableDefault Pageable pageable
     );
@@ -66,7 +66,7 @@ public interface MemberClubApiSpecification {
 
     @Operation(summary = "동아리 가입 대기 회원 목록 조회", description = "특정 동아리에 가입 요청을 한 회원들의 정보를 페이징 처리하여 조회합니다.")
     @GetMapping("/{clubId}/pending")
-    SuccessResponse<Page<ClubMemberResDto>> pending(
+    SuccessResponse<Page<MemberSimpleResDto>> pending(
             @PathVariable Long clubId,
             @PageableDefault Pageable pageable
     );

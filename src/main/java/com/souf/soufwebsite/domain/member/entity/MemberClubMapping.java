@@ -37,9 +37,6 @@ public class MemberClubMapping extends BaseEntity {
     @Column(name = "requested_at", nullable = false)
     private LocalDateTime requestedAt;          // 신청 시각
 
-    @Column(name = "decided_at")
-    private LocalDateTime decidedAt;            // 승인/거절 시각
-
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
 
@@ -59,16 +56,14 @@ public class MemberClubMapping extends BaseEntity {
     }
 
     // 승인 처리
-    public void approve(Member approver) {
+    public void approve() {
         this.status = MembershipStatus.APPROVED;
         this.joinedAt = LocalDateTime.now();
-        this.decidedAt = this.joinedAt;
     }
 
     // 거절 처리
-    public void reject(Member approver) {
+    public void reject() {
         this.status = MembershipStatus.REJECTED;
-        this.decidedAt = LocalDateTime.now();
     }
 
     public void softDelete() {
