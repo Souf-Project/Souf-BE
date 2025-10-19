@@ -3,12 +3,16 @@ package com.souf.soufwebsite.domain.member.service.admin;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryResDto;
+import com.souf.soufwebsite.domain.inquiry.entity.Inquiry;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryStatus;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryType;
+import com.souf.soufwebsite.domain.inquiry.exception.NotFoundInquiryException;
 import com.souf.soufwebsite.domain.inquiry.repository.InquiryRepository;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.InquiryAnswerReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminPostResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminReportResDto;
+import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
@@ -19,6 +23,7 @@ import com.souf.soufwebsite.domain.report.exception.NotFoundReportException;
 import com.souf.soufwebsite.domain.report.repository.ReportRepository;
 import com.souf.soufwebsite.domain.report.service.StrikeService;
 import com.souf.soufwebsite.global.common.PostType;
+import com.souf.soufwebsite.global.common.mail.SesMailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -40,6 +45,7 @@ public class AdminServiceImpl implements AdminService {
     private final InquiryRepository inquiryRepository;
 
     private final StrikeService strikeService;
+    private final SesMailService emailService;
 
     @Override
     public Page<AdminPostResDto> getPosts(PostType postType, String writer, String title, Pageable pageable) {
@@ -71,10 +77,23 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public Page<InquiryResDto> getInquiries(InquiryType inquiryType, InquiryStatus status, Pageable pageable) {
+    public Page<InquiryResDto> getInquiries(String search, InquiryType inquiryType, InquiryStatus status, Pageable pageable) {
         log.info("inquiryType: {}, pageable: {}", inquiryType, pageable);
 
-        return inquiryRepository.getInquiryListInAdmin(inquiryType, status, pageable);
+        return inquiryRepository.getInquiryListInAdmin(search, inquiryType, status, pageable);
+    }
+
+    @Transactional
+    @Override
+    public void answerInquiry(String email, Long inquiryId, InquiryAnswerReqDto reqDto) {
+        Inquiry inquiry = findIfInquiryExists(inquiryId);
+        inquiry.updateAnswer(reqDto);
+
+        Member toMember = inquiry.getMember();
+
+        log.info("inquiry named {} was answered", inquiryId);
+
+        emailService.sendInquiryResult(toMember.getEmail(), toMember.getNickname(), inquiry.getTitle());
     }
 
     @Transactional
@@ -90,5 +109,9 @@ public class AdminServiceImpl implements AdminService {
 
     private Report findIfReportExists(Long reportId) {
         return reportRepository.findById(reportId).orElseThrow(NotFoundReportException::new);
+    }
+
+    private Inquiry findIfInquiryExists(Long inquiryId) {
+        return inquiryRepository.findById(inquiryId).orElseThrow(NotFoundInquiryException::new);
     }
 }

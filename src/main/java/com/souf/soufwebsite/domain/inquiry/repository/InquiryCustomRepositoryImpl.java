@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 import static com.souf.soufwebsite.domain.inquiry.entity.QInquiry.inquiry;
+import static com.souf.soufwebsite.domain.member.entity.QMember.member;
 import static org.springframework.util.StringUtils.hasText;
 
 @Repository
@@ -25,37 +26,46 @@ public class InquiryCustomRepositoryImpl implements InquiryCustomRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<InquiryResDto> getInquiryListInAdmin(InquiryType inquiryType, InquiryStatus inquiryStatus, Pageable pageable) {
+    public Page<InquiryResDto> getInquiryListInAdmin(String search, InquiryType inquiryType, InquiryStatus inquiryStatus, Pageable pageable) {
 
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(getInquiryType(inquiryType));
         builder.and(getInquiryStatus(inquiryStatus));
+        builder.and(containsWord(search));
 
-        List<Inquiry> result = queryFactory.selectFrom(inquiry)
+        List<Inquiry> inquiries = queryFactory.selectFrom(inquiry)
+                .leftJoin(inquiry.member, member)
                 .where(builder)
+                .orderBy(inquiry.createdTime.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
+        List<InquiryResDto> result = inquiries.stream().map(
+                InquiryResDto::of
+        ).toList();
+
         Long total = queryFactory
-                .select(inquiry.id.countDistinct())
+                .select(inquiry.count())
                 .from(inquiry)
                 .where(builder)
                 .fetchOne();
-        long totalCount = total == null ? 0 : total;
 
-        List<InquiryResDto> resDtoList = result.stream().map(
-                r -> new InquiryResDto(r.getId(), r.getTitle(), r.getContent())
-        ).toList();
-
-        return new PageImpl<>(resDtoList, pageable, totalCount);
+        return new PageImpl<>(result, pageable, total == null ? 0 : total);
     }
 
     private BooleanExpression getInquiryType(InquiryType inquiryType) {
-        return hasText(String.valueOf(inquiryType)) ? inquiry.inquiryType.eq(inquiryType) : null;
+        return (inquiryType != null) ? inquiry.inquiryType.eq(inquiryType) : null;
     }
 
     private BooleanExpression getInquiryStatus(InquiryStatus inquiryStatus) {
-        return hasText(String.valueOf(inquiryStatus)) ? inquiry.inquiryStatus.eq(inquiryStatus) : null;
+        return (inquiryStatus != null) ? inquiry.inquiryStatus.eq(inquiryStatus) : null;
+    }
+
+    private BooleanExpression containsWord(String search) {
+        if (!hasText(search)) return null;
+        String kw = search.trim();
+        return inquiry.title.containsIgnoreCase(kw)
+                .or(inquiry.content.containsIgnoreCase(kw));
     }
 }
