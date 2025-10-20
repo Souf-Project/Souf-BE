@@ -8,7 +8,6 @@ import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -27,20 +26,20 @@ public interface MemberClubApiSpecification {
     @PostMapping("/{clubId}/join")
     SuccessResponse<?> joinClub(
             @CurrentEmail String email,
-            @PathVariable @NotNull Long clubId
+            @PathVariable Long clubId
     );
 
     @Operation(summary = "동아리 탈퇴", description = "회원이 특정 동아리에서 탈퇴합니다.")
     @DeleteMapping("/{clubId}/withdraw")
     SuccessResponse<?> leaveClub(
             @CurrentEmail String email,
-            @PathVariable @NotNull Long clubId
+            @PathVariable Long clubId
     );
 
     @Operation(summary = "동아리 회원 목록 조회", description = "특정 동아리에 가입한 회원들의 정보를 페이징 처리하여 조회합니다.")
     @GetMapping("/{clubId}/members")
     SuccessResponse<Page<MemberSimpleResDto>> getClubMembers(
-            @PathVariable @NotNull Long clubId,
+            @PathVariable Long clubId,
             @PageableDefault Pageable pageable
     );
 

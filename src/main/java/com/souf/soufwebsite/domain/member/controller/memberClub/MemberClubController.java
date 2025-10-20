@@ -36,7 +36,7 @@ public class MemberClubController implements MemberClubApiSpecification {
     @PostMapping("/{clubId}/join")
     public SuccessResponse<?> joinClub(
             @CurrentEmail String email,
-            @PathVariable @NotNull Long clubId
+            @PathVariable Long clubId
     ) {
         memberClubService.joinClub(email, clubId);
         return new SuccessResponse<>(JOIN_CLUB_SUCCESS.getMessage());
@@ -46,7 +46,7 @@ public class MemberClubController implements MemberClubApiSpecification {
     @DeleteMapping("/{clubId}/withdraw")
     public SuccessResponse<?> leaveClub(
             @CurrentEmail String email,
-            @PathVariable @NotNull Long clubId
+            @PathVariable Long clubId
     ) {
         memberClubService.leaveClub(email, clubId);
         return new SuccessResponse<>(LEAVE_CLUB_SUCCESS.getMessage());
