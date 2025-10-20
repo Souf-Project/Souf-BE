@@ -111,71 +111,32 @@ public class MemberClubService {
     }
 
     @Transactional(readOnly = true)
-    public Page<MemberSimpleResDto> getClubMembers(Long clubId, Pageable pageable) {
+    public Page<MemberSimpleResDto> getClubMembers(Long clubId, EnrollmentStatus status, Pageable pageable) {
         Page<MemberClubMapping> page = mappingRepository
-                .findAllByClubIdAndStatusAndIsDeletedFalse(clubId, EnrollmentStatus.APPROVED, pageable);
+                .findAllByClubIdAndStatusAndIsDeletedFalse(clubId, status, pageable);
 
         return page.map(mapping -> {
-            Member s = mapping.getStudent();
+            Member member = mapping.getStudent();
 
-            // 1) 프로필 이미지 URL
-            String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, s.getId());
+            String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-            // 2) 인기 피드(상위 3개) → 썸네일 URL 목록으로 변환
-            List<Feed> topFeeds = feedRepository.findTop3ByMemberOrderByViewCountDesc(s);
-
-            List<MemberSimpleResDto.PopularFeedDto> feedDtos = topFeeds.stream()
-                    .map(feed -> {
-                        List<Media> mediaList = fileService.getMediaList(PostType.FEED, feed.getId());
-                        if (mediaList == null || mediaList.isEmpty()) return null;
-
-                        // 첫 번째 media를 썸네일로 사용 (가능하면 thumbnailUrl 우선)
-                        Media first = mediaList.get(0);
-                        String url = first.getThumbnailUrl() != null ? first.getThumbnailUrl() : first.getOriginalUrl();
-
-                        return new MemberSimpleResDto.PopularFeedDto(url);
-                    })
-                    .filter(Objects::nonNull)
-                    .toList();
-
-            return MemberSimpleResDto.from(
-                    s,
-                    profileImageUrl,
-                    feedDtos,
-                    s.getCategories()
-            );
-        });
-    }
-
-    @Transactional(readOnly = true)
-    public Page<MemberSimpleResDto> getPendingMembers(Long clubId, Pageable pageable) {
-        Page<MemberClubMapping> page = mappingRepository
-                .findAllByClubIdAndStatusAndIsDeletedFalse(clubId, EnrollmentStatus.PENDING, pageable);
-
-        return page.map(mapping -> {
-            Member s = mapping.getStudent();
-
-            String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, s.getId());
-
-            List<Feed> topFeeds = feedRepository.findTop3ByMemberOrderByViewCountDesc(s);
+            List<Feed> topFeeds = feedRepository.findTop3ByMemberOrderByViewCountDesc(member);
             List<MemberSimpleResDto.PopularFeedDto> feedDtos = topFeeds.stream()
                     .map(feed -> {
                         List<Media> mediaList = fileService.getMediaList(PostType.FEED, feed.getId());
                         if (mediaList == null || mediaList.isEmpty()) return null;
 
                         Media first = mediaList.get(0);
-                        String url = first.getThumbnailUrl() != null ? first.getThumbnailUrl() : first.getOriginalUrl();
+                        String url = (first.getThumbnailUrl() != null)
+                                ? first.getThumbnailUrl()
+                                : first.getOriginalUrl();
+
                         return new MemberSimpleResDto.PopularFeedDto(url);
                     })
                     .filter(Objects::nonNull)
                     .toList();
 
-            return MemberSimpleResDto.from(
-                    s,
-                    profileImageUrl,
-                    feedDtos,
-                    s.getCategories()
-            );
+            return MemberSimpleResDto.from(member, profileImageUrl, feedDtos, member.getCategories());
         });
     }
 

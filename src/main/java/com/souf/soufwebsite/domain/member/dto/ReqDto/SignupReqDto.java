@@ -10,7 +10,7 @@ import java.util.List;
 public record SignupReqDto(
 
         @Schema(description = "회원 구분 ", example = "STUDENT")
-        @NotEmpty RoleType roleType,
+        @NotNull RoleType roleType,
 
         @Schema(description = "사용자 살명", example = "홍길동")
         @NotEmpty String username,

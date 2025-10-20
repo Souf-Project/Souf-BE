@@ -3,6 +3,7 @@ package com.souf.soufwebsite.domain.member.controller.memberClub;
 import com.souf.soufwebsite.domain.member.dto.ResDto.ClubSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MyClubResDto;
+import com.souf.soufwebsite.domain.member.entity.EnrollmentStatus;
 import com.souf.soufwebsite.domain.member.entity.JoinDecision;
 import com.souf.soufwebsite.domain.member.service.club.MemberClubService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
@@ -54,10 +55,10 @@ public class MemberClubController implements MemberClubApiSpecification {
     @Override
     @GetMapping("/{clubId}/members")
     public SuccessResponse<Page<MemberSimpleResDto>> getClubMembers(
-            @PathVariable @NotNull Long clubId,
+            @PathVariable Long clubId,
             @PageableDefault Pageable pageable
     ) {
-        Page<MemberSimpleResDto> clubMembers = memberClubService.getClubMembers(clubId, pageable);
+        Page<MemberSimpleResDto> clubMembers = memberClubService.getClubMembers(clubId, EnrollmentStatus.APPROVED, pageable);
         return new SuccessResponse<>(clubMembers, CLUB_MEMBERS_READ_SUCCESS.getMessage());
     }
 
@@ -89,9 +90,11 @@ public class MemberClubController implements MemberClubApiSpecification {
     // 대기 목록 조회
     @Override
     @GetMapping("/{clubId}/pending")
-    public SuccessResponse<Page<MemberSimpleResDto>> pending(@PathVariable Long clubId,
-                                                             @PageableDefault Pageable pageable) {
-        Page<MemberSimpleResDto> pendingMembers = memberClubService.getPendingMembers(clubId, pageable);
+    public SuccessResponse<Page<MemberSimpleResDto>> pending(
+            @PathVariable Long clubId,
+            @PageableDefault Pageable pageable
+    ) {
+        Page<MemberSimpleResDto> pendingMembers = memberClubService.getClubMembers(clubId, EnrollmentStatus.PENDING, pageable);
         return new SuccessResponse<>(pendingMembers, PENDING_MEMBERS_READ_SUCCESS.getMessage());
     }
 
