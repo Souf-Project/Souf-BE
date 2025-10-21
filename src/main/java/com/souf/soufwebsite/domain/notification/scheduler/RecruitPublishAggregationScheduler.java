@@ -67,16 +67,14 @@ public class RecruitPublishAggregationScheduler {
                 String body = String.format("%s 카테고리에 새로운 공고가 %d건 올라왔어요.", categoryName, count);
 
                 NotificationDto dto = new NotificationDto(
+                        member.getEmail(),
                         memberId,
                         NotificationType.RECRUIT_PUBLISHED,
                         "관심 카테고리 새 공고 알림",
                         body,
                         "RECRUIT",
                         null,
-                        java.time.LocalDateTime.now(),
-                        member.getEmail(),
-                        member.getNickname(),
-                        null
+                        java.time.LocalDateTime.now()
                 );
 
                 notificationPublisher.publish(dto);
