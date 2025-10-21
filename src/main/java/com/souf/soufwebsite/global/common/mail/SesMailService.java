@@ -49,4 +49,19 @@ public class SesMailService {
             throw new RuntimeException("인증번호 전송 실패", e);
         }
     }
+
+    public void sendInquiryResult(String to, String nickname, String inquiryTitle) {
+
+        try {
+            Map<String, String> data = new HashMap<>();
+            data.put("nickname", nickname);
+            data.put("inquiryTitle", inquiryTitle);
+
+            SendTemplatedEmailRequest request = templateUtil
+                    .createSendTemplatedEmailRequest(to, "SendInquiryStatusTemplate", data);
+            emailService.sendTemplatedEmail(request);
+        } catch (Exception e) {
+            throw new RuntimeException("문의내용 결과 전송 실패", e);
+        }
+    }
 }

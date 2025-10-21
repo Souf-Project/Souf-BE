@@ -57,8 +57,12 @@ public class FileService {
     public List<Media> uploadMetadata(MediaReqDto files, PostType postType, Long postId){
         List<Media> mediaList = new ArrayList<>();
         for(int i=0;i<files.fileUrl().size();i++){
+            PostType temp = postType;
+            if(!files.filePurpose().isEmpty() && files.filePurpose().get(i).equals("LOGO")){
+                temp = PostType.LOGO;
+            }
             Media media = Media.of(files.fileUrl().get(i), files.fileName().get(i),
-                    MediaType.valueOf(files.fileType().get(i)), postType, postId);
+                    MediaType.valueOf(files.fileType().get(i)), temp, postId);
             mediaRepository.save(media);
             mediaList.add(media);
         }

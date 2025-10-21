@@ -130,6 +130,7 @@ public class RecruitServiceImpl implements RecruitService {
     @Transactional
     public void uploadRecruitMedia(MediaReqDto reqDto) {
         Recruit recruit = findIfRecruitExist(reqDto.postId());
+
         fileService.uploadMetadata(reqDto, PostType.RECRUIT, recruit.getId());
     }
 
