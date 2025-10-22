@@ -305,11 +305,16 @@ public class RecruitServiceImpl implements RecruitService {
 
     private void updateRemainingImages(RecruitReqDto reqDto, Recruit recruit) {
         List<Media> mediaList = fileService.getMediaList(PostType.RECRUIT, recruit.getId());
+        List<String> removedUrls = new java.util.ArrayList<>();
+
         for (Media media : mediaList) {
             if (!reqDto.existingImageUrls().contains(media.getOriginalUrl())) {
-                fileService.deleteMedia(media);  // DB에서만 삭제되도록 수정
+                removedUrls.add(media.getOriginalUrl());
+                fileService.deleteMedia(media);
             }
         }
+        if (!removedUrls.isEmpty()) {
+            mediaCleanupPublisher.publishUrls(PostType.RECRUIT, recruit.getId(), removedUrls);
+        }
     }
-
 }
