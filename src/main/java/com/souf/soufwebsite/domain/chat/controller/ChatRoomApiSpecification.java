@@ -5,6 +5,8 @@ import com.souf.soufwebsite.domain.chat.dto.ChatRoomCreateReqDto;
 import com.souf.soufwebsite.domain.chat.dto.ChatRoomResDto;
 import com.souf.soufwebsite.domain.chat.dto.ChatRoomSummaryDto;
 import com.souf.soufwebsite.global.security.UserDetailsImpl;
+import com.souf.soufwebsite.global.success.SuccessResponse;
+import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 
 @Tag(name = "ChatRoom", description = "채팅방 관련 API")
-public interface ChatRoomApiSpecificaton {
+public interface ChatRoomApiSpecification {
 
     @Operation(summary = "채팅방 생성", description = "두 사용자를 조회해 해당 사용자 간의 채팅방을 생성하고 이미 존재한다면 재사용합니다.")
     @PostMapping
@@ -44,5 +46,17 @@ public interface ChatRoomApiSpecificaton {
     ResponseEntity<Void> markMessagesAsRead(
             @PathVariable Long roomId,
             @AuthenticationPrincipal UserDetailsImpl userDetails
+    );
+
+    @Operation(summary = "채팅방 나가기", description = "해당 채팅방에서 나갑니다.")
+    @PostMapping("/{roomId}/exit")
+    ResponseEntity<Void> leaveChatRoom(
+            @PathVariable Long roomId
+    );
+
+    @Operation(summary = "안 읽은 전체 메시지 개수 조회", description = "현재 사용자의 안 읽은 메시지 개수를 조회합니다.")
+    @GetMapping("/unread-count")
+    SuccessResponse<Integer> getUnreadCount(
+            @CurrentEmail String email
     );
 }

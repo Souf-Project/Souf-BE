@@ -7,12 +7,15 @@ import com.souf.soufwebsite.domain.chat.dto.ChatRoomSummaryDto;
 import com.souf.soufwebsite.domain.chat.entity.ChatMessage;
 import com.souf.soufwebsite.domain.chat.entity.ChatRoom;
 import com.souf.soufwebsite.domain.chat.exception.NotChatRoomParticipantException;
+import com.souf.soufwebsite.domain.chat.repository.ChatRoomNativeRepository;
 import com.souf.soufwebsite.domain.chat.service.ChatMessageService;
 import com.souf.soufwebsite.domain.chat.service.ChatRoomService;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.global.security.UserDetailsImpl;
+import com.souf.soufwebsite.global.success.SuccessResponse;
+import com.souf.soufwebsite.global.util.CurrentEmail;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,19 +25,23 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.souf.soufwebsite.domain.chat.controller.ChatSuccessMessage.COUNT_UNREAD_MESSAGES;
+
 @RestController
 @RequestMapping("/api/v1/chatrooms")
 @RequiredArgsConstructor
 @Slf4j
-public class ChatRoomController implements ChatRoomApiSpecificaton {
+public class ChatRoomController implements ChatRoomApiSpecification {
     private final ChatRoomService chatRoomService;
     private final ChatMessageService chatMessageService;
     private final MemberRepository memberRepository;
+    private final ChatRoomNativeRepository chatRoomNativeRepository;
 
     private Member getCurrentUser() {
         return SecurityUtils.getCurrentMember();
     }
 
+    @Override
     @PostMapping
     public ResponseEntity<ChatRoomResDto> createChatRoom(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -51,14 +58,18 @@ public class ChatRoomController implements ChatRoomApiSpecificaton {
         return ResponseEntity.ok(new ChatRoomResDto(room.getId()));
     }
 
+    @Override
     @GetMapping
-    public ResponseEntity<List<ChatRoomSummaryDto>> getMyChatRooms(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<List<ChatRoomSummaryDto>> getMyChatRooms(
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
         Member member = userDetails.getMember();
 
         List<ChatRoomSummaryDto> result = chatRoomService.getChatRoomsForUser(member);
         return ResponseEntity.ok(result);
     }
 
+    @Override
     @GetMapping("/{roomId}/messages")
     public ResponseEntity<List<ChatMessageResDto>> getMessages(
             @PathVariable Long roomId,
@@ -87,6 +98,7 @@ public class ChatRoomController implements ChatRoomApiSpecificaton {
         return ResponseEntity.ok(result);
     }
 
+    @Override
     @PatchMapping("/{roomId}/read")
     public ResponseEntity<Void> markMessagesAsRead(
             @PathVariable Long roomId,
@@ -99,10 +111,22 @@ public class ChatRoomController implements ChatRoomApiSpecificaton {
         return ResponseEntity.ok().build();
     }
 
+    @Override
     @PostMapping("/{roomId}/exit")
-    public ResponseEntity<Void> leaveChatRoom(@PathVariable Long roomId) {
+    public ResponseEntity<Void> leaveChatRoom(
+            @PathVariable Long roomId
+    ) {
         Member member = getCurrentUser(); // 인증된 사용자
         chatRoomService.exitChatRoom(member, roomId);
         return ResponseEntity.ok().build();
+    }
+
+    @Override
+    @GetMapping("/unread-count")
+    public SuccessResponse<Integer> getUnreadCount(
+            @CurrentEmail String email
+    ) {
+        int count = chatRoomNativeRepository.getTotalUnreadCount(email);
+        return new SuccessResponse<>(count, COUNT_UNREAD_MESSAGES.getMessage());
     }
 }

@@ -15,6 +15,9 @@ import com.souf.soufwebsite.domain.member.dto.ResDto.AdminReportResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.domain.notification.dto.NotificationDto;
+import com.souf.soufwebsite.domain.notification.entity.NotificationType;
+import com.souf.soufwebsite.domain.notification.service.NotificationPublisher;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
 import com.souf.soufwebsite.domain.report.entity.Report;
@@ -32,6 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -46,6 +50,7 @@ public class AdminServiceImpl implements AdminService {
 
     private final StrikeService strikeService;
     private final SesMailService emailService;
+    private final NotificationPublisher notificationPublisher;
 
     @Override
     public Page<AdminPostResDto> getPosts(PostType postType, String writer, String title, Pageable pageable) {
@@ -91,9 +96,19 @@ public class AdminServiceImpl implements AdminService {
 
         Member toMember = inquiry.getMember();
 
-        log.info("inquiry named {} was answered", inquiryId);
+        NotificationDto dto = new NotificationDto(
+                toMember.getEmail(),
+                toMember.getId(),
+                NotificationType.INQUIRY_REPLIED,
+                "문의에 답변이 등록됐어요",
+                "문의하신 내용에 새로운 답변이 도착했어요.",
+                "INQUIRY",
+                inquiryId,
+                LocalDateTime.now()
+        );
 
         emailService.sendInquiryResult(toMember.getEmail(), toMember.getNickname(), inquiry.getTitle());
+        notificationPublisher.publish(dto);
     }
 
     @Transactional
