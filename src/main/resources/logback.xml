@@ -1,0 +1,65 @@
+<configuration>
+    <springProfile name="prod">
+        <appender name="dailyConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss, Asia/Seoul} [%thread] [%-5level] %logger{36} - %msg%n</pattern>
+            </encoder>
+        </appender>
+        <appender name="dailyRollingFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>./logs/application.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+                <maxFileSize>30MB</maxFileSize>
+                <maxHistory>14</maxHistory>
+                <cleanHistoryOnStart>true</cleanHistoryOnStart>
+            </rollingPolicy>
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss, Asia/Seoul} [%thread] [%-5level] %logger{36}[%method:%line] - %msg%n </pattern>
+            </encoder>
+        </appender>
+<!--        <appender name="dailyCloudWatchAppender" class="ca.pjer.logback.AwsLogsAppender">-->
+<!--            <layout>-->
+<!--                <pattern>[%thread] [%date] [%level] [%file:line] - %msg%n</pattern>-->
+<!--            </layout>-->
+<!--            <logGroupName></logGroupName>-->
+<!--            <logStreamUuidPrefix></logStreamUuidPrefix>-->
+<!--            <logRegion>ap-northeast-2</logRegion>-->
+<!--            <maxBatchLogEvents>50</maxBatchLogEvents>-->
+<!--            <maxFlushTimeMillis>30000</maxFlushTimeMillis>-->
+<!--            <maxBlockTimeMillis>5000</maxBlockTimeMillis>-->
+<!--            <retentionTimeDays>0</retentionTimeDays>-->
+<!--            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">-->
+<!--                <level>INFO</level>-->
+<!--            </filter>-->
+<!--            <encoder>-->
+<!--                <charset>UTF-8</charset>-->
+<!--                <pattern>%d{HH:mm:ss.SSS} [%thread] [%-5level] %logger{36}[%method:%line] %msg%n</pattern>-->
+<!--            </encoder>-->
+<!--        </appender>-->
+
+        <appender name="ASYNC_AWS" class="ch.qos.logback.classic.AsyncAppender">
+            <queueSize>512</queueSize>
+            <discardingThreshold>0</discardingThreshold>
+            <appender-ref ref="dailyRollingFileAppender"/>
+        </appender>
+
+<!--        <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">-->
+<!--            <queueSize>512</queueSize>-->
+<!--            <discardingThreshold>0</discardingThreshold>-->
+<!--            <appender-ref ref="dailyCloudWatchAppender"/>-->
+<!--        </appender>-->
+    </springProfile>
+
+    <root level="INFO">
+<!--        <appender-ref ref="dailyConsoleAppender"/>-->
+        <appender-ref ref="ASYNC_FILE"/>
+        <appender-ref ref="ASYNC_AWS"/>
+    </root>
+
+    <logger name="jdbc" level="OFF"/> <!-- 기본 JDBC 로깅은 OFF -->
+    <logger name="jdbc.sqlonly" level="DEBUG"/>
+    <logger name="jdbc.sqltiming" level="OFF"/>
+    <logger name="jdbc.audit" level="OFF"/>
+    <logger name="jdbc.connection" level="OFF"/>
+    <logger name="jdbc.resultset" level="OFF"/>
+    <logger name="jdbc.resultsettable" level="DEBUG"/>
+</configuration>
