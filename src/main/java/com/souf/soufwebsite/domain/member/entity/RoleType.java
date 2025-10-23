@@ -4,5 +4,6 @@ public enum RoleType {
 
     ADMIN, // 관리자
     STUDENT, // 학생
-    MEMBER // 일반 사용자
+    MEMBER, // 일반 사용자
+    CLUB // 동아리
 }

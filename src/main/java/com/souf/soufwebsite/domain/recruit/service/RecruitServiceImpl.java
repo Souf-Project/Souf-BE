@@ -27,6 +27,7 @@ import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.entity.RecruitCategoryMapping;
 import com.souf.soufwebsite.domain.recruit.exception.NotFoundRecruitException;
 import com.souf.soufwebsite.domain.recruit.exception.NotValidAuthenticationException;
+import com.souf.soufwebsite.domain.recruit.query.SubscriberQuery;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
 import com.souf.soufwebsite.global.common.PostType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
@@ -44,9 +45,11 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -71,9 +74,13 @@ public class RecruitServiceImpl implements RecruitService {
     private final SlackService slackService;
     private final ViewCountService viewCountService;
 
-
     private final MediaCleanupPublisher mediaCleanupPublisher;
     private final MediaCleanupHelper mediaCleanupHelper;
+
+    private static final String AGG_KEY_FMT = "notif:agg:%d:%d:%d"; // notif:agg:{memberId}:{firstId}:{secondId}
+    private static final Duration AGG_WINDOW = java.time.Duration.ofHours(1);
+    private final SubscriberQuery subscriberQuery;
+    private final RedisTemplate<String, Object> redisTemplate;
 
 
     public Member getCurrentMember() {
@@ -92,6 +99,11 @@ public class RecruitServiceImpl implements RecruitService {
         Recruit recruit = Recruit.of(reqDto, member, city, cityDetail);
         injectCategories(reqDto, recruit);
         recruit = recruitRepository.save(recruit);
+
+        List<CatPair> pairs = extractFirstSecondPairs(reqDto);
+        for (CatPair p : pairs) {
+            enqueueRecruitPublished(p.firstId(), p.secondId(), recruit.getId());
+        }
 
 //        indexEventPublisherHelper.publishIndexEvent(
 //                EntityType.RECRUIT,
@@ -121,6 +133,7 @@ public class RecruitServiceImpl implements RecruitService {
     @Transactional
     public void uploadRecruitMedia(MediaReqDto reqDto) {
         Recruit recruit = findIfRecruitExist(reqDto.postId());
+
         fileService.uploadMetadata(reqDto, PostType.RECRUIT, recruit.getId());
     }
 
@@ -317,6 +330,29 @@ public class RecruitServiceImpl implements RecruitService {
         // 삭제할 URL이 있으면 S3 삭제 이벤트 발행
         if (!removed.isEmpty()) {
             mediaCleanupPublisher.publishUrls(PostType.RECRUIT, recruit.getId(), removed);
+        }
+    }
+
+    private record CatPair(Long firstId, Long secondId) {}
+
+    // reqDto에서 (first, second) 페어를 추출 (third는 무시)
+    private List<CatPair> extractFirstSecondPairs(RecruitReqDto reqDto) {
+        if (reqDto.categoryDtos() == null) return List.of();
+        return reqDto.categoryDtos().stream()
+                .filter(cd -> cd.firstCategory() != null && cd.secondCategory() != null) // 둘 다 있어야 매칭
+                .map(cd -> new CatPair(cd.firstCategory(), cd.secondCategory()))
+                .distinct()
+                .toList();
+    }
+
+    private void enqueueRecruitPublished(Long firstId, Long secondId, Long recruitId) {
+        var subscriberIds = subscriberQuery.findSubscriberIdsByFirstSecond(firstId, secondId);
+        if (subscriberIds == null || subscriberIds.isEmpty()) return;
+
+        for (Long memberId : subscriberIds) {
+            String key = AGG_KEY_FMT.formatted(memberId, firstId, secondId);
+            redisTemplate.opsForHash().increment(key, "count", 1);
+            redisTemplate.expire(key, AGG_WINDOW);
         }
     }
 }
