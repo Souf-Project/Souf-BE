@@ -15,6 +15,7 @@ import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
+import com.souf.soufwebsite.domain.file.event.MediaCleanupHelper;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.file.service.MediaCleanupPublisher;
 import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
@@ -62,6 +63,7 @@ public class FeedServiceImpl implements FeedService {
     private final SlackService slackService;
     private final LikedFeedRepository likedFeedRepository;
     private final CommentRepository commentRepository;
+    private final MediaCleanupHelper mediaCleanupHelper;
 
     private final StringRedisTemplate stringRedisTemplate;
 
@@ -152,7 +154,7 @@ public class FeedServiceImpl implements FeedService {
         verifyIfFeedIsMine(feed, member);
 
         feed.updateContent(reqDto);
-        updatedRemainingUrls(reqDto, feed);
+        updateRemainingUrls(reqDto, feed);
 
         List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
         VideoDto videoDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.FEED);
@@ -282,12 +284,16 @@ public class FeedServiceImpl implements FeedService {
         }
     }
 
-    private void updatedRemainingUrls(FeedReqDto reqDto, Feed feed) {
-        List<Media> mediaList = fileService.getMediaList(PostType.FEED, feed.getId());
-        for (Media media : mediaList) {
-            if (!reqDto.existingImageUrls().contains(media.getOriginalUrl())) {
-                fileService.deleteMedia(media);  // DB에서만 삭제되도록 수정
-            }
+    private void updateRemainingUrls(FeedReqDto reqDto, Feed feed) {
+        List<String> removed = mediaCleanupHelper.purgeRemovedMedias(
+                PostType.FEED,
+                feed.getId(),
+                reqDto.existingImageUrls()
+        );
+
+        // 삭제할 URL이 있으면 S3 삭제 이벤트 발행
+        if (!removed.isEmpty()) {
+            mediaCleanupPublisher.publishUrls(PostType.FEED, feed.getId(), removed);
         }
     }
 

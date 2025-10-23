@@ -11,6 +11,7 @@ import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
+import com.souf.soufwebsite.domain.file.event.MediaCleanupHelper;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.file.service.MediaCleanupPublisher;
 import com.souf.soufwebsite.domain.file.service.S3UploaderService;
@@ -70,6 +71,7 @@ public class RecruitServiceImpl implements RecruitService {
 //    private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final SlackService slackService;
     private final ViewCountService viewCountService;
+    private final MediaCleanupHelper mediaCleanupHelper;
 
 
     public Member getCurrentMember() {
@@ -304,17 +306,16 @@ public class RecruitServiceImpl implements RecruitService {
     }
 
     private void updateRemainingImages(RecruitReqDto reqDto, Recruit recruit) {
-        List<Media> mediaList = fileService.getMediaList(PostType.RECRUIT, recruit.getId());
-        List<String> removedUrls = new java.util.ArrayList<>();
+        List<String> removed = mediaCleanupHelper.purgeRemovedMedias(
+                PostType.RECRUIT,
+                recruit.getId(),
+                reqDto.existingImageUrls()
+        );
 
-        for (Media media : mediaList) {
-            if (!reqDto.existingImageUrls().contains(media.getOriginalUrl())) {
-                removedUrls.add(media.getOriginalUrl());
-                fileService.deleteMedia(media);
-            }
-        }
-        if (!removedUrls.isEmpty()) {
-            mediaCleanupPublisher.publishUrls(PostType.RECRUIT, recruit.getId(), removedUrls);
+        // 삭제할 URL이 있으면 S3 삭제 이벤트 발행
+        if (!removed.isEmpty()) {
+            mediaCleanupPublisher.publishUrls(PostType.RECRUIT, recruit.getId(), removed);
         }
     }
 }
+
