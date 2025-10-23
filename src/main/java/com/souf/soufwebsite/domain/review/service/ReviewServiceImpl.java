@@ -3,6 +3,7 @@ package com.souf.soufwebsite.domain.review.service;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
+import com.souf.soufwebsite.domain.file.event.MediaCleanupHelper;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.file.service.MediaCleanupPublisher;
 import com.souf.soufwebsite.domain.member.entity.Member;
@@ -42,6 +43,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final ViewCountService viewCountService;
 
     private final MediaCleanupPublisher mediaCleanupPublisher;
+    private final MediaCleanupHelper mediaCleanupHelper;
 
 
     private Member getCurrentMember() {
@@ -109,7 +111,9 @@ public class ReviewServiceImpl implements ReviewService {
 
         review.updateReview(reviewReqDto);
 
-        updatedRemainingUrls(reviewReqDto, review);
+        updateRemainingUrls(reviewReqDto, review);
+
+        // ✅ 3) 새 파일 업로드용 Presigned URL 발급
         List<PresignedUrlResDto> presignedUrlResDtos =
                 fileService.generatePresignedUrl("review", reviewReqDto.originalFileNames());
 
@@ -143,12 +147,16 @@ public class ReviewServiceImpl implements ReviewService {
         return memberRepository.findByEmail(email).orElseThrow(NotFoundMemberException::new);
     }
 
-    private void updatedRemainingUrls(ReviewReqDto reqDto, Review review) {
-        List<Media> mediaList = fileService.getMediaList(PostType.REVIEW, review.getId());
-        for (Media media : mediaList) {
-            if (!reqDto.existingImageUrls().contains(media.getOriginalUrl())) {
-                fileService.deleteMedia(media);  // DB에서만 삭제되도록 수정
-            }
+    private void updateRemainingUrls(ReviewReqDto reqDto, Review review) {
+        List<String> removed = mediaCleanupHelper.purgeRemovedMedias(
+            PostType.REVIEW,
+            review.getId(),
+            reqDto.existingImageUrls()
+        );
+
+        // 삭제할 URL이 있으면 S3 삭제 이벤트 발행
+        if (!removed.isEmpty()) {
+            mediaCleanupPublisher.publishUrls(PostType.REVIEW, review.getId(), removed);
         }
     }
 }

@@ -67,10 +67,12 @@ public class RecruitServiceImpl implements RecruitService {
     private final CityDetailRepository cityDetailRepository;
     private final CategoryService categoryService;
     private final RedisUtil redisUtil;
-    private final MediaCleanupPublisher mediaCleanupPublisher;
 //    private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final SlackService slackService;
     private final ViewCountService viewCountService;
+
+
+    private final MediaCleanupPublisher mediaCleanupPublisher;
     private final MediaCleanupHelper mediaCleanupHelper;
 
 

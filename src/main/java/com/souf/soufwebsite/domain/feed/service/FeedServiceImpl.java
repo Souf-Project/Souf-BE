@@ -59,10 +59,11 @@ public class FeedServiceImpl implements FeedService {
     private final ViewCountService viewCountService;
     private final FeedConverter feedConverter;
 //    private final IndexEventPublisherHelper indexEventPublisherHelper;
-    private final MediaCleanupPublisher mediaCleanupPublisher;
     private final SlackService slackService;
     private final LikedFeedRepository likedFeedRepository;
     private final CommentRepository commentRepository;
+
+    private final MediaCleanupPublisher mediaCleanupPublisher;
     private final MediaCleanupHelper mediaCleanupHelper;
 
     private final StringRedisTemplate stringRedisTemplate;
