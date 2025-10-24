@@ -102,13 +102,14 @@ public class InquiryServiceImpl implements InquiryService {
         Member currentMember = findIfMemberExists(email);
         Inquiry inquiry = findIfInquiryExists(inquiryId);
 
-        // 현재 멤버가 관리자이거나 본인일 경우에만 오픈
-        if (currentMember.getRole().equals(RoleType.ADMIN) || verifyIfInquiryIsMine(inquiry, currentMember)) {
+        boolean isAdmin = RoleType.ADMIN.equals(currentMember.getRole());
+        boolean isOwner = inquiry.getMember().getId().equals(currentMember.getId());
+
+        if (isAdmin || isOwner) {
             List<Media> mediaList = fileService.getMediaList(PostType.INQUIRY, inquiry.getId());
             log.info("문의글을 상세 조회합니다!");
             return InquiryDetailedResDto.of(inquiry, inquiry.getMember(), mediaList);
         }
-
         throw new NotValidAuthenticationException();
     }
 
