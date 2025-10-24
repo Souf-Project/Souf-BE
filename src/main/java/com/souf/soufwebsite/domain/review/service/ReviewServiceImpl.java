@@ -115,7 +115,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         // ✅ 3) 새 파일 업로드용 Presigned URL 발급
         List<PresignedUrlResDto> presignedUrlResDtos =
-                fileService.generatePresignedUrl("review", reviewReqDto.originalFileNames());
+                fileService.generatePresignedUrl("review", PostType.REVIEW, review.getId(), reviewReqDto.originalFileNames());
 
         return new ReviewCreatedResDto(review.getId(), presignedUrlResDtos);
     }

@@ -202,7 +202,7 @@ public class RecruitServiceImpl implements RecruitService {
         CityDetail cityDetail = validateCityOrThrow(city, reqDto.cityDetailId());
 
         updateRemainingImages(reqDto, recruit);
-        List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("recruit", reqDto.originalFileNames());
+        List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("recruit", PostType.RECRUIT, recruit.getId(), reqDto.originalFileNames());
         VideoDto videoDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.RECRUIT);
 
         PresignedUrlResDto logoResDto = null;
