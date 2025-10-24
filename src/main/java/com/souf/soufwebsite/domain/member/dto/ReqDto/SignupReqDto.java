@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.member.dto.ReqDto;
 
+import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
@@ -7,6 +8,9 @@ import jakarta.validation.constraints.*;
 import java.util.List;
 
 public record SignupReqDto(
+
+        @Schema(description = "회원 구분 ", example = "STUDENT")
+        @NotNull RoleType roleType,
 
         @Schema(description = "사용자 살명", example = "홍길동")
         @NotEmpty String username,
@@ -39,4 +43,10 @@ public record SignupReqDto(
         Boolean isMarketingAgreed
 
 ) {
+        @AssertTrue(message = "학생(STUDENT) 가입은 .ac.kr 이메일만 가능합니다.")
+        public boolean isStudentEmailValid() {
+                if (roleType != RoleType.STUDENT) return true;
+                if (email == null) return false;
+                return email.toLowerCase().endsWith(".ac.kr");
+        }
 }

@@ -11,6 +11,9 @@ import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.domain.notification.dto.NotificationDto;
+import com.souf.soufwebsite.domain.notification.entity.NotificationType;
+import com.souf.soufwebsite.domain.notification.service.NotificationPublisher;
 import com.souf.soufwebsite.domain.recruit.entity.PricePolicy;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.exception.NotFoundRecruitException;
@@ -24,6 +27,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -35,6 +39,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private final SesMailService emailService;
     private final FileService fileService;
     private final MemberRepository memberRepository;
+    private final NotificationPublisher notificationPublisher;
 
     private void verifyOwner(Recruit recruit, Member member) {
         if (!recruit.getMember().getId().equals(member.getId())) {
@@ -73,6 +78,20 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         recruit.increaseRecruitCount();
         applicationRepository.save(application);
+
+        // ✅ [추가] 지원자 생성 → 공고 작성자에게 즉시 알림
+        Member owner = recruit.getMember();
+        NotificationDto dto = new NotificationDto(
+                owner.getEmail(),
+                owner.getId(),                                // targetMemberId
+                NotificationType.APPLICANT_CREATED,           // type
+                "새 지원자 발생",                               // title
+                "[" + recruit.getTitle() + "]에 새 지원자가 도착했어요.", // body
+                "RECRUIT",                                    // refType
+                recruit.getId(),                              // refId
+                LocalDateTime.now()                          // createdAt
+        );
+        notificationPublisher.publish(dto);
     }
 
     @Override
@@ -182,6 +201,20 @@ public class ApplicationServiceImpl implements ApplicationService {
         String title = app.getRecruit().getTitle();
 
 
+        String bodyMsg = "[" + recruit.getTitle() + "] 지원에 대한 결과가 등록되었습니다.";
+
+        NotificationDto dto = new NotificationDto(
+                m.getEmail(),
+                m.getId(),
+                NotificationType.APPLICATION_REVIEWED,   // 알림 타입
+                "지원 결과 안내",                           // 알림 제목
+                bodyMsg,                                 // 본문 내용
+                "APPLICATION",                           // 참조 타입
+                app.getId(),                             // 참조 PK
+                LocalDateTime.now()
+        );
+
+        notificationPublisher.publish(dto);
         emailService.announceRecruitResult(to, m.getNickname(), title);
     }
 

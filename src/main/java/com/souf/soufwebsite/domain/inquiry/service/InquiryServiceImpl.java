@@ -2,8 +2,10 @@ package com.souf.soufwebsite.domain.inquiry.service;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
+import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryCreateResDto;
+import com.souf.soufwebsite.domain.inquiry.dto.InquiryDetailedResDto;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryReqDto;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryResDto;
 import com.souf.soufwebsite.domain.inquiry.entity.Inquiry;
@@ -11,6 +13,7 @@ import com.souf.soufwebsite.domain.inquiry.exception.NotFoundInquiryException;
 import com.souf.soufwebsite.domain.inquiry.exception.NotValidAuthenticationException;
 import com.souf.soufwebsite.domain.inquiry.repository.InquiryRepository;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.global.common.PostType;
@@ -81,10 +84,25 @@ public class InquiryServiceImpl implements InquiryService {
 
         Page<Inquiry> inquiries = inquiryRepository.findByMember(currentMember.getEmail(), pageable);
         List<InquiryResDto> result = inquiries.getContent().stream().map(
-                i -> new InquiryResDto(i.getId(), i.getTitle(), i.getContent())
+                InquiryResDto::of
         ).toList();
 
         return new PageImpl<>(result, pageable, inquiries.getTotalElements());
+    }
+
+    @Override
+    public InquiryDetailedResDto getInquiryById(String email, Long inquiryId) {
+        Member currentMember = findIfMemberExists(email);
+        Inquiry inquiry = findIfInquiryExists(inquiryId);
+
+        // 현재 멤버가 관리자이거나 본인일 경우에만 오픈
+        if (currentMember.getRole().equals(RoleType.ADMIN) || verifyIfInquiryIsMine(inquiry, currentMember)) {
+            List<Media> mediaList = fileService.getMediaList(PostType.INQUIRY, inquiry.getId());
+            log.info("문의글을 상세 조회합니다!");
+            return InquiryDetailedResDto.of(inquiry, inquiry.getMember(), mediaList);
+        }
+
+        throw new NotValidAuthenticationException();
     }
 
 
@@ -96,10 +114,12 @@ public class InquiryServiceImpl implements InquiryService {
         return inquiryRepository.findById(inquiryId).orElseThrow(NotFoundInquiryException::new);
     }
 
-    private void verifyIfInquiryIsMine(Inquiry inquiry, Member member) {
+    private boolean verifyIfInquiryIsMine(Inquiry inquiry, Member member) {
         log.info("currentMember: {}, inquiry: {}", member, inquiry.getMember());
         if(!inquiry.getMember().getId().equals(member.getId())){
             throw new NotValidAuthenticationException();
         }
+
+        return true;
     }
 }

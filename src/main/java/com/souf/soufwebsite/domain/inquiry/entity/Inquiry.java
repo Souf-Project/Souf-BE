@@ -1,6 +1,7 @@
 package com.souf.soufwebsite.domain.inquiry.entity;
 
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryReqDto;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.InquiryAnswerReqDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
@@ -10,6 +11,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 
 @Entity
@@ -29,6 +32,12 @@ public class Inquiry extends BaseEntity {
     @Column(nullable = false)
     private String content;
 
+    @Column(nullable = false)
+    private String answer;
+
+    @Column
+    private LocalDateTime answerTime;
+
     @Column(name = "inquiry_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private InquiryType inquiryType;
@@ -46,6 +55,7 @@ public class Inquiry extends BaseEntity {
         this.title = title;
         this.content = content;
         this.inquiryType = inquiryType;
+        this.answer = "답변이 완료되지 않은 문의사항입니다.";
         this.member = member;
         this.inquiryStatus = InquiryStatus.PENDING;
     }
@@ -63,5 +73,11 @@ public class Inquiry extends BaseEntity {
         this.title = reqDto.title();
         this.content = reqDto.content();
         this.inquiryType = reqDto.type();
+    }
+
+    public void updateAnswer(InquiryAnswerReqDto reqDto) {
+        this.answer = reqDto.answer();
+        this.answerTime = LocalDateTime.now();
+        this.inquiryStatus = reqDto.status();
     }
 }

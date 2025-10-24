@@ -2,6 +2,7 @@ package com.souf.soufwebsite.domain.inquiry.controller;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryCreateResDto;
+import com.souf.soufwebsite.domain.inquiry.dto.InquiryDetailedResDto;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryReqDto;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryResDto;
 import com.souf.soufwebsite.domain.inquiry.service.InquiryService;
@@ -73,5 +74,15 @@ public class InquiryController implements InquiryApiSpecification {
         Page<InquiryResDto> myInquiry = inquiryService.getMyInquiry(email, pageable);
 
         return new SuccessResponse<>(myInquiry, INQUIRY_GET.getMessage());
+    }
+
+    @GetMapping("/{inquiryId}")
+    public SuccessResponse<InquiryDetailedResDto> getInquiry(
+            @PathVariable(name = "inquiryId") Long inquiryId,
+            @CurrentEmail String email
+    ) {
+        InquiryDetailedResDto inquiryById = inquiryService.getInquiryById(email, inquiryId);
+
+        return new SuccessResponse<>(inquiryById, INQUIRY_GET.getMessage());
     }
 }

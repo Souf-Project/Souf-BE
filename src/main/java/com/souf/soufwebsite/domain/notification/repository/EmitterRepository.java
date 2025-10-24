@@ -12,21 +12,24 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Repository
 public class EmitterRepository {
 
-    private final Map<Long, List<SseEmitter>> store = new ConcurrentHashMap<>();
+    private final Map<String, List<SseEmitter>> store = new ConcurrentHashMap<>();
 
-    public SseEmitter save(Long memberId, SseEmitter emitter) {
-        store.computeIfAbsent(memberId, k -> new CopyOnWriteArrayList<>()).add(emitter);
+    public SseEmitter save(String email, SseEmitter emitter) {
+        store.computeIfAbsent(email, k -> new CopyOnWriteArrayList<>()).add(emitter);
         return emitter;
     }
 
-    public List<SseEmitter> findAll(Long memberId) {
-        return store.getOrDefault(memberId, Collections.emptyList());
+    public List<SseEmitter> findAll(String email) {
+        return store.getOrDefault(email, Collections.emptyList());
     }
 
-    public void remove(Long memberId, SseEmitter emitter) {
-        List<SseEmitter> emitters = store.get(memberId);
-        if(emitters != null) {
+    public void remove(String email, SseEmitter emitter) {
+        List<SseEmitter> emitters = store.get(email);
+        if (emitters != null) {
             emitters.remove(emitter);
+            if (emitters.isEmpty()) store.remove(email);
         }
     }
+
+    public void removeAll(String email) { store.remove(email); }
 }

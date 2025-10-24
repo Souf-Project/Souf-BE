@@ -88,4 +88,24 @@ public class ChatRoomNativeRepository {
                 })
                 .toList();
     }
+
+
+    public int getTotalUnreadCount(String email) {
+        String sql = """
+            SELECT COALESCE(COUNT(*), 0)
+            FROM chat_message cm
+                JOIN chat_room r ON cm.chatroom_id = r.chatroom_id
+                JOIN chat_participant cp ON cp.chatroom_id = r.chatroom_id
+                JOIN member m ON cp.member_id = m.member_id
+            WHERE cm.is_read = false
+              AND m.email = ?1
+              AND cm.sender_id <> m.member_id
+              AND cp.exited = false
+            """;
+
+        Number n = (Number) em.createNativeQuery(sql)
+                .setParameter(1, email)
+                .getSingleResult();
+        return n.intValue();
+    }
 }

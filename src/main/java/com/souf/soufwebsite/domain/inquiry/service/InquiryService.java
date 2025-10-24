@@ -2,6 +2,7 @@ package com.souf.soufwebsite.domain.inquiry.service;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryCreateResDto;
+import com.souf.soufwebsite.domain.inquiry.dto.InquiryDetailedResDto;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryReqDto;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryResDto;
 import org.springframework.data.domain.Page;
@@ -18,4 +19,6 @@ public interface InquiryService {
     void deleteInquiry(String email, Long inquiryId);
 
     Page<InquiryResDto> getMyInquiry(String email, Pageable pageable);
+
+    InquiryDetailedResDto getInquiryById(String email, Long inquiryId);
 }

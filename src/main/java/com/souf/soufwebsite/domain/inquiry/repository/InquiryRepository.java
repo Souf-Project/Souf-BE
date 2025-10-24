@@ -16,12 +16,14 @@ public interface InquiryRepository extends JpaRepository<Inquiry, Long>, Inquiry
                 FROM Inquiry inq
                 JOIN FETCH inq.member m
                 WHERE (:email is null or m.email = :email)
+                ORDER BY inq.createdTime DESC
             """,
             countQuery = """
                     SELECT COUNT(inq)
                     FROM Inquiry inq
                     JOIN inq.member m
                     WHERE (:email is null or m.email = :email)
+                    ORDER BY inq.createdTime DESC
                     """
     )
     Page<Inquiry> findByMember(@Param("email") String email, Pageable pageable);

@@ -3,6 +3,7 @@ package com.souf.soufwebsite.domain.member.service.admin;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryResDto;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryStatus;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryType;
+import com.souf.soufwebsite.domain.member.dto.ReqDto.InquiryAnswerReqDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminPostResDto;
 import com.souf.soufwebsite.domain.member.dto.ResDto.AdminReportResDto;
@@ -22,7 +23,9 @@ public interface AdminService {
 
     Page<AdminReportResDto> getReports(PostType postType, LocalDate startDate, LocalDate endDate, String nickname, Pageable pageable);
 
-    Page<InquiryResDto> getInquiries(InquiryType inquiryType, InquiryStatus status, Pageable pageable);
+    Page<InquiryResDto> getInquiries(String search, InquiryType inquiryType, InquiryStatus status, Pageable pageable);
+
+    void answerInquiry(String email, Long inquiryId, InquiryAnswerReqDto inquiryAnswerReqDto);
 
     void updateReportStatus(Long reportId, ReportStatus reportStatus);
 }

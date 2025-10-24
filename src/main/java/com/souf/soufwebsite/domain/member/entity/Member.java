@@ -82,6 +82,16 @@ public class Member extends BaseEntity {
     @Column(name = "cumulative_report_count")
     private Integer cumulativeReportCount;
 
+    // === 다대다(자기참조) 연결 ===
+    @OneToMany(mappedBy = "student", cascade = CascadeType.PERSIST)
+    @Where(clause = "is_deleted = false")
+    private List<MemberClubMapping> enrollmentAsStudent = new ArrayList<>();
+
+    @OneToMany(mappedBy = "club", cascade = CascadeType.PERSIST)
+    @Where(clause = "is_deleted = false")
+    private List<MemberClubMapping> enrollmentAsClub = new ArrayList<>();
+
+
     @Builder
     public Member(String email, String password, String username, String nickname, RoleType role, Boolean marketingAgreement) {
         this.email = email;
@@ -151,5 +161,8 @@ public class Member extends BaseEntity {
         this.intro = "탈퇴한 회원입니다.";
         this.personalUrl = null;
         this.isDeleted = true;
+
+        new ArrayList<>(enrollmentAsStudent).forEach(MemberClubMapping::softDelete);
+        new ArrayList<>(enrollmentAsClub).forEach(MemberClubMapping::softDelete);
     }
 }

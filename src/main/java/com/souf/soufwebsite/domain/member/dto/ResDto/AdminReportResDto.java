@@ -22,10 +22,10 @@ public record AdminReportResDto(
         @Schema(description = "신고받은 사용자 아이디", example = "1")
         Long reportedPersonId,
         @Schema(description = "신고받은 사용자 닉네임", example = "userNickname")
-        String reportedPersonNickname, // 신고당한 사용자 닉네인
+        String reportedPersonNickname, // 신고당한 사용자 닉네임
         @Schema(description = "신고한 사용자 아이디", example = "1")
         Long reportingPersonId,
-        @Schema(description = "신고한 사용자 닉네임", example = "minarinamu")
+        @Schema(description = "신고한 사용자 닉네임", example = "minariNamu")
         String reportingPersonNickname, // 신고한 사용자 닉네
         @Schema(description = "신고 날짜", example = "2025-08-20'T'23:15:00")
         LocalDateTime reportedDate,

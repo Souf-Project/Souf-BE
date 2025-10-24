@@ -99,6 +99,8 @@ jobs:
             set -e
             
             cd ~/deploy
+            
+            docker image prune
             docker pull ${{ secrets.DOCKER_USERNAME }}/github-actions-iamsouf
             
             docker-compose -f docker-compose-test.yml --env-file ./souf.env down

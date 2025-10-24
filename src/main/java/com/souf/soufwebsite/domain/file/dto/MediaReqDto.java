@@ -20,6 +20,9 @@ public record MediaReqDto(
 
         @Schema(description = "해당 파일의 확장자", example = "[jpg, jpg, png, jpeg]")
         @NotNull(message = "파일 확장자는 필수입니다.")
-        List<String> fileType
+        List<String> fileType,
+
+        @Schema(description = "해당 파일의 목적(공고문 생성 시에만 사용하기, 반드시 대문자!)", example = "[LOGO, RECRUIT, RECRUIT]")
+        List<String> filePurpose
 ) {
 }

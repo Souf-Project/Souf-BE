@@ -8,5 +8,5 @@ import org.springframework.data.domain.Pageable;
 
 public interface InquiryCustomRepository {
 
-    Page<InquiryResDto> getInquiryListInAdmin(InquiryType inquiryType, InquiryStatus status, Pageable pageable);
+    Page<InquiryResDto> getInquiryListInAdmin(String search, InquiryType inquiryType, InquiryStatus status, Pageable pageable);
 }

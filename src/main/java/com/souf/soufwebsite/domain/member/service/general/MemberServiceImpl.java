@@ -87,8 +87,6 @@ public class MemberServiceImpl implements MemberService {
             throw new NotMatchPasswordException();
         }
 
-        RoleType role = reqDto.email().endsWith(".ac.kr") ? RoleType.STUDENT : RoleType.MEMBER;
-
         String encodedPassword = passwordEncoder.encode(reqDto.password());
 
         // 개인 정보 동의 확인
@@ -96,7 +94,7 @@ public class MemberServiceImpl implements MemberService {
             throw new NotAgreedPersonalInfoException();
         }
 
-        Member member = new Member(reqDto.email(), encodedPassword, reqDto.username(), reqDto.nickname(), role, reqDto.isMarketingAgreed());
+        Member member = new Member(reqDto.email(), encodedPassword, reqDto.username(), reqDto.nickname(), reqDto.roleType(), reqDto.isMarketingAgreed());
 
         injectCategories(reqDto, member);
 
