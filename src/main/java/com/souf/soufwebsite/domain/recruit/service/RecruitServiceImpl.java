@@ -11,6 +11,7 @@ import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
+import com.souf.soufwebsite.domain.file.event.MediaCleanupHelper;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.file.service.MediaCleanupPublisher;
 import com.souf.soufwebsite.domain.file.service.S3UploaderService;
@@ -69,10 +70,12 @@ public class RecruitServiceImpl implements RecruitService {
     private final CityDetailRepository cityDetailRepository;
     private final CategoryService categoryService;
     private final RedisUtil redisUtil;
-    private final MediaCleanupPublisher mediaCleanupPublisher;
 //    private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final SlackService slackService;
     private final ViewCountService viewCountService;
+
+    private final MediaCleanupPublisher mediaCleanupPublisher;
+    private final MediaCleanupHelper mediaCleanupHelper;
 
     private static final String AGG_KEY_FMT = "notif:agg:%d:%d:%d"; // notif:agg:{memberId}:{firstId}:{secondId}
     private static final Duration AGG_WINDOW = java.time.Duration.ofHours(1);
@@ -318,11 +321,15 @@ public class RecruitServiceImpl implements RecruitService {
     }
 
     private void updateRemainingImages(RecruitReqDto reqDto, Recruit recruit) {
-        List<Media> mediaList = fileService.getMediaList(PostType.RECRUIT, recruit.getId());
-        for (Media media : mediaList) {
-            if (!reqDto.existingImageUrls().contains(media.getOriginalUrl())) {
-                fileService.deleteMedia(media);  // DB에서만 삭제되도록 수정
-            }
+        List<String> removed = mediaCleanupHelper.purgeRemovedMedias(
+                PostType.RECRUIT,
+                recruit.getId(),
+                reqDto.existingImageUrls()
+        );
+
+        // 삭제할 URL이 있으면 S3 삭제 이벤트 발행
+        if (!removed.isEmpty()) {
+            mediaCleanupPublisher.publishUrls(PostType.RECRUIT, recruit.getId(), removed);
         }
     }
 
@@ -348,5 +355,5 @@ public class RecruitServiceImpl implements RecruitService {
             redisTemplate.expire(key, AGG_WINDOW);
         }
     }
-
 }
+

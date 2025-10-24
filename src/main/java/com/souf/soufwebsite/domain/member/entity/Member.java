@@ -32,7 +32,7 @@ public class Member extends BaseEntity {
 
     @NotEmpty
     @Column(nullable = false)
-    @Size(min = 5, max = 30)
+    @Size(min = 5, max = 100)
     private String email;
 
     @NotEmpty

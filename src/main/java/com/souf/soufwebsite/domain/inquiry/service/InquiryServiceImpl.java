@@ -3,7 +3,9 @@ package com.souf.soufwebsite.domain.inquiry.service;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
+import com.souf.soufwebsite.domain.file.event.MediaCleanupHelper;
 import com.souf.soufwebsite.domain.file.service.FileService;
+import com.souf.soufwebsite.domain.file.service.MediaCleanupPublisher;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryCreateResDto;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryDetailedResDto;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryReqDto;
@@ -38,6 +40,9 @@ public class InquiryServiceImpl implements InquiryService {
 
     private final FileService fileService;
 
+    private final MediaCleanupPublisher mediaCleanupPublisher;
+    private final MediaCleanupHelper mediaCleanupHelper;
+
     @Override
     public InquiryCreateResDto createInquiry(String email, InquiryReqDto inquiryReqDto) {
         Member currentMember = findIfMemberExists(email);
@@ -65,7 +70,11 @@ public class InquiryServiceImpl implements InquiryService {
         Inquiry inquiry = findIfInquiryExists(inquiryId);
         verifyIfInquiryIsMine(inquiry, currentMember);
 
+        updateRemainingImages(reqDto, inquiry);
         inquiry.updateInquiry(reqDto);
+
+        List<PresignedUrlResDto> inquiryPresignedUrls =
+                fileService.generatePresignedUrl("inquiry", reqDto.originalFileNames());
     }
 
     @Override
@@ -75,6 +84,7 @@ public class InquiryServiceImpl implements InquiryService {
         verifyIfInquiryIsMine(inquiry, currentMember);
 
         inquiryRepository.delete(inquiry);
+        mediaCleanupPublisher.publish(PostType.INQUIRY, inquiryId);
     }
 
     @Transactional(readOnly = true)
@@ -95,13 +105,14 @@ public class InquiryServiceImpl implements InquiryService {
         Member currentMember = findIfMemberExists(email);
         Inquiry inquiry = findIfInquiryExists(inquiryId);
 
-        // 현재 멤버가 관리자이거나 본인일 경우에만 오픈
-        if (currentMember.getRole().equals(RoleType.ADMIN) || verifyIfInquiryIsMine(inquiry, currentMember)) {
+        boolean isAdmin = RoleType.ADMIN.equals(currentMember.getRole());
+        boolean isOwner = inquiry.getMember().getId().equals(currentMember.getId());
+
+        if (isAdmin || isOwner) {
             List<Media> mediaList = fileService.getMediaList(PostType.INQUIRY, inquiry.getId());
             log.info("문의글을 상세 조회합니다!");
             return InquiryDetailedResDto.of(inquiry, inquiry.getMember(), mediaList);
         }
-
         throw new NotValidAuthenticationException();
     }
 
@@ -121,5 +132,18 @@ public class InquiryServiceImpl implements InquiryService {
         }
 
         return true;
+    }
+
+    private void updateRemainingImages(InquiryReqDto reqDto, Inquiry inquiry) {
+        List<String> removed = mediaCleanupHelper.purgeRemovedMedias(
+                PostType.INQUIRY,
+                inquiry.getId(),
+                reqDto.existingImageUrls()
+        );
+
+        // 삭제할 URL이 있으면 S3 삭제 이벤트 발행
+        if (!removed.isEmpty()) {
+            mediaCleanupPublisher.publishUrls(PostType.INQUIRY, inquiry.getId(), removed);
+        }
     }
 }
