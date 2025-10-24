@@ -53,26 +53,6 @@ public class FileService {
                 .collect(Collectors.toList());
     }
 
-    public List<PresignedUrlResDto> generatePresignedUrl(String path, PostType postType, Long postId, List<String> candidateNames) {
-        if (candidateNames == null || candidateNames.isEmpty()) return List.of();
-
-        // DB에 이미 저장된 fileName 집합
-        var existingNames = mediaRepository.findByPostTypeAndPostId(postType, postId).stream()
-                .map(Media::getFileName)
-                .filter(n -> n != null && !n.isBlank())
-                .collect(Collectors.toSet());
-
-        List<String> newOnes = candidateNames.stream()
-                .filter(n -> n != null && !n.isBlank())
-                .filter(n -> !videoExtensions.contains(extractExtension(n).toLowerCase()))
-                .filter(n -> !existingNames.contains(n))
-                .toList();
-
-        return newOnes.stream()
-                .map(f -> s3UploaderService.generatePresignedUploadUrl(path, f))
-                .toList();
-    }
-
     @Transactional
     public List<Media> uploadMetadata(MediaReqDto files, PostType postType, Long postId){
         List<Media> mediaList = new ArrayList<>();

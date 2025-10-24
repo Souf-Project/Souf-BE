@@ -157,7 +157,7 @@ public class FeedServiceImpl implements FeedService {
         feed.updateContent(reqDto);
         updateRemainingUrls(reqDto, feed);
 
-        List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", PostType.FEED, feed.getId(), reqDto.originalFileNames());
+        List<PresignedUrlResDto> presignedUrlResDtos = fileService.generatePresignedUrl("feed", reqDto.originalFileNames());
         VideoDto videoDto = fileService.configVideoUploadInitiation(reqDto.originalFileNames(), PostType.FEED);
 
         feed.clearCategories();

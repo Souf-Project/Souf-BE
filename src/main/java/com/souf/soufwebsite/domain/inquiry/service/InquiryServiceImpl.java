@@ -74,7 +74,7 @@ public class InquiryServiceImpl implements InquiryService {
         inquiry.updateInquiry(reqDto);
 
         List<PresignedUrlResDto> inquiryPresignedUrls =
-                fileService.generatePresignedUrl("inquiry", PostType.INQUIRY, inquiry.getId(), reqDto.originalFileNames());
+                fileService.generatePresignedUrl("inquiry", reqDto.originalFileNames());
     }
 
     @Override
