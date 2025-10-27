@@ -1,11 +1,11 @@
 package com.souf.soufwebsite.domain.member.controller;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.SendModifyEmailReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
-import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
-import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
-import com.souf.soufwebsite.domain.member.dto.ResDto.MemberUpdateResDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.SendModifyEmailReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.UpdateReqDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.MemberSimpleResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.MemberUpdateResDto;
 import com.souf.soufwebsite.domain.member.service.general.MemberService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;

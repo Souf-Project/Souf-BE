@@ -1,7 +1,7 @@
 package com.souf.soufwebsite.domain.inquiry.entity;
 
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.InquiryAnswerReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.InquiryAnswerReqDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;

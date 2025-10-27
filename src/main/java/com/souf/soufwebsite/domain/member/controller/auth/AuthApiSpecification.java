@@ -1,7 +1,8 @@
 package com.souf.soufwebsite.domain.member.controller.auth;
 
-import com.souf.soufwebsite.domain.member.dto.ReqDto.*;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.*;
+import com.souf.soufwebsite.domain.member.dto.reqDto.signup.SignupReqDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
