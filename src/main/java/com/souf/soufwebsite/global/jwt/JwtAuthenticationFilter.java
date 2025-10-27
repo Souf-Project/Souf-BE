@@ -34,7 +34,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-
+        final String uri = request.getRequestURI();
+        final boolean isSseSubscribe = uri.startsWith("/api/v1/notifications/subscribe");
 
         if (request.getRequestURI().startsWith("/ws") || request.getRequestURI().startsWith(LOGIN_URL) || request.getRequestURI().equals(LOGOUT_URL)) {
             filterChain.doFilter(request, response);
@@ -57,6 +58,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         log.info("AccessToken: {}", accessToken);
         log.info("RefreshToken: {}", refreshToken);
 
+        // SSE 구독 요청이고, 헤더에서 accessToken이 없으면 쿼리 파라미터 token 사용
+        if (isSseSubscribe && accessToken == null) {
+            String tokenParam = request.getParameter("token");
+            if (tokenParam != null && jwtService.isTokenValid(tokenParam)) {
+                accessToken = tokenParam;
+            }
+        }
 
         if (accessToken != null && refreshToken != null) {
             if (redisTemplate.opsForValue().get("blacklist:" + accessToken) != null) {

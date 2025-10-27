@@ -61,8 +61,15 @@ public class FileService {
             if(!files.filePurpose().isEmpty() && files.filePurpose().get(i).equals("LOGO")){
                 temp = PostType.LOGO;
             }
-            Media media = Media.of(files.fileUrl().get(i), files.fileName().get(i),
-                    MediaType.valueOf(files.fileType().get(i)), temp, postId);
+
+            String url  = files.fileUrl().get(i);
+            String name = files.fileName().get(i);
+            MediaType type = MediaType.valueOf(files.fileType().get(i));
+
+            boolean exists = mediaRepository.existsByPostTypeAndPostIdAndOriginalUrl(temp, postId, url);
+            if (exists) continue;
+
+            Media media = Media.of(url, name, type, temp, postId);
             mediaRepository.save(media);
             mediaList.add(media);
         }

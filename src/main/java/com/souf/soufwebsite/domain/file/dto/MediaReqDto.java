@@ -23,6 +23,7 @@ public record MediaReqDto(
         List<String> fileType,
 
         @Schema(description = "해당 파일의 목적(공고문 생성 시에만 사용하기, 반드시 대문자!)", example = "[LOGO, RECRUIT, RECRUIT]")
+        @NotNull(message = "파일 목적은 필수입니다.")
         List<String> filePurpose
 ) {
 }
