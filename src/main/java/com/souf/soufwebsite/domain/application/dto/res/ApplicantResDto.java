@@ -1,7 +1,7 @@
 package com.souf.soufwebsite.domain.application.dto.res;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;

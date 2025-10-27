@@ -10,7 +10,7 @@ public record MediaReqDto(
         @NotNull(message = "아이디는 필수입니다.")
         Long postId,
 
-        @Schema(description = "해당 파일에 접근할 수 있는 url", example = "https://iamsouf.s3.amazonaws.com/feed/original/example.jpg" )
+        @Schema(description = "해당 파일에 접근할 수 있는 url", example = "feed/original/example.jpg" )
         @NotNull(message = "url은 필수입니다.")
         List<String> fileUrl,
 

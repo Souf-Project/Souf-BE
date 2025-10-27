@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.member.dto.ReqDto.signup;
+package com.souf.soufwebsite.domain.member.dto.reqDto.signup;
 
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
@@ -50,7 +50,7 @@ public record CommonSignupReqDto(
 
         @NotNull
         @Schema(description = "서비스 이용 동의서 확인 여부", example = "true여야 합니다.")
-        Boolean isServiceTermsAgreed,
+        Boolean isServiceUtilizationAgreed,
 
         @NotNull
         @Schema(description = "마케팅 동의 확인 여부", example = "true or false")

@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.member.dto.ReqDto;
+package com.souf.soufwebsite.domain.member.dto.reqDto;
 
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
