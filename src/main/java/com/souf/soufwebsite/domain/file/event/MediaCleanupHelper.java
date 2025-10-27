@@ -3,18 +3,16 @@ package com.souf.soufwebsite.domain.file.event;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.global.common.PostType;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class MediaCleanupHelper {
 
     private final FileService fileService;
-
-    public MediaCleanupHelper(FileService fileService) {
-        this.fileService = fileService;
-    }
 
     public List<String> purgeRemovedMedias(PostType postType, Long postId, List<String> keepUrls) {
         List<Media> mediaList = fileService.getMediaList(postType, postId);
