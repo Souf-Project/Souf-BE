@@ -1,8 +1,10 @@
 package com.souf.soufwebsite.domain.member.controller.auth;
 
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.*;
 import com.souf.soufwebsite.domain.member.dto.reqDto.signup.SignupReqDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.MemberUpdateResDto;
 import com.souf.soufwebsite.domain.member.service.general.MemberService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
@@ -21,9 +23,16 @@ public class AuthController implements AuthApiSpecification{
     private final MemberService memberService;
 
     @PostMapping("/signup")
-    public SuccessResponse<?> signup(@RequestBody @Valid SignupReqDto reqDto) {
-        memberService.signup(reqDto);
-        return new SuccessResponse<>("회원가입 성공");
+    public SuccessResponse<MemberUpdateResDto> signup(@RequestBody @Valid SignupReqDto reqDto) {
+        MemberUpdateResDto result = memberService.signup(reqDto);
+        return new SuccessResponse<>(result, "회원가입 성공");
+    }
+
+    @PostMapping("/signup/upload")
+    public SuccessResponse<?> uploadAuthenticationMetadata(@Valid @RequestBody MediaReqDto mediaReqDto) {
+        memberService.uploadAuthenticationImage(mediaReqDto);
+
+        return new SuccessResponse<>("인증 파일이 성공적으로 업로드되었습니다!");
     }
 
     @PostMapping("/login")

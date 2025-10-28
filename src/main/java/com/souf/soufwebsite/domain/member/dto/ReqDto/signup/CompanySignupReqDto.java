@@ -1,31 +1,38 @@
 package com.souf.soufwebsite.domain.member.dto.reqDto.signup;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
+@JsonTypeName("MEMBER")
 public record CompanySignupReqDto(
-        @JsonUnwrapped CommonSignupReqDto common,
+        @Valid @JsonUnwrapped CommonSignupReqDto common,
 
-        @Schema(description = "회사명")
+        @Schema(description = "사업체 유무")
+        Boolean isCompany,
+
+        @Schema(description = "회사명이 없다면 빈 문자열을 넣어주세요")
         String companyName,
 
-        @Schema(description = "사업자 등록 번호를 입력해주세요.")
+        @Schema(description = "사업자 등록 번호를 입력해주세요. 없다면 빈 문자열을 넣어주세요.")
         String businessRegistrationNumber,
 
+        @Valid
         @Schema(description = "우편 번호 및 회사 주소")
         AddressReqDto addressReqDto,
 
-        @Schema(description = "업태")
+        @Schema(description = "업태를 입력해주세요. 없다면 빈 문자열을 넣어주세요.")
         String businessStatus,
 
-        @Schema(description = "사업자 구분")
+        @Schema(description = "사업자 구분을 입력해주세요. 없다면 빈 문자열을 넣어주세요.")
         String businessClassification,
 
-        @Schema(description = "사업자 등록증 파일입니다.")
+        @Schema(description = "사업자 등록증 파일입니다. 없다면 빈 문자열을 넣어주세요.")
         String businessRegistrationFile
 
 ) implements SignupReqDto {
@@ -59,6 +66,9 @@ public record CompanySignupReqDto(
     public String nickname() {
         return common.nickname();
     }
+
+    @Override
+    public String phoneNumber() { return common.phoneNumber(); }
 
     @Override
     public List<CategoryDto> categoryDtos() {

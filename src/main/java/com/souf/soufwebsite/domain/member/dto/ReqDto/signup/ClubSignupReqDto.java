@@ -1,20 +1,21 @@
 package com.souf.soufwebsite.domain.member.dto.reqDto.signup;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
+@JsonTypeName("CLUB")
 public record ClubSignupReqDto(
-        @JsonUnwrapped CommonSignupReqDto common,
+        @Valid @JsonUnwrapped CommonSignupReqDto common,
 
         @Schema(description = "동아리 인증 수단을 기입해주세요.")
-        String clubAuthenticationMethod,
+        String clubAuthenticationMethod
 
-        @Schema(description = "동아리 정보를 기입해주세요.")
-        String introduction
 ) implements SignupReqDto {
 
     @Override
@@ -46,6 +47,9 @@ public record ClubSignupReqDto(
     public String nickname() {
         return common.nickname();
     }
+
+    @Override
+    public String phoneNumber() { return common.phoneNumber(); }
 
     @Override
     public List<CategoryDto> categoryDtos() {

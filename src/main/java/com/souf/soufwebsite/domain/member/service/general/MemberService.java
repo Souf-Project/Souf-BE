@@ -12,7 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface MemberService {
-    void signup(SignupReqDto reqDto);
+    MemberUpdateResDto signup(SignupReqDto reqDto);
 
     TokenDto signin(SigninReqDto reqDto, HttpServletResponse response);
 
@@ -29,6 +29,8 @@ public interface MemberService {
     MemberUpdateResDto updateUserInfo(String email, UpdateReqDto reqDto);
 
     void uploadProfileImage(MediaReqDto reqDto);
+
+    void uploadAuthenticationImage(MediaReqDto reqDto);
 
     Page<MemberSimpleResDto> getMembers(Long first, Long second, Long third, Pageable pageable);
 

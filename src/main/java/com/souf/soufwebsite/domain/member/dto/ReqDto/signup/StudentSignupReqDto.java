@@ -1,9 +1,12 @@
 package com.souf.soufwebsite.domain.member.dto.reqDto.signup;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
+import com.souf.soufwebsite.domain.member.entity.profile.EducationType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -11,12 +14,17 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
+@JsonTypeName("STUDENT")
 public record StudentSignupReqDto(
-        @JsonUnwrapped CommonSignupReqDto common,
+        @Valid @JsonUnwrapped CommonSignupReqDto common,
 
         @NotBlank
         @Schema(description = "학교명 입력은 필수입니다.", example = "세종대학교")
         String schoolName,
+
+        @NotNull
+        @Schema(description = "학력은 필수입니다.", example = "UNIV(대학교) or GRADUATE(대학원)")
+        EducationType educationType,
 
         @NotNull
         @Schema(description = "전공은 최소 하나가 필요합니다.")
@@ -61,6 +69,9 @@ public record StudentSignupReqDto(
     public String nickname() {
         return common.nickname();
     }
+
+    @Override
+    public String phoneNumber() { return common.phoneNumber(); }
 
     @Override
     public List<CategoryDto> categoryDtos() {

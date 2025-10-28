@@ -1,8 +1,10 @@
 package com.souf.soufwebsite.domain.member.controller.auth;
 
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.*;
 import com.souf.soufwebsite.domain.member.dto.reqDto.signup.SignupReqDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.MemberUpdateResDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,9 +20,13 @@ public interface AuthApiSpecification {
 
     @Operation(summary = "회원가입", description = "새로운 회원을 등록합니다.")
     @PostMapping("/signup")
-    SuccessResponse<?> signup(
+    SuccessResponse<MemberUpdateResDto> signup(
             @RequestBody @Valid SignupReqDto reqDto
     );
+
+    @Operation(summary = "인증 파일 업로드", description = "회원가입 시 필요한 인증 파일을 업로드합니다.")
+    @PostMapping("/signup/upload")
+    SuccessResponse<?> uploadAuthenticationMetadata(@Valid @RequestBody MediaReqDto mediaReqDto);
 
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인하고 토큰을 발급받습니다.")
     @PostMapping("/login")

@@ -37,6 +37,10 @@ public record CommonSignupReqDto(
         @NotEmpty
         String nickname,
 
+        @Schema(description = "전화번호", example = "010-1111-1111")
+        @NotNull
+        String phoneNumber,
+
         @Schema(description = "카테고리 목록", example = "[{\"firstCategory\": 1, \"secondCategory\": 1, \"thirdCategory\": 1}]")
         List<CategoryDto> categoryDtos,
 
