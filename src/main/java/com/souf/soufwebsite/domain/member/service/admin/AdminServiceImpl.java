@@ -96,6 +96,8 @@ public class AdminServiceImpl implements AdminService {
 
         Member toMember = inquiry.getMember();
 
+        String link = "/mypage";
+
         NotificationDto dto = new NotificationDto(
                 toMember.getEmail(),
                 toMember.getId(),
@@ -104,6 +106,7 @@ public class AdminServiceImpl implements AdminService {
                 "문의하신 내용에 새로운 답변이 도착했어요.",
                 "INQUIRY",
                 inquiryId,
+                link,
                 LocalDateTime.now()
         );
 

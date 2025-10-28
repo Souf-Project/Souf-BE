@@ -79,6 +79,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         recruit.increaseRecruitCount();
         applicationRepository.save(application);
 
+        String link = "/mypage";
+
         // ✅ [추가] 지원자 생성 → 공고 작성자에게 즉시 알림
         Member owner = recruit.getMember();
         NotificationDto dto = new NotificationDto(
@@ -89,6 +91,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 "[" + recruit.getTitle() + "]에 새 지원자가 도착했어요.", // body
                 "RECRUIT",                                    // refType
                 recruit.getId(),                              // refId
+                link,                                         // link
                 LocalDateTime.now()                          // createdAt
         );
         notificationPublisher.publish(dto);
@@ -203,6 +206,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         String bodyMsg = "[" + recruit.getTitle() + "] 지원에 대한 결과가 등록되었습니다.";
 
+        String link = "/mypage";
+
         NotificationDto dto = new NotificationDto(
                 m.getEmail(),
                 m.getId(),
@@ -211,6 +216,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 bodyMsg,                                 // 본문 내용
                 "APPLICATION",                           // 참조 타입
                 app.getId(),                             // 참조 PK
+                link,
                 LocalDateTime.now()
         );
 

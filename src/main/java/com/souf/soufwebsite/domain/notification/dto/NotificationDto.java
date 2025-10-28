@@ -11,6 +11,7 @@ public record NotificationDto(
         String body,               // 내용 (알림 상세)
         String refType,            // 참조 도메인: RECRUIT, INQUIRY, RECRUIT_CATEGORY 등
         Long refId,                // 참조 PK
-        LocalDateTime createdAt   // 생성 시각
+        String link,               // 알림 링크 (클릭 시 이동할 URL)
+        LocalDateTime createdAt    // 생성 시각
 ) {
 }
