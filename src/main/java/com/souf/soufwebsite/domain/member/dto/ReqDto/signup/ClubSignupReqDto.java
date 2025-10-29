@@ -6,17 +6,18 @@ import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import lombok.Getter;
 
 import java.util.List;
 
+@Getter
 @JsonTypeName("CLUB")
-public record ClubSignupReqDto(
-        @Valid @JsonUnwrapped CommonSignupReqDto common,
+public final class ClubSignupReqDto implements SignupReqDto {
 
-        @Schema(description = "동아리 인증 수단을 기입해주세요.")
-        String clubAuthenticationMethod
+    @Valid @JsonUnwrapped CommonSignupReqDto common;
 
-) implements SignupReqDto {
+    @Schema(description = "동아리 인증 수단을 기입해주세요.")
+    String clubAuthenticationMethod;
 
     @Override
     public RoleType roleType() {

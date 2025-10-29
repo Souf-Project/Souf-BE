@@ -6,36 +6,37 @@ import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import lombok.Getter;
 
 import java.util.List;
 
+@Getter
 @JsonTypeName("MEMBER")
-public record CompanySignupReqDto(
-        @Valid @JsonUnwrapped CommonSignupReqDto common,
+public final class CompanySignupReqDto implements SignupReqDto {
 
-        @Schema(description = "사업체 유무")
-        Boolean isCompany,
+    @Valid @JsonUnwrapped CommonSignupReqDto common;
 
-        @Schema(description = "회사명이 없다면 빈 문자열을 넣어주세요")
-        String companyName,
+    @Schema(description = "사업체 유무")
+    Boolean isCompany;
 
-        @Schema(description = "사업자 등록 번호를 입력해주세요. 없다면 빈 문자열을 넣어주세요.")
-        String businessRegistrationNumber,
+    @Schema(description = "회사명이 없다면 빈 문자열을 넣어주세요")
+    String companyName;
 
-        @Valid
-        @Schema(description = "우편 번호 및 회사 주소")
-        AddressReqDto addressReqDto,
+    @Schema(description = "사업자 등록 번호를 입력해주세요. 없다면 빈 문자열을 넣어주세요.")
+    String businessRegistrationNumber;
 
-        @Schema(description = "업태를 입력해주세요. 없다면 빈 문자열을 넣어주세요.")
-        String businessStatus,
+    @Valid
+    @Schema(description = "우편 번호 및 회사 주소")
+    AddressReqDto addressReqDto;
 
-        @Schema(description = "사업자 구분을 입력해주세요. 없다면 빈 문자열을 넣어주세요.")
-        String businessClassification,
+    @Schema(description = "업태를 입력해주세요. 없다면 빈 문자열을 넣어주세요.")
+    String businessStatus;
 
-        @Schema(description = "사업자 등록증 파일입니다. 없다면 빈 문자열을 넣어주세요.")
-        String businessRegistrationFile
+    @Schema(description = "사업자 구분을 입력해주세요. 없다면 빈 문자열을 넣어주세요.")
+    String businessClassification;
 
-) implements SignupReqDto {
+    @Schema(description = "사업자 등록증 파일입니다. 없다면 빈 문자열을 넣어주세요.")
+    String businessRegistrationFile;
 
     @Override
     public RoleType roleType() {
