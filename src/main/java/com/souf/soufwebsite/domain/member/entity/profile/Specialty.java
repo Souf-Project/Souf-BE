@@ -18,11 +18,20 @@ public class Specialty {
     @Column(nullable = false)
     private String specialtyName;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MajorType specialtyType;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_profile_id", nullable = false)
+    private StudentProfile studentProfile;
 
     public Specialty(String specialtyName, MajorType specialtyType) {
         this.specialtyName = specialtyName;
         this.specialtyType = specialtyType;
+    }
+
+    void attachStudentProfile(StudentProfile studentProfile) {
+        this.studentProfile = studentProfile;
     }
 }

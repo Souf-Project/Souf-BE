@@ -2,6 +2,7 @@ package com.souf.soufwebsite.domain.member.entity.profile;
 
 import com.souf.soufwebsite.domain.member.dto.reqDto.signup.CompanySignupReqDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "company_profiles")
-public class CompanyProfile {
+public class CompanyProfile extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,6 +21,7 @@ public class CompanyProfile {
     @Column(nullable = false)
     private String companyName;
 
+    @Column(nullable = false)
     private String businessRegistrationNumber;
 
     @Column(nullable = false)
@@ -31,8 +33,10 @@ public class CompanyProfile {
     @Column(nullable = false)
     private String detailedAddress;
 
+    @Column(nullable = false)
     private String businessStatus;
 
+    @Column(nullable = false)
     private String businessClassification;
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -40,13 +44,13 @@ public class CompanyProfile {
     private Member member;
 
     public CompanyProfile(CompanySignupReqDto reqDto){
-        this.companyName = reqDto.companyName();
-        this.businessRegistrationNumber = reqDto.businessRegistrationNumber();
-        this.zipCode = reqDto.addressReqDto().zipCode();
-        this.roadNameAddress = reqDto.addressReqDto().roadNameAddress();
-        this.detailedAddress = reqDto.addressReqDto().detailedAddress();
-        this.businessStatus = reqDto.businessStatus();
-        this.businessClassification = reqDto.businessClassification();
+        this.companyName = reqDto.getCompanyName();
+        this.businessRegistrationNumber = reqDto.getBusinessRegistrationNumber();
+        this.zipCode = reqDto.getAddressReqDto().zipCode();
+        this.roadNameAddress = reqDto.getAddressReqDto().roadNameAddress();
+        this.detailedAddress = reqDto.getAddressReqDto().detailedAddress();
+        this.businessStatus = reqDto.getBusinessStatus();
+        this.businessClassification = reqDto.getBusinessClassification();
     }
 
     public void attachMember(Member member) {

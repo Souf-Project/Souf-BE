@@ -25,13 +25,17 @@ public class SignupMapper {
     private final ObjectMapper objectMapper;
     private final S3UploaderService s3UploaderService;
 
-    public List<Specialty> toSpecialtyList(List<MajorReqDto> majorReqDtos) {
+    public List<Specialty> toSpecialtyList(StudentProfile studentProfile, List<MajorReqDto> majorReqDtos) {
         if(majorReqDtos == null || majorReqDtos.isEmpty()){
             return List.of();
         }
 
         return majorReqDtos.stream()
-                .map(m -> new Specialty(m.specialtyName(), m.specialty()))
+                .map(m -> {
+                    Specialty specialty = new Specialty(m.specialtyName(), m.specialty());
+                    studentProfile.addSpecialty(specialty);
+                    return specialty;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -41,12 +45,12 @@ public class SignupMapper {
         switch (reqDto.roleType()) {
             case STUDENT -> {
                 StudentSignupReqDto s = (StudentSignupReqDto) reqDto;
-                List<Specialty> specialtyList = toSpecialtyList(s.majorReqDtos());
 
-                StudentProfile studentProfile = new StudentProfile(s, specialtyList);
+                StudentProfile studentProfile = new StudentProfile(s);
+                toSpecialtyList(studentProfile, s.getMajorReqDtos());
 
-                if (s.schoolAuthenticatedImageFileName() != null) {
-                    presignedUrlResDto = s3UploaderService.generatePresignedUploadUrl("profile/authentication", s.schoolAuthenticatedImageFileName());
+                if (s.getSchoolAuthenticatedImageFileName() != null) {
+                    presignedUrlResDto = s3UploaderService.generatePresignedUploadUrl("profile/authentication", s.getSchoolAuthenticatedImageFileName());
                 }
 
                 member.attachStudentProfile(studentProfile);
@@ -59,11 +63,11 @@ public class SignupMapper {
             }
             case MEMBER -> {
                 CompanySignupReqDto co = (CompanySignupReqDto) reqDto;
-                if(co.isCompany().equals(Boolean.TRUE)){
+                if(co.getIsCompany().equals(Boolean.TRUE)){
                     CompanyProfile companyProfile = new CompanyProfile(co);
 
-                    if (co.businessRegistrationFile() != null) {
-                        presignedUrlResDto = s3UploaderService.generatePresignedUploadUrl("profile/authentication", co.businessRegistrationFile());
+                    if (co.getBusinessRegistrationFile() != null) {
+                        presignedUrlResDto = s3UploaderService.generatePresignedUploadUrl("profile/authentication", co.getBusinessRegistrationFile());
                     }
 
                     member.attachCompanyProfile(companyProfile);

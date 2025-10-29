@@ -23,7 +23,7 @@ public class ClubProfile {
     private Member member;
 
     public ClubProfile(ClubSignupReqDto reqDto) {
-        this.clubAuthenticationMethod = reqDto.clubAuthenticationMethod();
+        this.clubAuthenticationMethod = reqDto.getClubAuthenticationMethod();
     }
 
     public void attachMember(Member member) {
