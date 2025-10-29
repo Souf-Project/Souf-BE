@@ -12,8 +12,10 @@ import com.souf.soufwebsite.domain.member.dto.reqDto.InquiryAnswerReqDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminPostResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminReportResDto;
+import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
+import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.notification.dto.NotificationDto;
 import com.souf.soufwebsite.domain.notification.entity.NotificationType;
@@ -122,8 +124,20 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
+    @Override
+    public void updateApprovedStatus(Long memberId, ApprovedStatus approvedStatus) {
+        Member member = findIfMemberExists(memberId);
+        member.updateApprovedStatus(approvedStatus);
+
+
+    }
+
     private Report findIfReportExists(Long reportId) {
         return reportRepository.findById(reportId).orElseThrow(NotFoundReportException::new);
+    }
+
+    private Member findIfMemberExists(Long memberId) {
+        return memberRepository.findById(memberId).orElseThrow(NotFoundMemberException::new);
     }
 
     private Inquiry findIfInquiryExists(Long inquiryId) {

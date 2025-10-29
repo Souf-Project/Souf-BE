@@ -7,6 +7,7 @@ import com.souf.soufwebsite.domain.member.dto.reqDto.InquiryAnswerReqDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminPostResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminReportResDto;
+import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.report.entity.ReportStatus;
 import com.souf.soufwebsite.global.common.PostType;
@@ -73,6 +74,13 @@ public interface AdminApiSpecification {
     SuccessResponse<?> updateReportStatus(
             @PathVariable(name = "reportId") Long reportId,
             @RequestParam(name = "reportStatus") ReportStatus status
+    );
+
+    @Operation(summary = "승인 처리", description = "인증 요청을 보낸 사용자에 대한 서비스 사용 여부를 결정합니다.")
+    @PatchMapping("/member/{memberId}")
+    SuccessResponse<?> updateMemberApprovedStatus(
+            @PathVariable(name = "memberId") Long memberId,
+            @RequestParam(name = "approvedStatus") ApprovedStatus approvedStatus
     );
 
 }

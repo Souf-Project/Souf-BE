@@ -7,6 +7,7 @@ import com.souf.soufwebsite.domain.member.dto.reqDto.InquiryAnswerReqDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminPostResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminReportResDto;
+import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.report.entity.ReportStatus;
 import com.souf.soufwebsite.global.common.PostType;
@@ -28,4 +29,6 @@ public interface AdminService {
     void answerInquiry(String email, Long inquiryId, InquiryAnswerReqDto inquiryAnswerReqDto);
 
     void updateReportStatus(Long reportId, ReportStatus reportStatus);
+
+    void updateApprovedStatus(Long memberId, ApprovedStatus approvedStatus);
 }

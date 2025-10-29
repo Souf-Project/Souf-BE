@@ -7,6 +7,7 @@ import com.souf.soufwebsite.domain.member.dto.reqDto.InquiryAnswerReqDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminPostResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminReportResDto;
+import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.service.admin.AdminService;
 import com.souf.soufwebsite.domain.report.entity.ReportStatus;
@@ -102,5 +103,14 @@ public class AdminController implements AdminApiSpecification{
         adminService.updateReportStatus(reportId, status);
 
         return new SuccessResponse(REPORT_UPDATE_SUCCESS.getMessage());
+    }
+
+    @PatchMapping("/member/{memberId}")
+    public SuccessResponse<?> updateMemberApprovedStatus(
+            @PathVariable(name = "memberId") Long memberId,
+            @RequestParam(name = "approvedStatus") ApprovedStatus approvedStatus) {
+
+        adminService.updateApprovedStatus(memberId, approvedStatus);
+        return new SuccessResponse<>(MEMBER_APPROVED_STATUS_UPDATE_SUCCESS.getMessage());
     }
 }
