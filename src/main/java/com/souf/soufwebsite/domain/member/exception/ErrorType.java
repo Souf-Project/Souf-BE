@@ -13,6 +13,7 @@ public enum ErrorType {
     NOT_VERIFIED_EMAIL(400, "이메일 인증이 완료되지 않았습니다.", "M400-3"),
     NOT_VALID_EMAIL(400, "유효하지 않은 이메일 형식입니다.", "M400-4"),
     NOT_VALID_ROLE_TYPE(400, "유효하지 않은 권한입니다.", "M400-8"),
+    NOT_APPROVED_ACCOUNT(400, "인증되지 않은 유저입니다.", "M400-9"),
 
     // ----------------------------------- Favorite --------------------------------
 
