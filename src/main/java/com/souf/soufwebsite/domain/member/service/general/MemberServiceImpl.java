@@ -6,10 +6,7 @@ import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.file.service.S3UploaderService;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.*;
-import com.souf.soufwebsite.domain.member.dto.reqDto.signup.ClubSignupReqDto;
-import com.souf.soufwebsite.domain.member.dto.reqDto.signup.CompanySignupReqDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.signup.SignupReqDto;
-import com.souf.soufwebsite.domain.member.dto.reqDto.signup.StudentSignupReqDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberUpdateResDto;
@@ -17,10 +14,6 @@ import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
-import com.souf.soufwebsite.domain.member.entity.profile.ClubProfile;
-import com.souf.soufwebsite.domain.member.entity.profile.CompanyProfile;
-import com.souf.soufwebsite.domain.member.entity.profile.Specialty;
-import com.souf.soufwebsite.domain.member.entity.profile.StudentProfile;
 import com.souf.soufwebsite.domain.member.exception.*;
 import com.souf.soufwebsite.domain.member.mapper.SignupMapper;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
@@ -109,42 +102,7 @@ public class MemberServiceImpl implements MemberService {
 
         injectCategories(reqDto, member);
 
-        PresignedUrlResDto presignedUrlResDto = new PresignedUrlResDto("", "", "");
-        switch (reqDto.roleType()) {
-            case STUDENT -> {
-                StudentSignupReqDto s = (StudentSignupReqDto) reqDto;
-                List<Specialty> specialtyList = signupMapper.toSpecialtyList(s.majorReqDtos());
-
-                StudentProfile studentProfile = new StudentProfile(s, specialtyList);
-
-                if (s.schoolAuthenticatedImageFileName() != null) {
-                    presignedUrlResDto = s3UploaderService.generatePresignedUploadUrl("profile/authentication", s.schoolAuthenticatedImageFileName());
-                }
-
-                member.attachStudentProfile(studentProfile);
-            }
-            case CLUB -> {
-                ClubSignupReqDto c = (ClubSignupReqDto) reqDto;
-                ClubProfile clubProfile = new ClubProfile(c);
-
-                member.attachClubProfile(clubProfile);
-            }
-            case MEMBER -> {
-                CompanySignupReqDto co = (CompanySignupReqDto) reqDto;
-                if(co.isCompany().equals(Boolean.TRUE)){
-                    CompanyProfile companyProfile = new CompanyProfile(co);
-
-                    if (co.businessRegistrationFile() != null) {
-                        presignedUrlResDto = s3UploaderService.generatePresignedUploadUrl("profile/authentication", co.businessRegistrationFile());
-                    }
-
-                    member.attachCompanyProfile(companyProfile);
-                }
-                else
-                    member.updateApprovedStatus(ApprovedStatus.APPROVED);
-            }
-            default -> throw new NotValidRoleTypeException();
-        }
+        PresignedUrlResDto presignedUrlResDto = signupMapper.signupByRole(member, reqDto);
 
         memberRepository.save(member);
 
