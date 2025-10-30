@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.member.dto.resDto;
 
+import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -24,6 +25,9 @@ public record AdminMemberResDto(
         Integer cumulativeReports,
 
         @Schema(description = "삭제 여부", example = "FALSE")
-        Boolean isDeleted
+        Boolean isDeleted,
+
+        @Schema(description = "서비스 사용승인 여부", example = "PENDING or APPROVED or REJECTED")
+        ApprovedStatus approvedStatus
 ) {
 }

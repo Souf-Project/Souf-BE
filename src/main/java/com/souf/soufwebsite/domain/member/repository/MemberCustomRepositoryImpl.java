@@ -159,7 +159,7 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
                     int strikes = sanctionRepository.countStrikes(m.getId());
 
                     return new AdminMemberResDto(m.getId(), m.getRole(), m.getUsername(), m.getNickname(),
-                            m.getEmail(), strikes, m.isDeleted());
+                            m.getEmail(), strikes, m.isDeleted(), m.getApprovedStatus());
                 }
         ).toList();
 
