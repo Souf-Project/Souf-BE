@@ -134,7 +134,7 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(NotFoundMemberException::new);
 
-        if(member.getApprovedStatus().equals(ApprovedStatus.PENDING)) {
+        if(!member.getApprovedStatus().equals(ApprovedStatus.APPROVED)) {
             throw new NotApprovedAccountException();
         }
 
