@@ -134,6 +134,10 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(NotFoundMemberException::new);
 
+        if(member.getApprovedStatus().equals(ApprovedStatus.PENDING)) {
+            throw new NotApprovedAccountException();
+        }
+
         if(banService.isBanned(member.getId())){
             Optional<Duration> remaining = banService.remaining(member.getId());
             String msg = remaining.map(duration -> "remaining: " + duration.toHours() + "h").orElse("permanent");
