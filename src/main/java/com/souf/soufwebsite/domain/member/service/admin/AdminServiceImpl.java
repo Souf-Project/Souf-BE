@@ -72,9 +72,9 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public Page<AdminMemberResDto> getMembers(RoleType memberType, String username, String nickname, Pageable pageable) {
+    public Page<AdminMemberResDto> getMembers(RoleType memberType, String username, String nickname, ApprovedStatus approvedStatus, Pageable pageable) {
         log.info("memberType: {}, username: {}, nickname: {}", memberType, username, nickname);
-        return memberRepository.getMemberListInAdmin(memberType, username, nickname, pageable);
+        return memberRepository.getMemberListInAdmin(memberType, username, nickname, approvedStatus, pageable);
     }
 
     @Override

@@ -40,6 +40,7 @@ public interface AdminApiSpecification {
             @RequestParam(name = "memberType") RoleType memberType,
             @RequestParam(name = "username", required = false) String username,
             @RequestParam(name = "nickname", required = false) String nickname,
+            @RequestParam(name = "approvedStatus", required = false) ApprovedStatus approvedStatus,
             @PageableDefault Pageable pageable
     );
 

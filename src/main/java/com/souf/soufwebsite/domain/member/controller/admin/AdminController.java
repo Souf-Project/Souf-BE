@@ -51,9 +51,10 @@ public class AdminController implements AdminApiSpecification{
             @RequestParam(name = "memberType", required = false) RoleType memberType,
             @RequestParam(name = "username", required = false) String username,
             @RequestParam(name = "nickname", required = false) String nickname,
+            @RequestParam(name = "approvedStatus", required = false) ApprovedStatus approvedStatus,
             @PageableDefault Pageable pageable
     ) {
-        Page<AdminMemberResDto> members = adminService.getMembers(memberType, username, nickname, pageable);
+        Page<AdminMemberResDto> members = adminService.getMembers(memberType, username, nickname, approvedStatus, pageable);
 
         return new SuccessResponse<>(members, MEMBER_GET_SUCCESS.getMessage());
     }

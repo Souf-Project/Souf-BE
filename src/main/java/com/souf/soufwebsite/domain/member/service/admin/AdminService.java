@@ -20,7 +20,7 @@ public interface AdminService {
 
     Page<AdminPostResDto> getPosts(PostType postType, String writer, String title, Pageable pageable);
 
-    Page<AdminMemberResDto> getMembers(RoleType memberType, String username, String nickname, Pageable pageable);
+    Page<AdminMemberResDto> getMembers(RoleType memberType, String username, String nickname, ApprovedStatus approvedStatus, Pageable pageable);
 
     Page<AdminReportResDto> getReports(PostType postType, LocalDate startDate, LocalDate endDate, String nickname, Pageable pageable);
 
