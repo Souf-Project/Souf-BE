@@ -64,4 +64,34 @@ public class SesMailService {
             throw new RuntimeException("문의내용 결과 전송 실패", e);
         }
     }
+
+    public void sendSignupApprovedResult(String to, String nickname) {
+
+        try {
+            Map<String, String> data = new HashMap<>();
+            data.put("nickname", nickname);
+
+            SendTemplatedEmailRequest request = templateUtil
+                    .createSendTemplatedEmailRequest(to, "SendSignupApprovedResultTemplate", data);
+            emailService.sendTemplatedEmail(request);
+        } catch (Exception e) {
+            throw new RuntimeException("서비스 사용 승인 결과 전송 실패", e);
+        }
+    }
+
+    public void sendSignupRejectedResult(String to, String nickname, String rejectedReason, String resubmitLink) {
+
+        try {
+            Map<String, String> data = new HashMap<>();
+            data.put("nickname", nickname);
+            data.put("rejectedReason", rejectedReason);
+            data.put("resubmitLink", resubmitLink);
+
+            SendTemplatedEmailRequest request = templateUtil
+                    .createSendTemplatedEmailRequest(to, "SendSignupRejectedResultTemplate", data);
+            emailService.sendTemplatedEmail(request);
+        } catch (Exception e) {
+            throw new RuntimeException("서비스 사용 승인 거절 결과 전송 실패", e);
+        }
+    }
 }

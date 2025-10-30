@@ -129,7 +129,12 @@ public class AdminServiceImpl implements AdminService {
         Member member = findIfMemberExists(memberId);
         member.updateApprovedStatus(approvedStatus);
 
-
+        if(approvedStatus.equals(ApprovedStatus.APPROVED)){
+            emailService.sendSignupApprovedResult(member.getEmail(), member.getNickname());
+        }
+        else if(approvedStatus.equals(ApprovedStatus.REJECTED)){
+            emailService.sendSignupRejectedResult(member.getEmail(), member.getNickname(), "", "");
+        }
     }
 
     private Report findIfReportExists(Long reportId) {
