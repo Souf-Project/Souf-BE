@@ -1,17 +1,18 @@
 package com.souf.soufwebsite.domain.member.service.general;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.*;
-import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
-import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
-import com.souf.soufwebsite.domain.member.dto.ResDto.MemberUpdateResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.*;
+import com.souf.soufwebsite.domain.member.dto.reqDto.signup.SignupReqDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.MemberSimpleResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.MemberUpdateResDto;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface MemberService {
-    void signup(SignupReqDto reqDto);
+    MemberUpdateResDto signup(SignupReqDto reqDto);
 
     TokenDto signin(SigninReqDto reqDto, HttpServletResponse response);
 
@@ -28,6 +29,8 @@ public interface MemberService {
     MemberUpdateResDto updateUserInfo(String email, UpdateReqDto reqDto);
 
     void uploadProfileImage(MediaReqDto reqDto);
+
+    void uploadAuthenticationImage(MediaReqDto reqDto);
 
     Page<MemberSimpleResDto> getMembers(Long first, Long second, Long third, Pageable pageable);
 

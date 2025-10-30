@@ -1,6 +1,5 @@
 package com.souf.soufwebsite.domain.member.repository;
 
-import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import org.springframework.data.domain.Page;

@@ -1,15 +1,14 @@
 package com.souf.soufwebsite.domain.socialAccount.service;
 
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.signup.SignupReqDto;
+import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
-import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.exception.NotAgreedPersonalInfoException;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
+import com.souf.soufwebsite.domain.member.mapper.SignupMapper;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
-//import com.souf.soufwebsite.domain.opensearch.EntityType;
-//import com.souf.soufwebsite.domain.opensearch.OperationType;
-//import com.souf.soufwebsite.domain.opensearch.event.IndexEventPublisherHelper;
 import com.souf.soufwebsite.domain.socialAccount.SocialProvider;
 import com.souf.soufwebsite.domain.socialAccount.client.SocialApiClient;
 import com.souf.soufwebsite.domain.socialAccount.dto.*;
@@ -45,6 +44,7 @@ public class SocialAccountService {
 //    private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final SlackService slackService;
 
+    private final SignupMapper signupMapper;
 
     private final RedisTemplate<String, String> redisTemplate;
     private final PasswordEncoder passwordEncoder;
@@ -59,6 +59,7 @@ public class SocialAccountService {
             JwtService jwtService,
 //            IndexEventPublisherHelper indexEventPublisherHelper,
             SlackService slackService,
+            SignupMapper signupMapper,
             RedisTemplate<String, String> redisTemplate,
             PasswordEncoder passwordEncoder
     ) {
@@ -67,6 +68,7 @@ public class SocialAccountService {
         this.categoryService = categoryService;
         this.jwtService = jwtService;
 //        this.indexEventPublisherHelper = indexEventPublisherHelper;
+        this.signupMapper = signupMapper;
         this.slackService = slackService;
         this.redisTemplate = redisTemplate;
         this.passwordEncoder = passwordEncoder;
@@ -154,22 +156,28 @@ public class SocialAccountService {
             return token;
         }
 
+        SignupReqDto signupReqDto = reqDto.signupReqDto();
+
         // 개인 정보 동의 확인
-        if (reqDto.isPersonalInfoAgreed().equals(Boolean.FALSE)) {
+        if (signupReqDto.isPersonalInfoAgreed().equals(Boolean.FALSE) || signupReqDto.isServiceUtilizationAgreed().equals(Boolean.FALSE) || signupReqDto.isSuitableAged().equals(Boolean.FALSE)) {
             throw new NotAgreedPersonalInfoException();
         }
 
         // 1) Member 생성 (닉네임/카테고리 반영)
         Member member = new Member(
+                ApprovedStatus.PENDING,
                 email,
                 passwordEncoder.encode("SOCIAL@" + java.util.UUID.randomUUID()),
                 name != null && !name.isBlank() ? name : "user_" + java.util.UUID.randomUUID().toString().substring(0,6),
-                reqDto.nickname(),
-                RoleType.MEMBER,
-                reqDto.isMarketingAgreed()
+                signupReqDto.nickname(),
+                signupReqDto.phoneNumber(),
+                signupReqDto.roleType(),
+                signupReqDto.isMarketingAgreed()
         );
 
-        injectCategories(reqDto.categoryDtos(), member);
+        injectCategories(signupReqDto.categoryDtos(), member);
+
+        signupMapper.signupByRole(member, signupReqDto); // 이거 SignupReqDto로 바꿔야됨. 기존 값 한번 더 넣어줘야됨.
 
         memberRepository.save(member);
 

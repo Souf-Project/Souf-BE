@@ -3,19 +3,20 @@ package com.souf.soufwebsite.domain.member.service.general;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.service.FileService;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.*;
-import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
-import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
-import com.souf.soufwebsite.domain.member.dto.ResDto.MemberUpdateResDto;
+import com.souf.soufwebsite.domain.file.service.S3UploaderService;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.*;
+import com.souf.soufwebsite.domain.member.dto.reqDto.signup.SignupReqDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.MemberSimpleResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.MemberUpdateResDto;
+import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.exception.*;
+import com.souf.soufwebsite.domain.member.mapper.SignupMapper;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
-//import com.souf.soufwebsite.domain.opensearch.EntityType;
-//import com.souf.soufwebsite.domain.opensearch.OperationType;
-//import com.souf.soufwebsite.domain.opensearch.event.IndexEventPublisherHelper;
 import com.souf.soufwebsite.domain.report.exception.DeclaredMemberException;
 import com.souf.soufwebsite.domain.report.service.BanService;
 import com.souf.soufwebsite.global.common.PostType;
@@ -56,7 +57,7 @@ public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final FileService fileService;
-//    private final IndexEventPublisherHelper indexEventPublisherHelper;
+    private final S3UploaderService s3UploaderService;
     private final SlackService slackService;
 
     private final SesMailService mailService;
@@ -64,10 +65,12 @@ public class MemberServiceImpl implements MemberService {
 
     private final CategoryService categoryService;
 
+    private final SignupMapper signupMapper;
+
     //회원가입
     @Transactional
     @Override
-    public void signup(SignupReqDto reqDto) {
+    public MemberUpdateResDto signup(SignupReqDto reqDto) {
 
         if (redisTemplate.hasKey("email:withdraw:" + reqDto.email())) {
             throw new NotAllowedSignupException();
@@ -90,13 +93,16 @@ public class MemberServiceImpl implements MemberService {
         String encodedPassword = passwordEncoder.encode(reqDto.password());
 
         // 개인 정보 동의 확인
-        if (reqDto.isPersonalInfoAgreed().equals(Boolean.FALSE)) {
+        if (reqDto.isPersonalInfoAgreed().equals(Boolean.FALSE) || reqDto.isServiceUtilizationAgreed().equals(Boolean.FALSE) || reqDto.isSuitableAged().equals(Boolean.FALSE)) {
             throw new NotAgreedPersonalInfoException();
         }
 
-        Member member = new Member(reqDto.email(), encodedPassword, reqDto.username(), reqDto.nickname(), reqDto.roleType(), reqDto.isMarketingAgreed());
+        ApprovedStatus status = ApprovedStatus.PENDING;
+        Member member = new Member(status, reqDto.email(), encodedPassword, reqDto.username(), reqDto.nickname(), reqDto.phoneNumber(), reqDto.roleType(), reqDto.isMarketingAgreed());
 
         injectCategories(reqDto, member);
+
+        PresignedUrlResDto presignedUrlResDto = signupMapper.signupByRole(member, reqDto);
 
         memberRepository.save(member);
 
@@ -109,6 +115,10 @@ public class MemberServiceImpl implements MemberService {
 
         redisTemplate.delete(verifiedKey);
         slackService.sendSlackMessage(member.getNickname() + " 님이 회원가입했습니다.", "signup");
+
+
+
+        return new MemberUpdateResDto(member.getId(), presignedUrlResDto);
     }
 
     //로그인
@@ -296,6 +306,12 @@ public class MemberServiceImpl implements MemberService {
     public void uploadProfileImage(MediaReqDto reqDto) {
         Member member = memberRepository.findById(reqDto.postId()).orElseThrow(NotFoundMemberException::new);
         fileService.uploadMetadata(reqDto, PostType.PROFILE, member.getId());
+    }
+
+    @Override
+    public void uploadAuthenticationImage(MediaReqDto reqDto) {
+        Member member = memberRepository.findById(reqDto.postId()).orElseThrow(NotFoundMemberException::new);
+        fileService.uploadMetadata(reqDto, PostType.AUTHENTICATION, member.getId());
     }
 
     @Override

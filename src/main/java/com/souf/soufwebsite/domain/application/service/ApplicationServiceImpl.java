@@ -7,7 +7,7 @@ import com.souf.soufwebsite.domain.application.entity.Application;
 import com.souf.soufwebsite.domain.application.exception.*;
 import com.souf.soufwebsite.domain.application.repository.ApplicationRepository;
 import com.souf.soufwebsite.domain.file.service.FileService;
-import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;

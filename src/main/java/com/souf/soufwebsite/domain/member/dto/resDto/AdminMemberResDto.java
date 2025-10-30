@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.member.dto.ResDto;
+package com.souf.soufwebsite.domain.member.dto.resDto;
 
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import io.swagger.v3.oas.annotations.media.Schema;

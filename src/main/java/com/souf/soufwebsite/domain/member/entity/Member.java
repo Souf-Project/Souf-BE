@@ -1,7 +1,10 @@
 package com.souf.soufwebsite.domain.member.entity;
 
 import com.souf.soufwebsite.domain.feed.entity.Feed;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.UpdateReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.UpdateReqDto;
+import com.souf.soufwebsite.domain.member.entity.profile.ClubProfile;
+import com.souf.soufwebsite.domain.member.entity.profile.CompanyProfile;
+import com.souf.soufwebsite.domain.member.entity.profile.StudentProfile;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.exception.NotDuplicateCategoryException;
@@ -31,7 +34,7 @@ public class Member extends BaseEntity {
     private Long id;
 
     @NotEmpty
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     @Size(min = 5, max = 100)
     private String email;
 
@@ -50,8 +53,16 @@ public class Member extends BaseEntity {
     @Size(min = 2, max = 20)
     private String nickname;
 
+    @Column
     @Enumerated(EnumType.STRING)
     private RoleType role;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private ApprovedStatus approvedStatus;
+
+    @Column
+    private String phoneNumber;
 
     @Size(max = 100)
     private String intro;
@@ -71,9 +82,15 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Feed> feeds = new ArrayList<>();
 
+    @Column(nullable = false)
+    private boolean isSuitableAged = false;
+
     // 이용약관 동의서 속성
     @Column(name = "personal_info_agreement", nullable = false)
     private boolean personalInfoAgreement = false;
+
+    @Column(nullable = false)
+    private boolean isServiceUtilizationAgreed = false;
 
     @Column(name = "marketing_agreement", nullable = false)
     private boolean marketingAgreement = false;
@@ -91,15 +108,27 @@ public class Member extends BaseEntity {
     @Where(clause = "is_deleted = false")
     private List<MemberClubMapping> enrollmentAsClub = new ArrayList<>();
 
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private StudentProfile studentProfile;
+
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private CompanyProfile companyProfile;
+
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ClubProfile clubProfile;
 
     @Builder
-    public Member(String email, String password, String username, String nickname, RoleType role, Boolean marketingAgreement) {
+    public Member(ApprovedStatus status, String email, String password, String username, String nickname, String phoneNumber, RoleType role, Boolean marketingAgreement) {
+        this.approvedStatus = status;
         this.email = email;
         this.password = password;
         this.username = username;
         this.nickname = nickname;
+        this.phoneNumber = phoneNumber;
         this.role = role;
+        this.isSuitableAged = true;
         this.personalInfoAgreement = true;
+        this.isServiceUtilizationAgreed = true;
         this.marketingAgreement = marketingAgreement;
         this.cumulativeReportCount = 0;
         this.temperature = 36.5;
@@ -120,6 +149,10 @@ public class Member extends BaseEntity {
 
     public void updatePassword(String newPassword) {
         this.password = newPassword;
+    }
+
+    public void updateApprovedStatus(ApprovedStatus newApprovedStatus) {
+        this.approvedStatus = newApprovedStatus;
     }
 
     public void addCategory(MemberCategoryMapping mapping) {
@@ -164,5 +197,20 @@ public class Member extends BaseEntity {
 
         new ArrayList<>(enrollmentAsStudent).forEach(MemberClubMapping::softDelete);
         new ArrayList<>(enrollmentAsClub).forEach(MemberClubMapping::softDelete);
+    }
+
+    public void attachStudentProfile(StudentProfile profile) {
+        this.studentProfile = profile;
+        profile.attachMember(this);
+    }
+
+    public void attachCompanyProfile(CompanyProfile profile) {
+        this.companyProfile = profile;
+        profile.attachMember(this);
+    }
+
+    public void attachClubProfile(ClubProfile profile) {
+        this.clubProfile = profile;
+        profile.attachMember(this);
     }
 }

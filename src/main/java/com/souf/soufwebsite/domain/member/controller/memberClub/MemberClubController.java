@@ -1,14 +1,13 @@
 package com.souf.soufwebsite.domain.member.controller.memberClub;
 
-import com.souf.soufwebsite.domain.member.dto.ResDto.ClubSimpleResDto;
-import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
-import com.souf.soufwebsite.domain.member.dto.ResDto.MyClubResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.ClubSimpleResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.MemberSimpleResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.MyClubResDto;
 import com.souf.soufwebsite.domain.member.entity.EnrollmentStatus;
 import com.souf.soufwebsite.domain.member.entity.JoinDecision;
 import com.souf.soufwebsite.domain.member.service.club.MemberClubService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
