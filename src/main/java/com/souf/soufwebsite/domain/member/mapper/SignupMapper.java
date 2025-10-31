@@ -2,6 +2,7 @@ package com.souf.soufwebsite.domain.member.mapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
+import com.souf.soufwebsite.domain.file.exception.NotValidFileTypeException;
 import com.souf.soufwebsite.domain.file.service.S3UploaderService;
 import com.souf.soufwebsite.domain.member.dto.reqDto.signup.*;
 import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
@@ -60,14 +61,17 @@ public class SignupMapper {
                 ClubProfile clubProfile = new ClubProfile(c);
 
                 member.attachClubProfile(clubProfile);
+                member.updateIntroduction(c.getIntro());
             }
             case MEMBER -> {
                 CompanySignupReqDto co = (CompanySignupReqDto) reqDto;
-                if(co.getIsCompany().equals(Boolean.TRUE)){
+                if(co.getIsCompany().equals(Boolean.TRUE) && co.getBusinessRegistrationNumber() != null){
                     CompanyProfile companyProfile = new CompanyProfile(co);
 
                     if (co.getBusinessRegistrationFile() != null) {
-                        presignedUrlResDto = s3UploaderService.generatePresignedUploadUrl("profile/authentication", co.getBusinessRegistrationFile());
+                        if(co.getBusinessRegistrationFile().endsWith(".pdf"))
+                            presignedUrlResDto = s3UploaderService.generatePresignedUploadUrl("profile/authentication", co.getBusinessRegistrationFile());
+                        else throw new NotValidFileTypeException();
                     }
 
                     member.attachCompanyProfile(companyProfile);

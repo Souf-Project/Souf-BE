@@ -155,6 +155,10 @@ public class Member extends BaseEntity {
         this.approvedStatus = newApprovedStatus;
     }
 
+    public void updateIntroduction(String newIntroduction) {
+        this.intro = newIntroduction;
+    }
+
     public void addCategory(MemberCategoryMapping mapping) {
         for (MemberCategoryMapping existing : this.categories) {
             if (existing.isSameCategorySet(mapping)) {

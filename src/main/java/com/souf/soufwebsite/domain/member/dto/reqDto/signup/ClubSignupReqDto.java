@@ -19,6 +19,9 @@ public final class ClubSignupReqDto implements SignupReqDto {
     @Schema(description = "동아리 인증 수단을 기입해주세요.")
     String clubAuthenticationMethod;
 
+    @Schema(description = "동아리 정보를 기입해주세요. 100자 이내")
+    String intro;
+
     @Override
     public RoleType roleType() {
         return common.roleType();
