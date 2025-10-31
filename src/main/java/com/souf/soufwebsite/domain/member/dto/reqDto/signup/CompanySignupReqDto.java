@@ -19,23 +19,22 @@ public final class CompanySignupReqDto implements SignupReqDto {
     @Schema(description = "사업체 유무")
     Boolean isCompany;
 
-    @Schema(description = "회사명이 없다면 빈 문자열을 넣어주세요")
+    @Schema(description = "회사명을 입력해주세요.")
     String companyName;
 
-    @Schema(description = "사업자 등록 번호를 입력해주세요. 없다면 빈 문자열을 넣어주세요.")
+    @Schema(description = "사업자 등록 번호를 입력해주세요.")
     String businessRegistrationNumber;
 
-    @Valid
     @Schema(description = "우편 번호 및 회사 주소")
     AddressReqDto addressReqDto;
 
-    @Schema(description = "업태를 입력해주세요. 없다면 빈 문자열을 넣어주세요.")
+    @Schema(description = "업태를 입력해주세요.")
     String businessStatus;
 
-    @Schema(description = "사업자 구분을 입력해주세요. 없다면 빈 문자열을 넣어주세요.")
+    @Schema(description = "사업자 구분을 입력해주세요.")
     String businessClassification;
 
-    @Schema(description = "사업자 등록증 파일입니다. 없다면 빈 문자열을 넣어주세요.")
+    @Schema(description = "사업자 등록증 파일입니다.")
     String businessRegistrationFile;
 
     @Override

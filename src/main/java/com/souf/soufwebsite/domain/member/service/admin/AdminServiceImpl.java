@@ -9,6 +9,7 @@ import com.souf.soufwebsite.domain.inquiry.entity.InquiryType;
 import com.souf.soufwebsite.domain.inquiry.exception.NotFoundInquiryException;
 import com.souf.soufwebsite.domain.inquiry.repository.InquiryRepository;
 import com.souf.soufwebsite.domain.member.dto.reqDto.InquiryAnswerReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.signup.ResubmitReasonReqDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminPostResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminReportResDto;
@@ -72,9 +73,9 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public Page<AdminMemberResDto> getMembers(RoleType memberType, String username, String nickname, Pageable pageable) {
+    public Page<AdminMemberResDto> getMembers(RoleType memberType, String username, String nickname, ApprovedStatus approvedStatus, Pageable pageable) {
         log.info("memberType: {}, username: {}, nickname: {}", memberType, username, nickname);
-        return memberRepository.getMemberListInAdmin(memberType, username, nickname, pageable);
+        return memberRepository.getMemberListInAdmin(memberType, username, nickname, approvedStatus, pageable);
     }
 
     @Override
@@ -125,11 +126,16 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public void updateApprovedStatus(Long memberId, ApprovedStatus approvedStatus) {
+    public void updateApprovedStatus(Long memberId, ApprovedStatus approvedStatus, ResubmitReasonReqDto reqDto) {
         Member member = findIfMemberExists(memberId);
         member.updateApprovedStatus(approvedStatus);
 
-
+        if(approvedStatus.equals(ApprovedStatus.APPROVED)){
+            emailService.sendSignupApprovedResult(member.getEmail(), member.getNickname());
+        }
+        else if(approvedStatus.equals(ApprovedStatus.REJECTED)){
+            emailService.sendSignupRejectedResult(member.getEmail(), member.getNickname(), reqDto.reason(), "");
+        }
     }
 
     private Report findIfReportExists(Long reportId) {

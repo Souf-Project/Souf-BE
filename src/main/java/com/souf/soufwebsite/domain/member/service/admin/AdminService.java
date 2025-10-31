@@ -4,6 +4,7 @@ import com.souf.soufwebsite.domain.inquiry.dto.InquiryResDto;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryStatus;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryType;
 import com.souf.soufwebsite.domain.member.dto.reqDto.InquiryAnswerReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.signup.ResubmitReasonReqDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminPostResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminReportResDto;
@@ -20,7 +21,7 @@ public interface AdminService {
 
     Page<AdminPostResDto> getPosts(PostType postType, String writer, String title, Pageable pageable);
 
-    Page<AdminMemberResDto> getMembers(RoleType memberType, String username, String nickname, Pageable pageable);
+    Page<AdminMemberResDto> getMembers(RoleType memberType, String username, String nickname, ApprovedStatus approvedStatus, Pageable pageable);
 
     Page<AdminReportResDto> getReports(PostType postType, LocalDate startDate, LocalDate endDate, String nickname, Pageable pageable);
 
@@ -30,5 +31,5 @@ public interface AdminService {
 
     void updateReportStatus(Long reportId, ReportStatus reportStatus);
 
-    void updateApprovedStatus(Long memberId, ApprovedStatus approvedStatus);
+    void updateApprovedStatus(Long memberId, ApprovedStatus approvedStatus, ResubmitReasonReqDto resubmitReasonReqDto);
 }
