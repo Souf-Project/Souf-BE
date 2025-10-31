@@ -58,10 +58,15 @@ public class SignupMapper {
             }
             case CLUB -> {
                 ClubSignupReqDto c = (ClubSignupReqDto) reqDto;
-                ClubProfile clubProfile = new ClubProfile(c);
 
-                member.attachClubProfile(clubProfile);
-                member.updateIntroduction(c.getIntro());
+                if(c.getClubAuthenticationMethod() != null){
+                    ClubProfile clubProfile = new ClubProfile(c);
+
+                    member.attachClubProfile(clubProfile);
+                    if(c.getIntro() != null) {
+                        member.updateIntroduction(c.getIntro());
+                    }
+                }
             }
             case MEMBER -> {
                 CompanySignupReqDto co = (CompanySignupReqDto) reqDto;

@@ -7,6 +7,7 @@ import com.souf.soufwebsite.domain.member.entity.EnrollmentStatus;
 import com.souf.soufwebsite.domain.member.entity.JoinDecision;
 import com.souf.soufwebsite.domain.member.service.club.MemberClubService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import com.souf.soufwebsite.global.util.ApprovedOnly;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -32,6 +33,7 @@ public class MemberClubController implements MemberClubApiSpecification {
     }
 
     @Override
+    @ApprovedOnly
     @PostMapping("/{clubId}/join")
     public SuccessResponse<?> joinClub(
             @CurrentEmail String email,
@@ -71,7 +73,7 @@ public class MemberClubController implements MemberClubApiSpecification {
         return new SuccessResponse<>(clubs, MY_CLUBS_READ_SUCCESS.getMessage());
     }
 
-    @Override
+    @ApprovedOnly
     @PatchMapping("/{clubId}/members/{studentId}")
     public SuccessResponse<?> decideJoin(
             @CurrentEmail String clubEmail,

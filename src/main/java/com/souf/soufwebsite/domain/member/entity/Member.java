@@ -64,7 +64,8 @@ public class Member extends BaseEntity {
     @Column
     private String phoneNumber;
 
-    @Size(max = 100)
+    @Size(max = 300)
+    @Column
     private String intro;
 
     @Column(length = 300)

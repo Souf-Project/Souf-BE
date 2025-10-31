@@ -6,6 +6,7 @@ import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public final class ClubSignupReqDto implements SignupReqDto {
     @Schema(description = "동아리 인증 수단을 기입해주세요.")
     String clubAuthenticationMethod;
 
+    @Size(max = 300)
     @Schema(description = "동아리 정보를 기입해주세요. 100자 이내")
     String intro;
 
