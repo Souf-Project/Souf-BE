@@ -74,7 +74,7 @@ public class RecruitScheduledService {
         }
 
         LocalDateTime now = LocalDateTime.now();
-        List<Recruit> popularRecruits = recruitRepository.findTop5ByRecruitableAndDeadlineAfterOrderByDeadlineDesc(now);
+        List<Recruit> popularRecruits = recruitRepository.findTop5ByRecruitableAndDeadlineAfterOrderByDeadlineAsc(now);
 
         log.info("공고문 로직 실행 중");
 

@@ -18,7 +18,7 @@ public interface RecruitRepository extends JpaRepository<Recruit, Long>, Recruit
     void increaseViewCount(@Param("recruitId") Long recruitId, @Param("count") Long count);
 
     @Query("select r from Recruit r where r.recruitable=true and r.deadline > :now order by r.deadline limit 5")
-    List<Recruit> findTop5ByRecruitableAndDeadlineAfterOrderByDeadlineDesc(@Param("now") LocalDateTime now);
+    List<Recruit> findTop5ByRecruitableAndDeadlineAfterOrderByDeadlineAsc(@Param("now") LocalDateTime now);
 
 
     List<Recruit> findByRecruitableTrue();

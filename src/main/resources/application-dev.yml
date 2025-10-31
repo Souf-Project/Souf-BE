@@ -11,7 +11,7 @@ spring:
       ssl:
         enabled: false
 
-      host: redis-container
+      host: localhost
   jpa:
     hibernate:
       ddl-auto: update
