@@ -3,7 +3,6 @@ package com.souf.soufwebsite.domain.member.service.general;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.service.FileService;
-import com.souf.soufwebsite.domain.file.service.S3UploaderService;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.*;
 import com.souf.soufwebsite.domain.member.dto.reqDto.signup.SignupReqDto;
@@ -57,7 +56,6 @@ public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final FileService fileService;
-    private final S3UploaderService s3UploaderService;
     private final SlackService slackService;
 
     private final SesMailService mailService;
@@ -134,10 +132,6 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(NotFoundMemberException::new);
 
-        if(!member.getApprovedStatus().equals(ApprovedStatus.APPROVED)) {
-            throw new NotApprovedAccountException();
-        }
-
         if(banService.isBanned(member.getId())){
             Optional<Duration> remaining = banService.remaining(member.getId());
             String msg = remaining.map(duration -> "remaining: " + duration.toHours() + "h").orElse("permanent");
@@ -155,6 +149,7 @@ public class MemberServiceImpl implements MemberService {
                 .memberId(member.getId())
                 .nickname(member.getNickname())
                 .roleType(member.getRole())
+                .approvedStatus(member.getApprovedStatus())
                 .build();
     }
 
