@@ -1,7 +1,7 @@
 package com.souf.soufwebsite.domain.recruit.controller;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberIdReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.MemberIdReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.req.MyRecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.req.RecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.req.RecruitSearchReqDto;

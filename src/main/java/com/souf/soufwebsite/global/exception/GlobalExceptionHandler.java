@@ -3,9 +3,12 @@ package com.souf.soufwebsite.global.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import static software.amazon.awssdk.http.HttpStatusCode.FORBIDDEN;
 
 @RestControllerAdvice
 @Slf4j
@@ -38,6 +41,18 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(BAD_REQUEST)
+                .body(response);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ExceptionResponse<Void>> handle(AccessDeniedException e) {
+        String msg = "해당 API에 접근할 권한이 없습니다.";
+        log.warn("Access Denied");
+
+        ExceptionResponse<Void> response = ExceptionResponse.fail(FORBIDDEN, msg);
+
+        return ResponseEntity
+                .status(FORBIDDEN)
                 .body(response);
     }
 

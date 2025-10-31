@@ -1,7 +1,7 @@
 package com.souf.soufwebsite.domain.recruit.controller;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberIdReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.MemberIdReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.req.MyRecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.req.RecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.req.RecruitSearchReqDto;
@@ -9,6 +9,7 @@ import com.souf.soufwebsite.domain.recruit.dto.res.*;
 import com.souf.soufwebsite.domain.recruit.service.RecruitService;
 import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import com.souf.soufwebsite.global.util.ApprovedOnly;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -32,6 +33,7 @@ public class RecruitController implements RecruitApiSpecification{
     private final RecruitService recruitService;
     private final RedisUtil redisUtil;
 
+    @ApprovedOnly
     @PostMapping
     public SuccessResponse<RecruitCreateResDto> createRecruit(
             @CurrentEmail String email,

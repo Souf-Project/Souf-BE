@@ -3,14 +3,24 @@ package com.souf.soufwebsite.domain.member.service.admin;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryResDto;
+import com.souf.soufwebsite.domain.inquiry.entity.Inquiry;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryStatus;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryType;
+import com.souf.soufwebsite.domain.inquiry.exception.NotFoundInquiryException;
 import com.souf.soufwebsite.domain.inquiry.repository.InquiryRepository;
-import com.souf.soufwebsite.domain.member.dto.ResDto.AdminMemberResDto;
-import com.souf.soufwebsite.domain.member.dto.ResDto.AdminPostResDto;
-import com.souf.soufwebsite.domain.member.dto.ResDto.AdminReportResDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.InquiryAnswerReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.signup.ResubmitReasonReqDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.AdminMemberResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.AdminPostResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.AdminReportResDto;
+import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
+import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
+import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.domain.notification.dto.NotificationDto;
+import com.souf.soufwebsite.domain.notification.entity.NotificationType;
+import com.souf.soufwebsite.domain.notification.service.NotificationPublisher;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
 import com.souf.soufwebsite.domain.report.entity.Report;
@@ -19,6 +29,7 @@ import com.souf.soufwebsite.domain.report.exception.NotFoundReportException;
 import com.souf.soufwebsite.domain.report.repository.ReportRepository;
 import com.souf.soufwebsite.domain.report.service.StrikeService;
 import com.souf.soufwebsite.global.common.PostType;
+import com.souf.soufwebsite.global.common.mail.SesMailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -27,6 +38,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -40,6 +52,8 @@ public class AdminServiceImpl implements AdminService {
     private final InquiryRepository inquiryRepository;
 
     private final StrikeService strikeService;
+    private final SesMailService emailService;
+    private final NotificationPublisher notificationPublisher;
 
     @Override
     public Page<AdminPostResDto> getPosts(PostType postType, String writer, String title, Pageable pageable) {
@@ -59,9 +73,9 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public Page<AdminMemberResDto> getMembers(RoleType memberType, String username, String nickname, Pageable pageable) {
+    public Page<AdminMemberResDto> getMembers(RoleType memberType, String username, String nickname, ApprovedStatus approvedStatus, Pageable pageable) {
         log.info("memberType: {}, username: {}, nickname: {}", memberType, username, nickname);
-        return memberRepository.getMemberListInAdmin(memberType, username, nickname, pageable);
+        return memberRepository.getMemberListInAdmin(memberType, username, nickname, approvedStatus, pageable);
     }
 
     @Override
@@ -71,10 +85,33 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public Page<InquiryResDto> getInquiries(InquiryType inquiryType, InquiryStatus status, Pageable pageable) {
+    public Page<InquiryResDto> getInquiries(String search, InquiryType inquiryType, InquiryStatus status, Pageable pageable) {
         log.info("inquiryType: {}, pageable: {}", inquiryType, pageable);
 
-        return inquiryRepository.getInquiryListInAdmin(inquiryType, status, pageable);
+        return inquiryRepository.getInquiryListInAdmin(search, inquiryType, status, pageable);
+    }
+
+    @Transactional
+    @Override
+    public void answerInquiry(String email, Long inquiryId, InquiryAnswerReqDto reqDto) {
+        Inquiry inquiry = findIfInquiryExists(inquiryId);
+        inquiry.updateAnswer(reqDto);
+
+        Member toMember = inquiry.getMember();
+
+        NotificationDto dto = new NotificationDto(
+                toMember.getEmail(),
+                toMember.getId(),
+                NotificationType.INQUIRY_REPLIED,
+                "문의에 답변이 등록됐어요",
+                "문의하신 내용에 새로운 답변이 도착했어요.",
+                "INQUIRY",
+                inquiryId,
+                LocalDateTime.now()
+        );
+
+        emailService.sendInquiryResult(toMember.getEmail(), toMember.getNickname(), inquiry.getTitle());
+        notificationPublisher.publish(dto);
     }
 
     @Transactional
@@ -88,7 +125,29 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
+    @Override
+    @Transactional
+    public void updateApprovedStatus(Long memberId, ApprovedStatus approvedStatus, ResubmitReasonReqDto reqDto) {
+        Member member = findIfMemberExists(memberId);
+        member.updateApprovedStatus(approvedStatus);
+
+        if(approvedStatus.equals(ApprovedStatus.APPROVED)){
+            emailService.sendSignupApprovedResult(member.getEmail(), member.getNickname());
+        }
+        else if(approvedStatus.equals(ApprovedStatus.REJECTED)){
+            emailService.sendSignupRejectedResult(member.getEmail(), member.getNickname(), reqDto.reason(), "");
+        }
+    }
+
     private Report findIfReportExists(Long reportId) {
         return reportRepository.findById(reportId).orElseThrow(NotFoundReportException::new);
+    }
+
+    private Member findIfMemberExists(Long memberId) {
+        return memberRepository.findById(memberId).orElseThrow(NotFoundMemberException::new);
+    }
+
+    private Inquiry findIfInquiryExists(Long inquiryId) {
+        return inquiryRepository.findById(inquiryId).orElseThrow(NotFoundInquiryException::new);
     }
 }

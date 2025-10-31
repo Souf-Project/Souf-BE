@@ -5,5 +5,13 @@ import lombok.Getter;
 @Getter
 public enum PostType {
 
-    RECRUIT, FEED, PROFILE, CHAT, COMMENT, REVIEW, INQUIRY, LOGO
+    RECRUIT,
+    FEED,
+    PROFILE,
+    CHAT,
+    COMMENT,
+    REVIEW,
+    INQUIRY,
+    LOGO,
+    AUTHENTICATION
 }

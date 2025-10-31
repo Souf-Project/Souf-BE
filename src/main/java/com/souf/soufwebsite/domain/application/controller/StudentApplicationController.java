@@ -5,8 +5,8 @@ import com.souf.soufwebsite.domain.application.dto.req.ApplicationOfferReqDto;
 import com.souf.soufwebsite.domain.application.dto.res.MyApplicationResDto;
 import com.souf.soufwebsite.domain.application.service.ApplicationService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import com.souf.soufwebsite.global.util.ApprovedOnly;
 import com.souf.soufwebsite.global.util.CurrentEmail;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +22,7 @@ public class StudentApplicationController implements StudentApplicationApiSpecif
 
     private final ApplicationService applicationService;
 
+    @ApprovedOnly
     @PostMapping("/{recruitId}/apply")
     public SuccessResponse<?> apply(
             @CurrentEmail String email,
@@ -31,6 +32,7 @@ public class StudentApplicationController implements StudentApplicationApiSpecif
         return new SuccessResponse<>(APPLY_SUCCESS.getMessage());
     }
 
+    @ApprovedOnly
     @DeleteMapping("/{applicationId}")
     public SuccessResponse<?> deleteApplication(
             @CurrentEmail String email,

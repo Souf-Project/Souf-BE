@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.domain.report.repository;
 
-import com.souf.soufwebsite.domain.member.dto.ResDto.AdminReportResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.AdminReportResDto;
 import com.souf.soufwebsite.global.common.PostType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

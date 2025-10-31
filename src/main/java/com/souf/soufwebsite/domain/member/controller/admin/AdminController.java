@@ -3,14 +3,19 @@ package com.souf.soufwebsite.domain.member.controller.admin;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryResDto;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryStatus;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryType;
-import com.souf.soufwebsite.domain.member.dto.ResDto.AdminMemberResDto;
-import com.souf.soufwebsite.domain.member.dto.ResDto.AdminPostResDto;
-import com.souf.soufwebsite.domain.member.dto.ResDto.AdminReportResDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.InquiryAnswerReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.signup.ResubmitReasonReqDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.AdminMemberResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.AdminPostResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.AdminReportResDto;
+import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.service.admin.AdminService;
 import com.souf.soufwebsite.domain.report.entity.ReportStatus;
 import com.souf.soufwebsite.global.common.PostType;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import com.souf.soufwebsite.global.util.CurrentEmail;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -48,9 +53,10 @@ public class AdminController implements AdminApiSpecification{
             @RequestParam(name = "memberType", required = false) RoleType memberType,
             @RequestParam(name = "username", required = false) String username,
             @RequestParam(name = "nickname", required = false) String nickname,
+            @RequestParam(name = "approvedStatus", required = false) ApprovedStatus approvedStatus,
             @PageableDefault Pageable pageable
     ) {
-        Page<AdminMemberResDto> members = adminService.getMembers(memberType, username, nickname, pageable);
+        Page<AdminMemberResDto> members = adminService.getMembers(memberType, username, nickname, approvedStatus, pageable);
 
         return new SuccessResponse<>(members, MEMBER_GET_SUCCESS.getMessage());
     }
@@ -72,11 +78,24 @@ public class AdminController implements AdminApiSpecification{
     public SuccessResponse<Page<InquiryResDto>> getInquiries(
             @RequestParam(name = "inquiryType", required = false)InquiryType inquiryType,
             @RequestParam(name = "inquiryStatus", required = false) InquiryStatus inquiryStatus,
+            @RequestParam(name = "search", required = false) String search,
             @PageableDefault Pageable pageable
     ) {
-        Page<InquiryResDto> inquiries = adminService.getInquiries(inquiryType, inquiryStatus, pageable);
+        Page<InquiryResDto> inquiries = adminService.getInquiries(search, inquiryType, inquiryStatus, pageable);
 
         return new SuccessResponse<>(inquiries, REPORT_GET_SUCCESS.getMessage());
+    }
+
+    @PatchMapping("/inquiry/{inquiryId}")
+    public SuccessResponse<?> answerInquiry(
+            @CurrentEmail String email,
+            @PathVariable(name = "inquiryId") Long inquiryId,
+            @RequestBody InquiryAnswerReqDto reqDto
+    ) {
+
+        adminService.answerInquiry(email, inquiryId, reqDto);
+
+        return new SuccessResponse<>(INQUIRY_ANSWER_SUCCESS.getMessage());
     }
 
     @PatchMapping("/report/{reportId}")
@@ -87,5 +106,15 @@ public class AdminController implements AdminApiSpecification{
         adminService.updateReportStatus(reportId, status);
 
         return new SuccessResponse(REPORT_UPDATE_SUCCESS.getMessage());
+    }
+
+    @PatchMapping("/member/{memberId}")
+    public SuccessResponse<?> updateMemberApprovedStatus(
+            @PathVariable(name = "memberId") Long memberId,
+            @RequestParam(name = "approvedStatus") ApprovedStatus approvedStatus,
+            @Valid @RequestBody ResubmitReasonReqDto reqDto) {
+
+        adminService.updateApprovedStatus(memberId, approvedStatus, reqDto);
+        return new SuccessResponse<>(MEMBER_APPROVED_STATUS_UPDATE_SUCCESS.getMessage());
     }
 }

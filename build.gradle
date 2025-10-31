@@ -109,6 +109,10 @@ dependencies {
     implementation platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.1.0")
     implementation "io.awspring.cloud:spring-cloud-aws-starter-sqs"
 
+    // AWS CloudWatch
+    implementation group: 'ca.pjer', name: 'logback-awslogs-appender', version: '1.6.0'  // AWS CloudWatch 로그 앱렌더
+    implementation 'org.codehaus.janino:janino:3.1.7'  // janino는 로그의 동적 구성을 위해 사용
+
     // slack
     implementation("com.slack.api:bolt:1.18.0")
     implementation("com.slack.api:bolt-servlet:1.18.0")

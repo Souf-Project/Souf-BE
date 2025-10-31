@@ -1,8 +1,8 @@
 package com.souf.soufwebsite.domain.member.service.favorite;
 
 import com.souf.soufwebsite.domain.file.service.FileService;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.FavoriteMemberReqDto;
-import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.FavoriteMemberReqDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.entity.FavoriteMember;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.exception.NotFoundFavoriteException;

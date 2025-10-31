@@ -11,10 +11,11 @@ import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
+import com.souf.soufwebsite.domain.file.event.MediaCleanupHelper;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.file.service.MediaCleanupPublisher;
 import com.souf.soufwebsite.domain.file.service.S3UploaderService;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberIdReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.MemberIdReqDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
@@ -26,6 +27,7 @@ import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.entity.RecruitCategoryMapping;
 import com.souf.soufwebsite.domain.recruit.exception.NotFoundRecruitException;
 import com.souf.soufwebsite.domain.recruit.exception.NotValidAuthenticationException;
+import com.souf.soufwebsite.domain.recruit.query.SubscriberQuery;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
 import com.souf.soufwebsite.global.common.PostType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
@@ -43,9 +45,11 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -66,10 +70,17 @@ public class RecruitServiceImpl implements RecruitService {
     private final CityDetailRepository cityDetailRepository;
     private final CategoryService categoryService;
     private final RedisUtil redisUtil;
-    private final MediaCleanupPublisher mediaCleanupPublisher;
 //    private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final SlackService slackService;
     private final ViewCountService viewCountService;
+
+    private final MediaCleanupPublisher mediaCleanupPublisher;
+    private final MediaCleanupHelper mediaCleanupHelper;
+
+    private static final String AGG_KEY_FMT = "notif:agg:%d:%d:%d"; // notif:agg:{memberId}:{firstId}:{secondId}
+    private static final Duration AGG_WINDOW = java.time.Duration.ofHours(1);
+    private final SubscriberQuery subscriberQuery;
+    private final RedisTemplate<String, Object> redisTemplate;
 
 
     public Member getCurrentMember() {
@@ -88,6 +99,11 @@ public class RecruitServiceImpl implements RecruitService {
         Recruit recruit = Recruit.of(reqDto, member, city, cityDetail);
         injectCategories(reqDto, recruit);
         recruit = recruitRepository.save(recruit);
+
+        List<CatPair> pairs = extractFirstSecondPairs(reqDto);
+        for (CatPair p : pairs) {
+            enqueueRecruitPublished(p.firstId(), p.secondId(), recruit.getId());
+        }
 
 //        indexEventPublisherHelper.publishIndexEvent(
 //                EntityType.RECRUIT,
@@ -117,6 +133,7 @@ public class RecruitServiceImpl implements RecruitService {
     @Transactional
     public void uploadRecruitMedia(MediaReqDto reqDto) {
         Recruit recruit = findIfRecruitExist(reqDto.postId());
+
         fileService.uploadMetadata(reqDto, PostType.RECRUIT, recruit.getId());
     }
 
@@ -304,12 +321,39 @@ public class RecruitServiceImpl implements RecruitService {
     }
 
     private void updateRemainingImages(RecruitReqDto reqDto, Recruit recruit) {
-        List<Media> mediaList = fileService.getMediaList(PostType.RECRUIT, recruit.getId());
-        for (Media media : mediaList) {
-            if (!reqDto.existingImageUrls().contains(media.getOriginalUrl())) {
-                fileService.deleteMedia(media);  // DB에서만 삭제되도록 수정
-            }
+        List<String> removed = mediaCleanupHelper.purgeRemovedMedias(
+                PostType.RECRUIT,
+                recruit.getId(),
+                reqDto.existingImageUrls()
+        );
+
+        // 삭제할 URL이 있으면 S3 삭제 이벤트 발행
+        if (!removed.isEmpty()) {
+            mediaCleanupPublisher.publishUrls(PostType.RECRUIT, recruit.getId(), removed);
         }
     }
 
+    private record CatPair(Long firstId, Long secondId) {}
+
+    // reqDto에서 (first, second) 페어를 추출 (third는 무시)
+    private List<CatPair> extractFirstSecondPairs(RecruitReqDto reqDto) {
+        if (reqDto.categoryDtos() == null) return List.of();
+        return reqDto.categoryDtos().stream()
+                .filter(cd -> cd.firstCategory() != null && cd.secondCategory() != null) // 둘 다 있어야 매칭
+                .map(cd -> new CatPair(cd.firstCategory(), cd.secondCategory()))
+                .distinct()
+                .toList();
+    }
+
+    private void enqueueRecruitPublished(Long firstId, Long secondId, Long recruitId) {
+        var subscriberIds = subscriberQuery.findSubscriberIdsByFirstSecond(firstId, secondId);
+        if (subscriberIds == null || subscriberIds.isEmpty()) return;
+
+        for (Long memberId : subscriberIds) {
+            String key = AGG_KEY_FMT.formatted(memberId, firstId, secondId);
+            redisTemplate.opsForHash().increment(key, "count", 1);
+            redisTemplate.expire(key, AGG_WINDOW);
+        }
+    }
 }
+

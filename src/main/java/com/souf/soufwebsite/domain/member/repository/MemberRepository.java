@@ -2,6 +2,8 @@ package com.souf.soufwebsite.domain.member.repository;
 
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
@@ -18,4 +20,6 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberCus
     boolean existsByEmail(String email);
 
     Long countAllByRole(RoleType role);
+
+    Page<Member> findAllByRoleAndIsDeletedFalse(RoleType role, Pageable pageable);
 }
