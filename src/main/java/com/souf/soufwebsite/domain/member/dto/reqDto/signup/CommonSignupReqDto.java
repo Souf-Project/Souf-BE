@@ -38,6 +38,10 @@ public record CommonSignupReqDto(
         String nickname,
 
         @Schema(description = "전화번호", example = "010-1111-1111")
+        @Pattern(
+                regexp = "^010[\\s.-]?\\d{3,4}[\\s.-]?\\d{4}$",
+                message = "휴대폰 번호 형식이 올바르지 않습니다. 예) 010-1234-5678"
+        )
         @NotNull
         String phoneNumber,
 

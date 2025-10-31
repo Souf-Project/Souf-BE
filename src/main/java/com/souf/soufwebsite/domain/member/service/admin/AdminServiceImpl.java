@@ -126,6 +126,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public void updateApprovedStatus(Long memberId, ApprovedStatus approvedStatus, ResubmitReasonReqDto reqDto) {
         Member member = findIfMemberExists(memberId);
         member.updateApprovedStatus(approvedStatus);

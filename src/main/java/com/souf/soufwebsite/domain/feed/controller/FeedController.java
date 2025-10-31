@@ -4,6 +4,7 @@ import com.souf.soufwebsite.domain.feed.dto.*;
 import com.souf.soufwebsite.domain.feed.service.FeedService;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import com.souf.soufwebsite.global.util.ApprovedOnly;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -26,6 +27,7 @@ public class FeedController implements FeedApiSpecification{
 
     private final FeedService feedService;
 
+    @ApprovedOnly
     @PostMapping
     public SuccessResponse<FeedResDto> createFeed(
             @CurrentEmail String email,
@@ -35,6 +37,7 @@ public class FeedController implements FeedApiSpecification{
         return new SuccessResponse<>(feedResDto, FEED_CREATE.getMessage());
     }
 
+    @ApprovedOnly
     @PostMapping("/upload")
     public SuccessResponse uploadMetadata(@Valid @RequestBody MediaReqDto mediaReqDto){
         feedService.uploadFeedMedia(mediaReqDto);

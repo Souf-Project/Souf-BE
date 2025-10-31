@@ -64,7 +64,8 @@ public class Member extends BaseEntity {
     @Column
     private String phoneNumber;
 
-    @Size(max = 100)
+    @Size(max = 300)
+    @Column
     private String intro;
 
     @Column(length = 300)
@@ -153,6 +154,10 @@ public class Member extends BaseEntity {
 
     public void updateApprovedStatus(ApprovedStatus newApprovedStatus) {
         this.approvedStatus = newApprovedStatus;
+    }
+
+    public void updateIntroduction(String newIntroduction) {
+        this.intro = newIntroduction;
     }
 
     public void addCategory(MemberCategoryMapping mapping) {
