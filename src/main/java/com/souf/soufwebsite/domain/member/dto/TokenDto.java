@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.member.dto;
 
+import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import lombok.Builder;
@@ -10,6 +11,7 @@ public record TokenDto(
         Long memberId,
         String nickname,
         RoleType roleType,
-        ApprovedStatus approvedStatus
+        ApprovedStatus approvedStatus,
+        PresignedUrlResDto presignedUrlResDto
 ) {
 }

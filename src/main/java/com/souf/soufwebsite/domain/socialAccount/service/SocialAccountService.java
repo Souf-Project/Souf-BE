@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.socialAccount.service;
 
+import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.signup.SignupReqDto;
 import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
@@ -95,7 +96,7 @@ public class SocialAccountService {
 
         if (account != null) {
             Member member = account.getMember();
-            TokenDto token = issueTokens(member); // 아래 헬퍼 참고
+            TokenDto token = issueTokens(member, null); // 아래 헬퍼 참고
             return SocialLoginResDto.loggedIn(token, new SocialPrefill(
                     member.getEmail(), member.getUsername(), info.profileImageUrl(), request.provider().name()
             ));
@@ -149,7 +150,7 @@ public class SocialAccountService {
                 .findByProviderAndProviderUserId(provider, socialId)
                 .orElse(null);
         if (existing != null) {
-            TokenDto token = issueTokens(existing.getMember());
+            TokenDto token = issueTokens(existing.getMember(), null);
             jwtService.sendAccessAndRefreshToken(response, token.accessToken(), // 필요 시
                     redisTemplate.opsForValue().get("refresh:" + existing.getMember().getEmail()));
             redisTemplate.delete(key);
@@ -177,7 +178,7 @@ public class SocialAccountService {
 
         injectCategories(signupReqDto.categoryDtos(), member);
 
-        signupMapper.signupByRole(member, signupReqDto); // 이거 SignupReqDto로 바꿔야됨. 기존 값 한번 더 넣어줘야됨.
+        PresignedUrlResDto presignedUrlResDto = signupMapper.signupByRole(member, signupReqDto);// 이거 SignupReqDto로 바꿔야됨. 기존 값 한번 더 넣어줘야됨.
 
         memberRepository.save(member);
 
@@ -192,7 +193,7 @@ public class SocialAccountService {
                 .build());
 
         // 3) 토큰 발급/전송
-        TokenDto token = issueTokens(member);
+        TokenDto token = issueTokens(member, presignedUrlResDto);
         jwtService.sendAccessAndRefreshToken(response, token.accessToken(),
                 redisTemplate.opsForValue().get("refresh:" + member.getEmail()));
 
@@ -253,7 +254,7 @@ public class SocialAccountService {
         socialAccountRepository.save(link);
     }
 
-    private TokenDto issueTokens(Member member) {
+    private TokenDto issueTokens(Member member, PresignedUrlResDto presignedUrlResDto) {
         String accessToken = jwtService.createAccessToken(member);
         String refreshToken = jwtService.createRefreshToken(member);
 
@@ -269,6 +270,7 @@ public class SocialAccountService {
                 .memberId(member.getId())
                 .nickname(member.getNickname())
                 .roleType(member.getRole())
+                .presignedUrlResDto(presignedUrlResDto)
                 .build();
     }
 
