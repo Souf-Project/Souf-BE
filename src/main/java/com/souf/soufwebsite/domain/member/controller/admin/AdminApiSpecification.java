@@ -4,6 +4,7 @@ import com.souf.soufwebsite.domain.inquiry.dto.InquiryResDto;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryStatus;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryType;
 import com.souf.soufwebsite.domain.member.dto.reqDto.InquiryAnswerReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.signup.ResubmitReasonReqDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminPostResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminReportResDto;
@@ -15,6 +16,7 @@ import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -81,8 +83,9 @@ public interface AdminApiSpecification {
     @PatchMapping("/member/{memberId}")
     SuccessResponse<?> updateMemberApprovedStatus(
             @PathVariable(name = "memberId") Long memberId,
-            @RequestParam(name = "approvedStatus") ApprovedStatus approvedStatus
-    );
+            @RequestParam(name = "approvedStatus") ApprovedStatus approvedStatus,
+            @Valid @RequestBody ResubmitReasonReqDto reqDto
+            );
 
 }
 //  신고 제재는 일주일, 15일, 탈퇴
