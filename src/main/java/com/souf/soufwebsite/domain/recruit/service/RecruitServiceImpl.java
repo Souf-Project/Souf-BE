@@ -11,10 +11,11 @@ import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
+import com.souf.soufwebsite.domain.file.event.MediaCleanupHelper;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.file.service.MediaCleanupPublisher;
 import com.souf.soufwebsite.domain.file.service.S3UploaderService;
-import com.souf.soufwebsite.domain.member.dto.ReqDto.MemberIdReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.MemberIdReqDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
@@ -24,8 +25,10 @@ import com.souf.soufwebsite.domain.recruit.dto.req.RecruitSearchReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.res.*;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.entity.RecruitCategoryMapping;
+import com.souf.soufwebsite.domain.recruit.event.RecruitChangedEvent;
 import com.souf.soufwebsite.domain.recruit.exception.NotFoundRecruitException;
 import com.souf.soufwebsite.domain.recruit.exception.NotValidAuthenticationException;
+import com.souf.soufwebsite.domain.recruit.query.SubscriberQuery;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
 import com.souf.soufwebsite.global.common.PostType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
@@ -39,13 +42,20 @@ import com.souf.soufwebsite.global.slack.service.SlackService;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -66,10 +76,19 @@ public class RecruitServiceImpl implements RecruitService {
     private final CityDetailRepository cityDetailRepository;
     private final CategoryService categoryService;
     private final RedisUtil redisUtil;
-    private final MediaCleanupPublisher mediaCleanupPublisher;
 //    private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final SlackService slackService;
     private final ViewCountService viewCountService;
+
+    private final MediaCleanupPublisher mediaCleanupPublisher;
+    private final MediaCleanupHelper mediaCleanupHelper;
+
+    private static final String AGG_KEY_FMT = "notif:agg:%d:%d:%d"; // notif:agg:{memberId}:{firstId}:{secondId}
+    private static final Duration AGG_WINDOW = java.time.Duration.ofHours(1);
+    private final SubscriberQuery subscriberQuery;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final CacheManager cacheManager;
+    private final ApplicationEventPublisher publisher;
 
 
     public Member getCurrentMember() {
@@ -88,6 +107,11 @@ public class RecruitServiceImpl implements RecruitService {
         Recruit recruit = Recruit.of(reqDto, member, city, cityDetail);
         injectCategories(reqDto, recruit);
         recruit = recruitRepository.save(recruit);
+
+        List<CatPair> pairs = extractFirstSecondPairs(reqDto);
+        for (CatPair p : pairs) {
+            enqueueRecruitPublished(p.firstId(), p.secondId(), recruit.getId());
+        }
 
 //        indexEventPublisherHelper.publishIndexEvent(
 //                EntityType.RECRUIT,
@@ -110,6 +134,18 @@ public class RecruitServiceImpl implements RecruitService {
                 member.getNickname() + " 님을 다같이 환영해보아요:)";
         slackService.sendSlackMessage(slackMsg, "post");
 
+        Recruit savedRecruit = recruit;
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override public void afterCommit() {
+                publisher.publishEvent(new RecruitChangedEvent(
+                        savedRecruit.getId(),
+                        RecruitChangedEvent.ChangeType.CREATED,
+                        savedRecruit.isRecruitable(),
+                        savedRecruit.getDeadline()
+                ));
+            }
+        });
+
         return new RecruitCreateResDto(recruit.getId(), presignedUrlResDtos, logoResDto, videoDto);
     }
 
@@ -117,6 +153,7 @@ public class RecruitServiceImpl implements RecruitService {
     @Transactional
     public void uploadRecruitMedia(MediaReqDto reqDto) {
         Recruit recruit = findIfRecruitExist(reqDto.postId());
+
         fileService.uploadMetadata(reqDto, PostType.RECRUIT, recruit.getId());
     }
 
@@ -180,6 +217,9 @@ public class RecruitServiceImpl implements RecruitService {
         Recruit recruit = findIfRecruitExist(recruitId);
         verifyIfRecruitIsMine(recruit, member);
 
+        boolean beforeRecruitable = recruit.isRecruitable();
+        LocalDateTime beforeDeadline = recruit.getDeadline();
+
         City city = cityRepository.findById(reqDto.cityId())
                 .orElseThrow(NotFoundCityException::new);
         CityDetail cityDetail = validateCityOrThrow(city, reqDto.cityDetailId());
@@ -205,6 +245,23 @@ public class RecruitServiceImpl implements RecruitService {
 //                recruit
 //        );
 
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override public void afterCommit() {
+                boolean statusOrDeadlineChanged =
+                        beforeRecruitable != recruit.isRecruitable()
+                                || !Objects.equals(beforeDeadline, recruit.getDeadline());
+
+                publisher.publishEvent(new RecruitChangedEvent(
+                        recruit.getId(),
+                        statusOrDeadlineChanged
+                                ? RecruitChangedEvent.ChangeType.STATUS_OR_DEADLINE_UPDATED
+                                : RecruitChangedEvent.ChangeType.CONTENT_UPDATED,
+                        recruit.isRecruitable(),
+                        recruit.getDeadline()
+                ));
+            }
+        });
+
         return new RecruitCreateResDto(recruit.getId(), presignedUrlResDtos, logoResDto, videoDto);
     }
 
@@ -229,6 +286,17 @@ public class RecruitServiceImpl implements RecruitService {
 
         mediaCleanupPublisher.publish(PostType.RECRUIT, recruitId);
         mediaCleanupPublisher.publish(PostType.LOGO, recruitId);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override public void afterCommit() {
+                publisher.publishEvent(new RecruitChangedEvent(
+                        recruit.getId(),
+                        RecruitChangedEvent.ChangeType.DELETED,
+                        false,
+                        null
+                ));
+            }
+        });
     }
 
     @Override
@@ -236,7 +304,7 @@ public class RecruitServiceImpl implements RecruitService {
             key = "'recruit:popular'")
     public List<RecruitPopularityResDto> getPopularRecruits() {
         LocalDateTime now = LocalDateTime.now();
-        List<Recruit> popularRecruits = recruitRepository.findTop5ByRecruitableAndDeadlineAfterOrderByDeadlineDesc(now);
+        List<Recruit> popularRecruits = recruitRepository.findTop5ByRecruitableAndDeadlineAfterOrderByDeadlineAsc(now);
 
         log.info("공고문 로직 실행 중");
 
@@ -259,7 +327,27 @@ public class RecruitServiceImpl implements RecruitService {
 
         verifyIfRecruitIsMine(recruit, member); // 소지 여부 확인
 
+        boolean beforeRecruitable = recruit.isRecruitable();
+        LocalDateTime beforeDeadline = recruit.getDeadline();
+
         recruit.updateRecruitable();
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override public void afterCommit() {
+                boolean statusOrDeadlineChanged =
+                        beforeRecruitable != recruit.isRecruitable()
+                                || !Objects.equals(beforeDeadline, recruit.getDeadline());
+
+                if (statusOrDeadlineChanged) {
+                    publisher.publishEvent(new RecruitChangedEvent(
+                            recruit.getId(),
+                            RecruitChangedEvent.ChangeType.STATUS_OR_DEADLINE_UPDATED,
+                            recruit.isRecruitable(),
+                            recruit.getDeadline()
+                    ));
+                }
+            }
+        });
     }
 
     private Member findIfEmailExists(String email) {
@@ -304,12 +392,39 @@ public class RecruitServiceImpl implements RecruitService {
     }
 
     private void updateRemainingImages(RecruitReqDto reqDto, Recruit recruit) {
-        List<Media> mediaList = fileService.getMediaList(PostType.RECRUIT, recruit.getId());
-        for (Media media : mediaList) {
-            if (!reqDto.existingImageUrls().contains(media.getOriginalUrl())) {
-                fileService.deleteMedia(media);  // DB에서만 삭제되도록 수정
-            }
+        List<String> removed = mediaCleanupHelper.purgeRemovedMedias(
+                PostType.RECRUIT,
+                recruit.getId(),
+                reqDto.existingImageUrls()
+        );
+
+        // 삭제할 URL이 있으면 S3 삭제 이벤트 발행
+        if (!removed.isEmpty()) {
+            mediaCleanupPublisher.publishUrls(PostType.RECRUIT, recruit.getId(), removed);
         }
     }
 
+    private record CatPair(Long firstId, Long secondId) {}
+
+    // reqDto에서 (first, second) 페어를 추출 (third는 무시)
+    private List<CatPair> extractFirstSecondPairs(RecruitReqDto reqDto) {
+        if (reqDto.categoryDtos() == null) return List.of();
+        return reqDto.categoryDtos().stream()
+                .filter(cd -> cd.firstCategory() != null && cd.secondCategory() != null) // 둘 다 있어야 매칭
+                .map(cd -> new CatPair(cd.firstCategory(), cd.secondCategory()))
+                .distinct()
+                .toList();
+    }
+
+    private void enqueueRecruitPublished(Long firstId, Long secondId, Long recruitId) {
+        var subscriberIds = subscriberQuery.findSubscriberIdsByFirstSecond(firstId, secondId);
+        if (subscriberIds == null || subscriberIds.isEmpty()) return;
+
+        for (Long memberId : subscriberIds) {
+            String key = AGG_KEY_FMT.formatted(memberId, firstId, secondId);
+            redisTemplate.opsForHash().increment(key, "count", 1);
+            redisTemplate.expire(key, AGG_WINDOW);
+        }
+    }
 }
+

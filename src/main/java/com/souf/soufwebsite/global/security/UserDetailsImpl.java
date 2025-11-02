@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.global.security;
 
+import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
@@ -33,5 +34,7 @@ public class UserDetailsImpl implements UserDetails {
     public String getUsername() { return member.getEmail(); }
 
     public String getEmail() { return member.getEmail(); }
+
+    public ApprovedStatus getApprovedStatus() { return member.getApprovedStatus(); }
 
 }

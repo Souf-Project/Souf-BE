@@ -1,7 +1,7 @@
 package com.souf.soufwebsite.domain.member.controller;
 
-import com.souf.soufwebsite.domain.member.dto.ReqDto.FavoriteMemberReqDto;
-import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.FavoriteMemberReqDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

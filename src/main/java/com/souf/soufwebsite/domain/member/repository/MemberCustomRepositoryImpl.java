@@ -7,8 +7,9 @@ import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.service.FileService;
-import com.souf.soufwebsite.domain.member.dto.ResDto.AdminMemberResDto;
-import com.souf.soufwebsite.domain.member.dto.ResDto.MemberSimpleResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.AdminMemberResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.MemberSimpleResDto;
+import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.report.repository.SanctionRepository;
@@ -130,12 +131,13 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
     }
 
     @Override
-    public Page<AdminMemberResDto> getMemberListInAdmin(RoleType memberType, String username, String nickname, Pageable pageable) {
+    public Page<AdminMemberResDto> getMemberListInAdmin(RoleType memberType, String username, String nickname, ApprovedStatus status, Pageable pageable) {
 
         BooleanBuilder condition = new BooleanBuilder();
         BooleanExpression roleCondition = extractedRoleType(memberType);
         BooleanExpression usernameCondition = extractedUsername(username);
         BooleanExpression nicknameCondition = extractedNickname(nickname);
+        BooleanExpression approvedStatusCondition = extractedApprovedStatus(status);
 
         if (roleCondition != null) {
             condition.and(roleCondition);
@@ -145,6 +147,9 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
         }
         if (nicknameCondition != null) {
             condition.and(nicknameCondition);
+        }
+        if(approvedStatusCondition != null) {
+            condition.and(approvedStatusCondition);
         }
 
         List<Member> members = queryFactory
@@ -159,7 +164,7 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
                     int strikes = sanctionRepository.countStrikes(m.getId());
 
                     return new AdminMemberResDto(m.getId(), m.getRole(), m.getUsername(), m.getNickname(),
-                            m.getEmail(), strikes, m.isDeleted());
+                            m.getEmail(), strikes, m.isDeleted(), m.getApprovedStatus());
                 }
         ).toList();
 
@@ -196,6 +201,14 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
         }
 
         return member.nickname.eq(nickname);
+    }
+
+    private BooleanExpression extractedApprovedStatus(ApprovedStatus approvedStatus) {
+        if(approvedStatus == null){
+            return null;
+        }
+
+        return member.approvedStatus.eq(approvedStatus);
     }
 
 }

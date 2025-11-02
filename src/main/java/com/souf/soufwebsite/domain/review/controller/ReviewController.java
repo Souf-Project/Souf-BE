@@ -4,6 +4,7 @@ import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.review.dto.*;
 import com.souf.soufwebsite.domain.review.service.ReviewService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import com.souf.soufwebsite.global.util.ApprovedOnly;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -24,6 +25,7 @@ public class ReviewController implements ReviewApiSpecification {
 
     private final ReviewService reviewService;
 
+    @ApprovedOnly
     @PostMapping
     public SuccessResponse<ReviewCreatedResDto> createReview(
             @CurrentEmail String email,

@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -74,7 +75,7 @@ public class RecruitScheduledService {
         }
 
         LocalDateTime now = LocalDateTime.now();
-        List<Recruit> popularRecruits = recruitRepository.findTop5ByRecruitableAndDeadlineAfterOrderByDeadlineDesc(now);
+        List<Recruit> popularRecruits = recruitRepository.findTop5ByRecruitableAndDeadlineAfterOrderByDeadlineAsc(now);
 
         log.info("공고문 로직 실행 중");
 
@@ -91,5 +92,44 @@ public class RecruitScheduledService {
 
     private String buildKey(Pageable pageable) {
         return "page:" + pageable.getPageNumber() + ":" + pageable.getPageSize();
+    }
+
+
+    public void rebuildPopularRecruits() { // 전체 리빌드
+        refreshPopularRecruits(); // 이미 구현되어 있음 (임박순 TOP5 재계산 후 cache.put)
+    }
+
+    @SuppressWarnings("unchecked")
+    public void patchOne(Long recruitId) {
+        Cache cache = cacheManager.getCache("popularRecruits");
+        if (cache == null) return;
+
+        Cache.ValueWrapper wrapper = cache.get("recruit:popular");
+        if (wrapper == null) { rebuildPopularRecruits(); return; }
+
+        List<RecruitPopularityResDto> cached = (List<RecruitPopularityResDto>) wrapper.get();
+        if (cached == null) { rebuildPopularRecruits(); return; }
+
+        Recruit updated = recruitRepository.findById(recruitId).orElse(null);
+        if (updated == null) { rebuildPopularRecruits(); return; }
+
+        String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, updated.getMember().getId());
+        RecruitPopularityResDto newDto = RecruitPopularityResDto.of(updated, mediaUrl);
+
+        List<RecruitPopularityResDto> patched = cached.stream()
+                .map(d -> d.recruitId().equals(recruitId) ? newDto : d)
+                .toList();
+
+        cache.put("recruit:popular", patched);
+    }
+
+    @SuppressWarnings("unchecked")
+    public boolean cacheContains(Long recruitId) {
+        Cache cache = cacheManager.getCache("popularRecruits");
+        if (cache == null) return false;
+        Cache.ValueWrapper w = cache.get("recruit:popular");
+        if (w == null || w.get() == null) return false;
+        List<RecruitPopularityResDto> list = (List<RecruitPopularityResDto>) w.get();
+        return list.stream().anyMatch(d -> Objects.equals(d.recruitId(), recruitId));
     }
 }

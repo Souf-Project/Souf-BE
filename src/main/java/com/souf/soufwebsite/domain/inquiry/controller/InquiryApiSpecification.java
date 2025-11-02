@@ -2,6 +2,7 @@ package com.souf.soufwebsite.domain.inquiry.controller;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryCreateResDto;
+import com.souf.soufwebsite.domain.inquiry.dto.InquiryDetailedResDto;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryReqDto;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryResDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
@@ -49,5 +50,11 @@ public interface InquiryApiSpecification {
     SuccessResponse<Page<InquiryResDto>> getMyInquiry(
             @CurrentEmail String email,
             @PageableDefault(size = 8) Pageable pageable
+    );
+
+    @GetMapping("/{inquiryId}")
+    SuccessResponse<InquiryDetailedResDto> getInquiry(
+            @PathVariable(name = "inquiryId") Long inquiryId,
+            @CurrentEmail String email
     );
 }

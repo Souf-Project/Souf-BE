@@ -1,21 +1,16 @@
 package com.souf.soufwebsite.domain.notification.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.souf.soufwebsite.domain.notification.entity.NotificationType;
+import java.time.LocalDateTime;
 
-import java.io.Serializable;
-
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
-public class NotificationDto implements Serializable {
-
-    private Long targetMemberId;
-
-    private Long notificationId;
-
-    private String title;
-
-    private String content;
+public record NotificationDto(
+        String email,              // 알림 수신자 이메일 (SSE용)
+        Long targetMemberId,       // 알림 수신자 ID
+        NotificationType type,     // 알림 종류
+        String title,              // 제목 (헤더 종표시용)
+        String body,               // 내용 (알림 상세)
+        String refType,            // 참조 도메인: RECRUIT, INQUIRY, RECRUIT_CATEGORY 등
+        Long refId,                // 참조 PK
+        LocalDateTime createdAt   // 생성 시각
+) {
 }

@@ -3,6 +3,7 @@ package com.souf.soufwebsite.domain.application.controller;
 import com.souf.soufwebsite.domain.application.dto.res.ApplicantResDto;
 import com.souf.soufwebsite.domain.application.service.ApplicationService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import com.souf.soufwebsite.global.util.ApprovedOnly;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -19,6 +20,7 @@ public class RecruitApplicationController implements RecruitApplicationApiSpecif
 
     private final ApplicationService applicationService;
 
+    @ApprovedOnly
     @GetMapping("/{recruitId}/applicants")
     public SuccessResponse<Page<ApplicantResDto>> getApplicantsForRecruit(
             @CurrentEmail String email,
@@ -30,6 +32,7 @@ public class RecruitApplicationController implements RecruitApplicationApiSpecif
                 APPLICATION_READ_SUCCESS.getMessage());
     }
 
+    @ApprovedOnly
     @PostMapping("/{applicationId}/approve")
     public SuccessResponse<?> approveApplication(
             @CurrentEmail String email,
@@ -38,6 +41,7 @@ public class RecruitApplicationController implements RecruitApplicationApiSpecif
         return new SuccessResponse<>(APPLY_ACCEPT.getMessage());
     }
 
+    @ApprovedOnly
     @PostMapping("/{applicationId}/reject")
     public SuccessResponse<?> rejectApplication(
             @CurrentEmail String email,

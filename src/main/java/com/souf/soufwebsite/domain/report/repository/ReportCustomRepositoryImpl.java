@@ -4,7 +4,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.souf.soufwebsite.domain.member.dto.ResDto.AdminReportResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.AdminReportResDto;
 import com.souf.soufwebsite.domain.member.entity.QMember;
 import com.souf.soufwebsite.domain.report.entity.QReason;
 import com.souf.soufwebsite.domain.report.entity.QReportReasonMapping;

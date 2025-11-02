@@ -16,32 +16,28 @@ public class NotificationService {
 
     private final EmitterRepository emitterRepository;
 
-    public SseEmitter subscribe(Long memberId) {
+    public SseEmitter subscribe(String email) {
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
-        emitterRepository.save(memberId, emitter);
 
-        // 초기 연결 확인용 더미 이벤트
+        emitterRepository.save(email, emitter);
+
         try {
-            emitter.send(SseEmitter.event()
-                    .name("init")
-                    .data("SSE 연결 성공"));
-        } catch (Exception ignored) { }
+            emitter.send(SseEmitter.event().name("init").data("SSE 연결 성공"));
+        } catch (Exception e) {
+            log.warn("SSE 초기 전송 실패: {}", e.getMessage());
+        }
 
-        // 리소스 정리 핸들러
-        emitter.onCompletion(() -> emitterRepository.remove(memberId, emitter));
-        emitter.onTimeout   (() -> emitterRepository.remove(memberId, emitter));
-        emitter.onError     ((ex) -> emitterRepository.remove(memberId, emitter));
+        emitter.onCompletion(() -> emitterRepository.remove(email, emitter));
+        emitter.onTimeout(() -> emitterRepository.remove(email, emitter));
+        emitter.onError(ex -> emitterRepository.remove(email, emitter));
 
-        // 15초마다 heartbeat
         Executors.newSingleThreadScheduledExecutor()
                 .scheduleAtFixedRate(() -> {
-                    try {
-                        emitter.send(SseEmitter.event().name("heartbeat").data(""));
-                    } catch (Exception ex) {
-                        // onError → delete 처리
-                    }
+                    try { emitter.send(SseEmitter.event().name("heartbeat").data("")); }
+                    catch (Exception ex) { emitterRepository.remove(email, emitter); }
                 }, 15, 15, TimeUnit.SECONDS);
 
+        log.info("SSE 구독 등록: {}", email);
         return emitter;
     }
 }

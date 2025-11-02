@@ -2,6 +2,7 @@ package com.souf.soufwebsite.domain.file.service;
 
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.event.MediaCleanupEvent;
+import com.souf.soufwebsite.domain.file.event.MediaCleanupUrlsEvent;
 import com.souf.soufwebsite.domain.file.repository.MediaRepository;
 import com.souf.soufwebsite.global.util.S3KeyUtils;
 import lombok.RequiredArgsConstructor;
@@ -67,6 +68,26 @@ public class MediaCleanupService {
 
         // 4) DB media 레코드 제거
         mediaRepository.deleteAllByPostTypeAndPostId(e.postType(), e.postId());
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handle(MediaCleanupUrlsEvent e) {
+        List<ObjectIdentifier> objects = new ArrayList<>();
+        for (String url : e.urls()) {
+            addIfPresent(objects, url);
+        }
+        if (!objects.isEmpty()) {
+            DeleteObjectsRequest req = DeleteObjectsRequest.builder()
+                    .bucket(bucket)
+                    .delete(Delete.builder().objects(objects).build())
+                    .build();
+            try {
+                s3Client.deleteObjects(req);
+            } catch (S3Exception ex) {
+                log.warn("S3 deleteObjects(URLs) failed: {}", ex.awsErrorDetails().errorMessage(), ex);
+            }
+        }
     }
 
     private void addAllObjects(List<ObjectIdentifier> objects, Media media) {

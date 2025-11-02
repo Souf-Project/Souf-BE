@@ -57,8 +57,19 @@ public class FileService {
     public List<Media> uploadMetadata(MediaReqDto files, PostType postType, Long postId){
         List<Media> mediaList = new ArrayList<>();
         for(int i=0;i<files.fileUrl().size();i++){
-            Media media = Media.of(files.fileUrl().get(i), files.fileName().get(i),
-                    MediaType.valueOf(files.fileType().get(i)), postType, postId);
+            PostType temp = postType;
+            if(!files.filePurpose().isEmpty() && files.filePurpose().get(i).equals("LOGO")){
+                temp = PostType.LOGO;
+            }
+
+            String url  = files.fileUrl().get(i);
+            String name = files.fileName().get(i);
+            MediaType type = MediaType.valueOf(files.fileType().get(i));
+
+            boolean exists = mediaRepository.existsByPostTypeAndPostIdAndOriginalUrl(temp, postId, url);
+            if (exists) continue;
+
+            Media media = Media.of(url, name, type, temp, postId);
             mediaRepository.save(media);
             mediaList.add(media);
         }

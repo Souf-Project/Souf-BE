@@ -1,7 +1,7 @@
 package com.souf.soufwebsite.domain.member.service.favorite;
 
-import com.souf.soufwebsite.domain.member.dto.ReqDto.FavoriteMemberReqDto;
-import com.souf.soufwebsite.domain.member.dto.ResDto.MemberResDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.FavoriteMemberReqDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
