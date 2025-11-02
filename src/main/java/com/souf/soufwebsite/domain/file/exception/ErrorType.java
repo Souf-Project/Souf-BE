@@ -7,7 +7,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ErrorType {
 
-    NOT_VALID_FILE_TYPE(400, "파일 형식이 올바르지 않습니다.", "FI400-1");
+    NOT_VALID_FILE_TYPE(400, "파일 형식이 올바르지 않습니다.", "FI400-1"),
+    NOT_FOUND_MEDIA(404, "originalUrl에 대한 Media를 찾을 수 없습니다.", "FI404-1");
 
     private final int code;
     private final String message;

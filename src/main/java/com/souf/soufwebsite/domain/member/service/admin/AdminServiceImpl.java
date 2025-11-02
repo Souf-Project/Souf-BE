@@ -2,6 +2,10 @@ package com.souf.soufwebsite.domain.member.service.admin;
 
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
+import com.souf.soufwebsite.domain.file.entity.Media;
+import com.souf.soufwebsite.domain.file.exception.NotFoundMediaException;
+import com.souf.soufwebsite.domain.file.repository.MediaRepository;
+import com.souf.soufwebsite.domain.file.service.MediaCleanupPublisher;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryResDto;
 import com.souf.soufwebsite.domain.inquiry.entity.Inquiry;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryStatus;
@@ -39,6 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -50,10 +55,12 @@ public class AdminServiceImpl implements AdminService {
     private final RecruitRepository recruitRepository;
     private final ReportRepository reportRepository;
     private final InquiryRepository inquiryRepository;
+    private final MediaRepository mediaRepository;
 
     private final StrikeService strikeService;
     private final SesMailService emailService;
     private final NotificationPublisher notificationPublisher;
+    private final MediaCleanupPublisher mediaCleanupPublisher;
 
     @Override
     public Page<AdminPostResDto> getPosts(PostType postType, String writer, String title, Pageable pageable) {
@@ -136,6 +143,11 @@ public class AdminServiceImpl implements AdminService {
         }
         else if(approvedStatus.equals(ApprovedStatus.REJECTED)){
             emailService.sendSignupRejectedResult(member.getEmail(), member.getNickname(), reqDto.reason(), "");
+
+            Media media = mediaRepository.findFirstByOriginalUrlEndingWithIgnoreCase(reqDto.originalUrl()).orElseThrow(NotFoundMediaException::new);
+            mediaCleanupPublisher.publishUrls(PostType.AUTHENTICATION, member.getId(), List.of(media.getOriginalUrl()));
+
+            memberRepository.delete(member);
         }
     }
 
