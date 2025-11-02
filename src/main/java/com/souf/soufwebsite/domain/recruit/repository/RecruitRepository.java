@@ -65,11 +65,11 @@ public interface RecruitRepository extends JpaRepository<Recruit, Long>, Recruit
                              @Param("id") Long id);
 
     default boolean isInTop5(Long id) {
-        var now = LocalDateTime.now();
-        var opt = findEligibilityAndDeadline(id);
+        LocalDateTime now = LocalDateTime.now();
+        Optional<Elig> opt = findEligibilityAndDeadline(id);
         if (opt.isEmpty()) return false;
 
-        var e = opt.get();
+        Elig e = opt.get();
         if (!Boolean.TRUE.equals(e.getRecruitable())) return false;
 
         LocalDateTime deadline = e.getDeadline();
