@@ -3,6 +3,7 @@ package com.souf.soufwebsite.domain.recruit.repository;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -47,36 +48,17 @@ public interface RecruitRepository extends JpaRepository<Recruit, Long>, Recruit
             @Param("title") String title,
             Pageable pageable);
 
-    interface Elig {
-        Boolean getRecruitable();
-        LocalDateTime getDeadline();
-    }
-
-    @Query("select r.recruitable, r.deadline from Recruit r where r.id = :id")
-    Optional<Elig> findEligibilityAndDeadline(@Param("id") Long id);
-
     @Query("""
-        select count(r) from Recruit r
-        where r.recruitable = true and r.deadline > :now
-        and (r.deadline < :deadline or (r.deadline = :deadline and r.id < :id))
+       select r.id from Recruit r
+       where r.recruitable = true and r.deadline > :now
+       order by r.deadline asc, r.createdTime asc, r.id asc
     """)
-    long countEligibleBefore(@Param("now") LocalDateTime now,
-                             @Param("deadline") LocalDateTime deadline,
-                             @Param("id") Long id);
+    List<Long> findTopIds(@Param("now") LocalDateTime now, Pageable pageable);
 
     default boolean isInTop5(Long id) {
         LocalDateTime now = LocalDateTime.now();
-        Optional<Elig> opt = findEligibilityAndDeadline(id);
-        if (opt.isEmpty()) return false;
 
-        Elig e = opt.get();
-        if (!Boolean.TRUE.equals(e.getRecruitable())) return false;
-
-        LocalDateTime deadline = e.getDeadline();
-        if (deadline == null || !deadline.isAfter(now)) return false;
-
-        long before = countEligibleBefore(now, deadline, id);
-        return before + 1 <= 5;
+        List<Long> top5 = findTopIds(now, PageRequest.of(0, 5));
+        return top5.contains(id);
     }
-
 }
