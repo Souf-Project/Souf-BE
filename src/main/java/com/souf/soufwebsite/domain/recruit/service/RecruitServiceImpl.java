@@ -25,6 +25,7 @@ import com.souf.soufwebsite.domain.recruit.dto.req.RecruitSearchReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.res.*;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.entity.RecruitCategoryMapping;
+import com.souf.soufwebsite.domain.recruit.event.RecruitChangedEvent;
 import com.souf.soufwebsite.domain.recruit.exception.NotFoundRecruitException;
 import com.souf.soufwebsite.domain.recruit.exception.NotValidAuthenticationException;
 import com.souf.soufwebsite.domain.recruit.query.SubscriberQuery;
@@ -41,13 +42,18 @@ import com.souf.soufwebsite.global.slack.service.SlackService;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -81,6 +87,8 @@ public class RecruitServiceImpl implements RecruitService {
     private static final Duration AGG_WINDOW = java.time.Duration.ofHours(1);
     private final SubscriberQuery subscriberQuery;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final CacheManager cacheManager;
+    private final ApplicationEventPublisher publisher;
 
 
     public Member getCurrentMember() {
@@ -125,6 +133,18 @@ public class RecruitServiceImpl implements RecruitService {
                 "https://www.souf.co.kr/recruitDetails/" + recruit.getId().toString() + "\n" +
                 member.getNickname() + " 님을 다같이 환영해보아요:)";
         slackService.sendSlackMessage(slackMsg, "post");
+
+        Recruit savedRecruit = recruit;
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override public void afterCommit() {
+                publisher.publishEvent(new RecruitChangedEvent(
+                        savedRecruit.getId(),
+                        RecruitChangedEvent.ChangeType.CREATED,
+                        savedRecruit.isRecruitable(),
+                        savedRecruit.getDeadline()
+                ));
+            }
+        });
 
         return new RecruitCreateResDto(recruit.getId(), presignedUrlResDtos, logoResDto, videoDto);
     }
@@ -197,6 +217,9 @@ public class RecruitServiceImpl implements RecruitService {
         Recruit recruit = findIfRecruitExist(recruitId);
         verifyIfRecruitIsMine(recruit, member);
 
+        boolean beforeRecruitable = recruit.isRecruitable();
+        LocalDateTime beforeDeadline = recruit.getDeadline();
+
         City city = cityRepository.findById(reqDto.cityId())
                 .orElseThrow(NotFoundCityException::new);
         CityDetail cityDetail = validateCityOrThrow(city, reqDto.cityDetailId());
@@ -222,6 +245,23 @@ public class RecruitServiceImpl implements RecruitService {
 //                recruit
 //        );
 
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override public void afterCommit() {
+                boolean statusOrDeadlineChanged =
+                        beforeRecruitable != recruit.isRecruitable()
+                                || !Objects.equals(beforeDeadline, recruit.getDeadline());
+
+                publisher.publishEvent(new RecruitChangedEvent(
+                        recruit.getId(),
+                        statusOrDeadlineChanged
+                                ? RecruitChangedEvent.ChangeType.STATUS_OR_DEADLINE_UPDATED
+                                : RecruitChangedEvent.ChangeType.CONTENT_UPDATED,
+                        recruit.isRecruitable(),
+                        recruit.getDeadline()
+                ));
+            }
+        });
+
         return new RecruitCreateResDto(recruit.getId(), presignedUrlResDtos, logoResDto, videoDto);
     }
 
@@ -246,6 +286,17 @@ public class RecruitServiceImpl implements RecruitService {
 
         mediaCleanupPublisher.publish(PostType.RECRUIT, recruitId);
         mediaCleanupPublisher.publish(PostType.LOGO, recruitId);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override public void afterCommit() {
+                publisher.publishEvent(new RecruitChangedEvent(
+                        recruit.getId(),
+                        RecruitChangedEvent.ChangeType.DELETED,
+                        false,
+                        null
+                ));
+            }
+        });
     }
 
     @Override
@@ -253,7 +304,7 @@ public class RecruitServiceImpl implements RecruitService {
             key = "'recruit:popular'")
     public List<RecruitPopularityResDto> getPopularRecruits() {
         LocalDateTime now = LocalDateTime.now();
-        List<Recruit> popularRecruits = recruitRepository.findTop5ByRecruitableAndDeadlineAfterOrderByDeadlineDesc(now);
+        List<Recruit> popularRecruits = recruitRepository.findTop5ByRecruitableAndDeadlineAfterOrderByDeadlineAsc(now);
 
         log.info("공고문 로직 실행 중");
 
@@ -276,7 +327,27 @@ public class RecruitServiceImpl implements RecruitService {
 
         verifyIfRecruitIsMine(recruit, member); // 소지 여부 확인
 
+        boolean beforeRecruitable = recruit.isRecruitable();
+        LocalDateTime beforeDeadline = recruit.getDeadline();
+
         recruit.updateRecruitable();
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override public void afterCommit() {
+                boolean statusOrDeadlineChanged =
+                        beforeRecruitable != recruit.isRecruitable()
+                                || !Objects.equals(beforeDeadline, recruit.getDeadline());
+
+                if (statusOrDeadlineChanged) {
+                    publisher.publishEvent(new RecruitChangedEvent(
+                            recruit.getId(),
+                            RecruitChangedEvent.ChangeType.STATUS_OR_DEADLINE_UPDATED,
+                            recruit.isRecruitable(),
+                            recruit.getDeadline()
+                    ));
+                }
+            }
+        });
     }
 
     private Member findIfEmailExists(String email) {

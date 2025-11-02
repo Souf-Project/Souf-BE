@@ -23,7 +23,7 @@ public record RecruitPopularityResDto(
                 recruit.getTitle(),
                 recruit.getContent(),
                 recruit.getCategories().get(0).getFirstCategory().getId(),
-                recruit.getCategories().get(0).getSecondCategory().getId(),
+                recruit.getCategories().get(0).getSecondCategory() != null ? recruit.getCategories().get(0).getSecondCategory().getId() : null,
                 recruit.getStartDate(),
                 leftDays(recruit.getDeadline()),
                 recruit.getPrice(),

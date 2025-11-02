@@ -101,8 +101,7 @@ public final class StudentSignupReqDto implements SignupReqDto {
     @AssertTrue(message = "학생(STUDENT) 가입은 .ac.kr 이메일만 가능합니다.")
     public boolean isStudentEmailValid() {
         if (roleType() != RoleType.STUDENT) return true;
-        if (email() == null) return false;
-        return email().toLowerCase().endsWith(".ac.kr");
+        return schoolEmail.toLowerCase().endsWith(".ac.kr");
     }
 }
 
