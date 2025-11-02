@@ -32,7 +32,9 @@ public class MemberResAssembler {
             }
             case MEMBER -> {
                 CompanyProfile cp = m.getCompanyProfile();
-                yield MemberInfoResDto.from(m, categories, profileImageUrl,
+                yield (cp == null)
+                        ? MemberInfoResDto.from(m, categories, profileImageUrl, null)
+                        : MemberInfoResDto.from(m, categories, profileImageUrl,
                         new CompanyInfo(
                                 cp.getCompanyName(),
                                 cp.getBusinessRegistrationNumber(),
@@ -40,8 +42,8 @@ public class MemberResAssembler {
                                 cp.getRoadNameAddress(),
                                 cp.getDetailedAddress(),
                                 cp.getBusinessStatus(),
-                                cp.getBusinessClassification()
-                        ));
+                                cp.getBusinessClassification())
+                );
             }
             case CLUB, ADMIN -> MemberInfoResDto.from(m, categories, profileImageUrl, null);
 
