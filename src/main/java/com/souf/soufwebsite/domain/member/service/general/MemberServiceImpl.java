@@ -9,6 +9,9 @@ import com.souf.soufwebsite.domain.member.dto.reqDto.signup.SignupReqDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberUpdateResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.info.MemberInfo;
+import com.souf.soufwebsite.domain.member.dto.resDto.info.MemberInfoResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.info.MemberResAssembler;
 import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
@@ -64,6 +67,8 @@ public class MemberServiceImpl implements MemberService {
     private final CategoryService categoryService;
 
     private final SignupMapper signupMapper;
+
+    private final MemberResAssembler memberResAssembler;
 
     //회원가입
     @Transactional
@@ -327,11 +332,11 @@ public class MemberServiceImpl implements MemberService {
     //내 정보 조회
     @Override
     @Transactional(readOnly = true)
-    public MemberResDto getMyInfo(String email) {
+    public MemberInfoResDto<? extends MemberInfo> getMyInfo(String email) {
         Member member = findIfEmailExists(email);
         Member myMember = memberRepository.findById(member.getId()).orElseThrow(NotFoundMemberException::new); // 지연 로딩 오류 해결
         String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
-        return MemberResDto.from(myMember, myMember.getCategories(), mediaUrl, member.isMarketingAgreement());
+        return MemberResAssembler.from(myMember, myMember.getCategories(), mediaUrl);
     }
 
     //회원 조회
