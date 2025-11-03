@@ -14,8 +14,8 @@ public record SocialLoginResDto(
         return new SocialLoginResDto(false, false, null, token, null, prefill);
     }
 
-    public static SocialLoginResDto requiresSignup(String message, SocialPrefill prefill) {
-        return new SocialLoginResDto(false, true, null, null, message, prefill);
+    public static SocialLoginResDto requiresSignup(String registrationToken, SocialPrefill prefill) {
+        return new SocialLoginResDto(false, true, registrationToken, null, null, prefill);
     }
 
     public static SocialLoginResDto requiresLink(String registrationToken, SocialPrefill prefill) {
