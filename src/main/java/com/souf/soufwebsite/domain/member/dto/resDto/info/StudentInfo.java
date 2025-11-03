@@ -10,5 +10,5 @@ public record StudentInfo(
         String schoolName,
         EducationType educationType,
         String schoolEmail,
-        List<String> specialties
+        List<SpecialtyInfo> specialties
 ) implements MemberInfo {}

@@ -19,9 +19,20 @@ public class MemberResAssembler {
         return switch (m.getRole()) {
             case STUDENT -> {
                 StudentProfile sp = m.getStudentProfile();
-                List<String> specialties = sp.getSpecialties().stream()
-                        .map(Specialty::getSpecialtyName)
-                        .collect(Collectors.toList());
+                if (sp == null) {
+                    yield MemberInfoResDto.from(m, categories, profileImageUrl, null);
+                }
+
+                List<SpecialtyInfo> specialties = List.of();
+                if (sp.getSpecialties() != null) {
+                    specialties = sp.getSpecialties().stream()
+                            .map(s -> new SpecialtyInfo(
+                                    s.getSpecialtyName(),
+                                    s.getSpecialtyType()
+                            ))
+                            .collect(Collectors.toList());
+                }
+
                 yield MemberInfoResDto.from(m, categories, profileImageUrl,
                         new StudentInfo(
                                 sp.getSchoolName(),
