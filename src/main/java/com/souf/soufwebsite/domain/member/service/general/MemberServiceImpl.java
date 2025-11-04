@@ -21,6 +21,7 @@ import com.souf.soufwebsite.domain.member.mapper.SignupMapper;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.report.exception.DeclaredMemberException;
 import com.souf.soufwebsite.domain.report.service.BanService;
+import com.souf.soufwebsite.domain.socialAccount.exception.NotValidTokenException;
 import com.souf.soufwebsite.global.common.PostType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
@@ -28,8 +29,10 @@ import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
 import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.common.mail.SesMailService;
+import com.souf.soufwebsite.global.exception.AuthorizedException;
 import com.souf.soufwebsite.global.jwt.JwtService;
 import com.souf.soufwebsite.global.slack.service.SlackService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -156,6 +159,35 @@ public class MemberServiceImpl implements MemberService {
                 .roleType(member.getRole())
                 .approvedStatus(member.getApprovedStatus())
                 .build();
+    }
+
+    @Override
+    public TokenDto reissueToken(HttpServletRequest req, HttpServletResponse res) {
+
+        String refreshToken = jwtService
+                .extractRefreshToken(req)
+                .filter(jwtService::isTokenValid)
+                .orElse(null);
+        if(refreshToken == null){
+            throw new AuthorizedException();
+        }
+
+        // 정보 추출과 Redis에 존재하는지 여부 확인
+        String email = jwtService.extractEmail(refreshToken).orElseThrow(NotValidTokenException::new);
+        String refreshInRedis = redisTemplate.opsForValue().get("refresh:" + email);
+        if(refreshInRedis == null){
+            throw new NotValidTokenException();
+        }
+
+        // 검증된 토큰에 대해 토큰 재발급 + RT 갱신
+        Member requiredMember = findIfEmailExists(email);
+        String accessToken = jwtService.createAccessToken(requiredMember);
+        String newRefreshToken = jwtService.createRefreshToken(requiredMember);
+        redisTemplate.opsForValue().set("refresh:" + email, newRefreshToken, jwtService.getExpiration(newRefreshToken), TimeUnit.MILLISECONDS);
+        jwtService.sendAccessAndRefreshToken(res, accessToken, newRefreshToken);
+
+        return new TokenDto(accessToken, requiredMember.getId(), requiredMember.getNickname(),
+                requiredMember.getRole(), requiredMember.getApprovedStatus(), null);
     }
 
     //비밀번호 초기화
