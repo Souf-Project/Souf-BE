@@ -8,16 +8,21 @@ import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
+
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 @Service
 @Slf4j
 public class JwtServiceImpl implements JwtService {
@@ -41,6 +46,7 @@ public class JwtServiceImpl implements JwtService {
     private String refreshTokenHeader;
 
     private Key secretKey;
+    private final Clock clock = Clock.systemUTC();
 
     @PostConstruct
     public void init() {
@@ -53,13 +59,13 @@ public class JwtServiceImpl implements JwtService {
         String email = member.getEmail();
         RoleType role = member.getRole();
 
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + accessTokenExpireTime);
+        Instant now = clock.instant();
+        Instant exp = now.plus(Duration.ofSeconds(accessTokenExpireTime));
         return Jwts.builder()
                 .setSubject(email)
                 .claim("role", role.name())
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
+                .setIssuedAt(Date.from(now))
+                .setExpiration(Date.from(exp))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -68,12 +74,12 @@ public class JwtServiceImpl implements JwtService {
     public String createRefreshToken(Member member) {
         String email = member.getEmail();
 
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + refreshTokenExpireTime);
+        Instant now = clock.instant();
+        Instant exp = now.plus(Duration.ofSeconds(refreshTokenExpireTime));
         return Jwts.builder()
                 .setSubject(email)
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
+                .setIssuedAt(Date.from(now))
+                .setExpiration(Date.from(exp))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -117,6 +123,9 @@ public class JwtServiceImpl implements JwtService {
         try {
             Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
             return true;
+        } catch (ExpiredJwtException e) {
+            log.error("토큰 만료");
+            return false;
         } catch (JwtException e) {
             log.error("토큰 유효성 검사 실패: {}", e.getMessage());
             return false;

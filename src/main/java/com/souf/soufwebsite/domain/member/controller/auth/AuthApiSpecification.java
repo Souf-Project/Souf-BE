@@ -9,6 +9,7 @@ import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -27,6 +28,9 @@ public interface AuthApiSpecification {
     @Operation(summary = "인증 파일 업로드", description = "회원가입 시 필요한 인증 파일을 업로드합니다.")
     @PostMapping("/signup/upload")
     SuccessResponse<?> uploadAuthenticationMetadata(@Valid @RequestBody MediaReqDto mediaReqDto);
+
+    @PostMapping("/refresh")
+    SuccessResponse<TokenDto> reissueToken(HttpServletRequest request, HttpServletResponse response);
 
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인하고 토큰을 발급받습니다.")
     @PostMapping("/login")
