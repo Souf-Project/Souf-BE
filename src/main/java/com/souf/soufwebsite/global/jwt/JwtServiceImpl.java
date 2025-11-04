@@ -60,7 +60,7 @@ public class JwtServiceImpl implements JwtService {
         RoleType role = member.getRole();
 
         Instant now = clock.instant();
-        Instant exp = now.plus(Duration.ofSeconds(accessTokenExpireTime));
+        Instant exp = now.plusMillis(accessTokenExpireTime);
         return Jwts.builder()
                 .setSubject(email)
                 .claim("role", role.name())
@@ -75,7 +75,7 @@ public class JwtServiceImpl implements JwtService {
         String email = member.getEmail();
 
         Instant now = clock.instant();
-        Instant exp = now.plus(Duration.ofSeconds(refreshTokenExpireTime));
+        Instant exp = now.plusMillis(refreshTokenExpireTime);
         return Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(Date.from(now))
