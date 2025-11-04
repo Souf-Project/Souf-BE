@@ -70,6 +70,18 @@ public class SecurityConfig {
 
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(e -> e
+                        .authenticationEntryPoint((req, res, ex) -> { // 미인증
+                            res.setStatus(401);
+                            res.setContentType("application/json;charset=UTF-8");
+                            res.getWriter().write("{\"code\":\"UNAUTHENTICATED\"}");
+                        })
+                        .accessDeniedHandler((req, res, ex) -> {      // 권한 부족
+                            res.setStatus(403);
+                            res.setContentType("application/json;charset=UTF-8");
+                            res.getWriter().write("{\"code\":\"FORBIDDEN\"}");
+                        })
+                )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(new BanCheckFilter(banService), JwtAuthenticationFilter.class);
 
