@@ -19,7 +19,7 @@ public interface MemberService {
 
     TokenDto signin(SigninReqDto reqDto, HttpServletResponse response);
 
-    TokenDto refreshToken(HttpServletRequest req, HttpServletResponse res);
+    TokenDto reissueToken(HttpServletRequest req, HttpServletResponse res);
 
     void resetPassword(ResetReqDto reqDto);
 

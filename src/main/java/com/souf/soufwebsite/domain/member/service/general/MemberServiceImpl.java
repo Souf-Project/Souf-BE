@@ -162,7 +162,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public TokenDto refreshToken(HttpServletRequest req, HttpServletResponse res) {
+    public TokenDto reissueToken(HttpServletRequest req, HttpServletResponse res) {
 
         String refreshToken = jwtService
                 .extractRefreshToken(req)

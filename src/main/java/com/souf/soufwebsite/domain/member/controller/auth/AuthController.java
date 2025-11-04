@@ -40,7 +40,7 @@ public class AuthController implements AuthApiSpecification{
 
     @PostMapping("/refresh")
     public SuccessResponse<TokenDto> reissueToken(HttpServletRequest request, HttpServletResponse response) {
-        TokenDto tokenDto = memberService.refreshToken(request, response);
+        TokenDto tokenDto = memberService.reissueToken(request, response);
 
         return new SuccessResponse<>(tokenDto, REISSUE_TOKEN_SUCCESS.getMessage());
     }
