@@ -7,6 +7,9 @@ import com.souf.soufwebsite.domain.member.dto.reqDto.signup.SignupReqDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberUpdateResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.info.MemberInfo;
+import com.souf.soufwebsite.domain.member.dto.resDto.info.MemberInfoResDto;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +18,8 @@ public interface MemberService {
     MemberUpdateResDto signup(SignupReqDto reqDto);
 
     TokenDto signin(SigninReqDto reqDto, HttpServletResponse response);
+
+    TokenDto reissueToken(HttpServletRequest req, HttpServletResponse res);
 
     void resetPassword(ResetReqDto reqDto);
 
@@ -34,7 +39,7 @@ public interface MemberService {
 
     Page<MemberSimpleResDto> getMembers(Long first, Long second, Long third, Pageable pageable);
 
-    MemberResDto getMyInfo(String email);
+    MemberInfoResDto<? extends MemberInfo> getMyInfo(String email);
 
     MemberResDto getMemberById(Long id);
 

@@ -17,10 +17,10 @@ public class SubscriberQueryImpl implements SubscriberQuery {
     @SuppressWarnings("unchecked")
     public List<Long> findSubscriberIdsByFirstSecond(Long firstCategoryId, Long secondCategoryId) {
         String sql = """
-            SELECT mcm.member_id
+            SELECT mcm.member_member_id
             FROM member_category_mapping mcm
-            WHERE mcm.first_category_id  = ?1
-              AND mcm.second_category_id = ?2
+            WHERE mcm.first_category_first_category_id  = ?1
+              AND mcm.second_category_second_category_id = ?2
         """;
 
         List<Number> rows = em.createNativeQuery(sql)

@@ -9,6 +9,9 @@ import com.souf.soufwebsite.domain.member.dto.reqDto.signup.SignupReqDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberUpdateResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.info.MemberInfo;
+import com.souf.soufwebsite.domain.member.dto.resDto.info.MemberInfoResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.info.MemberResAssembler;
 import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
@@ -18,6 +21,7 @@ import com.souf.soufwebsite.domain.member.mapper.SignupMapper;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.report.exception.DeclaredMemberException;
 import com.souf.soufwebsite.domain.report.service.BanService;
+import com.souf.soufwebsite.domain.socialAccount.exception.NotValidTokenException;
 import com.souf.soufwebsite.global.common.PostType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
@@ -25,8 +29,10 @@ import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
 import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.common.mail.SesMailService;
+import com.souf.soufwebsite.global.exception.AuthorizedException;
 import com.souf.soufwebsite.global.jwt.JwtService;
 import com.souf.soufwebsite.global.slack.service.SlackService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -64,6 +70,8 @@ public class MemberServiceImpl implements MemberService {
     private final CategoryService categoryService;
 
     private final SignupMapper signupMapper;
+
+    private final MemberResAssembler memberResAssembler;
 
     //회원가입
     @Transactional
@@ -151,6 +159,35 @@ public class MemberServiceImpl implements MemberService {
                 .roleType(member.getRole())
                 .approvedStatus(member.getApprovedStatus())
                 .build();
+    }
+
+    @Override
+    public TokenDto reissueToken(HttpServletRequest req, HttpServletResponse res) {
+
+        String refreshToken = jwtService
+                .extractRefreshToken(req)
+                .filter(jwtService::isTokenValid)
+                .orElse(null);
+        if(refreshToken == null){
+            throw new AuthorizedException();
+        }
+
+        // 정보 추출과 Redis에 존재하는지 여부 확인
+        String email = jwtService.extractEmail(refreshToken).orElseThrow(NotValidTokenException::new);
+        String refreshInRedis = redisTemplate.opsForValue().get("refresh:" + email);
+        if(refreshInRedis == null){
+            throw new NotValidTokenException();
+        }
+
+        // 검증된 토큰에 대해 토큰 재발급 + RT 갱신
+        Member requiredMember = findIfEmailExists(email);
+        String accessToken = jwtService.createAccessToken(requiredMember);
+        String newRefreshToken = jwtService.createRefreshToken(requiredMember);
+        redisTemplate.opsForValue().set("refresh:" + email, newRefreshToken, jwtService.getExpiration(newRefreshToken), TimeUnit.MILLISECONDS);
+        jwtService.sendAccessAndRefreshToken(res, accessToken, newRefreshToken);
+
+        return new TokenDto(accessToken, requiredMember.getId(), requiredMember.getNickname(),
+                requiredMember.getRole(), requiredMember.getApprovedStatus(), null);
     }
 
     //비밀번호 초기화
@@ -327,11 +364,11 @@ public class MemberServiceImpl implements MemberService {
     //내 정보 조회
     @Override
     @Transactional(readOnly = true)
-    public MemberResDto getMyInfo(String email) {
+    public MemberInfoResDto<? extends MemberInfo> getMyInfo(String email) {
         Member member = findIfEmailExists(email);
         Member myMember = memberRepository.findById(member.getId()).orElseThrow(NotFoundMemberException::new); // 지연 로딩 오류 해결
         String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
-        return MemberResDto.from(myMember, myMember.getCategories(), mediaUrl, member.isMarketingAgreement());
+        return MemberResAssembler.from(myMember, myMember.getCategories(), mediaUrl);
     }
 
     //회원 조회

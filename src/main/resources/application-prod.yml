@@ -14,20 +14,13 @@ spring:
         enabled: false
 
   jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
     hibernate:
       ddl-auto: update
 
-  logging:
-    level:
-      org:
-        hibernate:
-          SQL: debug
-        springframework:
-          jdbc:
-            core:
-              JdbcTemplate: DEBUG
-              PreparedStatementCreator: OFF
-              JdbcTemplate$SimplePreparedStatementCreator: OFF
 
 slack:
   token: ${SLACK_TOKEN}
@@ -37,3 +30,16 @@ springdoc:
     enabled: false
   swagger-ui:
     enabled: false
+
+logging:
+  level:
+    org:
+      hibernate.SQL: off
+      hibernate.orm.jdbc.bind: off
+      hibernate.type.descriptor.sql.BasicBinder: off
+      springframework:
+        jdbc:
+          core:
+            JdbcTemplate: DEBUG
+            PreparedStatementCreator: OFF
+            JdbcTemplate$SimplePreparedStatementCreator: OFF
