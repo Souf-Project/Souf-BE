@@ -104,7 +104,7 @@ public class MemberController implements MemberApiSpecification{
             @CurrentEmail String email,
             @RequestBody @Valid AddStudentInfoReqDto reqDto
     ) {
-        memberService.addMemberInfo(email, reqDto);
+        memberService.addStudentInfo(email, reqDto);
         return new SuccessResponse("회원 추가정보 등록에 성공하였습니다.");
     }
 
@@ -113,8 +113,7 @@ public class MemberController implements MemberApiSpecification{
             @CurrentEmail String email,
             @RequestBody @Valid AddCompanyInfoReqDto reqDto
     ) {
-        memberService.addMemberInfo(email, reqDto);
+        memberService.addCompanyInfo(email, reqDto);
         return new SuccessResponse("회원 추가정보 등록에 성공하였습니다.");
     }
-    )
 }

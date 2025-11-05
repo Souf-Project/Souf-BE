@@ -1,13 +1,15 @@
 package com.souf.soufwebsite.domain.member.entity;
 
 import com.souf.soufwebsite.domain.feed.entity.Feed;
-import com.souf.soufwebsite.domain.member.dto.reqDto.AddMemberInfoReqDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.UpdateReqDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.addInfo.AddCompanyInfoReqDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.addInfo.AddStudentInfoReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.signup.MajorReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.signup.StudentSignupReqDto;
 import com.souf.soufwebsite.domain.member.entity.profile.ClubProfile;
 import com.souf.soufwebsite.domain.member.entity.profile.CompanyProfile;
 import com.souf.soufwebsite.domain.member.entity.profile.StudentProfile;
+import com.souf.soufwebsite.domain.member.exception.NotValidRoleTypeException;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.exception.NotDuplicateCategoryException;
@@ -20,6 +22,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.hibernate.annotations.Where;
 
 import java.util.ArrayList;
@@ -222,11 +225,8 @@ public class Member extends BaseEntity {
         profile.attachMember(this);
     }
 
-    public void addStudentInfo(AddStudentInfoReqDto reqDto) {
-
-    }
-
-    public void addCompanyInfo(AddCompanyInfoReqDto reqDto) {
-
+    public void setPhoneNumberIfAbsent(String phoneNumber) {
+        if (this.phoneNumber != null && !this.phoneNumber.isBlank()) return;
+        this.phoneNumber = phoneNumber;
     }
 }

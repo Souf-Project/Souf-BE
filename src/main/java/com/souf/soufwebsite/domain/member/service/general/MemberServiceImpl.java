@@ -19,6 +19,7 @@ import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.exception.*;
+import com.souf.soufwebsite.domain.member.mapper.AddInfoMapper;
 import com.souf.soufwebsite.domain.member.mapper.SignupMapper;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.report.exception.DeclaredMemberException;
@@ -74,7 +75,7 @@ public class MemberServiceImpl implements MemberService {
 
     private final SignupMapper signupMapper;
 
-    private final MemberResAssembler memberResAssembler;
+    private final AddInfoMapper addInfoMapper;
 
     //회원가입
     @Transactional
@@ -428,15 +429,22 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public void addMemberInfo(String email, Object req){
+    public PresignedUrlResDto addStudentInfo(String email, AddStudentInfoReqDto req) {
         Member m = findIfEmailExists(email);
-        if (m.getRole() == RoleType.STUDENT && req instanceof AddStudentInfoReqDto s) m.addStudentInfo(s);
-        else if (m.getRole() == RoleType.MEMBER && req instanceof AddCompanyInfoReqDto g) m.addCompanyInfo(g);
-        else try {
-                throw new BadRequestException("Invalid member role or request data");
-            } catch (BadRequestException e) {
-                throw new RuntimeException(e);
-            }
+        if (m.getRole() != RoleType.STUDENT) {
+            throw new NotValidRoleTypeException();
+        }
+        return addInfoMapper.mapStudentAddInfo(m, req);
+    }
+
+    @Override
+    @Transactional
+    public PresignedUrlResDto addCompanyInfo(String email, AddCompanyInfoReqDto req) {
+        Member m = findIfEmailExists(email);
+        if (m.getRole() != RoleType.MEMBER) {
+            throw new NotValidRoleTypeException();
+        }
+        return addInfoMapper.mapCompanyAddInfo(m, req);
     }
 
     private void injectCategories(SignupReqDto reqDto, Member member) {

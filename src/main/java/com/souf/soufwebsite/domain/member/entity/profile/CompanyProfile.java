@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.member.entity.profile;
 
+import com.souf.soufwebsite.domain.member.dto.reqDto.addInfo.AddCompanyInfoReqDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.signup.CompanySignupReqDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.common.BaseEntity;
@@ -51,6 +52,16 @@ public class CompanyProfile extends BaseEntity {
         this.detailedAddress = reqDto.getAddressReqDto().detailedAddress();
         this.businessStatus = reqDto.getBusinessStatus();
         this.businessClassification = reqDto.getBusinessClassification();
+    }
+
+    public CompanyProfile(AddCompanyInfoReqDto reqDto){
+        this.companyName = reqDto.companyName();
+        this.businessRegistrationNumber = reqDto.businessRegistrationNumber();
+        this.zipCode = reqDto.addressReqDto().zipCode();
+        this.roadNameAddress = reqDto.addressReqDto().roadNameAddress();
+        this.detailedAddress = reqDto.addressReqDto().detailedAddress();
+        this.businessStatus = reqDto.businessStatus();
+        this.businessClassification = reqDto.businessClassification();
     }
 
     public void attachMember(Member member) {
