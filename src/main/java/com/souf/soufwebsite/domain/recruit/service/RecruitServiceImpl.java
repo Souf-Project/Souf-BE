@@ -136,16 +136,16 @@ public class RecruitServiceImpl implements RecruitService {
         slackService.sendSlackMessage(slackMsg, "post");
 
         Recruit savedRecruit = recruit;
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override public void afterCommit() {
-                publisher.publishEvent(new RecruitChangedEvent(
-                        savedRecruit.getId(),
-                        RecruitChangedEvent.ChangeType.CREATED,
-                        savedRecruit.isRecruitable(),
-                        savedRecruit.getDeadline()
-                ));
-            }
-        });
+//        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+//            @Override public void afterCommit() {
+//                publisher.publishEvent(new RecruitChangedEvent(
+//                        savedRecruit.getId(),
+//                        RecruitChangedEvent.ChangeType.CREATED,
+//                        savedRecruit.isRecruitable(),
+//                        savedRecruit.getDeadline()
+//                ));
+//            }
+//        });
 
         return new RecruitCreateResDto(recruit.getId(), presignedUrlResDtos, logoResDto, videoDto);
     }

@@ -39,7 +39,6 @@ public record RecruitReqDto(
         Long cityDetailId,
 
         @Schema(description = "채용 시작일", example = "2025-06-23T13:29")
-        @PastOrPresent
         @NotNull(message = "채용 시작일은 필수입니다.")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm")
         LocalDateTime startDate,
