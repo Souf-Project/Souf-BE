@@ -52,6 +52,9 @@ public record RecruitReqDto(
         @Schema(description = "최소 제시 금액", example = "100만원")
         String price,
 
+        @Schema(description = "계약 방식", example = "1. 매칭 성공 시, 계약서를 쓸게요")
+        String contractMethod,
+
         @Schema(description = "우대사항 태그 최대 2개", example = "[\"우대사항 1\", \"우대사항 2\"]")
         @Size(max = 2, message = "우대사항 태그는 최대 2개까지만 입력 가능합니다.")
         List<String> preferentialTreatmentTags,
