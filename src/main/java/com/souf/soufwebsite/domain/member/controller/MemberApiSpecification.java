@@ -6,6 +6,8 @@ import com.souf.soufwebsite.domain.member.dto.reqDto.UpdateReqDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberUpdateResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.info.MemberInfo;
+import com.souf.soufwebsite.domain.member.dto.resDto.info.MemberInfoResDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,7 +33,7 @@ public interface MemberApiSpecification {
 
     @Operation(summary = "내 정보 조회", description = "로그인된 사용자의 회원 정보를 조회합니다.")
     @GetMapping("/member/myinfo")
-    SuccessResponse<MemberResDto> getMyInfo(
+    SuccessResponse<MemberInfoResDto<? extends MemberInfo>> getMyInfo(
             @CurrentEmail String email
     );
 

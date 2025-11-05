@@ -6,6 +6,8 @@ import com.souf.soufwebsite.domain.member.dto.reqDto.UpdateReqDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberUpdateResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.info.MemberInfo;
+import com.souf.soufwebsite.domain.member.dto.resDto.info.MemberInfoResDto;
 import com.souf.soufwebsite.domain.member.service.general.MemberService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
@@ -37,10 +39,10 @@ public class MemberController implements MemberApiSpecification{
     }
 
     @GetMapping("/myinfo")
-    public SuccessResponse<MemberResDto> getMyInfo(
+    public SuccessResponse<MemberInfoResDto<? extends MemberInfo>> getMyInfo(
             @CurrentEmail String email
     ) {
-        MemberResDto meDto = memberService.getMyInfo(email);
+        MemberInfoResDto<? extends MemberInfo> meDto = memberService.getMyInfo(email);
         return new SuccessResponse<>(meDto);
     }
 

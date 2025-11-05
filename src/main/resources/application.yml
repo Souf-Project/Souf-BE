@@ -2,11 +2,6 @@ spring:
   profiles:
     active: ${SPRING_PROFILE:dev}
 
-  jpa:
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
   cache:
     type: redis
 
@@ -36,7 +31,7 @@ spring:
 jwt:
   secret: ${JWT_SECRET}
   access:
-    expiration: 1800000
+    expiration: 900000
     header: Authorization
   refresh:
     expiration: 3600000

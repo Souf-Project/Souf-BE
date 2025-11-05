@@ -42,7 +42,6 @@ import com.souf.soufwebsite.global.slack.service.SlackService;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
@@ -107,11 +106,13 @@ public class RecruitServiceImpl implements RecruitService {
         Recruit recruit = Recruit.of(reqDto, member, city, cityDetail);
         injectCategories(reqDto, recruit);
         recruit = recruitRepository.save(recruit);
+        log.info("recruit created: {}", recruit.getId());
 
         List<CatPair> pairs = extractFirstSecondPairs(reqDto);
         for (CatPair p : pairs) {
             enqueueRecruitPublished(p.firstId(), p.secondId(), recruit.getId());
         }
+        log.info("CatPair completed");
 
 //        indexEventPublisherHelper.publishIndexEvent(
 //                EntityType.RECRUIT,

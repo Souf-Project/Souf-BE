@@ -8,12 +8,15 @@ import com.souf.soufwebsite.domain.member.dto.resDto.MemberUpdateResDto;
 import com.souf.soufwebsite.domain.member.service.general.MemberService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+
+import static com.souf.soufwebsite.domain.member.controller.auth.AuthSuccessResponse.REISSUE_TOKEN_SUCCESS;
 
 @RestController
 @RequiredArgsConstructor
@@ -33,6 +36,13 @@ public class AuthController implements AuthApiSpecification{
         memberService.uploadAuthenticationImage(mediaReqDto);
 
         return new SuccessResponse<>("인증 파일이 성공적으로 업로드되었습니다!");
+    }
+
+    @PostMapping("/refresh")
+    public SuccessResponse<TokenDto> reissueToken(HttpServletRequest request, HttpServletResponse response) {
+        TokenDto tokenDto = memberService.reissueToken(request, response);
+
+        return new SuccessResponse<>(tokenDto, REISSUE_TOKEN_SUCCESS.getMessage());
     }
 
     @PostMapping("/login")
