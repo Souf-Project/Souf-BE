@@ -173,6 +173,7 @@ public class MemberServiceImpl implements MemberService {
                 .filter(jwtService::isTokenValid)
                 .orElse(null);
         if(refreshToken == null){
+            log.info("refresh token is null");
             throw new AuthorizedException();
         }
 
