@@ -28,6 +28,7 @@ public final class StudentSignupReqDto implements SignupReqDto {
 
     @NotNull(message = "전공은 반드시 입력해주세요.")
     @Schema(description = "전공은 최소 하나가 필요합니다.")
+    @Valid
     List<MajorReqDto> majorReqDtos;
 
     @NotEmpty(message = "이벤트 알림을 받기 위한 학교 이메일은 필수입니다.")
