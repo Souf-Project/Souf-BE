@@ -26,7 +26,7 @@ public class SignupMapper {
     private final ObjectMapper objectMapper;
     private final S3UploaderService s3UploaderService;
 
-    public List<Specialty> toSpecialtyList(StudentProfile studentProfile, List<MajorReqDto> majorReqDtos) {
+    private List<Specialty> toSpecialtyList(StudentProfile studentProfile, List<MajorReqDto> majorReqDtos) {
         if(majorReqDtos == null || majorReqDtos.isEmpty()){
             return List.of();
         }

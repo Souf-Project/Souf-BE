@@ -2,14 +2,9 @@ package com.souf.soufwebsite.domain.member.entity;
 
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.member.dto.reqDto.UpdateReqDto;
-import com.souf.soufwebsite.domain.member.dto.reqDto.addInfo.AddCompanyInfoReqDto;
-import com.souf.soufwebsite.domain.member.dto.reqDto.addInfo.AddStudentInfoReqDto;
-import com.souf.soufwebsite.domain.member.dto.reqDto.signup.MajorReqDto;
-import com.souf.soufwebsite.domain.member.dto.reqDto.signup.StudentSignupReqDto;
 import com.souf.soufwebsite.domain.member.entity.profile.ClubProfile;
 import com.souf.soufwebsite.domain.member.entity.profile.CompanyProfile;
 import com.souf.soufwebsite.domain.member.entity.profile.StudentProfile;
-import com.souf.soufwebsite.domain.member.exception.NotValidRoleTypeException;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.exception.NotDuplicateCategoryException;

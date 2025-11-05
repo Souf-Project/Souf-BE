@@ -434,6 +434,9 @@ public class MemberServiceImpl implements MemberService {
         if (m.getRole() != RoleType.STUDENT) {
             throw new NotValidRoleTypeException();
         }
+        if (m.getPhoneNumber() != null && !m.getPhoneNumber().isEmpty()) {
+            throw new AlreadyAddedInfoException();
+        }
         return addInfoMapper.mapStudentAddInfo(m, req);
     }
 
@@ -443,6 +446,9 @@ public class MemberServiceImpl implements MemberService {
         Member m = findIfEmailExists(email);
         if (m.getRole() != RoleType.MEMBER) {
             throw new NotValidRoleTypeException();
+        }
+        if (m.getPhoneNumber() != null && !m.getPhoneNumber().isEmpty()) {
+            throw new AlreadyAddedInfoException();
         }
         return addInfoMapper.mapCompanyAddInfo(m, req);
     }
