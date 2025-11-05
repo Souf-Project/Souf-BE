@@ -22,7 +22,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.apache.coyote.BadRequestException;
 import org.hibernate.annotations.Where;
 
 import java.util.ArrayList;
