@@ -3,6 +3,8 @@ package com.souf.soufwebsite.domain.member.controller;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.SendModifyEmailReqDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.UpdateReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.addInfo.AddCompanyInfoReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.addInfo.AddStudentInfoReqDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberUpdateResDto;
@@ -96,4 +98,23 @@ public class MemberController implements MemberApiSpecification{
 
         return new SuccessResponse("회원프로필 업로드에 성공하였습니다.");
     }
+
+    @PatchMapping("/add/info/student")
+    public SuccessResponse addMemberInfo(
+            @CurrentEmail String email,
+            @RequestBody @Valid AddStudentInfoReqDto reqDto
+    ) {
+        memberService.addMemberInfo(email, reqDto);
+        return new SuccessResponse("회원 추가정보 등록에 성공하였습니다.");
+    }
+
+    @PatchMapping("/add/info/member")
+    public SuccessResponse addMemberInfo(
+            @CurrentEmail String email,
+            @RequestBody @Valid AddCompanyInfoReqDto reqDto
+    ) {
+        memberService.addMemberInfo(email, reqDto);
+        return new SuccessResponse("회원 추가정보 등록에 성공하였습니다.");
+    }
+    )
 }

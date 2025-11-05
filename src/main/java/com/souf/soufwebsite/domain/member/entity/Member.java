@@ -1,7 +1,10 @@
 package com.souf.soufwebsite.domain.member.entity;
 
 import com.souf.soufwebsite.domain.feed.entity.Feed;
+import com.souf.soufwebsite.domain.member.dto.reqDto.AddMemberInfoReqDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.UpdateReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.addInfo.AddCompanyInfoReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.addInfo.AddStudentInfoReqDto;
 import com.souf.soufwebsite.domain.member.entity.profile.ClubProfile;
 import com.souf.soufwebsite.domain.member.entity.profile.CompanyProfile;
 import com.souf.soufwebsite.domain.member.entity.profile.StudentProfile;
@@ -217,5 +220,13 @@ public class Member extends BaseEntity {
     public void attachClubProfile(ClubProfile profile) {
         this.clubProfile = profile;
         profile.attachMember(this);
+    }
+
+    public void addStudentInfo(AddStudentInfoReqDto reqDto) {
+
+    }
+
+    public void addCompanyInfo(AddCompanyInfoReqDto reqDto) {
+
     }
 }

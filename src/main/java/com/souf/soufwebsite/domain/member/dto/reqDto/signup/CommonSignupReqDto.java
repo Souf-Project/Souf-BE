@@ -19,8 +19,8 @@ public record CommonSignupReqDto(
         @Schema(description = "비밀번호", example = "Passw0rd!")
         @Size(min = 8, max = 20, message = "비밀번호는 8~20자 사이여야 합니다.")
         @Pattern(
-                regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]+$",
-                message = "비밀번호는 영문자·숫자·특수문자를 모두 포함해야 합니다."
+                regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z\\d\\s])[A-Za-z\\d[^A-Za-z\\d\\s]]+$",
+                message = "비밀번호는 영문자·숫자·특수문자를 모두 포함해야 하며, 공백은 사용할 수 없습니다."
         )
         @NotEmpty
         String password,

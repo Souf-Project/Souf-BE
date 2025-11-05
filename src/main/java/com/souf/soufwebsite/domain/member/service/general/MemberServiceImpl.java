@@ -5,6 +5,8 @@ import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.*;
+import com.souf.soufwebsite.domain.member.dto.reqDto.addInfo.AddCompanyInfoReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.addInfo.AddStudentInfoReqDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.signup.SignupReqDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberSimpleResDto;
@@ -36,6 +38,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -421,6 +424,19 @@ public class MemberServiceImpl implements MemberService {
 //                "Member",
 //                member.getId()
 //        );
+    }
+
+    @Override
+    @Transactional
+    public void addMemberInfo(String email, Object req){
+        Member m = findIfEmailExists(email);
+        if (m.getRole() == RoleType.STUDENT && req instanceof AddStudentInfoReqDto s) m.addStudentInfo(s);
+        else if (m.getRole() == RoleType.MEMBER && req instanceof AddCompanyInfoReqDto g) m.addCompanyInfo(g);
+        else try {
+                throw new BadRequestException("Invalid member role or request data");
+            } catch (BadRequestException e) {
+                throw new RuntimeException(e);
+            }
     }
 
     private void injectCategories(SignupReqDto reqDto, Member member) {

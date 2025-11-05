@@ -50,4 +50,6 @@ public interface MemberService {
     boolean isNicknameAvailable(String nickname);
 
     void withdraw(String email, WithdrawReqDto reqDto);
+
+    void addMemberInfo(String email, Object reqDto);
 }
