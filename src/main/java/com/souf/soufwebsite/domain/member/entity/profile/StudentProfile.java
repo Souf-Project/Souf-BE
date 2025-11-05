@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.member.entity.profile;
 
+import com.souf.soufwebsite.domain.member.dto.reqDto.addInfo.AddStudentInfoReqDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.signup.StudentSignupReqDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.common.BaseEntity;
@@ -44,6 +45,12 @@ public class StudentProfile extends BaseEntity {
         this.schoolEmail = reqDto.getSchoolEmail();
     }
 
+    public StudentProfile(AddStudentInfoReqDto reqDto) {
+        this.schoolName = reqDto.schoolName();
+        this.educationType = reqDto.educationType();
+        this.schoolEmail = reqDto.schoolEmail();
+    }
+
     public void attachMember(Member member) {
         this.member = member;
     }
@@ -51,5 +58,12 @@ public class StudentProfile extends BaseEntity {
     public void addSpecialty(Specialty specialty) {
         specialties.add(specialty);
         specialty.attachStudentProfile(this);
+    }
+
+    public void updateFrom(AddStudentInfoReqDto req){
+        this.schoolName = req.schoolName();
+        this.educationType = req.educationType();
+        this.schoolEmail = req.schoolEmail();
+
     }
 }

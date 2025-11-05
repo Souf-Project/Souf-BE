@@ -218,4 +218,9 @@ public class Member extends BaseEntity {
         this.clubProfile = profile;
         profile.attachMember(this);
     }
+
+    public void setPhoneNumberIfAbsent(String phoneNumber) {
+        if (this.phoneNumber != null && !this.phoneNumber.isBlank()) return;
+        this.phoneNumber = phoneNumber;
+    }
 }

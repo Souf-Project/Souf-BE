@@ -31,7 +31,11 @@ public enum ErrorType {
     NOT_VALID_AUTHENTICATION(403, "권한이 없는 사용자입니다.", "M403-2"),
     ALREADY_JOINED_CLUB(409, "이미 가입(신청)한 동아리입니다.", "M409-1"),
     INVALID_JOIN_DECISION(400, "동아리 가입 승인/거절이 유효하지 않습니다.", "M400-7"),
-    NOT_FOUND_PENDING_APPLY(404, "대기중인 동아리 신청서를 찾을 수 없습니다.", "M404-4"),;
+    NOT_FOUND_PENDING_APPLY(404, "대기중인 동아리 신청서를 찾을 수 없습니다.", "M404-4"),
+
+
+    // ----------------------------------- 기존 회원 대상 -----------------------------------
+    ALREADY_ADDED_INFO(400, "이미 추가 정보를 입력한 회원입니다.", "M400-10");
 
     private final int code;
     private final String message;

@@ -1,8 +1,11 @@
 package com.souf.soufwebsite.domain.member.service.general;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.*;
+import com.souf.soufwebsite.domain.member.dto.reqDto.addInfo.AddCompanyInfoReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.addInfo.AddStudentInfoReqDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.signup.SignupReqDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberSimpleResDto;
@@ -50,4 +53,8 @@ public interface MemberService {
     boolean isNicknameAvailable(String nickname);
 
     void withdraw(String email, WithdrawReqDto reqDto);
+
+    PresignedUrlResDto addStudentInfo(String email, AddStudentInfoReqDto reqDto);
+
+    PresignedUrlResDto addCompanyInfo(String email, AddCompanyInfoReqDto reqDto);
 }

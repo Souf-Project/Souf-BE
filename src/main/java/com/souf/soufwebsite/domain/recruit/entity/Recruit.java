@@ -68,6 +68,9 @@ public class Recruit extends BaseEntity {
     private PricePolicy pricePolicy;
 
     @Column
+    private String contractMethod;
+
+    @Column
     @Convert(converter = ListToJsonConverter.class)
     private List<String> preferentialTreatmentTags;
 
@@ -114,6 +117,7 @@ public class Recruit extends BaseEntity {
                 .price(reqDto.price())
                 .pricePolicy(pricePolicy)
                 .preferentialTreatmentTags(reqDto.preferentialTreatmentTags())
+                .contractMethod(reqDto.contractMethod())
                 .preferentialTreatment(reqDto.preferentialTreatment())
                 .recruitCount(0L)
                 .viewCount(0L)
@@ -133,6 +137,7 @@ public class Recruit extends BaseEntity {
         this.startDate = reqDto.startDate();
         this.deadline = reqDto.deadline();
         this.price = reqDto.price();
+        this.contractMethod = reqDto.contractMethod();
         this.workType = reqDto.workType();
         this.preferentialTreatmentTags = reqDto.preferentialTreatmentTags();
         this.preferentialTreatment = reqDto.preferentialTreatment();

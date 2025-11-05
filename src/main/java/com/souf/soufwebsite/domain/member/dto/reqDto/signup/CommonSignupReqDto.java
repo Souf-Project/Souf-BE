@@ -19,8 +19,8 @@ public record CommonSignupReqDto(
         @Schema(description = "비밀번호", example = "Passw0rd!")
         @Size(min = 8, max = 20, message = "비밀번호는 8~20자 사이여야 합니다.")
         @Pattern(
-                regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]+$",
-                message = "비밀번호는 영문자·숫자·특수문자를 모두 포함해야 합니다."
+                regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z\\d\\s])[A-Za-z\\d[^A-Za-z\\d\\s]]+$",
+                message = "비밀번호는 영문자·숫자·특수문자를 모두 포함해야 하며, 공백은 사용할 수 없습니다."
         )
         @NotEmpty
         String password,
@@ -39,10 +39,10 @@ public record CommonSignupReqDto(
 
         @Schema(description = "전화번호", example = "010-1111-1111")
         @Pattern(
-                regexp = "^010[\\s.-]?\\d{3,4}[\\s.-]?\\d{4}$",
+                regexp = "^010-\\d{4}-\\d{4}$",
                 message = "휴대폰 번호 형식이 올바르지 않습니다. 예) 010-1234-5678"
         )
-        @NotNull
+        @NotBlank
         String phoneNumber,
 
         @Schema(description = "카테고리 목록", example = "[{\"firstCategory\": 1, \"secondCategory\": 1, \"thirdCategory\": 1}]")

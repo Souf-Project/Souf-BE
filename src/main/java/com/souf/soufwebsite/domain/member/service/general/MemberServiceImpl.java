@@ -5,6 +5,8 @@ import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.dto.TokenDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.*;
+import com.souf.soufwebsite.domain.member.dto.reqDto.addInfo.AddCompanyInfoReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.addInfo.AddStudentInfoReqDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.signup.SignupReqDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberSimpleResDto;
@@ -17,6 +19,7 @@ import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.exception.*;
+import com.souf.soufwebsite.domain.member.mapper.AddInfoMapper;
 import com.souf.soufwebsite.domain.member.mapper.SignupMapper;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.report.exception.DeclaredMemberException;
@@ -71,7 +74,7 @@ public class MemberServiceImpl implements MemberService {
 
     private final SignupMapper signupMapper;
 
-    private final MemberResAssembler memberResAssembler;
+    private final AddInfoMapper addInfoMapper;
 
     //회원가입
     @Transactional
@@ -169,6 +172,7 @@ public class MemberServiceImpl implements MemberService {
                 .filter(jwtService::isTokenValid)
                 .orElse(null);
         if(refreshToken == null){
+            log.info("refresh token is null");
             throw new AuthorizedException();
         }
 
@@ -421,6 +425,32 @@ public class MemberServiceImpl implements MemberService {
 //                "Member",
 //                member.getId()
 //        );
+    }
+
+    @Override
+    @Transactional
+    public PresignedUrlResDto addStudentInfo(String email, AddStudentInfoReqDto req) {
+        Member m = findIfEmailExists(email);
+        if (m.getRole() != RoleType.STUDENT) {
+            throw new NotValidRoleTypeException();
+        }
+        if (m.getPhoneNumber() != null && !m.getPhoneNumber().isEmpty()) {
+            throw new AlreadyAddedInfoException();
+        }
+        return addInfoMapper.mapStudentAddInfo(m, req);
+    }
+
+    @Override
+    @Transactional
+    public PresignedUrlResDto addCompanyInfo(String email, AddCompanyInfoReqDto req) {
+        Member m = findIfEmailExists(email);
+        if (m.getRole() != RoleType.MEMBER) {
+            throw new NotValidRoleTypeException();
+        }
+        if (m.getPhoneNumber() != null && !m.getPhoneNumber().isEmpty()) {
+            throw new AlreadyAddedInfoException();
+        }
+        return addInfoMapper.mapCompanyAddInfo(m, req);
     }
 
     private void injectCategories(SignupReqDto reqDto, Member member) {
