@@ -2,6 +2,7 @@ package com.souf.soufwebsite.domain.member.dto.reqDto.addInfo;
 
 import com.souf.soufwebsite.domain.member.dto.reqDto.signup.AddressReqDto;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
@@ -12,10 +13,11 @@ public record AddCompanyInfoReqDto(
                 regexp = "^010[\\s.-]?\\d{3,4}[\\s.-]?\\d{4}$",
                 message = "휴대폰 번호 형식이 올바르지 않습니다. 예) 010-1234-5678"
         )
-        @NotNull
+        @NotBlank
         String phoneNumber,
 
         @Schema(description = "사업체 유무")
+        @NotNull
         Boolean isCompany,
 
         @Schema(description = "회사명을 입력해주세요.")

@@ -42,7 +42,7 @@ public record CommonSignupReqDto(
                 regexp = "^010-\\d{4}-\\d{4}$",
                 message = "휴대폰 번호 형식이 올바르지 않습니다. 예) 010-1234-5678"
         )
-        @NotNull
+        @NotBlank
         String phoneNumber,
 
         @Schema(description = "카테고리 목록", example = "[{\"firstCategory\": 1, \"secondCategory\": 1, \"thirdCategory\": 1}]")
