@@ -50,6 +50,8 @@ public class AddInfoMapper {
 
         member.attachStudentProfile(studentProfile);
 
+        member.updateApprovedStatus(ApprovedStatus.PENDING);
+
         return presignedUrlResDto;
     }
 
@@ -67,6 +69,8 @@ public class AddInfoMapper {
             }
 
             member.attachCompanyProfile(companyProfile);
+
+            member.updateApprovedStatus(ApprovedStatus.PENDING);
         }
         else
             member.updateApprovedStatus(ApprovedStatus.APPROVED);
