@@ -8,6 +8,7 @@ import com.souf.soufwebsite.domain.member.dto.reqDto.signup.ResubmitReasonReqDto
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminPostResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminReportResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.ProfileResDto;
 import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.report.entity.ReportStatus;
@@ -22,6 +23,8 @@ public interface AdminService {
     Page<AdminPostResDto> getPosts(PostType postType, String writer, String title, Pageable pageable);
 
     Page<AdminMemberResDto> getMembers(RoleType memberType, String username, String nickname, ApprovedStatus approvedStatus, Pageable pageable);
+
+    ProfileResDto getAuthenticationElement(Long memberId);
 
     Page<AdminReportResDto> getReports(PostType postType, LocalDate startDate, LocalDate endDate, String nickname, Pageable pageable);
 
