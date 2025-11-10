@@ -84,20 +84,24 @@ public class MemberServiceImpl implements MemberService {
         if (redisTemplate.hasKey("email:withdraw:" + reqDto.email())) {
             throw new NotAllowedSignupException();
         }
+        log.info("탈퇴된 이메일 검증 완료(이상 없음)");
 
         String verifiedKey = "email:verified:" + reqDto.email();
         String isVerified = redisTemplate.opsForValue().get(verifiedKey);
         if (!"true".equals(isVerified)) {
             throw new NotVerifiedEmailException();
         }
+        log.info("유효한 이메일 검증 완료");
 
         if (memberRepository.findByEmail(reqDto.email()).isPresent()) {
             throw new NotAvailableEmailException();
         }
+        log.info("이미 존재하는 이메일이 아님.");
 
         if (!reqDto.password().equals(reqDto.passwordCheck())) {
             throw new NotMatchPasswordException();
         }
+        log.info("비밀번호가 일치함.");
 
         String encodedPassword = passwordEncoder.encode(reqDto.password());
 
@@ -105,6 +109,7 @@ public class MemberServiceImpl implements MemberService {
         if (reqDto.isPersonalInfoAgreed().equals(Boolean.FALSE) || reqDto.isServiceUtilizationAgreed().equals(Boolean.FALSE) || reqDto.isSuitableAged().equals(Boolean.FALSE)) {
             throw new NotAgreedPersonalInfoException();
         }
+        log.info("필수 동의 약관에 동의함.");
 
         ApprovedStatus status = ApprovedStatus.PENDING;
         Member member = new Member(status, reqDto.email(), encodedPassword, reqDto.username(), reqDto.nickname(), reqDto.phoneNumber(), reqDto.roleType(), reqDto.isMarketingAgreed());
@@ -351,7 +356,9 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void uploadAuthenticationImage(MediaReqDto reqDto) {
         Member member = memberRepository.findById(reqDto.postId()).orElseThrow(NotFoundMemberException::new);
+        log.info("member = {}", member.getId());
         fileService.uploadMetadata(reqDto, PostType.AUTHENTICATION, member.getId());
+        log.info("Authentication upload success");
     }
 
     @Override
