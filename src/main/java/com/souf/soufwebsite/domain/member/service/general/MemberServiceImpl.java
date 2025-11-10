@@ -117,6 +117,7 @@ public class MemberServiceImpl implements MemberService {
         injectCategories(reqDto, member);
 
         PresignedUrlResDto presignedUrlResDto = signupMapper.signupByRole(member, reqDto);
+        log.info("presignedUrl Size: {}", presignedUrlResDto.fileUrl());
 
         memberRepository.save(member);
 
