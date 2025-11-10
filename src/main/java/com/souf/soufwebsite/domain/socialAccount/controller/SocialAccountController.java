@@ -27,8 +27,10 @@ public class SocialAccountController implements SocialAccountApiSpecification{
     private final SocialAccountService socialAccountService;
 
     @PostMapping("/login")
-    public SuccessResponse<SocialLoginResDto> login(@RequestBody @Valid SocialLoginReqDto req) {
-        return new SuccessResponse<>(socialAccountService.loginOrSignUp(req));
+    public SuccessResponse<SocialLoginResDto> login(
+            HttpServletResponse response,
+            @RequestBody @Valid SocialLoginReqDto reqDto) {
+        return new SuccessResponse<>(socialAccountService.loginOrSignUp(response, reqDto));
     }
 
     @PostMapping("/complete-signup")

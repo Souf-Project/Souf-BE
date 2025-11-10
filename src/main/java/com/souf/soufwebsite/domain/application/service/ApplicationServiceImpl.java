@@ -20,6 +20,7 @@ import com.souf.soufwebsite.global.common.PostType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.mail.SesMailService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ApplicationServiceImpl implements ApplicationService {
@@ -54,6 +56,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (recruit.getMember().getId().equals(member.getId())) {
             throw new NotApplyMyRecruitException();
         }
+        log.info("본인 공고에 본인이 지원 못하는 유효성 검사 통과");
 
         if (!recruit.isRecruitable()) {
             throw new NotRecruitableException();
@@ -76,8 +79,13 @@ public class ApplicationServiceImpl implements ApplicationService {
         recruit.increaseRecruitCount();
         applicationRepository.save(application);
 
+        Member recruiter = recruit.getMember();
+        Long totalCount = applicationRepository.countByRecruit(recruit);
+        emailService.sendApplyProgress(recruiter.getEmail(), recruiter.getNickname(), recruit.getTitle(), totalCount);
+        log.info("공고문 아이디: {}, 지원 완료", recruit.getId());
+
         // ✅ [추가] 지원자 생성 → 공고 작성자에게 즉시 알림
-        Member owner = recruit.getMember();
+//        Member owner = recruit.getMember();
 //        NotificationDto dto = new NotificationDto(
 //                owner.getEmail(),
 //                owner.getId(),                                // targetMemberId
