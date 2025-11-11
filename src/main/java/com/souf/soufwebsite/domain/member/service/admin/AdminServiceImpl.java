@@ -17,6 +17,10 @@ import com.souf.soufwebsite.domain.member.dto.reqDto.signup.ResubmitReasonReqDto
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminPostResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminReportResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.ProfileResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.info.MemberInfo;
+import com.souf.soufwebsite.domain.member.dto.resDto.info.MemberInfoResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.info.MemberResAssembler;
 import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
@@ -63,6 +67,7 @@ public class AdminServiceImpl implements AdminService {
     private final MediaCleanupPublisher mediaCleanupPublisher;
 
     @Override
+    @Transactional(readOnly = true)
     public Page<AdminPostResDto> getPosts(PostType postType, String writer, String title, Pageable pageable) {
         log.info("postType: {}, writer: {}, title: {}", postType, writer, title);
 
@@ -80,18 +85,36 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<AdminMemberResDto> getMembers(RoleType memberType, String username, String nickname, ApprovedStatus approvedStatus, Pageable pageable) {
         log.info("memberType: {}, username: {}, nickname: {}", memberType, username, nickname);
         return memberRepository.getMemberListInAdmin(memberType, username, nickname, approvedStatus, pageable);
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public ProfileResDto getAuthenticationElement(Long memberId) {
+        Member user = findIfMemberExists(memberId);
+        List<Media> mediaList = mediaRepository.findByPostTypeAndPostId(PostType.AUTHENTICATION, memberId);
+        Media authenticationMetadata = mediaList.isEmpty() ? null : mediaList.get(0);
+        String url = "";
+        if(authenticationMetadata != null) {
+            url = authenticationMetadata.getOriginalUrl();
+        }
+
+        MemberInfoResDto<? extends MemberInfo> from = MemberResAssembler.from(user, null, "");
+        return new ProfileResDto(from, url);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Page<AdminReportResDto> getReports(PostType postType, LocalDate startDate, LocalDate endDate, String nickname, Pageable pageable) {
         log.info("postType: {}, startDate: {}, endDate: {}, nickname: {}", postType, startDate, endDate, nickname);
         return reportRepository.getReportListInAdmin(postType, startDate, endDate, nickname, pageable);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<InquiryResDto> getInquiries(String search, InquiryType inquiryType, InquiryStatus status, Pageable pageable) {
         log.info("inquiryType: {}, pageable: {}", inquiryType, pageable);
 
