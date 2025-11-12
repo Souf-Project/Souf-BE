@@ -83,7 +83,7 @@ public class SocialAccountService {
 
 
     @Transactional(readOnly = true)
-    public SocialLoginResDto loginOrSignUp(SocialLoginReqDto request) {
+    public SocialLoginResDto loginOrSignUp(HttpServletResponse res, SocialLoginReqDto request) {
         SocialApiClient client = clientMap.get(request.provider());
         if (client == null) throw new NotValidAuthenticationException();
 
@@ -96,7 +96,7 @@ public class SocialAccountService {
 
         if (account != null) {
             Member member = account.getMember();
-            TokenDto token = issueTokens(member, null); // 아래 헬퍼 참고
+            TokenDto token = issueTokens(res, member, null); // 아래 헬퍼 참고
             return SocialLoginResDto.loggedIn(token, new SocialPrefill(
                     member.getEmail(), member.getUsername(), info.profileImageUrl(), request.provider().name()
             ));
@@ -150,9 +150,7 @@ public class SocialAccountService {
                 .findByProviderAndProviderUserId(provider, socialId)
                 .orElse(null);
         if (existing != null) {
-            TokenDto token = issueTokens(existing.getMember(), null);
-            jwtService.sendAccessAndRefreshToken(response, token.accessToken(), // 필요 시
-                    redisTemplate.opsForValue().get("refresh:" + existing.getMember().getEmail()));
+            TokenDto token = issueTokens(response, existing.getMember(), null);
             redisTemplate.delete(key);
             return token;
         }
@@ -193,9 +191,7 @@ public class SocialAccountService {
                 .build());
 
         // 3) 토큰 발급/전송
-        TokenDto token = issueTokens(member, presignedUrlResDto);
-        jwtService.sendAccessAndRefreshToken(response, token.accessToken(),
-                redisTemplate.opsForValue().get("refresh:" + member.getEmail()));
+        TokenDto token = issueTokens(response, member, presignedUrlResDto);
 
 //        indexEventPublisherHelper.publishIndexEvent(
 //                EntityType.MEMBER,
@@ -254,7 +250,7 @@ public class SocialAccountService {
         socialAccountRepository.save(link);
     }
 
-    private TokenDto issueTokens(Member member, PresignedUrlResDto presignedUrlResDto) {
+    private TokenDto issueTokens(HttpServletResponse response, Member member, PresignedUrlResDto presignedUrlResDto) {
         String accessToken = jwtService.createAccessToken(member);
         String refreshToken = jwtService.createRefreshToken(member);
 
@@ -264,6 +260,7 @@ public class SocialAccountService {
                 jwtService.getExpiration(refreshToken),
                 TimeUnit.MILLISECONDS
         );
+        jwtService.sendAccessAndRefreshToken(response, accessToken, refreshToken);
 
         return TokenDto.builder()
                 .accessToken(accessToken)

@@ -34,6 +34,23 @@ public class SesMailService {
         }
     }
 
+    public void sendApplyProgress(String to, String nickname, String recruitTitle, Long totalApplicant){
+        try {
+            Map<String, String> data = new HashMap<>();
+            data.put("nickname", nickname);
+            data.put("recruitTitle", recruitTitle);
+            data.put("totalApplicant", String.valueOf(totalApplicant));
+
+            SendTemplatedEmailRequest request = templateUtil
+                    .createSendTemplatedEmailRequest(to, "SouFApplyProgressionTemplate", data);
+
+            emailService.sendTemplatedEmail(request);
+            log.info("{}에게 진행현황이 성공적으로 전송되었습니다.", to);
+        } catch (Exception e) {
+            throw new RuntimeException("진행현황 전송 실패", e);
+        }
+    }
+
     public void announceRecruitResult(String to, String nickname, String recruitTitle) {
 
         try {
@@ -45,6 +62,7 @@ public class SesMailService {
                     createSendTemplatedEmailRequest(to, "SendRecruitResultTemplate", data);
 
             emailService.sendTemplatedEmail(request);
+            log.info("공고문 지원 결과 발표 전송 성공");
         } catch (Exception e) {
             throw new RuntimeException("인증번호 전송 실패", e);
         }
@@ -60,6 +78,7 @@ public class SesMailService {
             SendTemplatedEmailRequest request = templateUtil
                     .createSendTemplatedEmailRequest(to, "SendInquiryStatusTemplate", data);
             emailService.sendTemplatedEmail(request);
+            log.info("문의 결과 메일 전송 성공");
         } catch (Exception e) {
             throw new RuntimeException("문의내용 결과 전송 실패", e);
         }
@@ -74,6 +93,7 @@ public class SesMailService {
             SendTemplatedEmailRequest request = templateUtil
                     .createSendTemplatedEmailRequest(to, "SendSignupApprovedResultTemplate", data);
             emailService.sendTemplatedEmail(request);
+            log.info("회원가입 승인 결과 메인 전송 성공");
         } catch (Exception e) {
             throw new RuntimeException("서비스 사용 승인 결과 전송 실패", e);
         }
@@ -90,6 +110,7 @@ public class SesMailService {
             SendTemplatedEmailRequest request = templateUtil
                     .createSendTemplatedEmailRequest(to, "SendSignupRejectedResultTemplate", data);
             emailService.sendTemplatedEmail(request);
+            log.info("회원가입 승인 거절 결과 메일 전송 성공");
         } catch (Exception e) {
             throw new RuntimeException("서비스 사용 승인 거절 결과 전송 실패", e);
         }

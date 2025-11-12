@@ -17,7 +17,9 @@ public interface SocialAccountApiSpecification {
 
     @Operation(summary = "소셜 로그인", description = "소셜 로그인을 통해 사용자를 인증하고 토큰을 발급합니다.")
     @PostMapping("/login")
-    SuccessResponse<SocialLoginResDto> login(@RequestBody @Valid SocialLoginReqDto req);
+    SuccessResponse<SocialLoginResDto> login(
+            HttpServletResponse response,
+            @RequestBody @Valid SocialLoginReqDto req);
 
     @PostMapping("/complete-signup")
     SuccessResponse<TokenDto> completeSignup(@RequestBody @Valid SocialCompleteSignupReqDto req,
