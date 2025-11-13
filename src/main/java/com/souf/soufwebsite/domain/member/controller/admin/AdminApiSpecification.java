@@ -46,6 +46,12 @@ public interface AdminApiSpecification {
             @PageableDefault Pageable pageable
     );
 
+    @Operation(summary = "회원 인증 정보 조회", description = "회원의 세부 정보를 조회합니다.")
+    @GetMapping("/member/{memberId}")
+    SuccessResponse<AdminMemberResDto> getRequestedMember(
+            @PathVariable(name = "memberId") Long memberId
+    );
+
     @Operation(summary = "신고 관리", description = "신고 리스트를 조회합니다.")
     @GetMapping("/report")
     SuccessResponse<Page<AdminReportResDto>> getReports(

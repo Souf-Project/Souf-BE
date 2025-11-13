@@ -61,7 +61,7 @@ public class AuthController implements AuthApiSpecification{
 
     // 인증번호 전송
     @PostMapping("/signup/email/send")
-    public SuccessResponse sendSignupEmailVerification(@RequestBody SendEmailReqDto reqDto) {
+    public SuccessResponse sendSignupEmailVerification(@Valid @RequestBody SendEmailReqDto reqDto) {
 
         memberService.sendSignupEmailVerification(reqDto);
 
@@ -69,7 +69,7 @@ public class AuthController implements AuthApiSpecification{
     }
 
     @PostMapping("/reset/email/send")
-    public SuccessResponse sendResetEmailVerification(@RequestBody SendEmailReqDto reqDto) {
+    public SuccessResponse sendResetEmailVerification(@Valid @RequestBody SendEmailReqDto reqDto) {
 
         memberService.sendResetEmailVerification(reqDto);
 

@@ -8,6 +8,7 @@ import com.souf.soufwebsite.domain.member.dto.reqDto.signup.ResubmitReasonReqDto
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminPostResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.AdminReportResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.ProfileResDto;
 import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.service.admin.AdminService;
@@ -58,7 +59,17 @@ public class AdminController implements AdminApiSpecification{
     ) {
         Page<AdminMemberResDto> members = adminService.getMembers(memberType, username, nickname, approvedStatus, pageable);
 
-        return new SuccessResponse<>(members, MEMBER_GET_SUCCESS.getMessage());
+        return new SuccessResponse<>(members, MEMBER_AUTHENTICATED_SUCCESS.getMessage());
+    }
+
+    @GetMapping("/member/{memberId}")
+    public SuccessResponse<AdminMemberResDto> getRequestedMember(
+            @PathVariable(name = "memberId") Long memberId
+    ) {
+
+        ProfileResDto result = adminService.getAuthenticationElement(memberId);
+
+        return new SuccessResponse(result, MEMBER_GET_SUCCESS.getMessage());
     }
 
     @GetMapping("/report")

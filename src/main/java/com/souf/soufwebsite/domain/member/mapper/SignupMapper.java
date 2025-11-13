@@ -2,6 +2,7 @@ package com.souf.soufwebsite.domain.member.mapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
+import com.souf.soufwebsite.domain.file.exception.NotRequestedFileException;
 import com.souf.soufwebsite.domain.file.exception.NotValidFileTypeException;
 import com.souf.soufwebsite.domain.file.service.S3UploaderService;
 import com.souf.soufwebsite.domain.member.dto.reqDto.signup.*;
@@ -13,12 +14,14 @@ import com.souf.soufwebsite.domain.member.entity.profile.Specialty;
 import com.souf.soufwebsite.domain.member.entity.profile.StudentProfile;
 import com.souf.soufwebsite.domain.member.exception.NotValidRoleTypeException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SignupMapper {
@@ -51,8 +54,9 @@ public class SignupMapper {
                 toSpecialtyList(studentProfile, s.getMajorReqDtos());
 
                 if (s.getSchoolAuthenticatedImageFileName() != null) {
+                    log.info("studentFileName: {}", s.getSchoolAuthenticatedImageFileName());
                     presignedUrlResDto = s3UploaderService.generatePresignedUploadUrl("profile/authentication", s.getSchoolAuthenticatedImageFileName());
-                }
+                } else throw new NotRequestedFileException();
 
                 member.attachStudentProfile(studentProfile);
             }
@@ -74,10 +78,11 @@ public class SignupMapper {
                     CompanyProfile companyProfile = new CompanyProfile(co);
 
                     if (co.getBusinessRegistrationFile() != null) {
+                        log.info("fileName: {}", co.getBusinessRegistrationFile());
                         if(co.getBusinessRegistrationFile().endsWith(".pdf"))
                             presignedUrlResDto = s3UploaderService.generatePresignedUploadUrl("profile/authentication", co.getBusinessRegistrationFile());
                         else throw new NotValidFileTypeException();
-                    }
+                    } else throw new NotRequestedFileException();
 
                     member.attachCompanyProfile(companyProfile);
                 }
