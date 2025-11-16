@@ -43,6 +43,9 @@ public class Contract extends BaseEntity {
     @Column
     private String businessRegistrationNumber;
 
+    @Column
+    private String roadAddress;
+
     @Column(nullable = false)
     private String contactPhone;
 
@@ -101,6 +104,7 @@ public class Contract extends BaseEntity {
         this.ordererName = ordererReqDto.ordererPersonalInfoReqDto().ceoName();
         this.companyName = ordererReqDto.ordererPersonalInfoReqDto().companyName();
         this.businessRegistrationNumber = ordererReqDto.ordererPersonalInfoReqDto().businessRegistrationNumber();
+        this.roadAddress = ordererReqDto.ordererPersonalInfoReqDto().roadNameAddress();
         this.contactPhone = ordererReqDto.ordererPersonalInfoReqDto().companyPhoneNumber();
         this.contactEmail = ordererReqDto.ordererPersonalInfoReqDto().contactEmail();
         this.managerWithPosition = ordererReqDto.ordererPersonalInfoReqDto().managerWithPosition();

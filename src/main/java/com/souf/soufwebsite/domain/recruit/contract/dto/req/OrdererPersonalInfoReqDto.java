@@ -18,6 +18,10 @@ public record OrdererPersonalInfoReqDto(
         @NotNull(message = "회사가 아니라면 사업자 등록번호에 빈 문자열을 보내주세요.")
         String businessRegistrationNumber,
 
+        @Schema(description = "회사 주소를 입력해주세요. 입력하지 않았다면 빈 문자열을 보내주세요.", example = "서울시 가나구 다라동 140-5")
+        @NotNull(message = "입력하지 않았다면 빈 문자열을 보내주세요.")
+        String roadNameAddress,
+
         @Schema(description = "회사 전화번호를 입력해주세요.", example = "02-111-1111")
         @NotBlank(message = "전화번호는 필수입니다.")
         String companyPhoneNumber,
