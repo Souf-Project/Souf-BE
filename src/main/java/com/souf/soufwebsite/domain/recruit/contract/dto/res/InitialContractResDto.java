@@ -47,7 +47,7 @@ public record InitialContractResDto(
                 project.getInspectionDays(),
 
                 contract.getCopyrightApproved(),
-                contract.getConfidentialityPeriod(),
+                String.valueOf(contract.getConfidentialityPeriod()),
                 contract.getWarrantyPeriod(),
                 contract.getCompetentCourt()
         );

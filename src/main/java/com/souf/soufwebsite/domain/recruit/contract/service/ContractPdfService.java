@@ -103,7 +103,7 @@ public class ContractPdfService {
 
             // 10. 비밀유지
             Map<String, Object> nda = new LinkedHashMap<>();
-            nda.put("유지기간", contract.getConfidentialityPeriod());
+            nda.put("유지기간", String.valueOf(contract.getConfidentialityPeriod()));
             inline.put("10. 비밀유지", nda);
 
             // 11. 보증·유지보수
@@ -118,12 +118,13 @@ public class ContractPdfService {
 
             Map<String, Object> sign = new LinkedHashMap<>();
             LocalDate now = LocalDate.now();
-            sign.put("서명 년", now.getYear());
-            sign.put("서명 월", now.getMonthValue());
-            sign.put("서명 일", now.getDayOfMonth());
-            sign.put("발주자 성명", contract.getOrdererName());
-            sign.put("수급자 성명", contract.getBeneficiaryName());
-            inline.put("성명", sign);
+            log.info("year: {}, month: {}, day: {}", now.getYear(), now.getMonthValue(), now.getDayOfMonth());
+            sign.put("서명 년", String.valueOf(now.getYear()));
+            sign.put("서명 월", String.valueOf(now.getMonthValue()));
+            sign.put("서명 일", String.valueOf(now.getDayOfMonth()));
+            sign.put("발주자 서명", contract.getOrdererName());
+            sign.put("수급자 서명", contract.getBeneficiaryName());
+            inline.put("서명", sign);
 
             // =================== lambda 호출 ==========================
 
@@ -140,6 +141,7 @@ public class ContractPdfService {
             // lambda 응답값 처리
 
             LambdaWrapperRes lambdaWrapperRes = objectMapper.readValue(lambdaRaw, LambdaWrapperRes.class);
+            //log.info("body: {}", lambdaWrapperRes.body());
             if(lambdaWrapperRes.statusCode() != 200){
                 throw new IllegalStateException("Lambda statusCode != 200 : " + lambdaWrapperRes.statusCode()); // 특정 상태코드가 없음.
             }
@@ -148,7 +150,7 @@ public class ContractPdfService {
                     objectMapper.readValue(lambdaWrapperRes.body(), LambdaPdfBody.class);
 
             // Media에 저장 및 반환
-            Media contractMetadata = fileService.uploadSingleMedia(body.url(), PostType.CONTRACT, contract.getId());
+            Media contractMetadata = fileService.uploadSingleMedia(body.key(), PostType.CONTRACT, contract.getId());
             contract.completeCreatingContract();
 
             return contractMetadata.getOriginalUrl();

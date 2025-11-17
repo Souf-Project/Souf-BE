@@ -59,7 +59,7 @@ public class Contract extends BaseEntity {
     @JoinColumn(name = "beneficiary", nullable = true)
     private Member beneficiary;
 
-    @Column(nullable = false)
+    @Column
     private String beneficiaryName;
 
     @Column
@@ -84,7 +84,7 @@ public class Contract extends BaseEntity {
     private Boolean copyrightApproved;
 
     @Column(nullable = false)
-    private String confidentialityPeriod;
+    private LocalDate confidentialityPeriod;
 
     @Column(nullable = false)
     private String warrantyPeriod;

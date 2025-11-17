@@ -10,6 +10,7 @@ import com.souf.soufwebsite.domain.recruit.contract.dto.res.PreviewOrdererInfoRe
 import com.souf.soufwebsite.domain.recruit.contract.service.ContractService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,7 @@ public class ContractController implements ContractApiSpecification{
     public SuccessResponse<CreateInitialContractResDto> createInitialContract(
             @PathVariable(name = "roomId") Long roomId,
             @CurrentEmail String email,
-            @RequestBody OrdererReqDto ordererReqDto
+            @Valid @RequestBody OrdererReqDto ordererReqDto
     ){
 
         CreateInitialContractResDto result = contractService.createContractWithOrderer(email, roomId, ordererReqDto);
@@ -48,7 +49,7 @@ public class ContractController implements ContractApiSpecification{
     public SuccessResponse<PreviewBeneficiaryInfoRes> previewBeneficiaryInfo(
             @PathVariable(name = "roomId") Long roomId,
             @CurrentEmail String email,
-            @RequestBody JoinByInviteReqDto reqDto
+            @Valid @RequestBody JoinByInviteReqDto reqDto
     ) {
 
         PreviewBeneficiaryInfoRes result = contractService.previewBeneficiaryInfo(email, reqDto, roomId);
@@ -60,7 +61,7 @@ public class ContractController implements ContractApiSpecification{
     public SuccessResponse<InitialContractResDto> previewInitialContract(
             @PathVariable(name = "roomId") Long roomId,
             @CurrentEmail String email,
-            @RequestBody JoinByInviteReqDto reqDto
+            @Valid @RequestBody JoinByInviteReqDto reqDto
     ) {
 
         InitialContractResDto result = contractService.getIncompleteContractInfo(email, reqDto, roomId);
@@ -73,7 +74,7 @@ public class ContractController implements ContractApiSpecification{
             @PathVariable(name = "roomId") Long roomId,
             @PathVariable(name = "contractId") Long contractId,
             @CurrentEmail String email,
-            @RequestBody BeneficiaryReqDto reqDto
+            @Valid @RequestBody BeneficiaryReqDto reqDto
     ) {
 
         String url = contractService.acceptContractByInvite(email, contractId, roomId, reqDto);

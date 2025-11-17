@@ -56,6 +56,7 @@ public class ContractServiceImpl implements ContractService {
         Member beneficiary = findIfMemberExistsById(ordererReqDto.beneficiaryId());
 
         ChatRoom chatRoom = findIfChatroomExists(orderer, beneficiary);
+        log.info("chatRoomId: {} and roomId: {}", chatRoom.getId(), roomId);
         if(!chatRoom.getId().equals(roomId)){
             throw new NotAcceptedChatroomException();
         }

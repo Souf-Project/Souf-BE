@@ -58,8 +58,10 @@ public record OrdererReqDto(
         Boolean copyrightApproved,
 
         @Schema(description = "비밀유지 기간은 단위와 함께 문자열로 전송해주세요.", example = "3일 or 3개월 or 1년")
-        @NotBlank(message = "비밀유지 기간은 필수입니다.")
-        String confidentialityPeriod,
+        @JsonFormat(pattern = "yyyy-MM-dd")
+        @Future(message = "외주 종료 날짜는 미래나 현재여야 합니다.")
+        @NotNull(message = "비밀유지 기간은 필수입니다.")
+        LocalDate confidentialityPeriod,
 
         @Schema(description = "보증 및 유지보수 기간은 단위와 함께 문자열로 전송해주세요.", example = "3일 or 3개월 or 1년")
         @NotBlank(message = "보증 및 유지보수 기간은 필수입니다.")
