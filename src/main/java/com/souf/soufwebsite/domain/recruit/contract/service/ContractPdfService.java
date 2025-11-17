@@ -10,6 +10,7 @@ import com.souf.soufwebsite.domain.recruit.contract.entity.Project;
 import com.souf.soufwebsite.global.common.PostType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.core.SdkBytes;
@@ -29,6 +30,9 @@ public class ContractPdfService {
     private final LambdaClient lambdaClient;
     private final ObjectMapper objectMapper;
     private final FileService fileService;
+
+    @Value("${cloud.aws.lambda.name}")
+    private String contractFunctionName;
 
     @Transactional
     public String generateContractPdf(Contract contract) {
@@ -126,7 +130,7 @@ public class ContractPdfService {
             String requestJson = objectMapper.writeValueAsString(root);
 
             InvokeResponse generateContractPdf = lambdaClient.invoke(builder -> builder
-                    .functionName("create_contract_html")
+                    .functionName(contractFunctionName)
                     .invocationType(InvocationType.REQUEST_RESPONSE)
                     .payload(SdkBytes.fromUtf8String(requestJson))
             );
