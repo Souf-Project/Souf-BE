@@ -1,5 +1,8 @@
 package com.souf.soufwebsite.domain.recruit.contract.service;
 
+import com.souf.soufwebsite.domain.chat.entity.ChatRoom;
+import com.souf.soufwebsite.domain.chat.exception.NotFoundChatRoomException;
+import com.souf.soufwebsite.domain.chat.repository.ChatRoomRepository;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.profile.CompanyProfile;
 import com.souf.soufwebsite.domain.member.entity.profile.StudentProfile;
@@ -36,6 +39,7 @@ public class ContractServiceImpl implements ContractService {
     private final ContractRepository contractRepository;
     private final ContractInviteRepository contractInviteRepository;
     private final MemberRepository memberRepository;
+    private final ChatRoomRepository chatRoomRepository;
 
     private final ContractPdfService contractPdfService;
 
@@ -51,8 +55,13 @@ public class ContractServiceImpl implements ContractService {
 
         Member beneficiary = findIfMemberExistsById(ordererReqDto.beneficiaryId());
 
+        ChatRoom chatRoom = findIfChatroomExists(orderer, beneficiary);
+        if(!chatRoom.getId().equals(roomId)){
+            throw new NotAcceptedChatroomException();
+        }
+
         Project project = new Project(ordererReqDto);
-        Contract contract = new Contract(ordererReqDto, orderer, beneficiary);
+        Contract contract = new Contract(ordererReqDto, roomId, orderer, beneficiary);
 
         contract.attachProject(project);
 
@@ -67,6 +76,8 @@ public class ContractServiceImpl implements ContractService {
 
         return new CreateInitialContractResDto(contract.getContractUuid(), opaqueToken);
     }
+
+
 
     @Override
     public PreviewOrdererInfoRes previewOrdererInfo(String email, Long currentRoomId) {
@@ -135,6 +146,10 @@ public class ContractServiceImpl implements ContractService {
     }
 
     // private 메서드
+
+    private ChatRoom findIfChatroomExists(Member orderer, Member beneficiary) {
+        return chatRoomRepository.findBySenderAndReceiver(orderer, beneficiary).orElseThrow(NotFoundChatRoomException::new);
+    }
 
     private Member getCurrentMember(String email) {
         return memberRepository.findByEmail(email).orElseThrow(NotFoundMemberException::new);

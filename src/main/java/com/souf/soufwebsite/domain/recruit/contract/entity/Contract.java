@@ -98,9 +98,9 @@ public class Contract extends BaseEntity {
     @Version
     private Long version;
 
-    public Contract(OrdererReqDto ordererReqDto, Member orderer, Member beneficiary) {
+    public Contract(OrdererReqDto ordererReqDto, Long roomId, Member orderer, Member beneficiary) {
         this.contractUuid = makeContractNo();
-        this.roomId = ordererReqDto.roomId();
+        this.roomId = roomId;
         this.ordererName = ordererReqDto.ordererPersonalInfoReqDto().ceoName();
         this.companyName = ordererReqDto.ordererPersonalInfoReqDto().companyName();
         this.businessRegistrationNumber = ordererReqDto.ordererPersonalInfoReqDto().businessRegistrationNumber();
