@@ -5,10 +5,16 @@ import com.souf.soufwebsite.domain.recruit.contract.dto.req.JoinByInviteReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.OrdererReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.res.CreateInitialContractResDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.res.InitialContractResDto;
+import com.souf.soufwebsite.domain.recruit.contract.dto.res.PreviewBeneficiaryInfoRes;
+import com.souf.soufwebsite.domain.recruit.contract.dto.res.PreviewOrdererInfoRes;
 
 public interface ContractService {
 
     CreateInitialContractResDto createContractWithOrderer(OrdererReqDto ordererReqDto);
+
+    PreviewOrdererInfoRes previewOrdererInfo(String email);
+
+    PreviewBeneficiaryInfoRes previewBeneficiaryInfo(String email, JoinByInviteReqDto reqDto, Long currentChatRoomId);
 
     InitialContractResDto getIncompleteContractInfo(String email, JoinByInviteReqDto reqDto, Long currentChatRoomId);
 

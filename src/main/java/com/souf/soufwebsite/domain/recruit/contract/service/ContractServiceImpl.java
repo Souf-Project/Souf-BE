@@ -1,6 +1,8 @@
 package com.souf.soufwebsite.domain.recruit.contract.service;
 
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.entity.profile.CompanyProfile;
+import com.souf.soufwebsite.domain.member.entity.profile.StudentProfile;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.BeneficiaryReqDto;
@@ -8,6 +10,8 @@ import com.souf.soufwebsite.domain.recruit.contract.dto.req.JoinByInviteReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.OrdererReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.res.CreateInitialContractResDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.res.InitialContractResDto;
+import com.souf.soufwebsite.domain.recruit.contract.dto.res.PreviewBeneficiaryInfoRes;
+import com.souf.soufwebsite.domain.recruit.contract.dto.res.PreviewOrdererInfoRes;
 import com.souf.soufwebsite.domain.recruit.contract.entity.Contract;
 import com.souf.soufwebsite.domain.recruit.contract.entity.ContractInvite;
 import com.souf.soufwebsite.domain.recruit.contract.entity.ContractStatus;
@@ -62,9 +66,34 @@ public class ContractServiceImpl implements ContractService {
     }
 
     @Override
+    public PreviewOrdererInfoRes previewOrdererInfo(String email) {
+        Member currentMember = getCurrentMember(email);
+        CompanyProfile profile = null;
+
+        if(currentMember.getCompanyProfile() != null)
+            profile = currentMember.getCompanyProfile();
+
+        return PreviewOrdererInfoRes.from(currentMember, profile);
+    }
+
+    @Override
+    public PreviewBeneficiaryInfoRes previewBeneficiaryInfo(String email,JoinByInviteReqDto reqDto, Long currentChatRoomId) {
+        Member currentMember = getCurrentMember(email);
+        StudentProfile profile = null;
+
+        if(currentMember.getStudentProfile() != null){
+            profile = currentMember.getStudentProfile();
+        }
+
+        findAndValidateContractInvite(reqDto.inviteToken(), currentChatRoomId, currentMember.getId());
+
+        return PreviewBeneficiaryInfoRes.of(currentMember, profile);
+    }
+
+    @Override
     @Transactional
     public InitialContractResDto getIncompleteContractInfo(String email, JoinByInviteReqDto reqDto, Long currentChatRoomId) {
-        Member currentBeneficiary = getCurrentBeneficiary(email);
+        Member currentBeneficiary = getCurrentMember(email);
 
         ContractInvite currentContractInvite = findAndValidateContractInvite(reqDto.inviteToken(), currentChatRoomId, currentBeneficiary.getId());
 
@@ -83,7 +112,7 @@ public class ContractServiceImpl implements ContractService {
     @Transactional
     public String acceptContractByInvite(String email, Long contractId, Long chatroomId, BeneficiaryReqDto reqDto) {
 
-        Member currentBeneficiary = getCurrentBeneficiary(email);
+        Member currentBeneficiary = getCurrentMember(email);
 
         ContractInvite ci =
                 findAndValidateContractInvite(reqDto.inviteToken(), chatroomId, currentBeneficiary.getId());
@@ -104,7 +133,7 @@ public class ContractServiceImpl implements ContractService {
 
     // private 메서드
 
-    private Member getCurrentBeneficiary(String email) {
+    private Member getCurrentMember(String email) {
         return memberRepository.findByEmail(email).orElseThrow(NotFoundMemberException::new);
     }
 
