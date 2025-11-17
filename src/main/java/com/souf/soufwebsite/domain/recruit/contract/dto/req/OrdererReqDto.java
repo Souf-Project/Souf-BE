@@ -15,9 +15,6 @@ public record OrdererReqDto(
         @Valid
         OrdererPersonalInfoReqDto ordererPersonalInfoReqDto,
 
-        @NotNull(message = "채팅방 아이디는 필수입니다.")
-        Long roomId,
-
         @Schema(description = "외주 작업명을 기입해주세요.", example = "iOS/Android 앱 프로토타입 제작 및 백엔드 연동")
         @NotBlank(message = "작업명은 필수입니다.")
         String projectName,

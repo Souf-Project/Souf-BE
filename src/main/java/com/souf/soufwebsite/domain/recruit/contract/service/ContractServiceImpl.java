@@ -43,9 +43,12 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     @Transactional
-    public CreateInitialContractResDto createContractWithOrderer(OrdererReqDto ordererReqDto) {
+    public CreateInitialContractResDto createContractWithOrderer(String email, Long roomId, OrdererReqDto ordererReqDto) {
 
-        Member orderer = findIfMemberExistsById(ordererReqDto.ordererId());
+        Member orderer = getCurrentMember(email);
+        if(!orderer.getId().equals(ordererReqDto.ordererId()))
+            throw new NotAcceptedMemberException();
+
         Member beneficiary = findIfMemberExistsById(ordererReqDto.beneficiaryId());
 
         Project project = new Project(ordererReqDto);
@@ -59,14 +62,14 @@ public class ContractServiceImpl implements ContractService {
         Instant expireTime = Instant.now().plus(6, ChronoUnit.HOURS);
 
         ContractInvite contractInvite = new ContractInvite(opaqueToken, contract.getContractUuid(),
-                beneficiary.getId(), ordererReqDto.roomId(), expireTime);
+                beneficiary.getId(), roomId, expireTime);
         contractInviteRepository.save(contractInvite);
 
         return new CreateInitialContractResDto(contract.getContractUuid(), opaqueToken);
     }
 
     @Override
-    public PreviewOrdererInfoRes previewOrdererInfo(String email) {
+    public PreviewOrdererInfoRes previewOrdererInfo(String email, Long currentRoomId) {
         Member currentMember = getCurrentMember(email);
         CompanyProfile profile = null;
 

@@ -10,9 +10,9 @@ import com.souf.soufwebsite.domain.recruit.contract.dto.res.PreviewOrdererInfoRe
 
 public interface ContractService {
 
-    CreateInitialContractResDto createContractWithOrderer(OrdererReqDto ordererReqDto);
+    CreateInitialContractResDto createContractWithOrderer(String email, Long roomId, OrdererReqDto ordererReqDto);
 
-    PreviewOrdererInfoRes previewOrdererInfo(String email);
+    PreviewOrdererInfoRes previewOrdererInfo(String email, Long currentChatRoomId);
 
     PreviewBeneficiaryInfoRes previewBeneficiaryInfo(String email, JoinByInviteReqDto reqDto, Long currentChatRoomId);
 
