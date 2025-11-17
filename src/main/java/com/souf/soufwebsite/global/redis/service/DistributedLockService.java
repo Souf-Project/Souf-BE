@@ -1,6 +1,8 @@
 package com.souf.soufwebsite.global.redis.service;
 
+import com.souf.soufwebsite.domain.feed.service.FeedCacheService;
 import com.souf.soufwebsite.domain.feed.service.FeedScheduledService;
+import com.souf.soufwebsite.domain.recruit.service.RecruitCacheService;
 import com.souf.soufwebsite.domain.recruit.service.RecruitScheduledService;
 import com.souf.soufwebsite.domain.review.service.ReviewScheduledService;
 import com.souf.soufwebsite.global.slack.service.SlackService;
@@ -24,6 +26,8 @@ public class DistributedLockService {
 //    private final ViewCountService viewCountService;
     private final ReviewScheduledService reviewScheduledService;
     private final SlackService slackService;
+    private final FeedCacheService feedCacheService;
+    private final RecruitCacheService recruitCacheService;
 
     /* ------------------------------ Feed --------------------------------------- */
     @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
@@ -34,14 +38,14 @@ public class DistributedLockService {
     @Scheduled(cron = "0 5 0 * * 1")
     public void syncFeedWeeklyView(){
         distributedLock("sync:feed:lock", feedScheduledService::syncWeeklyViewCountsToDB);
-        distributedLock("sync:popular:feed:lock", feedScheduledService::refreshPopularFeeds);
+        distributedLock("sync:popular:feed:lock", feedCacheService::refreshPopularFeeds);
     }
 
     /* --------------------------------- Recruit --------------------------------- */
     @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
     public void syncRecruitView(){
         distributedLock("sync:recruit:lock", recruitScheduledService::syncViewCountsToDB);
-        distributedLock("sync:recruit:popular:lock", recruitScheduledService::refreshPopularRecruits);
+        distributedLock("sync:recruit:popular:lock", recruitCacheService::refreshPopularRecruits);
     }
 
     /* --------------------------------- Review ---------------------------------- */
