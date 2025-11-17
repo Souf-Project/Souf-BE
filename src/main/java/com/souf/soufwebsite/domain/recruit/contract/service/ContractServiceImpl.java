@@ -133,6 +133,9 @@ public class ContractServiceImpl implements ContractService {
         ci.consume();
 
         Contract currentContract = contractRepository.findById(contractId).orElseThrow(NotFoundContractException::new);
+
+        if(!currentContract.getContractUuid().equals(ci.getContractUuid()))
+            throw new NotAcceptedContractException();
         validateContractStatus(currentContract);
 
         if(!currentContract.getBeneficiary().equals(currentBeneficiary)) {
