@@ -85,6 +85,8 @@ public class ContractServiceImpl implements ContractService {
         Member currentMember = getCurrentMember(email);
         CompanyProfile profile = null;
 
+        chatRoomRepository.findByIdAndSender(currentRoomId, currentMember).orElseThrow(NotFoundChatRoomException::new);
+
         if(currentMember.getCompanyProfile() != null)
             profile = currentMember.getCompanyProfile();
 

@@ -57,7 +57,7 @@ public class ContractController implements ContractApiSpecification{
         return new SuccessResponse<>(result);
     }
 
-    @PostMapping("/{roomId}/beneficiary/preview")
+    @PatchMapping("/{roomId}/beneficiary/preview/contract")
     public SuccessResponse<InitialContractResDto> previewInitialContract(
             @PathVariable(name = "roomId") Long roomId,
             @CurrentEmail String email,

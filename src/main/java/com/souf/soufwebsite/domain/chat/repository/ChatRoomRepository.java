@@ -8,4 +8,6 @@ import java.util.Optional;
 
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     Optional<ChatRoom> findBySenderAndReceiver(Member sender, Member receiver);
+
+    Optional<ChatRoom> findByIdAndSender(Long id, Member sender);
 }

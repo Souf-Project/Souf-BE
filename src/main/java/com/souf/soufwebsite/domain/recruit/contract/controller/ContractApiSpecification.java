@@ -11,10 +11,7 @@ import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "계약서 도메인", description = "계약서를 작성 및 조회하는 기능 리스트입니다.")
 public interface ContractApiSpecification {
@@ -43,7 +40,7 @@ public interface ContractApiSpecification {
     );
 
     @Operation(summary = "수급자 계약서 조회", description = "발주자가 작성한 계약서 정보를 초대받은 수급자가 조회합니다.")
-    @PostMapping("/{roomId}/beneficiary/preview")
+    @PatchMapping("/{roomId}/beneficiary/preview/contract")
     SuccessResponse<InitialContractResDto> previewInitialContract(
             @PathVariable(name = "roomId") Long roomId,
             @CurrentEmail String email,
