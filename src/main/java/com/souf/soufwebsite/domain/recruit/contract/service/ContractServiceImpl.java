@@ -33,6 +33,8 @@ public class ContractServiceImpl implements ContractService {
     private final ContractInviteRepository contractInviteRepository;
     private final MemberRepository memberRepository;
 
+    private final ContractPdfService contractPdfService;
+
     private final TokenUtils tokenUtils;
 
     @Override
@@ -79,7 +81,7 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     @Transactional
-    public void acceptContractByInvite(String email, Long contractId, Long chatroomId, BeneficiaryReqDto reqDto) {
+    public String acceptContractByInvite(String email, Long contractId, Long chatroomId, BeneficiaryReqDto reqDto) {
 
         Member currentBeneficiary = getCurrentBeneficiary(email);
 
@@ -96,6 +98,8 @@ public class ContractServiceImpl implements ContractService {
 
 
         currentContract.updateBeneficiaryInfo(reqDto);
+
+        return contractPdfService.generateContractPdf(currentContract);
     }
 
     // private 메서드
@@ -109,7 +113,7 @@ public class ContractServiceImpl implements ContractService {
     }
 
     private void validateContractStatus(Contract contract) {
-        if(contract.getContractStatus() == ContractStatus.SIGNED)
+        if(contract.getContractStatus() == ContractStatus.COMPLETED || contract.getContractStatus() == ContractStatus.CREATING_CONTRACT)
             throw new AlreadySignedContractException();
     }
 

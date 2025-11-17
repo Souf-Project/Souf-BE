@@ -124,7 +124,11 @@ public class Contract extends BaseEntity {
         this.beneficiaryEmail = reqDto.email();
         this.beneficiaryPhone = reqDto.phoneNumber();
         this.beneficiaryBankAccount = combineBanknameAndAccount(reqDto.bank(), reqDto.bankAccount());
-        this.contractStatus = ContractStatus.SIGNED;
+        this.contractStatus = ContractStatus.CREATING_CONTRACT;
+    }
+
+    public void completeCreatingContract(){
+        this.contractStatus = ContractStatus.COMPLETED;
     }
 
     public void attachProject(Project project) {

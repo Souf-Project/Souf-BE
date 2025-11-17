@@ -12,7 +12,7 @@ public interface ContractService {
 
     InitialContractResDto getIncompleteContractInfo(String email, JoinByInviteReqDto reqDto, Long currentChatRoomId);
 
-    void acceptContractByInvite(String email, Long contractId, Long chatroomId, BeneficiaryReqDto beneficiaryReqDto);
+    String acceptContractByInvite(String email, Long contractId, Long chatroomId, BeneficiaryReqDto beneficiaryReqDto);
     /*
     1. 발주자 계약서 데이터 받아 검증 후 저장 API
     2. 발주자 계약서 데이터 조회 API(계약서 데이터와 통합)
