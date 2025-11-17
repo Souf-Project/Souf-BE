@@ -134,6 +134,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET,    "/api/v1/applications/my").hasAnyRole("STUDENT", "ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/api/v1/clubs/*/join").hasAnyRole("STUDENT", "ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/api/v1/clubs/*/withdraw").hasAnyRole("STUDENT", "ADMIN")
+                                .requestMatchers("/api/v1/contract/*/beneficiary/**").hasAnyRole("STUDENT", "ADMIN")
 
                                 // 3-1) CLUB 전용
                                 .requestMatchers(HttpMethod.PATCH, "/api/v1/clubs/**").hasAnyRole("CLUB", "ADMIN")
@@ -143,6 +144,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET,  "/api/v1/applications/*/applicants").hasAnyRole("MEMBER","ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/api/v1/applications/*/approve", "/api/v1/applications/*/reject")
                                 .hasAnyRole("MEMBER","ADMIN")
+                                .requestMatchers("/api/v1/contract/*/orderer/**").hasAnyRole("MEMBER","ADMIN")
 
                                 // 5) 쓰기 권한(POST/PUT/PATCH/DELETE) — 리소스별로 묶어서
                                 .requestMatchers(HttpMethod.PATCH, "/api/v1/feed/*/like").hasAnyRole("MEMBER", "ADMIN", "STUDENT", "CLUB")
