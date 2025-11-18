@@ -1,5 +1,7 @@
 package com.souf.soufwebsite.domain.recruit.contract.controller;
 
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.BeneficiaryReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.JoinByInviteReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.OrdererReqDto;
@@ -31,6 +33,17 @@ public class ContractController implements ContractApiSpecification{
     ){
 
         CreateInitialContractResDto result = contractService.createContractWithOrderer(email, roomId, ordererReqDto);
+
+        return new SuccessResponse<>(result);
+    }
+
+    @PostMapping("{roomId}/orderer")
+    public SuccessResponse<PresignedUrlResDto> createInitialContract(
+            @CurrentEmail String email,
+            @PathVariable(name = "roomId") Long roomId,
+            @Valid @RequestBody MediaReqDto mediaReqDto
+    ) {
+        PresignedUrlResDto result = contractService.uploadFinalContractMedia(email, roomId, mediaReqDto);
 
         return new SuccessResponse<>(result);
     }

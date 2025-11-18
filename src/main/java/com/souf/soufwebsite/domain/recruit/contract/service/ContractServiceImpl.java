@@ -3,6 +3,12 @@ package com.souf.soufwebsite.domain.recruit.contract.service;
 import com.souf.soufwebsite.domain.chat.entity.ChatRoom;
 import com.souf.soufwebsite.domain.chat.exception.NotFoundChatRoomException;
 import com.souf.soufwebsite.domain.chat.repository.ChatRoomRepository;
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
+import com.souf.soufwebsite.domain.file.entity.Media;
+import com.souf.soufwebsite.domain.file.exception.NotFoundMediaException;
+import com.souf.soufwebsite.domain.file.repository.MediaRepository;
+import com.souf.soufwebsite.domain.file.service.S3UploaderService;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.profile.CompanyProfile;
 import com.souf.soufwebsite.domain.member.entity.profile.StudentProfile;
@@ -22,6 +28,7 @@ import com.souf.soufwebsite.domain.recruit.contract.entity.Project;
 import com.souf.soufwebsite.domain.recruit.contract.exception.*;
 import com.souf.soufwebsite.domain.recruit.contract.repository.ContractInviteRepository;
 import com.souf.soufwebsite.domain.recruit.contract.repository.ContractRepository;
+import com.souf.soufwebsite.global.common.PostType;
 import com.souf.soufwebsite.global.util.TokenUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -40,8 +48,10 @@ public class ContractServiceImpl implements ContractService {
     private final ContractInviteRepository contractInviteRepository;
     private final MemberRepository memberRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final MediaRepository mediaRepository;
 
     private final ContractPdfService contractPdfService;
+    private final S3UploaderService s3UploaderService;
 
     private final TokenUtils tokenUtils;
 
@@ -78,6 +88,25 @@ public class ContractServiceImpl implements ContractService {
         return new CreateInitialContractResDto(contract.getContractUuid(), opaqueToken);
     }
 
+    @Override
+    @Transactional
+    public PresignedUrlResDto uploadFinalContractMedia(String email, Long roomId, MediaReqDto reqDto) {
+        Member currentMember = getCurrentMember(email);
+
+        chatRoomRepository.findByIdAndSender(roomId, currentMember).orElseThrow(NotFoundChatRoomException::new);
+        Contract contract = contractRepository.findByRoomId(roomId).orElseThrow(NotFoundContractException::new);
+
+        List<Media> contractMetadata = mediaRepository.findByPostTypeAndPostId(PostType.CONTRACT, contract.getId());
+        Media media;
+        if(contractMetadata.isEmpty()){
+            throw new NotFoundMediaException();
+        }
+        media = contractMetadata.get(0);
+
+        String key = media.getOriginalUrl();
+
+        return s3UploaderService.regeneratePresignedUploadUrl(key, media.getFileName());
+    }
 
 
     @Override

@@ -132,6 +132,27 @@ public class S3UploaderService {
         return new PresignedUrlResDto(presignedUrl.toString(), fileName, mediaType);
     }
 
+    public PresignedUrlResDto regeneratePresignedUploadUrl(String prefix, String originalFilename) {
+        String ext = extractExtension(originalFilename);
+
+        String mediaType = CONTENT_TYPE_MAP.getOrDefault(ext, "application/octet-stream"); // 기본값 설정
+
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(prefix)
+                .contentType(mediaType)
+                .build();
+
+        PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(builder -> builder
+                .signatureDuration(Duration.ofMinutes(10))
+                .putObjectRequest(putObjectRequest)
+        );
+
+        URL presignedUrl = presignedRequest.url();
+
+        return new PresignedUrlResDto(presignedUrl.toString(), prefix, mediaType);
+    }
+
     private String extractExtension(String filename) {
         if (filename == null) return "";
         int idx = filename.lastIndexOf('.');

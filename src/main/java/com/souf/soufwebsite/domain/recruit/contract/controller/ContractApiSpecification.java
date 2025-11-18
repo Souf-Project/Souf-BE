@@ -1,5 +1,7 @@
 package com.souf.soufwebsite.domain.recruit.contract.controller;
 
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.BeneficiaryReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.JoinByInviteReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.OrdererReqDto;
@@ -11,6 +13,7 @@ import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "계약서 도메인", description = "계약서를 작성 및 조회하는 기능 리스트입니다.")
@@ -22,6 +25,14 @@ public interface ContractApiSpecification {
             @PathVariable(name = "roomId") Long roomId,
             @CurrentEmail String email,
             @RequestBody OrdererReqDto ordererReqDto
+    );
+
+    @Operation(summary = "계약서 서명 후 최종 업로드", description = "계약서에 서로 서명 후 최종 완료된 계약서를 제출합니다.(발주자만 가능)")
+    @PostMapping("{roomId}/orderer")
+    SuccessResponse<PresignedUrlResDto> createInitialContract(
+            @CurrentEmail String email,
+            @PathVariable(name = "roomId") Long roomId,
+            @Valid @RequestBody MediaReqDto mediaReqDto
     );
 
     @Operation(summary = "발주자 정보 불러오기", description = "계약서 작성 시 기존에 존재한 발주자의 정보를 불러옵니다.")

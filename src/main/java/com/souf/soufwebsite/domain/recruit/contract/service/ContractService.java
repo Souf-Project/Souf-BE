@@ -1,5 +1,7 @@
 package com.souf.soufwebsite.domain.recruit.contract.service;
 
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.BeneficiaryReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.JoinByInviteReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.OrdererReqDto;
@@ -11,6 +13,8 @@ import com.souf.soufwebsite.domain.recruit.contract.dto.res.PreviewOrdererInfoRe
 public interface ContractService {
 
     CreateInitialContractResDto createContractWithOrderer(String email, Long roomId, OrdererReqDto ordererReqDto);
+
+    PresignedUrlResDto uploadFinalContractMedia(String email, Long roomId, MediaReqDto reqDto);
 
     PreviewOrdererInfoRes previewOrdererInfo(String email, Long currentChatRoomId);
 

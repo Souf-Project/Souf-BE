@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface ContractRepository extends JpaRepository<Contract, Long> {
 
     Optional<Contract> findByContractUuid(String contractUuid);
+
+    Optional<Contract> findByRoomId(Long roomId);
 }
