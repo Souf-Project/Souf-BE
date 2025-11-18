@@ -131,6 +131,10 @@ public class Contract extends BaseEntity {
         this.contractStatus = ContractStatus.COMPLETED;
     }
 
+    public void updateFinalContractStatus(){
+        this.contractStatus = ContractStatus.SIGNED;
+    }
+
     public void attachProject(Project project) {
         this.project = project;
         project.attachContract(this);

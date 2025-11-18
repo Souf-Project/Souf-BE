@@ -96,6 +96,9 @@ public class ContractServiceImpl implements ContractService {
 
         chatRoomRepository.findByIdAndSender(roomId, currentMember).orElseThrow(NotFoundChatRoomException::new);
         Contract contract = contractRepository.findByRoomId(roomId).orElseThrow(NotFoundContractException::new);
+        if(contract.getContractStatus() == ContractStatus.SIGNED){
+            throw new AlreadySignedContractException();
+        }
 
         List<Media> contractMetadata = mediaRepository.findByPostTypeAndPostId(PostType.CONTRACT, contract.getId());
         Media media;
@@ -105,6 +108,7 @@ public class ContractServiceImpl implements ContractService {
         media = contractMetadata.get(0);
 
         String key = media.getOriginalUrl();
+        contract.updateFinalContractStatus();
 
         return s3UploaderService.regeneratePresignedUploadUrl(key, media.getFileName());
     }

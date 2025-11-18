@@ -1,6 +1,7 @@
 package com.souf.soufwebsite.domain.recruit.contract.controller;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.BeneficiaryReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.JoinByInviteReqDto;
@@ -64,6 +65,13 @@ public interface ContractApiSpecification {
             @PathVariable(name = "roomId") Long roomId,
             @CurrentEmail String email,
             @RequestBody BeneficiaryReqDto reqDto
+    );
+
+    @Operation(summary = "서명된 계약서 조회", description = "최종 업로드한 계약서 pdf를 조회합니다.")
+    @GetMapping("/{roomId}")
+    SuccessResponse<MediaResDto> getSignedContractPdf(
+            @CurrentEmail String email,
+            @PathVariable(name = "roomId") Long roomId
     );
 
 
