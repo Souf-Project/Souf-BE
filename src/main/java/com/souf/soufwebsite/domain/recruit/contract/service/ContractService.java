@@ -1,6 +1,7 @@
 package com.souf.soufwebsite.domain.recruit.contract.service;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.BeneficiaryReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.JoinByInviteReqDto;
@@ -22,7 +23,9 @@ public interface ContractService {
 
     InitialContractResDto getIncompleteContractInfo(String email, JoinByInviteReqDto reqDto, Long currentChatRoomId);
 
-    String acceptContractByInvite(String email, Long contractId, Long chatroomId, BeneficiaryReqDto beneficiaryReqDto);
+    String acceptContractByInvite(String email, Long chatroomId, BeneficiaryReqDto beneficiaryReqDto);
+
+    MediaResDto getSignedContractPdfInChatRoom(String email, Long currentChatRoomId);
     /*
     1. 발주자 계약서 데이터 받아 검증 후 저장 API
     2. 발주자 계약서 데이터 조회 API(계약서 데이터와 통합)

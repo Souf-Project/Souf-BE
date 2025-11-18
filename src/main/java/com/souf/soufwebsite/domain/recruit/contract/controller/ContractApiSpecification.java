@@ -59,11 +59,12 @@ public interface ContractApiSpecification {
     );
 
     @Operation(summary = "계약서 생성", description = "수급자가 최종 정보를 확인하고 개인 정보를 기입한 후, 계약서를 생성합니다.")
-    @PostMapping("/{roomId}/beneficiary/{contractId}")
+    @PostMapping("/{roomId}/beneficiary")
     SuccessResponse<String> createContract(
             @PathVariable(name = "roomId") Long roomId,
-            @PathVariable(name = "contractId") Long contractId,
             @CurrentEmail String email,
             @RequestBody BeneficiaryReqDto reqDto
     );
+
+
 }

@@ -4,6 +4,7 @@ import com.souf.soufwebsite.domain.chat.entity.ChatRoom;
 import com.souf.soufwebsite.domain.chat.exception.NotFoundChatRoomException;
 import com.souf.soufwebsite.domain.chat.repository.ChatRoomRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.exception.NotFoundMediaException;
@@ -156,7 +157,7 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     @Transactional
-    public String acceptContractByInvite(String email, Long contractId, Long chatroomId, BeneficiaryReqDto reqDto) {
+    public String acceptContractByInvite(String email, Long chatroomId, BeneficiaryReqDto reqDto) {
 
         Member currentBeneficiary = getCurrentMember(email);
 
@@ -164,7 +165,7 @@ public class ContractServiceImpl implements ContractService {
                 findAndValidateContractInvite(reqDto.inviteToken(), chatroomId, currentBeneficiary.getId());
         ci.consume();
 
-        Contract currentContract = contractRepository.findById(contractId).orElseThrow(NotFoundContractException::new);
+        Contract currentContract = contractRepository.findByContractUuid(ci.getContractUuid()).orElseThrow(NotFoundContractException::new);
 
         if(!currentContract.getContractUuid().equals(ci.getContractUuid()))
             throw new NotAcceptedContractException();
@@ -178,6 +179,24 @@ public class ContractServiceImpl implements ContractService {
         currentContract.updateBeneficiaryInfo(reqDto);
 
         return contractPdfService.generateContractPdf(currentContract);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MediaResDto getSignedContractPdfInChatRoom(String email, Long currentChatRoomId) {
+        Member currentMember = getCurrentMember(email);
+
+        ChatRoom chatRoom = chatRoomRepository.findByMember(currentChatRoomId, currentMember).orElseThrow(NotFoundChatRoomException::new);
+        Contract contract = contractRepository.findByRoomId(chatRoom.getId()).orElseThrow(NotFoundContractException::new);
+
+        List<Media> contractMetadata = mediaRepository.findByPostTypeAndPostId(PostType.CONTRACT, contract.getId());
+        Media media;
+        if(contractMetadata.isEmpty()){
+            throw new NotFoundMediaException();
+        }
+        media = contractMetadata.get(0);
+
+        return MediaResDto.fromMedia(media);
     }
 
     // private 메서드

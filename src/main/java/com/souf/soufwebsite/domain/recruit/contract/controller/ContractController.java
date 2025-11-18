@@ -1,6 +1,7 @@
 package com.souf.soufwebsite.domain.recruit.contract.controller;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.BeneficiaryReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.JoinByInviteReqDto;
@@ -37,7 +38,7 @@ public class ContractController implements ContractApiSpecification{
         return new SuccessResponse<>(result);
     }
 
-    @PostMapping("{roomId}/orderer")
+    @PostMapping("{roomId}/orderer/upload")
     public SuccessResponse<PresignedUrlResDto> createInitialContract(
             @CurrentEmail String email,
             @PathVariable(name = "roomId") Long roomId,
@@ -82,16 +83,25 @@ public class ContractController implements ContractApiSpecification{
         return new SuccessResponse<>(result);
     }
 
-    @PostMapping("/{roomId}/beneficiary/{contractId}")
+    @PostMapping("/{roomId}/beneficiary")
     public SuccessResponse<String> createContract(
             @PathVariable(name = "roomId") Long roomId,
-            @PathVariable(name = "contractId") Long contractId,
             @CurrentEmail String email,
             @Valid @RequestBody BeneficiaryReqDto reqDto
     ) {
 
-        String url = contractService.acceptContractByInvite(email, contractId, roomId, reqDto);
+        String url = contractService.acceptContractByInvite(email, roomId, reqDto);
 
         return new SuccessResponse<>(url);
+    }
+
+    @GetMapping("/{roomId}")
+    public SuccessResponse<MediaResDto> getSignedContractPdf(
+            @CurrentEmail String email,
+            @PathVariable(name = "roomId") Long roomId
+    ) {
+        MediaResDto result = contractService.getSignedContractPdfInChatRoom(email, roomId);
+
+        return new SuccessResponse<>(result);
     }
 }
