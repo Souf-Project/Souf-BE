@@ -247,7 +247,8 @@ public class RecruitServiceImpl implements RecruitService {
 //        );
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override public void afterCommit() {
+            @Override
+            public void afterCommit() {
                 boolean statusOrDeadlineChanged =
                         beforeRecruitable != recruit.isRecruitable()
                                 || !Objects.equals(beforeDeadline, recruit.getDeadline());
@@ -290,12 +291,14 @@ public class RecruitServiceImpl implements RecruitService {
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override public void afterCommit() {
-                publisher.publishEvent(new RecruitChangedEvent(
-                        recruit.getId(),
-                        RecruitChangedEvent.ChangeType.DELETED,
-                        false,
-                        null
-                ));
+                publisher.publishEvent(
+                        new RecruitChangedEvent(
+                            recruit.getId(),
+                            RecruitChangedEvent.ChangeType.DELETED,
+                            false,
+                            null
+                        )
+                );
             }
         });
     }
