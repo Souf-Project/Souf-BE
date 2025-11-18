@@ -14,7 +14,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -25,6 +24,7 @@ import java.util.Objects;
 public class RecruitScheduledService {
 
     private final RecruitRepository recruitRepository;
+    private final RecruitCacheService recruitCacheService;
     private final StringRedisTemplate redisTemplate;
     private final CacheManager cacheManager;
     private final FileService fileService;
@@ -66,37 +66,8 @@ public class RecruitScheduledService {
         log.info("공고문 마감 상태 스케줄링 작업 완료");
     }
 
-    @Transactional
-    public void refreshPopularRecruits() {
-        Cache cache = cacheManager.getCache("popularRecruits");
-        if (cache == null) {
-            log.error("popularRecruits 캐시가 설정되지 않았습니다.");
-            return;
-        }
-
-        LocalDateTime now = LocalDateTime.now();
-        List<Recruit> popularRecruits = recruitRepository.findTop5ByRecruitableAndDeadlineAfterOrderByDeadlineAsc(now);
-
-        log.info("공고문 로직 실행 중");
-
-        List<RecruitPopularityResDto> results = popularRecruits.stream().map(
-                r -> {
-                    String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, r.getMember().getId());
-                    return RecruitPopularityResDto.of(r, mediaUrl);
-                }
-        ).toList();
-        log.info("popular Recruit size: {}", results.size());
-
-        cache.put("recruit:popular", results);
-    }
-
     private String buildKey(Pageable pageable) {
         return "page:" + pageable.getPageNumber() + ":" + pageable.getPageSize();
-    }
-
-
-    public void rebuildPopularRecruits() { // 전체 리빌드
-        refreshPopularRecruits(); // 이미 구현되어 있음 (임박순 TOP5 재계산 후 cache.put)
     }
 
     @SuppressWarnings("unchecked")
@@ -105,13 +76,13 @@ public class RecruitScheduledService {
         if (cache == null) return;
 
         Cache.ValueWrapper wrapper = cache.get("recruit:popular");
-        if (wrapper == null) { rebuildPopularRecruits(); return; }
+        if (wrapper == null) { recruitCacheService.refreshPopularRecruits(); return; }
 
         List<RecruitPopularityResDto> cached = (List<RecruitPopularityResDto>) wrapper.get();
-        if (cached == null) { rebuildPopularRecruits(); return; }
+        if (cached == null) { recruitCacheService.refreshPopularRecruits(); return; }
 
         Recruit updated = recruitRepository.findById(recruitId).orElse(null);
-        if (updated == null) { rebuildPopularRecruits(); return; }
+        if (updated == null) { recruitCacheService.refreshPopularRecruits(); return; }
 
         String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, updated.getMember().getId());
         RecruitPopularityResDto newDto = RecruitPopularityResDto.of(updated, mediaUrl);
@@ -127,8 +98,10 @@ public class RecruitScheduledService {
     public boolean cacheContains(Long recruitId) {
         Cache cache = cacheManager.getCache("popularRecruits");
         if (cache == null) return false;
+
         Cache.ValueWrapper w = cache.get("recruit:popular");
         if (w == null || w.get() == null) return false;
+
         List<RecruitPopularityResDto> list = (List<RecruitPopularityResDto>) w.get();
         return list.stream().anyMatch(d -> Objects.equals(d.recruitId(), recruitId));
     }

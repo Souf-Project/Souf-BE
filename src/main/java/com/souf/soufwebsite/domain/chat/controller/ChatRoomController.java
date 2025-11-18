@@ -37,19 +37,14 @@ public class ChatRoomController implements ChatRoomApiSpecification {
     private final MemberRepository memberRepository;
     private final ChatRoomNativeRepository chatRoomNativeRepository;
 
-    private Member getCurrentUser() {
-        return SecurityUtils.getCurrentMember();
-    }
-
     @Override
     @PostMapping
     public ResponseEntity<ChatRoomResDto> createChatRoom(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @CurrentEmail String email,
             @RequestBody ChatRoomCreateReqDto request
     ) {
-        log.info("userDetails: {}", userDetails);
-
-        Member sender = userDetails.getMember();
+        Member sender = memberRepository.findByEmail(email)
+                .orElseThrow(NotFoundMemberException::new);
         Member receiver = memberRepository.findById(request.receiverId())
                 .orElseThrow(NotFoundMemberException::new);
 
@@ -61,9 +56,10 @@ public class ChatRoomController implements ChatRoomApiSpecification {
     @Override
     @GetMapping
     public ResponseEntity<List<ChatRoomSummaryDto>> getMyChatRooms(
-            @AuthenticationPrincipal UserDetailsImpl userDetails
+            @CurrentEmail String email
     ) {
-        Member member = userDetails.getMember();
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(NotFoundMemberException::new);
 
         List<ChatRoomSummaryDto> result = chatRoomService.getChatRoomsForUser(member);
         return ResponseEntity.ok(result);
@@ -72,10 +68,11 @@ public class ChatRoomController implements ChatRoomApiSpecification {
     @Override
     @GetMapping("/{roomId}/messages")
     public ResponseEntity<List<ChatMessageResDto>> getMessages(
-            @PathVariable Long roomId,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
+            @CurrentEmail String email,
+            @PathVariable Long roomId
     ) {
-        Member me = userDetails.getMember();
+        Member me = memberRepository.findByEmail(email)
+                .orElseThrow(NotFoundMemberException::new);
         ChatRoom room = chatRoomService.getRoomById(roomId);
 
         if (!room.hasParticipant(me)) {
@@ -101,10 +98,11 @@ public class ChatRoomController implements ChatRoomApiSpecification {
     @Override
     @PatchMapping("/{roomId}/read")
     public ResponseEntity<Void> markMessagesAsRead(
-            @PathVariable Long roomId,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
+            @CurrentEmail String email,
+            @PathVariable Long roomId
     ) {
-        Member reader = userDetails.getMember();
+        Member reader = memberRepository.findByEmail(email)
+                .orElseThrow(NotFoundMemberException::new);
         ChatRoom room = chatRoomService.getRoomById(roomId);
 
         chatMessageService.markMessagesAsRead(room, reader);
@@ -114,9 +112,11 @@ public class ChatRoomController implements ChatRoomApiSpecification {
     @Override
     @PostMapping("/{roomId}/exit")
     public ResponseEntity<Void> leaveChatRoom(
+            @CurrentEmail String email,
             @PathVariable Long roomId
     ) {
-        Member member = getCurrentUser(); // 인증된 사용자
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(NotFoundMemberException::new);
         chatRoomService.exitChatRoom(member, roomId);
         return ResponseEntity.ok().build();
     }

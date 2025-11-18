@@ -17,6 +17,5 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     Long countByRecruit(Recruit recruit);
 
-    Optional<Application> findByMemberAndRecruit(Member member, Recruit recruit);
-    Optional<Application> findByIdAndRecruit_Id(Long applicationId, Long recruitId);
+    boolean existsByRecruitMemberIdAndMemberId(Long writerId, Long applicantId);
 }

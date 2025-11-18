@@ -10,8 +10,8 @@ public enum ErrorType {
     NOT_CHAT_MYSELF(400, "자신과의 채팅은 생성할 수 없습니다.", "CH400-1"),
     NOT_FOUND_CHAT_ROOM(404, "해당 채팅방을 찾을 수 없습니다.", "CH404-2"),
     NOT_FOUND_PARTICIPANT(404, "해당 채팅방의 참여자를 찾을 수 없습니다.", "CH404-3"),
-    NOT_CHAT_ROOM_PARTICIPANT(403, "채팅방 참여자가 아닙니다.", "CH403-1"),;
-
+    NOT_CHAT_ROOM_PARTICIPANT(403, "채팅방 참여자가 아닙니다.", "CH403-1"),
+    NOT_MY_APPLICANT(403, "내 공고에 지원한 지원자에게만 채팅을 보낼 수 있습니다.", "CH403-2");
     private final int code;
     private final String message;
     private final String errorKey;
