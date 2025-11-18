@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.chat.service;
 
+import com.souf.soufwebsite.domain.application.repository.ApplicationRepository;
 import com.souf.soufwebsite.domain.chat.dto.ChatRoomSummaryDto;
 import com.souf.soufwebsite.domain.chat.entity.ChatMessage;
 import com.souf.soufwebsite.domain.chat.entity.ChatParticipant;
@@ -7,6 +8,7 @@ import com.souf.soufwebsite.domain.chat.entity.ChatRoom;
 import com.souf.soufwebsite.domain.chat.exception.NotChatMyselfException;
 import com.souf.soufwebsite.domain.chat.exception.NotFoundChatRoomException;
 import com.souf.soufwebsite.domain.chat.exception.NotFoundParticipantException;
+import com.souf.soufwebsite.domain.chat.exception.NotMyApplicantException;
 import com.souf.soufwebsite.domain.chat.repository.ChatMessageRepository;
 import com.souf.soufwebsite.domain.chat.repository.ChatParticipantRepository;
 import com.souf.soufwebsite.domain.chat.repository.ChatRoomNativeRepository;
@@ -26,6 +28,7 @@ public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomNativeRepository chatRoomNativeRepository;
     private final ChatParticipantRepository chatParticipantRepository;
+    private final ApplicationRepository applicationRepository;
 
     @Transactional
     public ChatRoom findOrCreateRoom(Member sender, Member receiver) {
@@ -44,6 +47,13 @@ public class ChatRoomService {
             restoreParticipantIfNeeded(existingRoom, receiver);
 
             return existingRoom;
+        }
+
+        boolean canChat = applicationRepository
+                .existsByRecruitMemberIdAndMemberId(sender.getId(), receiver.getId());
+
+        if (!canChat) {
+            throw new NotMyApplicantException();
         }
 
         ChatRoom newRoom = chatRoomRepository.save(new ChatRoom(sender, receiver));
