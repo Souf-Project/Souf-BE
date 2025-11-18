@@ -24,28 +24,34 @@ public interface ChatRoomApiSpecification {
     @Operation(summary = "채팅방 생성", description = "두 사용자를 조회해 해당 사용자 간의 채팅방을 생성하고 이미 존재한다면 재사용합니다.")
     @PostMapping
     ResponseEntity<ChatRoomResDto> createChatRoom(
+            @CurrentEmail String email,
             @RequestBody ChatRoomCreateReqDto request
     );
 
     @Operation(summary = "채팅방 조회", description = "해당 사용자가 참여중인 채팅방을 조회합니다.")
     @GetMapping
-    ResponseEntity<List<ChatRoomSummaryDto>> getMyChatRooms();
+    ResponseEntity<List<ChatRoomSummaryDto>> getMyChatRooms(
+            @CurrentEmail String email
+    );
 
     @Operation(summary = "메시지 조회", description = "해당 채팅방의 채팅 메시지들을 조회합니다.")
     @GetMapping("/{roomId}/messages")
     ResponseEntity<List<ChatMessageResDto>> getMessages(
+            @CurrentEmail String email,
             @PathVariable Long roomId
     );
 
     @Operation(summary = "메시지 조회", description = "해당 채팅방의 채팅 메시지들을 읽음 처리합니다.")
     @GetMapping("/{roomId}/messages")
     ResponseEntity<Void> markMessagesAsRead(
+            @CurrentEmail String email,
             @PathVariable Long roomId
     );
 
     @Operation(summary = "채팅방 나가기", description = "해당 채팅방에서 나갑니다.")
     @PostMapping("/{roomId}/exit")
     ResponseEntity<Void> leaveChatRoom(
+            @CurrentEmail String email,
             @PathVariable Long roomId
     );
 
