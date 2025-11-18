@@ -1,0 +1,35 @@
+package com.souf.soufwebsite.domain.recruit.contract.service;
+
+import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.file.dto.MediaResDto;
+import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
+import com.souf.soufwebsite.domain.recruit.contract.dto.req.BeneficiaryReqDto;
+import com.souf.soufwebsite.domain.recruit.contract.dto.req.JoinByInviteReqDto;
+import com.souf.soufwebsite.domain.recruit.contract.dto.req.OrdererReqDto;
+import com.souf.soufwebsite.domain.recruit.contract.dto.res.CreateInitialContractResDto;
+import com.souf.soufwebsite.domain.recruit.contract.dto.res.InitialContractResDto;
+import com.souf.soufwebsite.domain.recruit.contract.dto.res.PreviewBeneficiaryInfoRes;
+import com.souf.soufwebsite.domain.recruit.contract.dto.res.PreviewOrdererInfoRes;
+
+public interface ContractService {
+
+    CreateInitialContractResDto createContractWithOrderer(String email, Long roomId, OrdererReqDto ordererReqDto);
+
+    PresignedUrlResDto uploadFinalContractMedia(String email, Long roomId, MediaReqDto reqDto);
+
+    PreviewOrdererInfoRes previewOrdererInfo(String email, Long currentChatRoomId);
+
+    PreviewBeneficiaryInfoRes previewBeneficiaryInfo(String email, JoinByInviteReqDto reqDto, Long currentChatRoomId);
+
+    InitialContractResDto getIncompleteContractInfo(String email, JoinByInviteReqDto reqDto, Long currentChatRoomId);
+
+    String acceptContractByInvite(String email, Long chatroomId, BeneficiaryReqDto beneficiaryReqDto);
+
+    MediaResDto getSignedContractPdfInChatRoom(String email, Long currentChatRoomId);
+    /*
+    1. 발주자 계약서 데이터 받아 검증 후 저장 API
+    2. 발주자 계약서 데이터 조회 API(계약서 데이터와 통합)
+    3. 수급자 계약서 데이터 받아 검증 후 기존 엔티티 저장 API
+    4. 승인 상태 되면 이벤트 발생시켜 API Gateway 호출 후 계약서 PDF 데이터 받아오기
+     */
+}

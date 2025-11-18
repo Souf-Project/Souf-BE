@@ -13,5 +13,6 @@ public enum PostType {
     REVIEW,
     INQUIRY,
     LOGO,
-    AUTHENTICATION
+    AUTHENTICATION,
+    CONTRACT
 }
