@@ -22,8 +22,9 @@ import java.util.Set;
 public class FeedScheduledService {
 
     private final FeedRepository feedRepository;
-    private final CacheManager cacheManager;
     private final FeedConverter feedConverter;
+    private final FeedCacheService feedCacheService;
+    private final CacheManager cacheManager;
     private final StringRedisTemplate redisTemplate;
 
     public static final String WEEKLY_ZSET = "feed:views:weekly:";
@@ -84,24 +85,42 @@ public class FeedScheduledService {
         log.info("누적 조회수 DB에 반영 완료");
     }
 
-    @Transactional
-    public void refreshPopularFeeds() {
-        Cache cache = cacheManager.getCache("popularFeeds");
-        if (cache == null) {
-            log.error("popularFeeds 캐시가 설정되지 않았습니다.");
-            return;
-        }
-
-        List<Feed> popularFeeds = feedRepository.findTop6ByOrderByWeeklyViewCountDesc();
-        List<FeedSimpleResDto> result = popularFeeds.stream()
-                .map(feedConverter::getFeedSimpleResDto)
-                .toList();
-        cache.put("feed:popular", result);
-
-        log.info("인기 피드 캐싱 완료");
-    }
-
 //    private String buildKey(Pageable pageable) {
 //        return "page:" + pageable.getPageNumber() + ":" + pageable.getPageSize();
 //    }
+
+    @SuppressWarnings("unchecked")
+    public void patchOne(Long feedId) {
+        Cache cache = cacheManager.getCache("popularFeeds");
+        if (cache == null) return;
+
+        Cache.ValueWrapper wrapper = cache.get("feed:popular");
+        if (wrapper == null) { feedCacheService.refreshPopularFeeds(); return; }
+
+        List<FeedSimpleResDto> cached = (List<FeedSimpleResDto>) wrapper.get();
+        if (cached == null || cached.isEmpty()) { feedCacheService.refreshPopularFeeds(); return; }
+
+        Feed updated = feedRepository.findById(feedId).orElse(null);
+        if (updated == null) { feedCacheService.refreshPopularFeeds(); return; }
+
+        FeedSimpleResDto newDto = feedConverter.getFeedSimpleResDto(updated);
+
+        List<FeedSimpleResDto> patched = cached.stream()
+                .map(d -> d.feedId().equals(feedId) ? newDto : d)
+                .toList();
+
+        cache.put("feed:popular", patched);
+    }
+
+    @SuppressWarnings("unchecked")
+    public boolean cacheContains(Long feedId) {
+        Cache cache = cacheManager.getCache("popularFeeds");
+        if (cache == null) return false;
+
+        Cache.ValueWrapper w = cache.get("feed:popular");
+        if (w == null || w.get() == null) return false;
+
+        List<FeedSimpleResDto> list = (List<FeedSimpleResDto>) w.get();
+        return list.stream().anyMatch(d -> d.feedId().equals(feedId));
+    }
 }

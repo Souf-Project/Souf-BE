@@ -5,6 +5,7 @@ import com.souf.soufwebsite.domain.feed.dto.*;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.entity.FeedCategoryMapping;
 import com.souf.soufwebsite.domain.feed.entity.LikedFeed;
+import com.souf.soufwebsite.domain.feed.event.FeedChangedEvent;
 import com.souf.soufwebsite.domain.feed.exception.AlreadyExistsFeedLikeException;
 import com.souf.soufwebsite.domain.feed.exception.NotExistsFeedLikeException;
 import com.souf.soufwebsite.domain.feed.exception.NotFoundFeedException;
@@ -35,12 +36,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
 
@@ -64,6 +68,8 @@ public class FeedServiceImpl implements FeedService {
     private final MediaCleanupHelper mediaCleanupHelper;
 
     private final StringRedisTemplate stringRedisTemplate;
+
+    private final ApplicationEventPublisher publisher;
 
     public static final String TOTAL_HASH = "feed:views:total:";
 
@@ -167,6 +173,18 @@ public class FeedServiceImpl implements FeedService {
 //                feed
 //        );
 
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                publisher.publishEvent(
+                        new FeedChangedEvent(
+                                feed.getId(),
+                                FeedChangedEvent.ChangeType.CONTENT_UPDATED
+                        )
+                );
+            }
+        });
+
         return new FeedResDto(feed.getId(), presignedUrlResDtos, videoDto);
     }
 
@@ -189,6 +207,17 @@ public class FeedServiceImpl implements FeedService {
 //        );
         mediaCleanupPublisher.publish(PostType.FEED, feedId);
 
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                publisher.publishEvent(
+                        new FeedChangedEvent(
+                                feed.getId(),
+                                FeedChangedEvent.ChangeType.DELETED
+                        )
+                );
+            }
+        });
     }
 
 
@@ -201,10 +230,9 @@ public class FeedServiceImpl implements FeedService {
         List<Feed> popularFeeds = feedRepository.findTop6ByOrderByWeeklyViewCountDesc();
 
         log.info("피드 서비스 로직 실행");
-
-         return popularFeeds.stream()
-                 .map(feedConverter::getFeedSimpleResDto)
-                 .toList();
+        return popularFeeds.stream()
+                .map(feedConverter::getFeedSimpleResDto)
+                .toList();
     }
 
     @Transactional(readOnly = true)
