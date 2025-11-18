@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.chat.entity;
 
+import com.souf.soufwebsite.domain.application.entity.Application;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
@@ -19,6 +20,10 @@ public class ChatRoom extends BaseEntity {
     @Column(name = "chatroom_Id")
     private Long id;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "application_id")
+    private Application application;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sender_id", nullable = false)
     private Member sender;
@@ -27,9 +32,12 @@ public class ChatRoom extends BaseEntity {
     @JoinColumn(name = "receiver_id", nullable = false)
     private Member receiver;
 
-    public ChatRoom(Member sender, Member receiver) {
+    public ChatRoom(Member sender, Member receiver, Application application) {
         this.sender = sender;
         this.receiver = receiver;
+        this.application = application;
+
+        application.addChatRoom(this);
     }
 
     public boolean hasParticipant(Member member) {
