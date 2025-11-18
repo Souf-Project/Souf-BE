@@ -77,6 +77,15 @@ public class FileService {
         return mediaList;
     }
 
+    public Media uploadSingleMedia(String url, PostType postType, Long postId){
+
+        String filename = url.substring(url.lastIndexOf("/")+1);
+        Media media = Media.of(url, filename, MediaType.PDF, postType, postId);
+        mediaRepository.save(media);
+
+        return media;
+    }
+
     public String getMediaUrl(PostType postType, Long postId){
         List<Media> byPostTypeAndPostId = mediaRepository.findByPostTypeAndPostId(postType, postId);
         return byPostTypeAndPostId.isEmpty() ? "" : byPostTypeAndPostId.get(0).getOriginalUrl();

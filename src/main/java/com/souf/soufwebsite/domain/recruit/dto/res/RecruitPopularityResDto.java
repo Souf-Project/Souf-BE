@@ -2,6 +2,7 @@ package com.souf.soufwebsite.domain.recruit.dto.res;
 
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
@@ -33,7 +34,8 @@ public record RecruitPopularityResDto(
     }
 
     private static long leftDays(LocalDateTime deadline) {
-        LocalDateTime now = LocalDateTime.now();
-        return ChronoUnit.DAYS.between(deadline, now);
+        LocalDate deadlineLocalDate = deadline.toLocalDate();
+        LocalDate now = LocalDate.now();
+        return ChronoUnit.DAYS.between(now, deadlineLocalDate);
     }
 }

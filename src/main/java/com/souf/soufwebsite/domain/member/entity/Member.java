@@ -194,7 +194,7 @@ public class Member extends BaseEntity {
     }
 
     public void softDelete() { // SHA-256 같은 방식
-        this.email = "deleted:" + HashUtils.sha256(this.email);
+        this.email = "deleted:" + + this.id + ":" + HashUtils.sha256(this.email);
         this.username = "탈퇴한 회원";
         this.intro = "탈퇴한 회원입니다.";
         this.personalUrl = null;
