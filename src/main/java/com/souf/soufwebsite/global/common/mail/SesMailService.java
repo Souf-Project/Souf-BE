@@ -42,7 +42,7 @@ public class SesMailService {
             data.put("totalApplicant", String.valueOf(totalApplicant));
 
             SendTemplatedEmailRequest request = templateUtil
-                    .createSendTemplatedEmailRequest(to, "SouFApplyProgressionTemplate", data);
+                    .createSendTemplatedEmailRequest(to, "SouF_ApplicantAdded_ko", data);
 
             emailService.sendTemplatedEmail(request);
             log.info("{}에게 진행현황이 성공적으로 전송되었습니다.", to);

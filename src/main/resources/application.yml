@@ -53,6 +53,8 @@ cloud:
       security-group: ${SECURITY_GROUP}
     sqs:
       enabled: true
+    lambda:
+      name: ${CONTRACT_LAMBDA}
 
 websocket:
   relay:

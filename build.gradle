@@ -48,6 +48,9 @@ dependencies {
     implementation platform("software.amazon.awssdk:bom:2.32.14") // or 최신
     implementation 'software.amazon.awssdk:s3'
 
+    // aws lambda
+    implementation "software.amazon.awssdk:lambda"
+
     // Querydsl 추가 (Spring boot 3.x 이상)
     implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
     annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
