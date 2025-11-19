@@ -21,6 +21,7 @@ import org.hibernate.annotations.Where;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Entity
@@ -195,14 +196,31 @@ public class Member extends BaseEntity {
 
     public void softDelete() { // SHA-256 같은 방식
         this.email = "deleted:" + + this.id + ":" + HashUtils.sha256(this.email);
+        this.password = "DELETED_" + UUID.randomUUID();
         this.username = "탈퇴한 회원";
+        this.nickname = "탈퇴한 회원" + UUID.randomUUID().toString().substring(0, 8);
         this.intro = "탈퇴한 회원입니다.";
         this.personalUrl = null;
         this.phoneNumber = null;
-        this.isDeleted = true;
+        this.socialAccounts.clear();
+        this.clearCategories();
+
+        if (this.studentProfile != null) {
+            this.studentProfile.softDelete();
+        }
+        if (this.companyProfile != null) {
+            this.companyProfile.softDelete();
+        }
+        if (this.clubProfile != null) {
+            this.clubProfile.softDelete();
+        }
+
 
         new ArrayList<>(enrollmentAsStudent).forEach(MemberClubMapping::softDelete);
         new ArrayList<>(enrollmentAsClub).forEach(MemberClubMapping::softDelete);
+
+
+        this.isDeleted = true;
     }
 
     public void attachStudentProfile(StudentProfile profile) {

@@ -4,10 +4,12 @@ import com.souf.soufwebsite.domain.member.dto.reqDto.addInfo.AddStudentInfoReqDt
 import com.souf.soufwebsite.domain.member.dto.reqDto.signup.StudentSignupReqDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.common.BaseEntity;
+import com.souf.soufwebsite.global.util.HashUtils;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Where;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +18,7 @@ import java.util.List;
 @Entity
 @Table(name = "student_profiles")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Where(clause = "is_deleted = false")
 public class StudentProfile extends BaseEntity {
 
     @Id
@@ -38,6 +41,9 @@ public class StudentProfile extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
+
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
 
     public StudentProfile(StudentSignupReqDto reqDto) {
         this.schoolName = reqDto.getSchoolName();
@@ -64,6 +70,12 @@ public class StudentProfile extends BaseEntity {
         this.schoolName = req.schoolName();
         this.educationType = req.educationType();
         this.schoolEmail = req.schoolEmail();
+    }
 
+    public void softDelete(){
+        this.schoolName = "탈퇴한 회원";
+        this.schoolEmail = "deleted:" + + this.id + ":" + HashUtils.sha256(this.schoolEmail);
+        this.specialties.clear();
+        this.isDeleted = true;
     }
 }

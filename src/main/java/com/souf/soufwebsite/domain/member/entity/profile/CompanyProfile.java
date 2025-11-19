@@ -8,11 +8,13 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Where;
 
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "company_profiles")
+@Where(clause = "is_deleted = false")
 public class CompanyProfile extends BaseEntity {
 
     @Id
@@ -44,6 +46,9 @@ public class CompanyProfile extends BaseEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
+
     public CompanyProfile(CompanySignupReqDto reqDto){
         this.companyName = reqDto.getCompanyName();
         this.businessRegistrationNumber = reqDto.getBusinessRegistrationNumber();
@@ -66,5 +71,16 @@ public class CompanyProfile extends BaseEntity {
 
     public void attachMember(Member member) {
         this.member = member;
+    }
+
+    public void softDelete(){
+        this.companyName = "탈퇴한 회원";
+        this.businessRegistrationNumber = "탈퇴한 회원";
+        this.zipCode = "탈퇴한 회원";
+        this.roadNameAddress = "탈퇴한 회원";
+        this.detailedAddress = "탈퇴한 회원";
+        this.businessStatus = "탈퇴한 회원";
+        this.businessClassification = "탈퇴한 회원";
+        this.isDeleted = true;
     }
 }
