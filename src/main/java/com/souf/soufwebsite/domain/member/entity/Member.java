@@ -198,6 +198,7 @@ public class Member extends BaseEntity {
         this.username = "탈퇴한 회원";
         this.intro = "탈퇴한 회원입니다.";
         this.personalUrl = null;
+        this.phoneNumber = null;
         this.isDeleted = true;
 
         new ArrayList<>(enrollmentAsStudent).forEach(MemberClubMapping::softDelete);
