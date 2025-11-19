@@ -5,13 +5,13 @@ import com.souf.soufwebsite.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 @Getter
 @Entity
 @Table(name = "club_profiles")
 @NoArgsConstructor
-@Where(clause = "is_deleted = false")
+@SQLRestriction("is_deleted = false")
 public class ClubProfile {
 
     @Id

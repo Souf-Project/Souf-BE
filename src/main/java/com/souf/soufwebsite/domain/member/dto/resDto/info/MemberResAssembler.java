@@ -4,7 +4,6 @@ package com.souf.soufwebsite.domain.member.dto.resDto.info;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
 import com.souf.soufwebsite.domain.member.entity.profile.CompanyProfile;
-import com.souf.soufwebsite.domain.member.entity.profile.Specialty;
 import com.souf.soufwebsite.domain.member.entity.profile.StudentProfile;
 import org.springframework.stereotype.Component;
 

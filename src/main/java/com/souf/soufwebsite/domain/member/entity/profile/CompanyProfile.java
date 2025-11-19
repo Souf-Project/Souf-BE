@@ -8,13 +8,13 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "company_profiles")
-@Where(clause = "is_deleted = false")
+@SQLRestriction("is_deleted = false")
 public class CompanyProfile extends BaseEntity {
 
     @Id

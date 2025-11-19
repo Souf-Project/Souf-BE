@@ -18,7 +18,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ import java.util.UUID;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Where(clause = "is_deleted = false")
+@SQLRestriction("is_deleted = false")
 public class Member extends BaseEntity {
 
     @Id
@@ -104,11 +104,9 @@ public class Member extends BaseEntity {
 
     // === 다대다(자기참조) 연결 ===
     @OneToMany(mappedBy = "student", cascade = CascadeType.PERSIST)
-    @Where(clause = "is_deleted = false")
     private List<MemberClubMapping> enrollmentAsStudent = new ArrayList<>();
 
     @OneToMany(mappedBy = "club", cascade = CascadeType.PERSIST)
-    @Where(clause = "is_deleted = false")
     private List<MemberClubMapping> enrollmentAsClub = new ArrayList<>();
 
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
