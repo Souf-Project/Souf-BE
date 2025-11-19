@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -98,6 +100,9 @@ public class Contract extends BaseEntity {
     @Version
     private Long version;
 
+    @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ContractChatRoom> chatRooms = new ArrayList<>();
+
     public Contract(OrdererReqDto ordererReqDto, Long roomId, Member orderer, Member beneficiary) {
         this.contractUuid = makeContractNo();
         this.roomId = roomId;
@@ -138,6 +143,10 @@ public class Contract extends BaseEntity {
     public void attachProject(Project project) {
         this.project = project;
         project.attachContract(this);
+    }
+
+    public void addContractChatRoom(ContractChatRoom contractChatRoom) {
+        this.chatRooms.add(contractChatRoom);
     }
 
     private String combineBanknameAndAccount(String bankName, String account) {
