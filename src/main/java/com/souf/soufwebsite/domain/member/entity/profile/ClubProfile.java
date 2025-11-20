@@ -36,7 +36,10 @@ public class ClubProfile {
     }
 
     public void softDelete() {
-        this.clubAuthenticationMethod = null;
         this.isDeleted = true;
+    }
+
+    public void anonymize() {
+        this.clubAuthenticationMethod = "DELETED_CLUB_" + this.id;
     }
 }

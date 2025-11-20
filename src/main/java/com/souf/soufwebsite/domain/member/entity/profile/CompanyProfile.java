@@ -74,6 +74,10 @@ public class CompanyProfile extends BaseEntity {
     }
 
     public void softDelete(){
+        this.isDeleted = true;
+    }
+
+    public void anonymize() {
         this.companyName = "탈퇴한 회원";
         this.businessRegistrationNumber = "탈퇴한 회원";
         this.zipCode = "탈퇴한 회원";
@@ -81,6 +85,5 @@ public class CompanyProfile extends BaseEntity {
         this.detailedAddress = "탈퇴한 회원";
         this.businessStatus = "탈퇴한 회원";
         this.businessClassification = "탈퇴한 회원";
-        this.isDeleted = true;
     }
 }

@@ -196,16 +196,11 @@ public class Member extends BaseEntity {
         categories.clear();
     }
 
-    public void softDelete() { // SHA-256 같은 방식
-        this.email = "deleted:" + + this.id + ":" + HashUtils.sha256(this.email);
-        this.password = "DELETED_" + UUID.randomUUID();
-        this.username = "탈퇴한 회원";
-        this.nickname = "탈퇴한 회원" + UUID.randomUUID().toString().substring(0, 8);
-        this.intro = "탈퇴한 회원입니다.";
-        this.personalUrl = null;
-        this.phoneNumber = null;
-        this.socialAccounts.clear();
-        this.clearCategories();
+    public void softDelete() {
+        this.isDeleted = true;
+
+        enrollmentAsStudent.forEach(MemberClubMapping::softDelete);
+        enrollmentAsClub.forEach(MemberClubMapping::softDelete);
 
         if (this.studentProfile != null) {
             this.studentProfile.softDelete();
@@ -216,13 +211,28 @@ public class Member extends BaseEntity {
         if (this.clubProfile != null) {
             this.clubProfile.softDelete();
         }
+    }
 
+    public void annonymize() { // SHA-256 같은 방식
+        this.email = "deleted:" + + this.id + ":" + HashUtils.sha256(this.email);
+        this.password = "DELETED_" + UUID.randomUUID();
+        this.username = "탈퇴한 회원";
+        this.nickname = "탈퇴한 회원" + UUID.randomUUID().toString().substring(0, 8);
+        this.intro = null;
+        this.personalUrl = null;
+        this.phoneNumber = null;
+        this.socialAccounts.clear();
+        this.clearCategories();
 
-        new ArrayList<>(enrollmentAsStudent).forEach(MemberClubMapping::softDelete);
-        new ArrayList<>(enrollmentAsClub).forEach(MemberClubMapping::softDelete);
-
-
-        this.isDeleted = true;
+        if (this.studentProfile != null) {
+            this.studentProfile.anonymize();
+        }
+        if (this.companyProfile != null) {
+            this.companyProfile.anonymize();
+        }
+        if (this.clubProfile != null) {
+            this.clubProfile.anonymize();
+        }
     }
 
     public void attachStudentProfile(StudentProfile profile) {
