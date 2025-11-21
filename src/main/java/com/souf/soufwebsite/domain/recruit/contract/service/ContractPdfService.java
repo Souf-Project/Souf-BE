@@ -3,6 +3,7 @@ package com.souf.soufwebsite.domain.recruit.contract.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.service.FileService;
+import com.souf.soufwebsite.domain.recruit.contract.dto.res.CreateContractPdfResDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.res.lambda.LambdaPdfBody;
 import com.souf.soufwebsite.domain.recruit.contract.dto.res.lambda.LambdaWrapperRes;
 import com.souf.soufwebsite.domain.recruit.contract.entity.Contract;
@@ -35,7 +36,7 @@ public class ContractPdfService {
     private String contractFunctionName;
 
     @Transactional
-    public String generateContractPdf(Contract contract) {
+    public CreateContractPdfResDto generateContractPdf(Contract contract) {
 
         try {
             Map<String, Object> root = new LinkedHashMap<>();
@@ -153,7 +154,7 @@ public class ContractPdfService {
             Media contractMetadata = fileService.uploadSingleMedia(body.key(), PostType.CONTRACT, contract.getId());
             contract.completeCreatingContract();
 
-            return contractMetadata.getOriginalUrl();
+            return new CreateContractPdfResDto(contract.getId(), contractMetadata.getOriginalUrl());
 
         } catch (Exception e){
             log.error("계약서 생성 중 발생 : {}", e.getMessage());

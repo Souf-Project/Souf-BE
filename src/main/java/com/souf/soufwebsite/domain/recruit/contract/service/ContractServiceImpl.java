@@ -18,10 +18,7 @@ import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.BeneficiaryReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.JoinByInviteReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.OrdererReqDto;
-import com.souf.soufwebsite.domain.recruit.contract.dto.res.CreateInitialContractResDto;
-import com.souf.soufwebsite.domain.recruit.contract.dto.res.InitialContractResDto;
-import com.souf.soufwebsite.domain.recruit.contract.dto.res.PreviewBeneficiaryInfoRes;
-import com.souf.soufwebsite.domain.recruit.contract.dto.res.PreviewOrdererInfoRes;
+import com.souf.soufwebsite.domain.recruit.contract.dto.res.*;
 import com.souf.soufwebsite.domain.recruit.contract.entity.Contract;
 import com.souf.soufwebsite.domain.recruit.contract.entity.ContractInvite;
 import com.souf.soufwebsite.domain.recruit.contract.entity.ContractStatus;
@@ -64,6 +61,11 @@ public class ContractServiceImpl implements ContractService {
 
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(NotFoundChatRoomException::new);
         log.info("chatRoomId: {} and roomId: {}", chatRoom.getId(), roomId);
+
+        for(Contract c : chatRoom.getContracts()){
+            if(c.getContractStatus() != ContractStatus.SIGNED)
+                throw new AlreadyExistsProgressingContractException();
+        }
 
         if(!orderer.getId().equals(chatRoom.getSender().getId())) {
             throw new NotAcceptedMemberException();
@@ -160,7 +162,7 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     @Transactional
-    public String acceptContractByInvite(String email, Long chatroomId, BeneficiaryReqDto reqDto) {
+    public CreateContractPdfResDto acceptContractByInvite(String email, Long chatroomId, BeneficiaryReqDto reqDto) {
 
         Member currentBeneficiary = getCurrentMember(email);
 

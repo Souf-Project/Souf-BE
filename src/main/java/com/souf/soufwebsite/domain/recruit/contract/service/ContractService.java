@@ -6,10 +6,7 @@ import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.BeneficiaryReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.JoinByInviteReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.OrdererReqDto;
-import com.souf.soufwebsite.domain.recruit.contract.dto.res.CreateInitialContractResDto;
-import com.souf.soufwebsite.domain.recruit.contract.dto.res.InitialContractResDto;
-import com.souf.soufwebsite.domain.recruit.contract.dto.res.PreviewBeneficiaryInfoRes;
-import com.souf.soufwebsite.domain.recruit.contract.dto.res.PreviewOrdererInfoRes;
+import com.souf.soufwebsite.domain.recruit.contract.dto.res.*;
 
 public interface ContractService {
 
@@ -23,7 +20,7 @@ public interface ContractService {
 
     InitialContractResDto getIncompleteContractInfo(String email, JoinByInviteReqDto reqDto, Long currentChatRoomId);
 
-    String acceptContractByInvite(String email, Long chatroomId, BeneficiaryReqDto beneficiaryReqDto);
+    CreateContractPdfResDto acceptContractByInvite(String email, Long chatroomId, BeneficiaryReqDto beneficiaryReqDto);
 
     MediaResDto getSignedContractPdfInChatRoom(String email, Long currentChatRoomId);
     /*
