@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.recruit.contract.entity;
 
+import com.souf.soufwebsite.domain.chat.entity.ChatRoom;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.BeneficiaryReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.OrdererReqDto;
@@ -27,8 +28,9 @@ public class Contract extends BaseEntity {
     @Column(nullable = false, unique = true)
     private String contractUuid;
 
-    @Column(nullable = false)
-    private Long roomId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "chat_room_id", nullable = false)
+    private ChatRoom chatRoom;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "orderer_id", nullable = true)
@@ -98,9 +100,9 @@ public class Contract extends BaseEntity {
     @Version
     private Long version;
 
-    public Contract(OrdererReqDto ordererReqDto, Long roomId, Member orderer, Member beneficiary) {
+
+    public Contract(OrdererReqDto ordererReqDto, Member orderer, Member beneficiary, ChatRoom chatRoom) {
         this.contractUuid = makeContractNo();
-        this.roomId = roomId;
         this.ordererName = ordererReqDto.ordererPersonalInfoReqDto().ceoName();
         this.companyName = ordererReqDto.ordererPersonalInfoReqDto().companyName();
         this.businessRegistrationNumber = ordererReqDto.ordererPersonalInfoReqDto().businessRegistrationNumber();
@@ -115,6 +117,9 @@ public class Contract extends BaseEntity {
         this.orderer = orderer;
         this.beneficiary = beneficiary;
         this.contractStatus = ContractStatus.PENDING_COUNTERPART;
+        this.chatRoom = chatRoom;
+
+        chatRoom.addContract(this);
     }
 
     public void updateBeneficiaryInfo(BeneficiaryReqDto reqDto){
@@ -139,6 +144,7 @@ public class Contract extends BaseEntity {
         this.project = project;
         project.attachContract(this);
     }
+
 
     private String combineBanknameAndAccount(String bankName, String account) {
         return bankName + " " + account;

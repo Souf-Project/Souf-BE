@@ -69,15 +69,7 @@ public record OrdererReqDto(
 
         @Schema(description = "관할 법원을 기입해주세요. 기본값은 서울중앙지방법원으로 설정해주세요.", example = "서울중앙지방법원")
         @NotBlank(message = "관할법원은 필수입니다. 기본값: 서울중앙지방법원")
-        String competentCourt,
-
-        @Schema(description = "발주자 아이디를 입력해주세요.", example = "1")
-        @NotNull(message = "발주자 PK는 필수입니다.")
-        Long ordererId,
-
-        @Schema(description = "수급자 아이디를 입력해주세요.", example = "2")
-        @NotNull(message = "수급자 PK는 필수입니다.")
-        Long beneficiaryId
+        String competentCourt
 ) {
 
         @AssertTrue(message = "종료 날짜가 시작 날짜보다 빠를 수 없습니다.")
