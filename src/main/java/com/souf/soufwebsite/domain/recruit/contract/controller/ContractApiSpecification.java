@@ -6,10 +6,7 @@ import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.BeneficiaryReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.JoinByInviteReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.OrdererReqDto;
-import com.souf.soufwebsite.domain.recruit.contract.dto.res.CreateInitialContractResDto;
-import com.souf.soufwebsite.domain.recruit.contract.dto.res.InitialContractResDto;
-import com.souf.soufwebsite.domain.recruit.contract.dto.res.PreviewBeneficiaryInfoRes;
-import com.souf.soufwebsite.domain.recruit.contract.dto.res.PreviewOrdererInfoRes;
+import com.souf.soufwebsite.domain.recruit.contract.dto.res.*;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
@@ -61,13 +58,13 @@ public interface ContractApiSpecification {
 
     @Operation(summary = "계약서 생성", description = "수급자가 최종 정보를 확인하고 개인 정보를 기입한 후, 계약서를 생성합니다.")
     @PostMapping("/{roomId}/beneficiary")
-    SuccessResponse<String> createContract(
+    SuccessResponse<CreateContractPdfResDto> createContract(
             @PathVariable(name = "roomId") Long roomId,
             @CurrentEmail String email,
             @RequestBody BeneficiaryReqDto reqDto
     );
 
-    @Operation(summary = "서명된 계약서 조회", description = "최종 업로드한 계약서 pdf를 조회합니다.")
+    @Operation(summary = "계약서 pdf 조회", description = "최종 업로드한 계약서 pdf를 조회합니다.")
     @GetMapping("/{roomId}")
     SuccessResponse<MediaResDto> getSignedContractPdf(
             @CurrentEmail String email,
