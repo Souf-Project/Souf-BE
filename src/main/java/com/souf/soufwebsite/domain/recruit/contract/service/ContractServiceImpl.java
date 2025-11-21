@@ -65,6 +65,11 @@ public class ContractServiceImpl implements ContractService {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(NotFoundChatRoomException::new);
         log.info("chatRoomId: {} and roomId: {}", chatRoom.getId(), roomId);
 
+        for(Contract c : chatRoom.getContracts()){
+            if(c.getContractStatus() != ContractStatus.SIGNED)
+                throw new AlreadyExistsProgressingContractException();
+        }
+
         if(!orderer.getId().equals(chatRoom.getSender().getId())) {
             throw new NotAcceptedMemberException();
         }
