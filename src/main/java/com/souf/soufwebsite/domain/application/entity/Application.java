@@ -1,7 +1,6 @@
 package com.souf.soufwebsite.domain.application.entity;
 
 import com.souf.soufwebsite.domain.application.exception.OfferRequiredException;
-import com.souf.soufwebsite.domain.chat.entity.ChatRoom;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.recruit.entity.PricePolicy;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
@@ -30,9 +29,6 @@ public class Application extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "recruit_id", nullable = true)
     private Recruit recruit;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    private ChatRoom chatRoom;
 
     @Column
     private String priceOffer;
@@ -83,10 +79,6 @@ public class Application extends BaseEntity {
 
     public void reject() {
         this.status = ApplicationStatus.REJECTED;
-    }
-
-    public void addChatRoom(ChatRoom chatRoom) {
-        this.chatRoom = chatRoom;
     }
 
     @PrePersist

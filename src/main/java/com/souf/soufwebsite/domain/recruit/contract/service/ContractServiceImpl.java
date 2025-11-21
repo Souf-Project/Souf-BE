@@ -61,19 +61,18 @@ public class ContractServiceImpl implements ContractService {
     public CreateInitialContractResDto createContractWithOrderer(String email, Long roomId, OrdererReqDto ordererReqDto) {
 
         Member orderer = getCurrentMember(email);
-        if(!orderer.getId().equals(ordererReqDto.ordererId()))
-            throw new NotAcceptedMemberException();
 
-        Member beneficiary = findIfMemberExistsById(ordererReqDto.beneficiaryId());
-
-        ChatRoom chatRoom = findIfChatroomExists(orderer, beneficiary);
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(NotFoundChatRoomException::new);
         log.info("chatRoomId: {} and roomId: {}", chatRoom.getId(), roomId);
-        if(!chatRoom.getId().equals(roomId)){
-            throw new NotAcceptedChatroomException();
+
+        if(!orderer.getId().equals(chatRoom.getSender().getId())) {
+            throw new NotAcceptedMemberException();
         }
 
+        Member beneficiary = chatRoom.getReceiver();
+
         Project project = new Project(ordererReqDto);
-        Contract contract = new Contract(ordererReqDto, roomId, orderer, beneficiary);
+        Contract contract = new Contract(ordererReqDto, orderer, beneficiary, chatRoom);
 
         contract.attachProject(project);
 
@@ -128,7 +127,7 @@ public class ContractServiceImpl implements ContractService {
     }
 
     @Override
-    public PreviewBeneficiaryInfoRes previewBeneficiaryInfo(String email,JoinByInviteReqDto reqDto, Long currentChatRoomId) {
+    public PreviewBeneficiaryInfoRes previewBeneficiaryInfo(String email, JoinByInviteReqDto reqDto, Long currentChatRoomId) {
         Member currentMember = getCurrentMember(email);
         StudentProfile profile = null;
 

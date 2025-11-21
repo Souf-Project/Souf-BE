@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.recruit.contract.entity;
 
+import com.souf.soufwebsite.domain.chat.entity.ChatRoom;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.BeneficiaryReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.OrdererReqDto;
@@ -12,8 +13,6 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -29,8 +28,9 @@ public class Contract extends BaseEntity {
     @Column(nullable = false, unique = true)
     private String contractUuid;
 
-    @Column(nullable = false)
-    private Long roomId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "chat_room_id", nullable = false)
+    private ChatRoom chatRoom;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "orderer_id", nullable = true)
@@ -100,12 +100,9 @@ public class Contract extends BaseEntity {
     @Version
     private Long version;
 
-    @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ContractChatRoom> chatRooms = new ArrayList<>();
 
-    public Contract(OrdererReqDto ordererReqDto, Long roomId, Member orderer, Member beneficiary) {
+    public Contract(OrdererReqDto ordererReqDto, Member orderer, Member beneficiary, ChatRoom chatRoom) {
         this.contractUuid = makeContractNo();
-        this.roomId = roomId;
         this.ordererName = ordererReqDto.ordererPersonalInfoReqDto().ceoName();
         this.companyName = ordererReqDto.ordererPersonalInfoReqDto().companyName();
         this.businessRegistrationNumber = ordererReqDto.ordererPersonalInfoReqDto().businessRegistrationNumber();
@@ -120,6 +117,9 @@ public class Contract extends BaseEntity {
         this.orderer = orderer;
         this.beneficiary = beneficiary;
         this.contractStatus = ContractStatus.PENDING_COUNTERPART;
+        this.chatRoom = chatRoom;
+
+        chatRoom.addContract(this);
     }
 
     public void updateBeneficiaryInfo(BeneficiaryReqDto reqDto){
@@ -145,9 +145,6 @@ public class Contract extends BaseEntity {
         project.attachContract(this);
     }
 
-    public void addContractChatRoom(ContractChatRoom contractChatRoom) {
-        this.chatRooms.add(contractChatRoom);
-    }
 
     private String combineBanknameAndAccount(String bankName, String account) {
         return bankName + " " + account;
