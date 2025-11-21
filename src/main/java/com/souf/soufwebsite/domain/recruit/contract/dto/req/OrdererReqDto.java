@@ -79,7 +79,7 @@ public record OrdererReqDto(
 
         @AssertTrue(message = "진행일이 시작 날짜와 종료 날짜 사이 기간과 일치하지 않습니다.")
         public boolean isProgressingDaysMatch(){
-                long between = ChronoUnit.DAYS.between(projectStartDate, projectEndDate);
+                long between = ChronoUnit.DAYS.between(projectStartDate, projectEndDate) + 1;
                 return between == projectProgressingDays;
         }
 
