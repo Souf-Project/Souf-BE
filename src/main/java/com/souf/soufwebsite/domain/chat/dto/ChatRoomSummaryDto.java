@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 public record ChatRoomSummaryDto(
         Long roomId,
+        String inviteToken,
         String opponentNickname,
         String opponentProfileImageUrl,
         String lastMessage,

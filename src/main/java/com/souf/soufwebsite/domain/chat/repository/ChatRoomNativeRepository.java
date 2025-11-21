@@ -1,21 +1,32 @@
 package com.souf.soufwebsite.domain.chat.repository;
 
 import com.souf.soufwebsite.domain.chat.dto.ChatRoomSummaryDto;
+import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.entity.RoleType;
+import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
+import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.domain.recruit.contract.entity.ContractInvite;
+import com.souf.soufwebsite.domain.recruit.contract.repository.ContractInviteRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class ChatRoomNativeRepository {
 
     @PersistenceContext
     private final EntityManager em;
+
+    private final ContractInviteRepository contractInviteRepository;
+    private final MemberRepository memberRepository;
 
     public List<ChatRoomSummaryDto> getChatRoomSummaries(Long userId) {
         String sql = """
@@ -78,7 +89,8 @@ public class ChatRoomNativeRepository {
                     }
 
                     return new ChatRoomSummaryDto(
-                            ((Number) row[0]).longValue(),     // roomId
+                            ((Number) row[0]).longValue(),// roomId
+                            getInviteToken(((Number) row[0]).longValue(), userId),
                             (String) row[1],                   // opponentNickname
                             (String) row[2],                   // opponentProfileImageUrl
                             lastMessage,                   // lastMessage
@@ -87,6 +99,22 @@ public class ChatRoomNativeRepository {
                     );
                 })
                 .toList();
+    }
+
+    private String getInviteToken(Long roomId, Long memberId) {
+        String result = "";
+
+        log.info("roomId: {}", roomId);
+        Member member = memberRepository.findById(memberId).orElseThrow(NotFoundMemberException::new);
+        if(member.getRole() == RoleType.STUDENT){
+            ContractInvite contractInvite = contractInviteRepository.findByChatRoomIdAndBeneficiaryIdAndIsConsumedIsNull(roomId, memberId)
+                    .orElse(null);
+            if(contractInvite != null) {
+                result = contractInvite.getToken();
+            }
+        }
+
+        return result;
     }
 
 

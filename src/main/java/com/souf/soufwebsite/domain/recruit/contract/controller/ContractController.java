@@ -63,7 +63,7 @@ public class ContractController implements ContractApiSpecification{
     public SuccessResponse<PreviewBeneficiaryInfoRes> previewBeneficiaryInfo(
             @PathVariable(name = "roomId") Long roomId,
             @CurrentEmail String email,
-            @Valid @RequestBody JoinByInviteReqDto reqDto
+            @Valid @ModelAttribute JoinByInviteReqDto reqDto
     ) {
 
         PreviewBeneficiaryInfoRes result = contractService.previewBeneficiaryInfo(email, reqDto, roomId);
