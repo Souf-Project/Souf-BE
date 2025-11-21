@@ -170,7 +170,7 @@ public class Member extends BaseEntity {
             }
         }
 
-        if (this.categories.size() > 3) {
+        if (this.categories.size() >= 3) {
             throw new NotExceedCategoryLimitException();
         }
         this.categories.add(mapping);
@@ -213,8 +213,8 @@ public class Member extends BaseEntity {
         }
     }
 
-    public void annonymize() { // SHA-256 같은 방식
-        this.email = "deleted:" + + this.id + ":" + HashUtils.sha256(this.email);
+    public void anonymize() { // SHA-256 같은 방식
+        this.email = "deleted:" + this.id + ":" + HashUtils.sha256(this.email);
         this.password = "DELETED_" + UUID.randomUUID();
         this.username = "탈퇴한 회원";
         this.nickname = "탈퇴한 회원" + UUID.randomUUID().toString().substring(0, 8);
