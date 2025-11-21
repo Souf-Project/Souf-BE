@@ -93,8 +93,8 @@ public class ContractServiceImpl implements ContractService {
     public PresignedUrlResDto uploadFinalContractMedia(String email, Long roomId, MediaReqDto reqDto) {
         Member currentMember = getCurrentMember(email);
 
-        chatRoomRepository.findByIdAndSender(roomId, currentMember).orElseThrow(NotFoundChatRoomException::new);
-        Contract contract = contractRepository.findByRoomId(roomId).orElseThrow(NotFoundContractException::new);
+        ChatRoom chatRoom = chatRoomRepository.findByIdAndSender(roomId, currentMember).orElseThrow(NotFoundChatRoomException::new);
+        Contract contract = contractRepository.findByChatRoom(chatRoom).orElseThrow(NotFoundContractException::new);
         if(contract.getContractStatus() == ContractStatus.SIGNED){
             throw new AlreadySignedContractException();
         }
@@ -190,7 +190,7 @@ public class ContractServiceImpl implements ContractService {
         Member currentMember = getCurrentMember(email);
 
         ChatRoom chatRoom = chatRoomRepository.findByMember(currentChatRoomId, currentMember).orElseThrow(NotFoundChatRoomException::new);
-        Contract contract = contractRepository.findByRoomId(chatRoom.getId()).orElseThrow(NotFoundContractException::new);
+        Contract contract = contractRepository.findByChatRoom(chatRoom).orElseThrow(NotFoundContractException::new);
 
         List<Media> contractMetadata = mediaRepository.findByPostTypeAndPostId(PostType.CONTRACT, contract.getId());
         Media media;
