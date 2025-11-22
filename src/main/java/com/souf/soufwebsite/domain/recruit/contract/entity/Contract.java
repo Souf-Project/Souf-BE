@@ -94,6 +94,7 @@ public class Contract extends BaseEntity {
     @Column(nullable = false)
     private String competentCourt;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ContractStatus contractStatus;
 
