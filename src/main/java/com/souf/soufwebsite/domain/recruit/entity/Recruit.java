@@ -15,6 +15,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import java.util.List;
 @Getter
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("is_deleted = false")
 public class Recruit extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -93,6 +95,9 @@ public class Recruit extends BaseEntity {
 
     @Column
     private boolean isTaskCompleted; // 작업 완료 여부
+
+    @Column(nullable = false)
+    private boolean isDeleted = false;
 
     @Builder.Default
     @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -170,6 +175,12 @@ public class Recruit extends BaseEntity {
 
     public void updateRecruitable() {
         this.recruitable = false;
+    }
+
+    public void softDeleteByOwner() {
+        this.isDeleted = true;
+        this.title = "삭제된 게시글";
+        this.content = "탈퇴한 회원의 게시글입니다.";
     }
 
     // ====== 정책 검증 ======

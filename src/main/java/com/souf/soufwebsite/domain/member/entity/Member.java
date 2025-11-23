@@ -76,7 +76,7 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     private double temperature;
 
-    @Column(name = "is_deleted", nullable = false)
+    @Column(nullable = false)
     private boolean isDeleted = false;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
