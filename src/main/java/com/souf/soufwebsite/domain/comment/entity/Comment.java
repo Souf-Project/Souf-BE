@@ -34,9 +34,6 @@ public class Comment extends BaseEntity {
     @Column
     private Long commentGroup; // 대댓글을 위한 댓글 ID
 
-    @Column(nullable = false)
-    private final String isDeleted = "no";
-
     public Comment(Member writer, String content, Long author, Feed feed, Long commentGroup) {
         this.writer = writer;
         this.content = content;
@@ -47,5 +44,10 @@ public class Comment extends BaseEntity {
 
     public void updateContent(String content) {
         this.content = content;
+    }
+
+    /** 작성자 탈퇴 시 댓글 익명화 */
+    public void anonymize() {
+        this.content = "탈퇴한 회원의 게시글입니다.";
     }
 }

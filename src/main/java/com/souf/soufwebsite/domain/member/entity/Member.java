@@ -1,10 +1,12 @@
 package com.souf.soufwebsite.domain.member.entity;
 
+import com.souf.soufwebsite.domain.comment.entity.Comment;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.member.dto.reqDto.UpdateReqDto;
 import com.souf.soufwebsite.domain.member.entity.profile.ClubProfile;
 import com.souf.soufwebsite.domain.member.entity.profile.CompanyProfile;
 import com.souf.soufwebsite.domain.member.entity.profile.StudentProfile;
+import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.socialAccount.entity.SocialAccount;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
@@ -84,6 +86,12 @@ public class Member extends BaseEntity {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Feed> feeds = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<Recruit> recruits = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<Comment> comments = new ArrayList<>();
 
     @Column(nullable = false)
     private boolean isSuitableAged = false;
@@ -199,6 +207,16 @@ public class Member extends BaseEntity {
     public void softDelete() {
         this.isDeleted = true;
 
+        this.email = "deleted:" + this.id + ":" + HashUtils.sha256(this.email);
+        this.password = "DELETED_" + UUID.randomUUID();
+        this.username = "탈퇴한 회원";
+        this.nickname = "탈퇴한 회원" + UUID.randomUUID().toString().substring(0, 8);
+        this.intro = null;
+        this.personalUrl = null;
+        this.phoneNumber = null;
+        this.socialAccounts.clear();
+        this.clearCategories();
+
         enrollmentAsStudent.forEach(MemberClubMapping::softDelete);
         enrollmentAsClub.forEach(MemberClubMapping::softDelete);
 
@@ -211,28 +229,10 @@ public class Member extends BaseEntity {
         if (this.clubProfile != null) {
             this.clubProfile.softDelete();
         }
-    }
 
-    public void anonymize() { // SHA-256 같은 방식
-        this.email = "deleted:" + this.id + ":" + HashUtils.sha256(this.email);
-        this.password = "DELETED_" + UUID.randomUUID();
-        this.username = "탈퇴한 회원";
-        this.nickname = "탈퇴한 회원" + UUID.randomUUID().toString().substring(0, 8);
-        this.intro = null;
-        this.personalUrl = null;
-        this.phoneNumber = null;
-        this.socialAccounts.clear();
-        this.clearCategories();
-
-        if (this.studentProfile != null) {
-            this.studentProfile.anonymize();
-        }
-        if (this.companyProfile != null) {
-            this.companyProfile.anonymize();
-        }
-        if (this.clubProfile != null) {
-            this.clubProfile.anonymize();
-        }
+        feeds.forEach(Feed::softDeleteByOwner);
+        recruits.forEach(Recruit::softDeleteByOwner);
+        comments.forEach(Comment::anonymize);
     }
 
     public void attachStudentProfile(StudentProfile profile) {

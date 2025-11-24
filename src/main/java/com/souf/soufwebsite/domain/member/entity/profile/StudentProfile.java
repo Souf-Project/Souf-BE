@@ -75,9 +75,6 @@ public class StudentProfile extends BaseEntity {
     public void softDelete(){
         this.specialties.clear();
         this.isDeleted = true;
-    }
-
-    public void anonymize() {
         this.schoolName = "탈퇴한 회원";
         this.schoolEmail = "deleted:" + + this.id + ":" + HashUtils.sha256(this.schoolEmail);
     }
