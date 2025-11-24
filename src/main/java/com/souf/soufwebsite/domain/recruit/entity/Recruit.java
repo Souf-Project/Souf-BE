@@ -181,6 +181,7 @@ public class Recruit extends BaseEntity {
         this.isDeleted = true;
         this.title = "삭제된 게시글";
         this.content = "탈퇴한 회원의 게시글입니다.";
+        clearCategories();
     }
 
     // ====== 정책 검증 ======
