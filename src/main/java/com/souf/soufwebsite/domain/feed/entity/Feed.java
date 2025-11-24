@@ -97,6 +97,6 @@ public class Feed extends BaseEntity {
         this.isDeleted = true;
         this.topic = "삭제된 게시글";
         this.content = "탈퇴한 회원의 게시글입니다.";
-        clearCategories();
+        this.clearCategories();
     }
 }
