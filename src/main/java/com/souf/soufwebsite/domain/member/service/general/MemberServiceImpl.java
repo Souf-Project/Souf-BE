@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.member.service.general;
 
+import com.souf.soufwebsite.domain.member.exception.NotAddedInfoException;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.service.FileService;
@@ -148,6 +149,10 @@ public class MemberServiceImpl implements MemberService {
 
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(NotFoundMemberException::new);
+
+        if (member.getPhoneNumber() == null) {
+            throw new NotAddedInfoException();
+        }
 
         if(banService.isBanned(member.getId())){
             Optional<Duration> remaining = banService.remaining(member.getId());
