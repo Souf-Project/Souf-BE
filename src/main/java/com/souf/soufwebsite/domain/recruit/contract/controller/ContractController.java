@@ -1,7 +1,6 @@
 package com.souf.soufwebsite.domain.recruit.contract.controller;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
-import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.BeneficiaryReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.OrdererReqDto;
@@ -9,12 +8,12 @@ import com.souf.soufwebsite.domain.recruit.contract.dto.res.*;
 import com.souf.soufwebsite.domain.recruit.contract.service.ContractService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static com.souf.soufwebsite.domain.recruit.contract.controller.ContractSuccessMessage.*;
 
@@ -30,11 +29,10 @@ public class ContractController implements ContractApiSpecification{
     public SuccessResponse<CreateInitialContractResDto> createInitialContract(
             @PathVariable(name = "roomId") Long roomId,
             @CurrentEmail String email,
-            @Valid @RequestBody OrdererReqDto ordererReqDto,
-            HttpServletResponse response
+            @Valid @RequestBody OrdererReqDto ordererReqDto
     ){
 
-        CreateInitialContractResDto result = contractService.createContractWithOrderer(email, roomId, ordererReqDto, response);
+        CreateInitialContractResDto result = contractService.createContractWithOrderer(email, roomId, ordererReqDto);
 
         return new SuccessResponse<>(result, INITIAL_CONTRACT_CREATE.getMessage());
     }
@@ -63,11 +61,10 @@ public class ContractController implements ContractApiSpecification{
     @GetMapping("/{roomId}/beneficiary/preview")
     public SuccessResponse<PreviewBeneficiaryInfoRes> previewBeneficiaryInfo(
             @PathVariable(name = "roomId") Long roomId,
-            @CurrentEmail String email,
-            HttpServletRequest request
+            @CurrentEmail String email
     ) {
 
-        PreviewBeneficiaryInfoRes result = contractService.previewBeneficiaryInfo(email, request, roomId);
+        PreviewBeneficiaryInfoRes result = contractService.previewBeneficiaryInfo(email, roomId);
 
         return new SuccessResponse<>(result, PERSONAL_INFO_GET.getMessage());
     }
@@ -75,11 +72,10 @@ public class ContractController implements ContractApiSpecification{
     @PatchMapping("/{roomId}/beneficiary/preview/contract")
     public SuccessResponse<InitialContractResDto> previewInitialContract(
             @PathVariable(name = "roomId") Long roomId,
-            @CurrentEmail String email,
-            HttpServletRequest request
+            @CurrentEmail String email
     ) {
 
-        InitialContractResDto result = contractService.getIncompleteContractInfo(email, request, roomId);
+        InitialContractResDto result = contractService.getIncompleteContractInfo(email, roomId);
 
         return new SuccessResponse<>(result, INITIAL_CONTRACT_GET.getMessage());
     }
@@ -88,22 +84,20 @@ public class ContractController implements ContractApiSpecification{
     public SuccessResponse<CreateContractPdfResDto> createContract(
             @PathVariable(name = "roomId") Long roomId,
             @CurrentEmail String email,
-            @Valid @RequestBody BeneficiaryReqDto reqDto,
-            HttpServletRequest request,
-            HttpServletResponse response
+            @Valid @RequestBody BeneficiaryReqDto reqDto
     ) {
 
-        CreateContractPdfResDto result = contractService.acceptContractByInvite(email, roomId, reqDto, request, response);
+        CreateContractPdfResDto result = contractService.acceptContractByInvite(email, roomId, reqDto);
 
         return new SuccessResponse<>(result, COMPLETED_CONTRACT_CREATE.getMessage());
     }
 
     @GetMapping("/{roomId}")
-    public SuccessResponse<MediaResDto> getSignedContractPdf(
+    public SuccessResponse<List<SignedContractResDto>> getSignedContractPdf(
             @CurrentEmail String email,
             @PathVariable(name = "roomId") Long roomId
     ) {
-        MediaResDto result = contractService.getSignedContractPdfInChatRoom(email, roomId);
+        List<SignedContractResDto> result = contractService.getSignedContractPdfInChatRoom(email, roomId);
 
         return new SuccessResponse<>(result, COMPLETED_CONTRACT_GET.getMessage());
     }

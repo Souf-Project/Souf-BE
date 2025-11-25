@@ -1,29 +1,28 @@
 package com.souf.soufwebsite.domain.recruit.contract.service;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
-import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.BeneficiaryReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.OrdererReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.res.*;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+
+import java.util.List;
 
 public interface ContractService {
 
-    CreateInitialContractResDto createContractWithOrderer(String email, Long roomId, OrdererReqDto ordererReqDto, HttpServletResponse response);
+    CreateInitialContractResDto createContractWithOrderer(String email, Long roomId, OrdererReqDto ordererReqDto);
 
     PresignedUrlResDto uploadFinalContractMedia(String email, Long roomId, MediaReqDto reqDto);
 
     PreviewOrdererInfoRes previewOrdererInfo(String email, Long currentChatRoomId);
 
-    PreviewBeneficiaryInfoRes previewBeneficiaryInfo(String email, HttpServletRequest request, Long currentChatRoomId);
+    PreviewBeneficiaryInfoRes previewBeneficiaryInfo(String email, Long currentChatRoomId);
 
-    InitialContractResDto getIncompleteContractInfo(String email, HttpServletRequest request, Long currentChatRoomId);
+    InitialContractResDto getIncompleteContractInfo(String email, Long currentChatRoomId);
 
-    CreateContractPdfResDto acceptContractByInvite(String email, Long chatroomId, BeneficiaryReqDto beneficiaryReqDto, HttpServletRequest request, HttpServletResponse response);
+    CreateContractPdfResDto acceptContractByInvite(String email, Long chatroomId, BeneficiaryReqDto beneficiaryReqDto);
 
-    MediaResDto getSignedContractPdfInChatRoom(String email, Long currentChatRoomId);
+    List<SignedContractResDto> getSignedContractPdfInChatRoom(String email, Long currentChatRoomId);
     /*
     1. 발주자 계약서 데이터 받아 검증 후 저장 API
     2. 발주자 계약서 데이터 조회 API(계약서 데이터와 통합)
