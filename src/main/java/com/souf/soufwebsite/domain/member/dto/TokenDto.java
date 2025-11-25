@@ -12,6 +12,7 @@ public record TokenDto(
         String nickname,
         RoleType roleType,
         ApprovedStatus approvedStatus,
-        PresignedUrlResDto presignedUrlResDto
+        PresignedUrlResDto presignedUrlResDto,
+        String phoneNumber
 ) {
 }
