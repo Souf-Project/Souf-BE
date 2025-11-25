@@ -35,8 +35,7 @@ public enum ErrorType {
 
 
     // ----------------------------------- 기존 회원 대상 -----------------------------------
-    ALREADY_ADDED_INFO(400, "이미 추가 정보를 입력한 회원입니다.", "M400-10"),
-    NOT_ADDED_INFO(409, "추가 정보를 입력하지 않은 회원입니다.", "M409-2");
+    ALREADY_ADDED_INFO(400, "이미 추가 정보를 입력한 회원입니다.", "M400-10");
 
     private final int code;
     private final String message;
