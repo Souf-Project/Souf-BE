@@ -142,8 +142,8 @@ public class ContractServiceImpl implements ContractService {
     public InitialContractResDto getIncompleteContractInfo(String email, Long currentChatRoomId) {
         Member currentBeneficiary = getCurrentMember(email);
 
-        ChatRoom chatRoom = chatRoomRepository.findById(currentChatRoomId).orElseThrow(NotFoundChatRoomException::new);
-        Contract contract = contractRepository.findByBeneficiaryAndChatRoomAndContractStatus_PendingCounterpart(currentBeneficiary, chatRoom)
+        ChatRoom chatRoom = chatRoomRepository.findByIdAndReceiver(currentChatRoomId, currentBeneficiary).orElseThrow(NotFoundChatRoomException::new);
+        Contract contract = contractRepository.findByBeneficiaryAndChatRoomAndContractStatus_PendingCounterpart(currentBeneficiary, chatRoom, ContractStatus.PENDING_COUNTERPART)
                 .orElseThrow(NotFoundContractException::new);
 
         log.info("수급자가 계약서 {}를 조회하였습니다.", contract.getContractUuid());
@@ -160,7 +160,7 @@ public class ContractServiceImpl implements ContractService {
         Member currentBeneficiary = getCurrentMember(email);
 
         ChatRoom chatRoom = chatRoomRepository.findById(chatroomId).orElseThrow(NotFoundChatRoomException::new);
-        Contract currentContract = contractRepository.findByBeneficiaryAndChatRoomAndContractStatus_PendingCounterpart(currentBeneficiary, chatRoom)
+        Contract currentContract = contractRepository.findByBeneficiaryAndChatRoomAndContractStatus_PendingCounterpart(currentBeneficiary, chatRoom, ContractStatus.PENDING_COUNTERPART)
                 .orElseThrow(NotFoundContractException::new);
 
         validateContractStatus(currentContract);

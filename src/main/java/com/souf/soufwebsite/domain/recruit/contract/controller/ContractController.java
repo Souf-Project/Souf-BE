@@ -69,7 +69,7 @@ public class ContractController implements ContractApiSpecification{
         return new SuccessResponse<>(result, PERSONAL_INFO_GET.getMessage());
     }
 
-    @PatchMapping("/{roomId}/beneficiary/preview/contract")
+    @GetMapping("/{roomId}/beneficiary/preview/contract")
     public SuccessResponse<InitialContractResDto> previewInitialContract(
             @PathVariable(name = "roomId") Long roomId,
             @CurrentEmail String email
