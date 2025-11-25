@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.member.service.general;
 
+import com.souf.soufwebsite.domain.feed.repository.LikedFeedRepository;
 import com.souf.soufwebsite.domain.member.exception.NotAddedInfoException;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
@@ -78,6 +79,7 @@ public class MemberServiceImpl implements MemberService {
     private final SignupMapper signupMapper;
 
     private final AddInfoMapper addInfoMapper;
+    private final LikedFeedRepository likedFeedRepository;
 
     //회원가입
     @Transactional
@@ -435,6 +437,7 @@ public class MemberServiceImpl implements MemberService {
         member.softDelete();
         favoriteMemberRepository.deleteAllByFromMember(member);
         favoriteMemberRepository.deleteAllByToMember(member);
+        likedFeedRepository.deleteAllByMemberId(memberId);
 
 //        indexEventPublisherHelper.publishIndexEvent(
 //                EntityType.MEMBER,
