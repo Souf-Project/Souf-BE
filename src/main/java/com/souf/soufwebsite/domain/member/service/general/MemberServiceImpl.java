@@ -22,6 +22,7 @@ import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.exception.*;
 import com.souf.soufwebsite.domain.member.mapper.AddInfoMapper;
 import com.souf.soufwebsite.domain.member.mapper.SignupMapper;
+import com.souf.soufwebsite.domain.member.repository.FavoriteMemberRepository;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.report.exception.DeclaredMemberException;
 import com.souf.soufwebsite.domain.report.service.BanService;
@@ -67,11 +68,12 @@ public class MemberServiceImpl implements MemberService {
     private final PasswordEncoder passwordEncoder;
     private final FileService fileService;
     private final SlackService slackService;
+    private final CategoryService categoryService;
 
     private final SesMailService mailService;
     private final BanService banService;
 
-    private final CategoryService categoryService;
+    private final FavoriteMemberRepository favoriteMemberRepository;
 
     private final SignupMapper signupMapper;
 
@@ -431,6 +433,8 @@ public class MemberServiceImpl implements MemberService {
         redisTemplate.opsForValue().set(redisKey, "CanNotSignedUpFor7Days", 7, TimeUnit.DAYS);
 //        memberRepository.delete(member); // 탈퇴하면 삭제가 아닌 개인정보 들만 교체
         member.softDelete();
+        favoriteMemberRepository.deleteAllByFromMember(member);
+        favoriteMemberRepository.deleteAllByToMember(member);
 
 //        indexEventPublisherHelper.publishIndexEvent(
 //                EntityType.MEMBER,
