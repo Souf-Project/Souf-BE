@@ -4,23 +4,24 @@ import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.BeneficiaryReqDto;
-import com.souf.soufwebsite.domain.recruit.contract.dto.req.JoinByInviteReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.OrdererReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.res.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 public interface ContractService {
 
-    CreateInitialContractResDto createContractWithOrderer(String email, Long roomId, OrdererReqDto ordererReqDto);
+    CreateInitialContractResDto createContractWithOrderer(String email, Long roomId, OrdererReqDto ordererReqDto, HttpServletResponse response);
 
     PresignedUrlResDto uploadFinalContractMedia(String email, Long roomId, MediaReqDto reqDto);
 
     PreviewOrdererInfoRes previewOrdererInfo(String email, Long currentChatRoomId);
 
-    PreviewBeneficiaryInfoRes previewBeneficiaryInfo(String email, JoinByInviteReqDto reqDto, Long currentChatRoomId);
+    PreviewBeneficiaryInfoRes previewBeneficiaryInfo(String email, HttpServletRequest request, Long currentChatRoomId);
 
-    InitialContractResDto getIncompleteContractInfo(String email, JoinByInviteReqDto reqDto, Long currentChatRoomId);
+    InitialContractResDto getIncompleteContractInfo(String email, HttpServletRequest request, Long currentChatRoomId);
 
-    CreateContractPdfResDto acceptContractByInvite(String email, Long chatroomId, BeneficiaryReqDto beneficiaryReqDto);
+    CreateContractPdfResDto acceptContractByInvite(String email, Long chatroomId, BeneficiaryReqDto beneficiaryReqDto, HttpServletRequest request, HttpServletResponse response);
 
     MediaResDto getSignedContractPdfInChatRoom(String email, Long currentChatRoomId);
     /*

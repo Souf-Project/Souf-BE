@@ -16,7 +16,6 @@ import com.souf.soufwebsite.domain.member.entity.profile.StudentProfile;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.BeneficiaryReqDto;
-import com.souf.soufwebsite.domain.recruit.contract.dto.req.JoinByInviteReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.OrdererReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.res.*;
 import com.souf.soufwebsite.domain.recruit.contract.entity.Contract;
@@ -28,11 +27,17 @@ import com.souf.soufwebsite.domain.recruit.contract.repository.ContractInviteRep
 import com.souf.soufwebsite.domain.recruit.contract.repository.ContractRepository;
 import com.souf.soufwebsite.global.common.PostType;
 import com.souf.soufwebsite.global.util.TokenUtils;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -53,9 +58,12 @@ public class ContractServiceImpl implements ContractService {
 
     private final TokenUtils tokenUtils;
 
+    @Value("${spring.profiles.active}")
+    private String activeProfile;
+
     @Override
     @Transactional
-    public CreateInitialContractResDto createContractWithOrderer(String email, Long roomId, OrdererReqDto ordererReqDto) {
+    public CreateInitialContractResDto createContractWithOrderer(String email, Long roomId, OrdererReqDto ordererReqDto, HttpServletResponse response) {
 
         Member orderer = getCurrentMember(email);
 
@@ -87,7 +95,9 @@ public class ContractServiceImpl implements ContractService {
                 beneficiary.getId(), roomId, expireTime);
         contractInviteRepository.save(contractInvite);
 
-        return new CreateInitialContractResDto(contract.getContractUuid(), opaqueToken);
+        sendInviteToken(response, opaqueToken, expireTime.getEpochSecond());
+
+        return new CreateInitialContractResDto(contract.getContractUuid());
     }
 
     @Override
@@ -129,7 +139,7 @@ public class ContractServiceImpl implements ContractService {
     }
 
     @Override
-    public PreviewBeneficiaryInfoRes previewBeneficiaryInfo(String email, JoinByInviteReqDto reqDto, Long currentChatRoomId) {
+    public PreviewBeneficiaryInfoRes previewBeneficiaryInfo(String email, HttpServletRequest request, Long currentChatRoomId) {
         Member currentMember = getCurrentMember(email);
         StudentProfile profile = null;
 
@@ -137,17 +147,20 @@ public class ContractServiceImpl implements ContractService {
             profile = currentMember.getStudentProfile();
         }
 
-        findAndValidateContractInvite(reqDto.inviteToken(), currentChatRoomId, currentMember.getId());
+        String inviteToken = getInviteTokenFromHeader(request);
+
+        findAndValidateContractInvite(inviteToken, currentChatRoomId, currentMember.getId());
 
         return PreviewBeneficiaryInfoRes.of(currentMember, profile);
     }
 
     @Override
     @Transactional
-    public InitialContractResDto getIncompleteContractInfo(String email, JoinByInviteReqDto reqDto, Long currentChatRoomId) {
+    public InitialContractResDto getIncompleteContractInfo(String email, HttpServletRequest request, Long currentChatRoomId) {
         Member currentBeneficiary = getCurrentMember(email);
+        String inviteToken = getInviteTokenFromHeader(request);
 
-        ContractInvite currentContractInvite = findAndValidateContractInvite(reqDto.inviteToken(), currentChatRoomId, currentBeneficiary.getId());
+        ContractInvite currentContractInvite = findAndValidateContractInvite(inviteToken, currentChatRoomId, currentBeneficiary.getId());
 
         Contract contract = contractRepository
                 .findByContractUuid(currentContractInvite.getContractUuid()).orElseThrow(NotFoundContractException::new);
@@ -162,12 +175,14 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     @Transactional
-    public CreateContractPdfResDto acceptContractByInvite(String email, Long chatroomId, BeneficiaryReqDto reqDto) {
+    public CreateContractPdfResDto acceptContractByInvite(String email, Long chatroomId, BeneficiaryReqDto reqDto,
+                                                          HttpServletRequest request, HttpServletResponse response) {
 
         Member currentBeneficiary = getCurrentMember(email);
+        String inviteToken = getInviteTokenFromHeader(request);
 
         ContractInvite ci =
-                findAndValidateContractInvite(reqDto.inviteToken(), chatroomId, currentBeneficiary.getId());
+                findAndValidateContractInvite(inviteToken, chatroomId, currentBeneficiary.getId());
         ci.consume();
 
         Contract currentContract = contractRepository.findByContractUuid(ci.getContractUuid()).orElseThrow(NotFoundContractException::new);
@@ -240,5 +255,32 @@ public class ContractServiceImpl implements ContractService {
             throw new NotAcceptedMemberException();
 
         return ci;
+    }
+
+    private static String getInviteTokenFromHeader(HttpServletRequest request) {
+        if (request.getCookies() == null) throw new NotExistsInviteTokenException(); // 예외처리
+        for (Cookie cookie : request.getCookies()) {
+            if ("Invite-Token".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+
+        throw new NotExistsInviteTokenException();
+    }
+
+    private void sendInviteToken(HttpServletResponse res, String inviteToken, long inviteTokenExpiration) {
+        boolean isProd = "prod".equalsIgnoreCase(activeProfile);
+
+        String sameSite = isProd ? "None" : "Lax";
+
+        ResponseCookie cookie = ResponseCookie.from("InviteToken", inviteToken)
+                .httpOnly(true)
+                .secure(isProd)
+                .path("/")
+                .maxAge(Duration.ofMillis(inviteTokenExpiration))
+                .sameSite(sameSite)
+                .build();
+
+        res.addHeader("Set-Cookie", cookie.toString());
     }
 }
