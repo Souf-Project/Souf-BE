@@ -16,26 +16,24 @@ import com.souf.soufwebsite.domain.member.entity.profile.StudentProfile;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.BeneficiaryReqDto;
-import com.souf.soufwebsite.domain.recruit.contract.dto.req.JoinByInviteReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.req.OrdererReqDto;
 import com.souf.soufwebsite.domain.recruit.contract.dto.res.*;
 import com.souf.soufwebsite.domain.recruit.contract.entity.Contract;
-import com.souf.soufwebsite.domain.recruit.contract.entity.ContractInvite;
 import com.souf.soufwebsite.domain.recruit.contract.entity.ContractStatus;
 import com.souf.soufwebsite.domain.recruit.contract.entity.Project;
-import com.souf.soufwebsite.domain.recruit.contract.exception.*;
-import com.souf.soufwebsite.domain.recruit.contract.repository.ContractInviteRepository;
+import com.souf.soufwebsite.domain.recruit.contract.exception.AlreadyExistsProgressingContractException;
+import com.souf.soufwebsite.domain.recruit.contract.exception.AlreadySignedContractException;
+import com.souf.soufwebsite.domain.recruit.contract.exception.NotAcceptedMemberException;
+import com.souf.soufwebsite.domain.recruit.contract.exception.NotFoundContractException;
 import com.souf.soufwebsite.domain.recruit.contract.repository.ContractRepository;
 import com.souf.soufwebsite.global.common.PostType;
-import com.souf.soufwebsite.global.util.TokenUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -43,15 +41,12 @@ import java.util.List;
 public class ContractServiceImpl implements ContractService {
 
     private final ContractRepository contractRepository;
-    private final ContractInviteRepository contractInviteRepository;
     private final MemberRepository memberRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final MediaRepository mediaRepository;
 
     private final ContractPdfService contractPdfService;
     private final S3UploaderService s3UploaderService;
-
-    private final TokenUtils tokenUtils;
 
     @Override
     @Transactional
@@ -80,14 +75,14 @@ public class ContractServiceImpl implements ContractService {
 
         contractRepository.save(contract);
 
-        String opaqueToken = tokenUtils.newOpaqueToken(48);
-        Instant expireTime = Instant.now().plus(6, ChronoUnit.HOURS);
+//        String opaqueToken = tokenUtils.newOpaqueToken(48);
+//        Instant expireTime = Instant.now().plus(6, ChronoUnit.HOURS);
+//
+//        ContractInvite contractInvite = new ContractInvite(opaqueToken, contract.getContractUuid(),
+//                beneficiary.getId(), roomId, expireTime);
+//        contractInviteRepository.save(contractInvite);
 
-        ContractInvite contractInvite = new ContractInvite(opaqueToken, contract.getContractUuid(),
-                beneficiary.getId(), roomId, expireTime);
-        contractInviteRepository.save(contractInvite);
-
-        return new CreateInitialContractResDto(contract.getContractUuid(), opaqueToken);
+        return new CreateInitialContractResDto(contract.getContractUuid());
     }
 
     @Override
@@ -129,7 +124,7 @@ public class ContractServiceImpl implements ContractService {
     }
 
     @Override
-    public PreviewBeneficiaryInfoRes previewBeneficiaryInfo(String email, JoinByInviteReqDto reqDto, Long currentChatRoomId) {
+    public PreviewBeneficiaryInfoRes previewBeneficiaryInfo(String email, Long currentChatRoomId) {
         Member currentMember = getCurrentMember(email);
         StudentProfile profile = null;
 
@@ -137,23 +132,21 @@ public class ContractServiceImpl implements ContractService {
             profile = currentMember.getStudentProfile();
         }
 
-        findAndValidateContractInvite(reqDto.inviteToken(), currentChatRoomId, currentMember.getId());
+        findIfChatroomExists(currentMember, currentChatRoomId);
 
         return PreviewBeneficiaryInfoRes.of(currentMember, profile);
     }
 
     @Override
     @Transactional
-    public InitialContractResDto getIncompleteContractInfo(String email, JoinByInviteReqDto reqDto, Long currentChatRoomId) {
+    public InitialContractResDto getIncompleteContractInfo(String email, Long currentChatRoomId) {
         Member currentBeneficiary = getCurrentMember(email);
 
-        ContractInvite currentContractInvite = findAndValidateContractInvite(reqDto.inviteToken(), currentChatRoomId, currentBeneficiary.getId());
-
-        Contract contract = contractRepository
-                .findByContractUuid(currentContractInvite.getContractUuid()).orElseThrow(NotFoundContractException::new);
+        ChatRoom chatRoom = chatRoomRepository.findByIdAndReceiver(currentChatRoomId, currentBeneficiary).orElseThrow(NotFoundChatRoomException::new);
+        Contract contract = contractRepository.findByBeneficiaryAndChatRoomAndContractStatus_PendingCounterpart(currentBeneficiary, chatRoom, ContractStatus.PENDING_COUNTERPART)
+                .orElseThrow(NotFoundContractException::new);
 
         log.info("수급자가 계약서 {}를 조회하였습니다.", contract.getContractUuid());
-        currentContractInvite.updateViewTiming();
 
 
         return InitialContractResDto.of(contract, contract.getProject());
@@ -166,20 +159,11 @@ public class ContractServiceImpl implements ContractService {
 
         Member currentBeneficiary = getCurrentMember(email);
 
-        ContractInvite ci =
-                findAndValidateContractInvite(reqDto.inviteToken(), chatroomId, currentBeneficiary.getId());
-        ci.consume();
+        ChatRoom chatRoom = chatRoomRepository.findById(chatroomId).orElseThrow(NotFoundChatRoomException::new);
+        Contract currentContract = contractRepository.findByBeneficiaryAndChatRoomAndContractStatus_PendingCounterpart(currentBeneficiary, chatRoom, ContractStatus.PENDING_COUNTERPART)
+                .orElseThrow(NotFoundContractException::new);
 
-        Contract currentContract = contractRepository.findByContractUuid(ci.getContractUuid()).orElseThrow(NotFoundContractException::new);
-
-        if(!currentContract.getContractUuid().equals(ci.getContractUuid()))
-            throw new NotAcceptedContractException();
         validateContractStatus(currentContract);
-
-        if(!currentContract.getBeneficiary().equals(currentBeneficiary)) {
-            throw new NotAcceptedMemberException();
-        }
-
 
         currentContract.updateBeneficiaryInfo(reqDto);
 
@@ -188,26 +172,28 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     @Transactional(readOnly = true)
-    public MediaResDto getSignedContractPdfInChatRoom(String email, Long currentChatRoomId) {
+    public List<SignedContractResDto> getSignedContractPdfInChatRoom(String email, Long currentChatRoomId) {
         Member currentMember = getCurrentMember(email);
 
         ChatRoom chatRoom = chatRoomRepository.findByMember(currentChatRoomId, currentMember).orElseThrow(NotFoundChatRoomException::new);
-        Contract contract = contractRepository.findByChatRoom(chatRoom).orElseThrow(NotFoundContractException::new);
+        List<Contract> contracts = contractRepository.findByMember(chatRoom, currentMember);
 
-        List<Media> contractMetadata = mediaRepository.findByPostTypeAndPostId(PostType.CONTRACT, contract.getId());
-        Media media;
-        if(contractMetadata.isEmpty()){
-            throw new NotFoundMediaException();
-        }
-        media = contractMetadata.get(0);
+        return contracts.stream().map(
+                contract -> {
+                    List<Media> contractMetadata = mediaRepository.findByPostTypeAndPostId(PostType.CONTRACT, contract.getId());
+                    Media media;
+                    media = contractMetadata.get(0) == null ? null : contractMetadata.get(0);
+                    MediaResDto mediaResDto = MediaResDto.fromMedia(Objects.requireNonNull(media));
 
-        return MediaResDto.fromMedia(media);
+                    return new SignedContractResDto(contract.getContractUuid(), contract.getProject().getProjectName(), mediaResDto);
+                }
+        ).toList();
     }
 
     // private 메서드
 
-    private ChatRoom findIfChatroomExists(Member orderer, Member beneficiary) {
-        return chatRoomRepository.findBySenderAndReceiver(orderer, beneficiary).orElseThrow(NotFoundChatRoomException::new);
+    private ChatRoom findIfChatroomExists(Member member, Long chatRoomId) {
+        return chatRoomRepository.findByIdAndReceiver(chatRoomId, member).orElseThrow(NotFoundChatRoomException::new);
     }
 
     private Member getCurrentMember(String email) {
@@ -219,26 +205,7 @@ public class ContractServiceImpl implements ContractService {
     }
 
     private void validateContractStatus(Contract contract) {
-        if(contract.getContractStatus() == ContractStatus.COMPLETED || contract.getContractStatus() == ContractStatus.CREATING_CONTRACT)
+        if(contract.getContractStatus() == ContractStatus.COMPLETED || contract.getContractStatus() == ContractStatus.CREATING_CONTRACT || contract.getContractStatus() == ContractStatus.SIGNED)
             throw new AlreadySignedContractException();
-    }
-
-    private ContractInvite findAndValidateContractInvite(String inviteToken, Long chatRoomId, Long beneficiaryId) {
-
-        ContractInvite ci = contractInviteRepository
-                .findById(inviteToken).orElseThrow(NotFoundContractInviteException::new);
-
-        if(ci.getIsConsumed() != null)
-            throw new AlreadyConsumedInviteTokenException();
-        if(ci.isRevoked())
-            throw new RevokedInviteTokenException();
-        if(ci.getExpiresAt() != null && Instant.now().isAfter(ci.getExpiresAt()))
-            throw new AlreadyExpiredInviteTokenException();
-        if(ci.getChatRoomId() != null && !(ci.getChatRoomId().equals(chatRoomId)))
-            throw new NotAcceptedChatroomException();
-        if(ci.getBeneficiaryId() != null && !ci.getBeneficiaryId().equals(beneficiaryId))
-            throw new NotAcceptedMemberException();
-
-        return ci;
     }
 }
