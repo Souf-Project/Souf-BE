@@ -5,6 +5,7 @@ import com.souf.soufwebsite.domain.member.dto.reqDto.UpdateReqDto;
 import com.souf.soufwebsite.domain.member.entity.profile.ClubProfile;
 import com.souf.soufwebsite.domain.member.entity.profile.CompanyProfile;
 import com.souf.soufwebsite.domain.member.entity.profile.StudentProfile;
+import com.souf.soufwebsite.domain.socialAccount.entity.SocialAccount;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.exception.NotDuplicateCategoryException;
@@ -117,6 +118,9 @@ public class Member extends BaseEntity {
 
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private ClubProfile clubProfile;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SocialAccount> socialAccounts = new ArrayList<>();
 
     @Builder
     public Member(ApprovedStatus status, String email, String password, String username, String nickname, String phoneNumber, RoleType role, Boolean marketingAgreement) {

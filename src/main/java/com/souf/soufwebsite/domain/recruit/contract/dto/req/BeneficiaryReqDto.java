@@ -11,10 +11,6 @@ import java.time.LocalDate;
 
 public record BeneficiaryReqDto(
 
-        @Schema(description = "초대 토큰을 넣어주세요.")
-        @NotBlank(message = "초대 토큰은 필수입니다.")
-        String inviteToken,
-
         @Schema(description = "수급자 본명을 입력해주세요.", example = "김철수")
         @NotBlank(message = "수급자 본명은 필수입니다.")
         String username,

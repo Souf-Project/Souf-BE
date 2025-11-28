@@ -167,6 +167,7 @@ public class MemberServiceImpl implements MemberService {
                 .nickname(member.getNickname())
                 .roleType(member.getRole())
                 .approvedStatus(member.getApprovedStatus())
+                .phoneNumber(member.getPhoneNumber())
                 .build();
     }
 
@@ -197,7 +198,7 @@ public class MemberServiceImpl implements MemberService {
         jwtService.sendAccessAndRefreshToken(res, accessToken, newRefreshToken);
 
         return new TokenDto(accessToken, requiredMember.getId(), requiredMember.getNickname(),
-                requiredMember.getRole(), requiredMember.getApprovedStatus(), null);
+                requiredMember.getRole(), requiredMember.getApprovedStatus(),null, requiredMember.getPhoneNumber());
     }
 
     //비밀번호 초기화
