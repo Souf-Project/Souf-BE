@@ -26,6 +26,8 @@ import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.domain.notification.dto.NotificationDto;
+import com.souf.soufwebsite.domain.notification.entity.NotificationType;
 import com.souf.soufwebsite.domain.notification.service.NotificationPublisher;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
@@ -44,6 +46,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -126,19 +129,19 @@ public class AdminServiceImpl implements AdminService {
 
         Member toMember = inquiry.getMember();
 
-//        NotificationDto dto = new NotificationDto(
-//                toMember.getEmail(),
-//                toMember.getId(),
-//                NotificationType.INQUIRY_REPLIED,
-//                "문의에 답변이 등록됐어요",
-//                "문의하신 내용에 새로운 답변이 도착했어요.",
-//                "INQUIRY",
-//                inquiryId,
-//                LocalDateTime.now()
-//        );
+        NotificationDto dto = new NotificationDto(
+                toMember.getEmail(),
+                toMember.getId(),
+                NotificationType.INQUIRY_REPLIED,
+                "문의에 답변이 등록됐어요",
+                "문의하신 내용에 새로운 답변이 도착했어요.",
+                "INQUIRY",
+                inquiryId,
+                LocalDateTime.now()
+        );
 
         emailService.sendInquiryResult(toMember.getEmail(), toMember.getNickname(), inquiry.getTitle());
-//        notificationPublisher.publish(dto);
+        notificationPublisher.publish(dto);
     }
 
     @Transactional
