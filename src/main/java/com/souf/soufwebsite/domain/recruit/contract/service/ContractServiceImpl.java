@@ -91,7 +91,7 @@ public class ContractServiceImpl implements ContractService {
         Member currentMember = getCurrentMember(email);
 
         ChatRoom chatRoom = chatRoomRepository.findByIdAndSender(roomId, currentMember).orElseThrow(NotFoundChatRoomException::new);
-        Contract contract = contractRepository.findByChatRoom(chatRoom).orElseThrow(NotFoundContractException::new);
+        Contract contract = contractRepository.findByChatRoomAndContractStatus(chatRoom, ContractStatus.COMPLETED).orElseThrow(NotFoundContractException::new);
         if(contract.getContractStatus() == ContractStatus.SIGNED){
             throw new AlreadySignedContractException();
         }
