@@ -48,6 +48,6 @@ public class Comment extends BaseEntity {
 
     /** 작성자 탈퇴 시 댓글 익명화 */
     public void anonymize() {
-        this.content = "탈퇴한 회원의 게시글입니다.";
+        this.content = "탈퇴한 회원의 댓글입니다.";
     }
 }
