@@ -176,14 +176,20 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         return applicationRepository
                 .findByRecruit(recruit, pageable)
-                .map(app -> new ApplicantResDto(
+                .map(app -> {
+
+                    Member applicant = app.getMember();
+                    String applicantProfileImage = fileService.getMediaUrl(PostType.PROFILE, applicant.getId());
+
+                    return new ApplicantResDto(
                         app.getId(),
-                        MemberResDto.from(app.getMember(), app.getMember().getCategories(), mediaUrl, false),
+                        MemberResDto.from(applicant, applicant.getCategories(), applicantProfileImage, false),
                         app.getPriceOffer(),
                         app.getPriceReason(),
                         app.getAppliedAt(),
-                        app.getStatus().name()        // PENDING / ACCEPTED / REJECTED
-                ));
+                        app.getStatus().name()); // PENDING / ACCEPTED / REJECTED
+                        }
+                );
     }
 
     @Override
