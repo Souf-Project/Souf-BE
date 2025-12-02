@@ -61,7 +61,5 @@ public class MemberClubMapping extends BaseEntity {
 
     public void softDelete() {
         this.isDeleted = true;
-        if (student != null) student.getEnrollmentAsStudent().remove(this);
-        if (club != null) club.getEnrollmentAsClub().remove(this);
     }
 }

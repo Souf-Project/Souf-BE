@@ -18,7 +18,7 @@ public record InquiryReqDto(
         @Size(min = 20)
         String content,
 
-        @Schema(description = "문의 유형", example = "문의 제목을 적어주세요")
+        @Schema(description = "문의 유형", example = "문의 유형을 적어주세요" )
         @NotNull(message = "문의 유형은 필수입니다.")
         InquiryType type,
 

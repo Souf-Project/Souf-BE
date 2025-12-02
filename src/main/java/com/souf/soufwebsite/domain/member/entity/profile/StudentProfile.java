@@ -18,7 +18,7 @@ import java.util.List;
 @Entity
 @Table(name = "student_profiles")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLRestriction("id_deleted = false")
+@SQLRestriction("is_deleted = false")
 public class StudentProfile extends BaseEntity {
 
     @Id

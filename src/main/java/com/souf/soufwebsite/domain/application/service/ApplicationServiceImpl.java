@@ -9,6 +9,7 @@ import com.souf.soufwebsite.domain.application.repository.ApplicationRepository;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.notification.dto.NotificationDto;
@@ -21,6 +22,7 @@ import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
 import com.souf.soufwebsite.global.common.PostType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.mail.SesMailService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -151,10 +153,18 @@ public class ApplicationServiceImpl implements ApplicationService {
                             .toList();
 
                     String status = recruit.isRecruitable() ? "모집 중" : "마감";
+                    String writerNickname = "탈퇴한 회원";
+                    try {
+                        if (recruit.getMember() != null) {
+                            writerNickname = recruit.getMember().getNickname();
+                        }
+                    } catch (EntityNotFoundException ignored) {
+                    }
+
                     return new MyApplicationResDto(
                             recruit.getId(),
                             recruit.getTitle(),
-                            recruit.getMember().getNickname(),
+                            writerNickname,
                             categories,
                             status,
                             app.getPriceOffer(),
@@ -176,14 +186,27 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         return applicationRepository
                 .findByRecruit(recruit, pageable)
-                .map(app -> new ApplicantResDto(
-                        app.getId(),
-                        MemberResDto.from(app.getMember(), app.getMember().getCategories(), mediaUrl, false),
-                        app.getPriceOffer(),
-                        app.getPriceReason(),
-                        app.getAppliedAt(),
-                        app.getStatus().name()        // PENDING / ACCEPTED / REJECTED
-                ));
+                .map(app -> {
+                    Member applicant = app.getMember();
+                    List<MemberCategoryMapping> categories =
+                            (applicant != null) ? applicant.getCategories() : List.of();
+
+                    MemberResDto memberDto = MemberResDto.from(
+                            applicant,
+                            categories,
+                            mediaUrl,
+                            false
+                    );
+
+                    return new ApplicantResDto(
+                            app.getId(),
+                            memberDto,
+                            app.getPriceOffer(),
+                            app.getPriceReason(),
+                            app.getAppliedAt(),
+                            app.getStatus().name()
+                    );
+                });
     }
 
     @Override
