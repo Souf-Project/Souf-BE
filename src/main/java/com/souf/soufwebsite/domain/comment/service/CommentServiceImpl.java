@@ -45,6 +45,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = new Comment(writer, reqDto.content(),
                 author.getId(), feed, parent);
         commentRepository.save(comment);
+        feed.increaseCommentCount();
         log.info("{} 피드에 대한 댓글 생성 완료", feed.getId());
     }
 
@@ -60,6 +61,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = new Comment(writer, reqDto.content(),
                 author.getId(), feed, parentComment.getCommentGroup());
         commentRepository.save(comment);
+        feed.increaseCommentCount();
         log.info("{}에 대한 대댓글 생성", reqDto.parentId());
     }
 
@@ -67,11 +69,13 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public void deleteComment(String email, Long postId, Long commentId) {
         Member member = findIfEmailExists(email);
+        Feed feed = findIfFeedExist(postId);
         Comment comment = findIfCommentExists(commentId);
 
         validatedIfCommentMine(member, comment); // 현재 사용자와 댓글 작성자의 아이디가 일치하지 않으면 예외 발생
 
         commentRepository.delete(comment);
+        feed.decreaseCommentCount();
     }
 
     @Transactional

@@ -99,6 +99,14 @@ public class Feed extends BaseEntity {
         if (this.likedCount > 0) this.likedCount--;
     }
 
+    public void increaseCommentCount() {
+        this.commentCount++;
+    }
+
+    public void decreaseCommentCount() {
+        if (this.commentCount > 0) this.commentCount--;
+    }
+
     public void addCategory(FeedCategoryMapping feedCategoryMapping){
         this.categories.add(feedCategoryMapping);
     }
