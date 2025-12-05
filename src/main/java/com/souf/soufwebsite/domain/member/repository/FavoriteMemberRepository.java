@@ -17,4 +17,8 @@ public interface FavoriteMemberRepository extends JpaRepository<FavoriteMember, 
 
     @Query("SELECT fm FROM FavoriteMember fm WHERE fm.fromMember = :from AND fm.toMember = :to")
     Optional<FavoriteMember> findByFromMemberAndToMember(@Param("from") Member from, @Param("to") Member to);
+
+    void deleteAllByFromMember(Member fromMember);
+
+    void deleteAllByToMember(Member toMember);
 }
