@@ -11,6 +11,8 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import java.time.LocalDateTime;
 
@@ -24,10 +26,12 @@ public class Application extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "member_id", nullable = false)
+    @NotFound(action = NotFoundAction.IGNORE)
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "recruit_id", nullable = true)
+    @NotFound(action = NotFoundAction.IGNORE)
     private Recruit recruit;
 
     @Column
@@ -84,6 +88,10 @@ public class Application extends BaseEntity {
     @PrePersist
     @PreUpdate
     private void validateByPricePolicy() {
+        if (recruit == null) {
+            return;
+        }
+
         PricePolicy policy = recruit.getPricePolicy();
         if (policy == PricePolicy.FIXED) {
             if (isBlank(recruit.getPrice())) {

@@ -5,11 +5,13 @@ import com.souf.soufwebsite.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 @Getter
 @Entity
 @Table(name = "club_profiles")
 @NoArgsConstructor
+@SQLRestriction("is_deleted = false")
 public class ClubProfile {
 
     @Id
@@ -22,11 +24,19 @@ public class ClubProfile {
     @JoinColumn(name = "member_id")
     private Member member;
 
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
+
     public ClubProfile(ClubSignupReqDto reqDto) {
         this.clubAuthenticationMethod = reqDto.getClubAuthenticationMethod();
     }
 
     public void attachMember(Member member) {
         this.member = member;
+    }
+
+    public void softDelete() {
+        this.isDeleted = true;
+        this.clubAuthenticationMethod = "DELETED_CLUB_" + this.id;
     }
 }

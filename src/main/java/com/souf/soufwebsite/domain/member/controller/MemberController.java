@@ -1,6 +1,7 @@
 package com.souf.soufwebsite.domain.member.controller;
 
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.SendModifyEmailReqDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.UpdateReqDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.addInfo.AddCompanyInfoReqDto;
@@ -100,20 +101,20 @@ public class MemberController implements MemberApiSpecification{
     }
 
     @PatchMapping("/add/info/student")
-    public SuccessResponse addMemberInfo(
+    public SuccessResponse<PresignedUrlResDto> addMemberInfo(
             @CurrentEmail String email,
             @RequestBody @Valid AddStudentInfoReqDto reqDto
     ) {
-        memberService.addStudentInfo(email, reqDto);
-        return new SuccessResponse("회원 추가정보 등록에 성공하였습니다.");
+        PresignedUrlResDto result = memberService.addStudentInfo(email, reqDto);
+        return new SuccessResponse<>(result,"회원 추가정보 등록에 성공하였습니다.");
     }
 
     @PatchMapping("/add/info/member")
-    public SuccessResponse addMemberInfo(
+    public SuccessResponse<PresignedUrlResDto> addMemberInfo(
             @CurrentEmail String email,
             @RequestBody @Valid AddCompanyInfoReqDto reqDto
     ) {
-        memberService.addCompanyInfo(email, reqDto);
-        return new SuccessResponse("회원 추가정보 등록에 성공하였습니다.");
+        PresignedUrlResDto result = memberService.addCompanyInfo(email, reqDto);
+        return new SuccessResponse<>(result, "회원 추가정보 등록에 성공하였습니다.");
     }
 }

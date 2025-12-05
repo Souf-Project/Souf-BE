@@ -9,8 +9,11 @@ import com.souf.soufwebsite.domain.application.repository.ApplicationRepository;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.domain.notification.dto.NotificationDto;
+import com.souf.soufwebsite.domain.notification.entity.NotificationType;
 import com.souf.soufwebsite.domain.notification.service.NotificationPublisher;
 import com.souf.soufwebsite.domain.recruit.entity.PricePolicy;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
@@ -19,6 +22,7 @@ import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
 import com.souf.soufwebsite.global.common.PostType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.mail.SesMailService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -26,6 +30,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -85,18 +90,18 @@ public class ApplicationServiceImpl implements ApplicationService {
         log.info("공고문 아이디: {}, 지원 완료", recruit.getId());
 
         // ✅ [추가] 지원자 생성 → 공고 작성자에게 즉시 알림
-//        Member owner = recruit.getMember();
-//        NotificationDto dto = new NotificationDto(
-//                owner.getEmail(),
-//                owner.getId(),                                // targetMemberId
-//                NotificationType.APPLICANT_CREATED,           // type
-//                "새 지원자 발생",                               // title
-//                "[" + recruit.getTitle() + "]에 새 지원자가 도착했어요.", // body
-//                "RECRUIT",                                    // refType
-//                recruit.getId(),                              // refId
-//                LocalDateTime.now()                          // createdAt
-//        );
-//        notificationPublisher.publish(dto);
+        Member owner = recruit.getMember();
+        NotificationDto dto = new NotificationDto(
+                owner.getEmail(),
+                owner.getId(),                                // targetMemberId
+                NotificationType.APPLICANT_CREATED,           // type
+                "새 지원자 발생",                               // title
+                "[" + recruit.getTitle() + "]에 새 지원자가 도착했어요.", // body
+                "RECRUIT",                                    // refType
+                recruit.getId(),                              // refId
+                LocalDateTime.now()                          // createdAt
+        );
+        notificationPublisher.publish(dto);
     }
 
     @Override
@@ -129,6 +134,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     if (recruit == null) {
                         return new MyApplicationResDto(
                                 null,
+                                null,
                                 "삭제된 공고입니다",
                                 null,
                                 List.of(),
@@ -148,10 +154,19 @@ public class ApplicationServiceImpl implements ApplicationService {
                             .toList();
 
                     String status = recruit.isRecruitable() ? "모집 중" : "마감";
+                    String writerNickname = "탈퇴한 회원";
+                    try {
+                        if (recruit.getMember() != null) {
+                            writerNickname = recruit.getMember().getNickname();
+                        }
+                    } catch (EntityNotFoundException ignored) {
+                    }
+
                     return new MyApplicationResDto(
                             recruit.getId(),
+                            app.getId(),
                             recruit.getTitle(),
-                            recruit.getMember().getNickname(),
+                            writerNickname,
                             categories,
                             status,
                             app.getPriceOffer(),
@@ -173,14 +188,28 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         return applicationRepository
                 .findByRecruit(recruit, pageable)
-                .map(app -> new ApplicantResDto(
-                        app.getId(),
-                        MemberResDto.from(app.getMember(), app.getMember().getCategories(), mediaUrl, false),
-                        app.getPriceOffer(),
-                        app.getPriceReason(),
-                        app.getAppliedAt(),
-                        app.getStatus().name()        // PENDING / ACCEPTED / REJECTED
-                ));
+                .map(app -> {
+                    Member applicant = app.getMember();
+                    String applicantProfileImage = fileService.getMediaUrl(PostType.PROFILE, applicant.getId());
+                    List<MemberCategoryMapping> categories =
+                            (applicant != null) ? applicant.getCategories() : List.of();
+
+                    MemberResDto memberDto = MemberResDto.from(
+                            applicant,
+                            categories,
+                            applicantProfileImage,
+                            false
+                    );
+
+                    return new ApplicantResDto(
+                            app.getId(),
+                            memberDto,
+                            app.getPriceOffer(),
+                            app.getPriceReason(),
+                            app.getAppliedAt(),
+                            app.getStatus().name()
+                    );
+                });
     }
 
     @Override
@@ -208,18 +237,18 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         String bodyMsg = "[" + recruit.getTitle() + "] 지원에 대한 결과가 등록되었습니다.";
 
-//        NotificationDto dto = new NotificationDto(
-//                m.getEmail(),
-//                m.getId(),
-//                NotificationType.APPLICATION_REVIEWED,   // 알림 타입
-//                "지원 결과 안내",                           // 알림 제목
-//                bodyMsg,                                 // 본문 내용
-//                "APPLICATION",                           // 참조 타입
-//                app.getId(),                             // 참조 PK
-//                LocalDateTime.now()
-//        );
-//
-//        notificationPublisher.publish(dto);
+        NotificationDto dto = new NotificationDto(
+                m.getEmail(),
+                m.getId(),
+                NotificationType.APPLICATION_REVIEWED,   // 알림 타입
+                "지원 결과 안내",                           // 알림 제목
+                bodyMsg,                                 // 본문 내용
+                "APPLICATION",                           // 참조 타입
+                app.getId(),                             // 참조 PK
+                LocalDateTime.now()
+        );
+
+        notificationPublisher.publish(dto);
         emailService.announceRecruitResult(to, m.getNickname(), title);
     }
 

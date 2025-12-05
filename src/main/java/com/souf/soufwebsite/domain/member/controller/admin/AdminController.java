@@ -123,7 +123,7 @@ public class AdminController implements AdminApiSpecification{
     public SuccessResponse<?> updateMemberApprovedStatus(
             @PathVariable(name = "memberId") Long memberId,
             @RequestParam(name = "approvedStatus") ApprovedStatus approvedStatus,
-            @Valid @RequestBody ResubmitReasonReqDto reqDto) {
+            @Valid @RequestBody(required = false) ResubmitReasonReqDto reqDto) {
 
         adminService.updateApprovedStatus(memberId, approvedStatus, reqDto);
         return new SuccessResponse<>(MEMBER_APPROVED_STATUS_UPDATE_SUCCESS.getMessage());

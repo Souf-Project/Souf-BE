@@ -1,13 +1,14 @@
 package com.souf.soufwebsite.domain.chat.service;
 
+import com.souf.soufwebsite.domain.application.entity.Application;
+import com.souf.soufwebsite.domain.application.repository.ApplicationRepository;
 import com.souf.soufwebsite.domain.chat.dto.ChatRoomSummaryDto;
-import com.souf.soufwebsite.domain.chat.entity.ChatMessage;
 import com.souf.soufwebsite.domain.chat.entity.ChatParticipant;
 import com.souf.soufwebsite.domain.chat.entity.ChatRoom;
 import com.souf.soufwebsite.domain.chat.exception.NotChatMyselfException;
 import com.souf.soufwebsite.domain.chat.exception.NotFoundChatRoomException;
 import com.souf.soufwebsite.domain.chat.exception.NotFoundParticipantException;
-import com.souf.soufwebsite.domain.chat.repository.ChatMessageRepository;
+import com.souf.soufwebsite.domain.chat.exception.NotMyApplicantException;
 import com.souf.soufwebsite.domain.chat.repository.ChatParticipantRepository;
 import com.souf.soufwebsite.domain.chat.repository.ChatRoomNativeRepository;
 import com.souf.soufwebsite.domain.chat.repository.ChatRoomRepository;
@@ -26,6 +27,7 @@ public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomNativeRepository chatRoomNativeRepository;
     private final ChatParticipantRepository chatParticipantRepository;
+    private final ApplicationRepository applicationRepository;
 
     @Transactional
     public ChatRoom findOrCreateRoom(Member sender, Member receiver) {
@@ -46,7 +48,10 @@ public class ChatRoomService {
             return existingRoom;
         }
 
-        ChatRoom newRoom = chatRoomRepository.save(new ChatRoom(sender, receiver));
+        Application application = applicationRepository
+                .findByRecruitMemberIdAndMemberId(sender.getId(), receiver.getId()).orElseThrow(NotMyApplicantException::new);
+
+        ChatRoom newRoom = chatRoomRepository.save(new ChatRoom(sender, receiver, application));
         chatParticipantRepository.save(ChatParticipant.of(newRoom, sender));
         chatParticipantRepository.save(ChatParticipant.of(newRoom, receiver));
 

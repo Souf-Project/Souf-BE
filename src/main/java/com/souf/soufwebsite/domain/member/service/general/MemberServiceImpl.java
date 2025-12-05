@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.member.service.general;
 
+import com.souf.soufwebsite.domain.feed.repository.LikedFeedRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.service.FileService;
@@ -21,6 +22,7 @@ import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.exception.*;
 import com.souf.soufwebsite.domain.member.mapper.AddInfoMapper;
 import com.souf.soufwebsite.domain.member.mapper.SignupMapper;
+import com.souf.soufwebsite.domain.member.repository.FavoriteMemberRepository;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.report.exception.DeclaredMemberException;
 import com.souf.soufwebsite.domain.report.service.BanService;
@@ -66,15 +68,17 @@ public class MemberServiceImpl implements MemberService {
     private final PasswordEncoder passwordEncoder;
     private final FileService fileService;
     private final SlackService slackService;
+    private final CategoryService categoryService;
 
     private final SesMailService mailService;
     private final BanService banService;
 
-    private final CategoryService categoryService;
+    private final FavoriteMemberRepository favoriteMemberRepository;
 
     private final SignupMapper signupMapper;
 
     private final AddInfoMapper addInfoMapper;
+    private final LikedFeedRepository likedFeedRepository;
 
     //회원가입
     @Transactional
@@ -167,6 +171,7 @@ public class MemberServiceImpl implements MemberService {
                 .nickname(member.getNickname())
                 .roleType(member.getRole())
                 .approvedStatus(member.getApprovedStatus())
+                .phoneNumber(member.getPhoneNumber())
                 .build();
     }
 
@@ -197,7 +202,7 @@ public class MemberServiceImpl implements MemberService {
         jwtService.sendAccessAndRefreshToken(res, accessToken, newRefreshToken);
 
         return new TokenDto(accessToken, requiredMember.getId(), requiredMember.getNickname(),
-                requiredMember.getRole(), requiredMember.getApprovedStatus(), null);
+                requiredMember.getRole(), requiredMember.getApprovedStatus(),null, requiredMember.getPhoneNumber());
     }
 
     //비밀번호 초기화
@@ -426,6 +431,9 @@ public class MemberServiceImpl implements MemberService {
         redisTemplate.opsForValue().set(redisKey, "CanNotSignedUpFor7Days", 7, TimeUnit.DAYS);
 //        memberRepository.delete(member); // 탈퇴하면 삭제가 아닌 개인정보 들만 교체
         member.softDelete();
+        favoriteMemberRepository.deleteAllByFromMember(member);
+        favoriteMemberRepository.deleteAllByToMember(member);
+        likedFeedRepository.deleteAllByMemberId(memberId);
 
 //        indexEventPublisherHelper.publishIndexEvent(
 //                EntityType.MEMBER,

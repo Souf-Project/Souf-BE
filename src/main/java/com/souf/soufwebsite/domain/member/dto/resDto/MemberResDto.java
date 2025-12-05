@@ -45,6 +45,21 @@ public record MemberResDto(
 
 ) {
     public static MemberResDto from(Member member, List<MemberCategoryMapping> categories, String profileImageUrl, Boolean marketingAgreement) {
+        if (member == null || member.isDeleted()) {
+            return new MemberResDto(
+                    null,
+                    null,
+                    "탈퇴한 회원",
+                    "탈퇴한 회원",
+                    null,
+                    null,
+                    null,
+                    profileImageUrl,
+                    List.of(),
+                    false
+            );
+        }
+
         return new MemberResDto(
                 member.getId(),
                 member.getEmail(),

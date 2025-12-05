@@ -1,10 +1,13 @@
 package com.souf.soufwebsite.domain.member.entity;
 
+import com.souf.soufwebsite.domain.comment.entity.Comment;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.member.dto.reqDto.UpdateReqDto;
 import com.souf.soufwebsite.domain.member.entity.profile.ClubProfile;
 import com.souf.soufwebsite.domain.member.entity.profile.CompanyProfile;
 import com.souf.soufwebsite.domain.member.entity.profile.StudentProfile;
+import com.souf.soufwebsite.domain.recruit.entity.Recruit;
+import com.souf.soufwebsite.domain.socialAccount.entity.SocialAccount;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import com.souf.soufwebsite.global.common.category.exception.NotDuplicateCategoryException;
@@ -17,15 +20,16 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Where(clause = "is_deleted = false")
+@SQLRestriction("is_deleted = false")
 public class Member extends BaseEntity {
 
     @Id
@@ -74,7 +78,7 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     private double temperature;
 
-    @Column(name = "is_deleted", nullable = false)
+    @Column(nullable = false)
     private boolean isDeleted = false;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -82,6 +86,12 @@ public class Member extends BaseEntity {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Feed> feeds = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<Recruit> recruits = new ArrayList<>();
+
+    @OneToMany(mappedBy = "writer", cascade = CascadeType.ALL)
+    private List<Comment> comments = new ArrayList<>();
 
     @Column(nullable = false)
     private boolean isSuitableAged = false;
@@ -102,11 +112,9 @@ public class Member extends BaseEntity {
 
     // === 다대다(자기참조) 연결 ===
     @OneToMany(mappedBy = "student", cascade = CascadeType.PERSIST)
-    @Where(clause = "is_deleted = false")
     private List<MemberClubMapping> enrollmentAsStudent = new ArrayList<>();
 
     @OneToMany(mappedBy = "club", cascade = CascadeType.PERSIST)
-    @Where(clause = "is_deleted = false")
     private List<MemberClubMapping> enrollmentAsClub = new ArrayList<>();
 
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -117,6 +125,9 @@ public class Member extends BaseEntity {
 
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private ClubProfile clubProfile;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SocialAccount> socialAccounts = new ArrayList<>();
 
     @Builder
     public Member(ApprovedStatus status, String email, String password, String username, String nickname, String phoneNumber, RoleType role, Boolean marketingAgreement) {
@@ -167,7 +178,7 @@ public class Member extends BaseEntity {
             }
         }
 
-        if (this.categories.size() > 3) {
+        if (this.categories.size() >= 3) {
             throw new NotExceedCategoryLimitException();
         }
         this.categories.add(mapping);
@@ -193,15 +204,35 @@ public class Member extends BaseEntity {
         categories.clear();
     }
 
-    public void softDelete() { // SHA-256 같은 방식
-        this.email = "deleted:" + HashUtils.sha256(this.email);
-        this.username = "탈퇴한 회원";
-        this.intro = "탈퇴한 회원입니다.";
-        this.personalUrl = null;
+    public void softDelete() {
         this.isDeleted = true;
 
-        new ArrayList<>(enrollmentAsStudent).forEach(MemberClubMapping::softDelete);
-        new ArrayList<>(enrollmentAsClub).forEach(MemberClubMapping::softDelete);
+        this.email = "deleted:" + this.id + ":" + HashUtils.sha256(this.email);
+        this.password = "DELETED_" + UUID.randomUUID();
+        this.username = "탈퇴한 회원";
+        this.nickname = "탈퇴한 회원" + UUID.randomUUID().toString().substring(0, 8);
+        this.intro = null;
+        this.personalUrl = null;
+        this.phoneNumber = null;
+        this.socialAccounts.clear();
+        this.clearCategories();
+
+        enrollmentAsStudent.forEach(MemberClubMapping::softDelete);
+        enrollmentAsClub.forEach(MemberClubMapping::softDelete);
+
+        if (this.studentProfile != null) {
+            this.studentProfile.softDelete();
+        }
+        if (this.companyProfile != null) {
+            this.companyProfile.softDelete();
+        }
+        if (this.clubProfile != null) {
+            this.clubProfile.softDelete();
+        }
+
+        feeds.forEach(Feed::softDeleteByOwner);
+        recruits.forEach(Recruit::softDeleteByOwner);
+        comments.forEach(Comment::anonymize);
     }
 
     public void attachStudentProfile(StudentProfile profile) {
