@@ -11,6 +11,9 @@ public record MyApplicationResDto(
         @Schema(description = "공고 ID", example = "123")
         Long recruitId,
 
+        @Schema(description = "지원서 ID", example = "456")
+        Long applicationId,
+
         @Schema(description = "공고문 제목", example = "디지털 광고 매체 그래픽 디자인")
         String title,
 

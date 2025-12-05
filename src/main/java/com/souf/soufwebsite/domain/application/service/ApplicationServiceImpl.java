@@ -134,6 +134,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     if (recruit == null) {
                         return new MyApplicationResDto(
                                 null,
+                                null,
                                 "삭제된 공고입니다",
                                 null,
                                 List.of(),
@@ -163,6 +164,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
                     return new MyApplicationResDto(
                             recruit.getId(),
+                            app.getId(),
                             recruit.getTitle(),
                             writerNickname,
                             categories,
