@@ -33,11 +33,11 @@ public class FeedScheduledService {
     @Transactional
     public void syncWeeklyViewCountsToDB() {
         Set<ZSetOperations.TypedTuple<String>> tuples = redisTemplate.opsForZSet().rangeWithScores(WEEKLY_ZSET, 0, -1);
-
         if(tuples == null || tuples.isEmpty()) {
             return;
         }
 
+        feedRepository.updateWeeklyViews();
         for (ZSetOperations.TypedTuple<String> tuple : tuples) {
             String value = tuple.getValue();
             Double score = tuple.getScore();
@@ -49,9 +49,7 @@ public class FeedScheduledService {
             Long feedId = Long.valueOf(value);
             long weeklyViewCount = score.longValue();
 
-            feedRepository.findById(feedId).ifPresent(feed -> {
-                feedRepository.increaseWeeklyViewCount(feedId, weeklyViewCount);
-            });
+            feedRepository.findById(feedId).ifPresent(feed -> feedRepository.increaseWeeklyViewCount(feedId, weeklyViewCount));
         }
 
         redisTemplate.delete(WEEKLY_ZSET); // 주간 초기화
@@ -75,9 +73,7 @@ public class FeedScheduledService {
 
             Long feedId = Long.valueOf((String) key);
             Long totalViewCount = Long.valueOf((String) value);
-            feedRepository.findById(feedId).ifPresent(feed -> {
-                feedRepository.increaseTotalViewCount(feedId, totalViewCount);
-            });
+            feedRepository.findById(feedId).ifPresent(feed -> feedRepository.increaseTotalViewCount(feedId, totalViewCount));
         }
 
         redisTemplate.delete(TOTAL_HASH);
@@ -121,6 +117,6 @@ public class FeedScheduledService {
         if (w == null || w.get() == null) return false;
 
         List<FeedSimpleResDto> list = (List<FeedSimpleResDto>) w.get();
-        return list.stream().anyMatch(d -> d.feedId().equals(feedId));
+        return list != null && list.stream().anyMatch(d -> d.feedId().equals(feedId));
     }
 }
