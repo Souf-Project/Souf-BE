@@ -11,6 +11,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("is_deleted = false")
 public class Feed extends BaseEntity {
 
     @Id
@@ -49,6 +51,9 @@ public class Feed extends BaseEntity {
 
     @Version
     private Long version;
+
+    @Column(nullable = false)
+    private boolean isDeleted = false;
 
     @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
@@ -103,5 +108,12 @@ public class Feed extends BaseEntity {
             mapping.disconectFeed();
         }
         categories.clear();
+    }
+
+    public void softDeleteByOwner() {
+        this.isDeleted = true;
+        this.topic = "삭제된 게시글";
+        this.content = "탈퇴한 회원의 게시글입니다.";
+        this.clearCategories();
     }
 }

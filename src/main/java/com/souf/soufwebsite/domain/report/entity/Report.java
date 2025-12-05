@@ -24,7 +24,6 @@ public class Report extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ReportStatus status;
 
-    @Column(nullable = false)
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ReportReasonMapping> reportReasonMappings = new LinkedHashSet<>();
 
