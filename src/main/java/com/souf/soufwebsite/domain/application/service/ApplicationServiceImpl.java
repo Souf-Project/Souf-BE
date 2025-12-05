@@ -188,13 +188,14 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .findByRecruit(recruit, pageable)
                 .map(app -> {
                     Member applicant = app.getMember();
+                    String applicantProfileImage = fileService.getMediaUrl(PostType.PROFILE, applicant.getId());
                     List<MemberCategoryMapping> categories =
                             (applicant != null) ? applicant.getCategories() : List.of();
 
                     MemberResDto memberDto = MemberResDto.from(
                             applicant,
                             categories,
-                            mediaUrl,
+                            applicantProfileImage,
                             false
                     );
 

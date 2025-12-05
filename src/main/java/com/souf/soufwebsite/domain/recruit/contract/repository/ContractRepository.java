@@ -15,7 +15,7 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
 
     Optional<Contract> findByContractUuid(String contractUuid);
 
-    Optional<Contract> findByChatRoom(ChatRoom chatRoom);
+    Optional<Contract> findByChatRoomAndContractStatus(ChatRoom chatRoom, ContractStatus contractStatus);
 
     @Query("select c from Contract c where c.chatRoom = :chatRoom and (c.beneficiary = :member or c.orderer = :member)")
     List<Contract> findByMember(@Param(value = "chatRoom") ChatRoom chatRoom, @Param(value = "member") Member member);
