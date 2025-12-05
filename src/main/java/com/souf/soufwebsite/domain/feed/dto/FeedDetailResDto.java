@@ -47,14 +47,14 @@ public record FeedDetailResDto(
 
                 feed.getId(),
                 feed.getTopic(),
-            feed.getContent(),
-            feed.getViewCount() + feedViewCount,
-            likedCount,
-            liked,
-            commentCount,
-            convertToMediaResDto(mediaList),
-            convertToCategoryDto(feed.getCategories()),
-            feed.getLastModifiedTime());
+                feed.getContent(),
+                feed.getViewCount() + feedViewCount,
+                likedCount,
+                liked,
+                commentCount,
+                convertToMediaResDto(mediaList),
+                convertToCategoryDto(feed.getCategories()),
+                feed.getLastModifiedTime());
     }
 
     private static List<MediaResDto> convertToMediaResDto(List<Media> mediaList){

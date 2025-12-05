@@ -41,6 +41,15 @@ public class Feed extends BaseEntity {
     @Column(nullable = false)
     private Long weeklyViews;
 
+    @Column(nullable = false)
+    private Long likedCount = 0L;
+
+    @Column(nullable = false)
+    private Long commentCount = 0L;
+
+    @Version
+    private Long version;
+
     @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
@@ -75,6 +84,14 @@ public class Feed extends BaseEntity {
 
     public void addViewCount(Long count){
         this.viewCount += count;
+    }
+
+    public void increaseLikedCount() {
+        this.likedCount++;
+    }
+
+    public void decreaseLikedCount() {
+        if (this.likedCount > 0) this.likedCount--;
     }
 
     public void addCategory(FeedCategoryMapping feedCategoryMapping){
