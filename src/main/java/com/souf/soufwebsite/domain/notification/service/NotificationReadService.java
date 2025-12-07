@@ -28,8 +28,6 @@ public class NotificationReadService {
     public Page<NotificationItemDto> getMyNotifications(String email, Pageable pageable) {
         Long memberId = memberIdByEmail(email);
 
-        notificationRepository.markAllRead(memberId);
-
         Page<Notification> page = notificationRepository.findByMemberIdOrderByCreatedTimeDesc(memberId, pageable);
         return page.map(NotificationItemDto::from);
     }
@@ -44,5 +42,28 @@ public class NotificationReadService {
     public void deleteOne(String email, Long notificationId) {
         Long memberId = memberIdByEmail(email);
         notificationRepository.deleteOne(notificationId, memberId);
+    }
+
+    @Transactional
+    public void deleteAll(String email) {
+        Long memberId = memberIdByEmail(email);
+        notificationRepository.deleteAllByMemberId(memberId);
+    }
+
+    @Transactional
+    public void markOneRead(String email, Long notificationId) {
+        Long memberId = memberIdByEmail(email);
+        int updated = notificationRepository.markOneRead(notificationId, memberId);
+
+        if (updated == 0) {
+            // 이미 읽었거나, 남의 알림이거나, 존재하지 않는 알림
+            throw new IllegalStateException("해당 알림을 읽음 처리할 수 없습니다.");
+        }
+    }
+
+    @Transactional
+    public int markAllRead(String email) {
+        Long memberId = memberIdByEmail(email);
+        return notificationRepository.markAllRead(memberId);
     }
 }
