@@ -5,6 +5,7 @@ import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.notification.dto.NotificationItemDto;
 import com.souf.soufwebsite.domain.notification.entity.Notification;
+import com.souf.soufwebsite.domain.notification.exception.NotFoundNotificationException;
 import com.souf.soufwebsite.domain.notification.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -41,7 +42,11 @@ public class NotificationReadService {
     @Transactional
     public void deleteOne(String email, Long notificationId) {
         Long memberId = memberIdByEmail(email);
-        notificationRepository.deleteOne(notificationId, memberId);
+        int deleted = notificationRepository.deleteOne(notificationId, memberId);
+
+        if (deleted == 0) {
+            throw new NotFoundNotificationException();
+        }
     }
 
     @Transactional
@@ -56,8 +61,8 @@ public class NotificationReadService {
         int updated = notificationRepository.markOneRead(notificationId, memberId);
 
         if (updated == 0) {
-            // 이미 읽었거나, 남의 알림이거나, 존재하지 않는 알림
-            throw new IllegalStateException("해당 알림을 읽음 처리할 수 없습니다.");
+            // 남의 알림이거나, 이미 읽었거나, 존재하지 않는 경우
+            throw new NotFoundNotificationException();
         }
     }
 
