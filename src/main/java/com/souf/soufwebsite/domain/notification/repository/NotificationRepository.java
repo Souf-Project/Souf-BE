@@ -16,7 +16,19 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     long countByMemberId(Long memberId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("update Notification n set n.read = true where n.memberId = :memberId and n.read = false")
+    @Query("""
+        update Notification n
+        set n.read = true
+        where n.id = :id and n.memberId = :memberId and n.read = false
+        """)
+    int markOneRead(@Param("id") Long id, @Param("memberId") Long memberId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+        update Notification n
+        set n.read = true
+        where n.memberId = :memberId and n.read = false
+        """)
     int markAllRead(@Param("memberId") Long memberId);
 
     // ✅ 유저별 최신 50개만 남기고 나머지 삭제 (MySQL 기준)
@@ -33,9 +45,19 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
               ) t
           )
         """, nativeQuery = true)
-    int trimToMax(@Param("memberId") Long memberId, @Param("keep") int keep);
+    void trimToMax(@Param("memberId") Long memberId, @Param("keep") int keep);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("delete from Notification n where n.id = :id and n.memberId = :memberId")
-    int deleteOne(@Param("id") Long id, @Param("memberId") Long memberId);
+    @Query("""
+        delete from Notification n
+        where n.id = :id and n.memberId = :memberId
+        """)
+    void deleteOne(@Param("id") Long id, @Param("memberId") Long memberId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+        delete from Notification n
+        where n.memberId = :memberId
+        """)
+    int deleteAllByMemberId(@Param("memberId") Long memberId);
 }
