@@ -5,7 +5,6 @@ import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.notification.dto.NotificationItemDto;
 import com.souf.soufwebsite.domain.notification.entity.Notification;
-import com.souf.soufwebsite.domain.notification.exception.NotFoundNotificationException;
 import com.souf.soufwebsite.domain.notification.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -42,33 +41,26 @@ public class NotificationReadService {
     @Transactional
     public void deleteOne(String email, Long notificationId) {
         Long memberId = memberIdByEmail(email);
-        int deleted = notificationRepository.deleteOne(notificationId, memberId);
-
-        if (deleted == 0) {
-            throw new NotFoundNotificationException();
-        }
+        notificationRepository.markOneRead(memberId, notificationId);
+        notificationRepository.deleteOne(notificationId, memberId);
     }
 
     @Transactional
     public void deleteAll(String email) {
         Long memberId = memberIdByEmail(email);
+        notificationRepository.markAllRead(memberId);
         notificationRepository.deleteAllByMemberId(memberId);
     }
 
     @Transactional
     public void markOneRead(String email, Long notificationId) {
         Long memberId = memberIdByEmail(email);
-        int updated = notificationRepository.markOneRead(notificationId, memberId);
-
-        if (updated == 0) {
-            // 남의 알림이거나, 이미 읽었거나, 존재하지 않는 경우
-            throw new NotFoundNotificationException();
-        }
+        notificationRepository.markOneRead(notificationId, memberId);
     }
 
     @Transactional
-    public int markAllRead(String email) {
+    public void markAllRead(String email) {
         Long memberId = memberIdByEmail(email);
-        return notificationRepository.markAllRead(memberId);
+        notificationRepository.markAllRead(memberId);
     }
 }
