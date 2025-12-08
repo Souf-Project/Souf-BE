@@ -46,12 +46,35 @@ public class NotificationController {
         return new SuccessResponse<>(notificationReadService.getUnreadCount(email));
     }
 
+    @PatchMapping("/{notificationId}/read")
+    public SuccessResponse<Void> markOneRead(
+            @CurrentEmail String email,
+            @PathVariable Long notificationId
+    ) {
+        notificationReadService.markOneRead(email, notificationId);
+        return new SuccessResponse<>(null);
+    }
+
+    /** 🔹 알림 전체 읽음 처리 */
+    @PatchMapping("/read")
+    public SuccessResponse<Void> markAllRead(@CurrentEmail String email) {
+        notificationReadService.markAllRead(email);
+        return new SuccessResponse<>(null);
+    }
+
     @DeleteMapping("/{notificationId}")
     public SuccessResponse<Void> deleteOne(
             @CurrentEmail String email,
             @PathVariable Long notificationId
     ) {
         notificationReadService.deleteOne(email, notificationId);
+        return new SuccessResponse<>(null);
+    }
+
+    @DeleteMapping
+    public SuccessResponse<Void> deleteAll(
+            @CurrentEmail String email) {
+        notificationReadService.deleteAll(email);
         return new SuccessResponse<>(null);
     }
 }
