@@ -28,8 +28,6 @@ public class NotificationReadService {
     public Page<NotificationItemDto> getMyNotifications(String email, Pageable pageable) {
         Long memberId = memberIdByEmail(email);
 
-        notificationRepository.markAllRead(memberId);
-
         Page<Notification> page = notificationRepository.findByMemberIdOrderByCreatedTimeDesc(memberId, pageable);
         return page.map(NotificationItemDto::from);
     }
@@ -43,6 +41,26 @@ public class NotificationReadService {
     @Transactional
     public void deleteOne(String email, Long notificationId) {
         Long memberId = memberIdByEmail(email);
+        notificationRepository.markOneRead(memberId, notificationId);
         notificationRepository.deleteOne(notificationId, memberId);
+    }
+
+    @Transactional
+    public void deleteAll(String email) {
+        Long memberId = memberIdByEmail(email);
+        notificationRepository.markAllRead(memberId);
+        notificationRepository.deleteAllByMemberId(memberId);
+    }
+
+    @Transactional
+    public void markOneRead(String email, Long notificationId) {
+        Long memberId = memberIdByEmail(email);
+        notificationRepository.markOneRead(notificationId, memberId);
+    }
+
+    @Transactional
+    public void markAllRead(String email) {
+        Long memberId = memberIdByEmail(email);
+        notificationRepository.markAllRead(memberId);
     }
 }
