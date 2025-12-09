@@ -15,19 +15,20 @@ public class SubscriberQueryImpl implements SubscriberQuery {
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<Long> findSubscriberIdsByFirstSecond(Long firstCategoryId, Long secondCategoryId) {
+    public List<Long> findSubscriberIdsByFirst(Long firstCategoryId) {
         String sql = """
-            SELECT mcm.member_member_id
-            FROM member_category_mapping mcm
-            WHERE mcm.first_category_first_category_id  = ?1
-              AND mcm.second_category_second_category_id = ?2
+        SELECT mcm.member_member_id
+        FROM member_category_mapping mcm
+        WHERE mcm.first_category_first_category_id = ?1
         """;
 
         List<Number> rows = em.createNativeQuery(sql)
-                .setParameter(1, firstCategoryId)   // 위치 파라미터 사용
-                .setParameter(2, secondCategoryId)
+                .setParameter(1, firstCategoryId)
                 .getResultList();
 
-        return rows.stream().map(Number::longValue).distinct().toList();
+        return rows.stream()
+                .map(Number::longValue)
+                .distinct()
+                .toList();
     }
 }
