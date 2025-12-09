@@ -82,11 +82,10 @@ public class RecruitServiceImpl implements RecruitService {
     private final MediaCleanupPublisher mediaCleanupPublisher;
     private final MediaCleanupHelper mediaCleanupHelper;
 
-    private static final String AGG_KEY_FMT = "notif:agg:%d:%d:%d"; // notif:agg:{memberId}:{firstId}:{secondId}
+    private static final String AGG_KEY_FMT = "notif:agg:%d:%d"; // notif:agg:{memberId}:{firstId}
     private static final Duration AGG_WINDOW = java.time.Duration.ofHours(1);
     private final SubscriberQuery subscriberQuery;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final CacheManager cacheManager;
     private final ApplicationEventPublisher publisher;
 
 
@@ -108,9 +107,9 @@ public class RecruitServiceImpl implements RecruitService {
         recruit = recruitRepository.save(recruit);
         log.info("recruit created: {}", recruit.getId());
 
-        List<CatPair> pairs = extractFirstSecondPairs(reqDto);
-        for (CatPair p : pairs) {
-            enqueueRecruitPublished(p.firstId(), p.secondId(), recruit.getId());
+        List<Long> firstIds = extractFirstIds(reqDto);
+        for (Long firstId : firstIds) {
+            enqueueRecruitPublished(firstId);
         }
         log.info("CatPair completed");
 
@@ -408,24 +407,23 @@ public class RecruitServiceImpl implements RecruitService {
         }
     }
 
-    private record CatPair(Long firstId, Long secondId) {}
-
     // reqDto에서 (first, second) 페어를 추출 (third는 무시)
-    private List<CatPair> extractFirstSecondPairs(RecruitReqDto reqDto) {
+    private List<Long> extractFirstIds(RecruitReqDto reqDto) {
         if (reqDto.categoryDtos() == null) return List.of();
         return reqDto.categoryDtos().stream()
-                .filter(cd -> cd.firstCategory() != null && cd.secondCategory() != null) // 둘 다 있어야 매칭
-                .map(cd -> new CatPair(cd.firstCategory(), cd.secondCategory()))
+                .map(cd -> cd.firstCategory())
+                .filter(Objects::nonNull)
                 .distinct()
                 .toList();
     }
 
-    private void enqueueRecruitPublished(Long firstId, Long secondId, Long recruitId) {
-        var subscriberIds = subscriberQuery.findSubscriberIdsByFirstSecond(firstId, secondId);
+    private void enqueueRecruitPublished(Long firstId) {
+        var subscriberIds = subscriberQuery.findSubscriberIdsByFirst(firstId);
+        log.info("첫번째 카테고리 ID: {} 에 대한 구독자 수: {}", firstId, subscriberIds.size());
         if (subscriberIds == null || subscriberIds.isEmpty()) return;
 
         for (Long memberId : subscriberIds) {
-            String key = AGG_KEY_FMT.formatted(memberId, firstId, secondId);
+            String key = AGG_KEY_FMT.formatted(memberId, firstId);
             redisTemplate.opsForHash().increment(key, "count", 1);
             redisTemplate.expire(key, AGG_WINDOW);
         }
