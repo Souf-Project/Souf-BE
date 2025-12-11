@@ -107,6 +107,10 @@ public class Feed extends BaseEntity {
         if (this.commentCount > 0) this.commentCount--;
     }
 
+    public void decreaseCommentCount(int count) {
+        this.commentCount = Math.max(0, this.commentCount - count);
+    }
+
     public void addCategory(FeedCategoryMapping feedCategoryMapping){
         this.categories.add(feedCategoryMapping);
     }

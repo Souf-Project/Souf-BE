@@ -72,10 +72,22 @@ public class CommentServiceImpl implements CommentService {
         Feed feed = findIfFeedExist(postId);
         Comment comment = findIfCommentExists(commentId);
 
-        validatedIfCommentMine(member, comment); // 현재 사용자와 댓글 작성자의 아이디가 일치하지 않으면 예외 발생
+        validatedIfCommentMine(member, comment); // 권한 체크
 
-        commentRepository.delete(comment);
-        feed.decreaseCommentCount();
+        Long group = comment.getCommentGroup();
+        // 혹시 null일 경우(방어 코드)
+        if (group == null) {
+            commentRepository.delete(comment);
+            feed.decreaseCommentCount();
+            return;
+        }
+
+        // 같은 feed + 같은 commentGroup 전체 조회 후 삭제
+        List<Comment> groupComments =
+                commentRepository.findByFeedAndCommentGroup(feed, group);
+
+        commentRepository.deleteAll(groupComments);
+        feed.decreaseCommentCount(groupComments.size());
     }
 
     @Transactional
