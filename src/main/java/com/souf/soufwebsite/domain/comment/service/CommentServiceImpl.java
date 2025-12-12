@@ -83,8 +83,7 @@ public class CommentServiceImpl implements CommentService {
         }
 
         // 같은 feed + 같은 commentGroup 전체 조회 후 삭제
-        List<Comment> groupComments =
-                commentRepository.findByFeedAndCommentGroup(feed, group);
+        List<Comment> groupComments = commentRepository.findByFeedAndCommentGroup(feed, group);
 
         commentRepository.deleteAll(groupComments);
         feed.decreaseCommentCount(groupComments.size());

@@ -44,10 +44,10 @@ public class Feed extends BaseEntity {
     private Long weeklyViews;
 
     @Column(nullable = false)
-    private Long likedCount = 0L;
+    private int likedCount = 0;
 
     @Column(nullable = false)
-    private Long commentCount = 0L;
+    private int commentCount = 0;
 
     @Version
     private Long version;
