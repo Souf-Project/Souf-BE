@@ -34,6 +34,7 @@ public class CommentServiceImpl implements CommentService {
     private final FileService fileService;
 
     @Override
+    @Transactional
     public void createComment(Long postId, CommentReqDto reqDto) {
 
         Member writer = findIfMemberExists(reqDto.writerId());
@@ -41,10 +42,10 @@ public class CommentServiceImpl implements CommentService {
 
         Feed feed = findIfFeedExist(postId);
 
-        Long parent = commentRepository.nextCommentGroup(feed); // 다음 댓글 그룹을 지정
-        Comment comment = new Comment(writer, reqDto.content(),
-                author.getId(), feed, parent);
-        commentRepository.save(comment);
+        Comment parent = new Comment(writer, reqDto.content(), author.getId(), feed, null);
+        commentRepository.save(parent);
+
+        parent.assignGroupToSelf();
         feed.increaseCommentCount();
         log.info("{} 피드에 대한 댓글 생성 완료", feed.getId());
     }
