@@ -51,6 +51,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional
     public void createReply(Long postId, CommentReqDto reqDto) {
         Comment parentComment = findIfCommentExists(reqDto.parentId());
 

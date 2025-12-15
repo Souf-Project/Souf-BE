@@ -136,18 +136,15 @@ public class FeedServiceImpl implements FeedService {
 
         Long totalViewCount = viewCountService.updateTotalViewCount(currentMember, PostType.FEED, feedId, feed.getViewCount(), ip, userAgent);
 
-        Long likedCount = likedFeedRepository.countByFeedId(feedId).orElse(0L);
         Boolean liked = false;
         if(currentMember != null) {
             liked = getLiked(currentMember.getId(), feedId);
         }
 
-        Long commentCount = commentRepository.countByFeed(feed).orElse(0L);
-
         List<Media> mediaList = fileService.getMediaList(PostType.FEED, feedId);
         String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-        return FeedDetailResDto.from(member, profileImageUrl, feed, totalViewCount, likedCount, liked, commentCount, mediaList);
+        return FeedDetailResDto.from(member, profileImageUrl, feed, totalViewCount, liked, mediaList);
     }
 
     @Transactional
@@ -249,10 +246,7 @@ public class FeedServiceImpl implements FeedService {
                     Member member = feed.getMember();
                     String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-                    Long likedCount = likedFeedRepository.countByFeedId(feed.getId()).orElse(0L);
-                    Long commentCount = commentRepository.countByFeed(feed).orElse(0L);
-
-                    return FeedDetailResDto.from(feed.getMember(), profileImageUrl, feed, viewCount, likedCount, false, commentCount, mediaList);
+                    return FeedDetailResDto.from(feed.getMember(), profileImageUrl, feed, viewCount, false, mediaList);
                 }
         );
     }
