@@ -26,9 +26,8 @@ import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
-import com.souf.soufwebsite.domain.notification.dto.NotificationDto;
 import com.souf.soufwebsite.domain.notification.entity.NotificationType;
-import com.souf.soufwebsite.domain.notification.service.NotificationPublisher;
+import com.souf.soufwebsite.domain.notification.event.NotificationEvent;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;
 import com.souf.soufwebsite.domain.report.entity.Report;
@@ -40,13 +39,13 @@ import com.souf.soufwebsite.global.common.PostType;
 import com.souf.soufwebsite.global.common.mail.SesMailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -63,8 +62,8 @@ public class AdminServiceImpl implements AdminService {
 
     private final StrikeService strikeService;
     private final SesMailService emailService;
-    private final NotificationPublisher notificationPublisher;
     private final MediaCleanupPublisher mediaCleanupPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional(readOnly = true)
@@ -129,19 +128,16 @@ public class AdminServiceImpl implements AdminService {
 
         Member toMember = inquiry.getMember();
 
-        NotificationDto dto = new NotificationDto(
-                toMember.getEmail(),
+        eventPublisher.publishEvent(new NotificationEvent(
                 toMember.getId(),
                 NotificationType.INQUIRY_REPLIED,
                 "문의에 답변이 등록됐어요",
                 "문의하신 내용에 새로운 답변이 도착했어요.",
                 "INQUIRY",
-                inquiryId,
-                LocalDateTime.now()
-        );
+                inquiryId
+        ));
 
         emailService.sendInquiryResult(toMember.getEmail(), toMember.getNickname(), inquiry.getTitle());
-        notificationPublisher.publish(dto);
     }
 
     @Transactional

@@ -2,12 +2,10 @@ package com.souf.soufwebsite.domain.notification.scheduler;
 
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
-import com.souf.soufwebsite.domain.notification.dto.NotificationDto;
 import com.souf.soufwebsite.domain.notification.entity.NotificationType;
-import com.souf.soufwebsite.domain.notification.service.NotificationPublisher;
+import com.souf.soufwebsite.domain.notification.service.NotificationFacade;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.repository.FirstCategoryRepository;
-import com.souf.soufwebsite.global.common.category.repository.SecondCategoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -22,10 +20,9 @@ import java.util.Set;
 public class RecruitPublishAggregationScheduler {
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private final NotificationPublisher notificationPublisher;
     private final MemberRepository memberRepository;
     private final FirstCategoryRepository firstCategoryRepository;
-    private final SecondCategoryRepository secondCategoryRepository;
+    private final NotificationFacade notificationFacade;
 
     /**
      * 매 시간 정각마다 실행
@@ -62,18 +59,15 @@ public class RecruitPublishAggregationScheduler {
 
                 String body = String.format("%s 카테고리에 새로운 공고가 %d건 올라왔어요.", categoryName, count);
 
-                NotificationDto dto = new NotificationDto(
-                        member.getEmail(),
-                        memberId,
+                notificationFacade.notify(
+                        member,
                         NotificationType.RECRUIT_PUBLISHED,
                         "관심 카테고리 새 공고 알림",
                         body,
                         "RECRUIT",
-                        null,
-                        java.time.LocalDateTime.now()
+                        null
                 );
 
-                notificationPublisher.publish(dto);
                 log.info("[Scheduler] 알림 발행 완료 → {}", key);
 
                 redisTemplate.delete(key);

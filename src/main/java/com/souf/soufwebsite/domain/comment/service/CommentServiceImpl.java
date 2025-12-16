@@ -14,9 +14,12 @@ import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.domain.notification.entity.NotificationType;
+import com.souf.soufwebsite.domain.notification.event.NotificationEvent;
 import com.souf.soufwebsite.global.common.PostType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +35,7 @@ public class CommentServiceImpl implements CommentService {
     private final FeedRepository feedRepository;
     private final MemberRepository memberRepository;
     private final FileService fileService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public void createComment(Long postId, CommentReqDto reqDto) {
@@ -45,6 +49,18 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = new Comment(writer, reqDto.content(),
                 author.getId(), feed, parent);
         commentRepository.save(comment);
+
+        if (!author.getId().equals(writer.getId())) {
+            eventPublisher.publishEvent(new NotificationEvent(
+                    author.getId(),
+                    NotificationType.FEED_COMMENT_CREATED,
+                    "새 댓글 알림",
+                    writer.getNickname() + " : " + trim(comment.getContent()),
+                    "FEED",
+                    feed.getId()
+            ));
+        }
+
         log.info("{} 피드에 대한 댓글 생성 완료", feed.getId());
     }
 
@@ -60,6 +76,19 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = new Comment(writer, reqDto.content(),
                 author.getId(), feed, parentComment.getCommentGroup());
         commentRepository.save(comment);
+
+        Long parentWriterId = parentComment.getWriter().getId();
+        if (!parentWriterId.equals(writer.getId())) {
+            eventPublisher.publishEvent(new NotificationEvent(
+                    parentWriterId,
+                    NotificationType.FEED_REPLY_CREATED,
+                    "대댓글 알림",
+                    writer.getNickname() + " : " + trim(comment.getContent()),
+                    "COMMENT",
+                    parentComment.getId()
+            ));
+        }
+
         log.info("{}에 대한 대댓글 생성", reqDto.parentId());
     }
 
@@ -144,5 +173,12 @@ public class CommentServiceImpl implements CommentService {
         if(!comment.getWriter().getId().equals(member.getId())){
             throw new NotMatchedOwnerException();
         }
+    }
+
+    private String trim(String content) {
+        int max = 50;
+        return content.length() <= max
+                ? content
+                : content.substring(0, max) + "...";
     }
 }
