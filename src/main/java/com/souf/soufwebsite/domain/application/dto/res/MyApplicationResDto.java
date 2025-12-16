@@ -1,6 +1,7 @@
 package com.souf.soufwebsite.domain.application.dto.res;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.souf.soufwebsite.domain.application.entity.ApplicationStatus;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -23,8 +24,11 @@ public record MyApplicationResDto(
         @Schema(description = "카테고리 목록")
         List<CategoryDto> categoryDtos,
 
-        @Schema(description = "지원 상태", example = "PENDING")
-        String status,
+        @Schema(description = "공고문 지원 가능 상태", example = "모집 중 or 마감")
+        String recruitable,
+
+        @Schema(description = "지원 합격 상태", example = "ACCEPTED or REJECTED")
+        ApplicationStatus status,
 
         @Schema(description="지원 가격 (FIXED일 경우 null, OFFER일 경우 내가 제안한 견적 가격)", example="400000")
         String priceOffer,
