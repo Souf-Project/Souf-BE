@@ -18,6 +18,11 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, FeedCustomRep
 
     @Transactional
     @Modifying
+    @Query("update Feed f set f.weeklyViews = 0")
+    void updateWeeklyViews();
+
+    @Transactional
+    @Modifying
     @Query("update Feed f set f.viewCount = f.viewCount + :count where f.id = :feedId")
     void increaseTotalViewCount(@Param("feedId") Long feedId, @Param("count") Long count);
 
