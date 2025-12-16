@@ -6,7 +6,6 @@ import com.souf.soufwebsite.domain.notification.dto.NotificationDto;
 import com.souf.soufwebsite.domain.notification.entity.NotificationType;
 import com.souf.soufwebsite.domain.notification.service.NotificationPublisher;
 import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
-import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
 import com.souf.soufwebsite.global.common.category.repository.FirstCategoryRepository;
 import com.souf.soufwebsite.global.common.category.repository.SecondCategoryRepository;
 import lombok.RequiredArgsConstructor;
