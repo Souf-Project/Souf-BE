@@ -41,9 +41,21 @@
 
 
     <springProfile name="dev">
-        <root level="INFO">
+        <root level="DEBUG">
             <appender-ref ref="CONSOLE_PRETTY"/>
         </root>
+
+        <logger name="io.netty" level="INFO"/>
+
+        <logger name="org.hibernate.SQL" level="INFO"/>
+
+        <logger name="com.zaxxer.hikari" level="INFO"/>
+
+        <logger name="software.amazon.awssdk" level="INFO" />
+        <logger name="com.amazonaws" level="INFO" />
+        <logger name="org.springframework" level="INFO" />
+        <logger name="io.awspring.cloud.sqs" level="INFO"/>
+        <logger name="org.redisson.connection.DNSMonitor" level="INFO"/>
     </springProfile>
 
     <springProfile name="prod">
@@ -53,5 +65,19 @@
             <appender-ref ref="FILE_APP_JSON"/>
             <appender-ref ref="FILE_ERROR_JSON"/>
         </root>
+
+        <logger name="io.netty" level="WARN"/>
+
+        <logger name="com.zaxxer.hikari" level="INFO"/>
+
+        <logger name="software.amazon.awssdk" level="INFO"/>
+        <logger name="com.amazonaws" level="INFO"/>
+        <logger name="org.springframework" level="INFO"/>
+
+        <logger name="io.awspring.cloud.sqs" level="INFO"/>
+        <logger name="io.awspring.cloud.sqs.listener" level="INFO"/>
+        <logger name="io.awspring.cloud.sqs.listener.source" level="INFO"/>
+
+        <logger name="org.redisson.connection.DNSMonitor" level="INFO"/>
     </springProfile>
 </configuration>
