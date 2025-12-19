@@ -4,6 +4,7 @@ import com.souf.soufwebsite.domain.application.dto.req.ApplicationOfferReqDto;
 import com.souf.soufwebsite.domain.application.dto.res.ApplicantResDto;
 import com.souf.soufwebsite.domain.application.dto.res.MyApplicationResDto;
 import com.souf.soufwebsite.domain.application.entity.Application;
+import com.souf.soufwebsite.domain.application.entity.ApplicationStatus;
 import com.souf.soufwebsite.domain.application.exception.*;
 import com.souf.soufwebsite.domain.application.repository.ApplicationRepository;
 import com.souf.soufwebsite.domain.file.service.FileService;
@@ -136,6 +137,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                                 null,
                                 List.of(),
                                 "삭제됨",
+                                ApplicationStatus.PENDING,
                                 app.getPriceOffer(),
                                 app.getPriceReason(),
                                 app.getAppliedAt()
@@ -150,7 +152,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                             ))
                             .toList();
 
-                    String status = recruit.isRecruitable() ? "모집 중" : "마감";
+                    String recruitable = recruit.isRecruitable() ? "모집 중" : "마감";
                     String writerNickname = "탈퇴한 회원";
                     try {
                         if (recruit.getMember() != null) {
@@ -165,7 +167,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                             recruit.getTitle(),
                             writerNickname,
                             categories,
-                            status,
+                            recruitable,
+                            app.getStatus(),
                             app.getPriceOffer(),
                             app.getPriceReason(),
                             app.getAppliedAt()
