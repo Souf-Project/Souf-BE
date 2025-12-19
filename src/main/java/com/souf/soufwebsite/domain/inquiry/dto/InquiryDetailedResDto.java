@@ -5,6 +5,7 @@ import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.inquiry.entity.Inquiry;
 import com.souf.soufwebsite.domain.member.entity.Member;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -12,12 +13,16 @@ public record InquiryDetailedResDto(
 
         Long inquiryId,
         Long memberId,
+        String answer,
+        LocalDate answerDate,
         List<MediaResDto> mediaResDtoList
 ) {
     public static InquiryDetailedResDto of(Inquiry inquiry, Member member, List<Media> mediaList) {
         return new InquiryDetailedResDto(
                 inquiry.getId(),
                 member.getId(),
+                inquiry.getAnswer(),
+                inquiry.getAnswerTime() == null ? null : LocalDate.from(inquiry.getAnswerTime()),
                 convertToMediaResDto(mediaList)
         );
     }
