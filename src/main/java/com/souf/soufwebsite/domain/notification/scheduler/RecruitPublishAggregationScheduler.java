@@ -49,20 +49,17 @@ public class RecruitPublishAggregationScheduler {
 
                 // key 형식: notif:agg:{memberId}:{firstId}:{secondId}
                 String[] parts = key.split(":");
-                if (parts.length != 5) continue;
+                if (parts.length != 4) continue;
 
                 Long memberId = Long.parseLong(parts[2]);
                 Long firstId = Long.parseLong(parts[3]);
-                Long secondId = Long.parseLong(parts[4]);
 
                 Member member = memberRepository.findById(memberId).orElse(null);
                 if (member == null || member.getEmail() == null) continue;
 
                 FirstCategory first = firstCategoryRepository.findById(firstId).orElse(null);
-                SecondCategory second = secondCategoryRepository.findById(secondId).orElse(null);
 
-                String categoryName = (first != null ? first.getName() : "") +
-                        (second != null ? " / " + second.getName() : "");
+                String categoryName = (first != null ? first.getName() : "");
 
                 String body = String.format("%s 카테고리에 새로운 공고가 %d건 올라왔어요.", categoryName, count);
 
