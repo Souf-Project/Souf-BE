@@ -98,7 +98,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                 "새 지원자 발생",
                 "[" + recruit.getTitle() + "]에 새 지원자가 도착했어요.",
                 "RECRUIT",
-                recruit.getId()
+                recruit.getId(),
+                "APPLICANT_CREATED:APPLICATION:" + application.getId()
         ));
     }
 
@@ -241,7 +242,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                 "지원 결과 안내",
                 "[" + recruit.getTitle() + "] 지원에 대한 결과가 등록되었습니다.",
                 "APPLICATION",
-                app.getId()
+                app.getId(),
+                "APPLICATION_REVIEWED:APPLICATION:" + app.getId()
         ));
         emailService.announceRecruitResult(to, nickname, title);
     }

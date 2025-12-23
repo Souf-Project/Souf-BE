@@ -134,7 +134,8 @@ public class AdminServiceImpl implements AdminService {
                 "문의에 답변이 등록됐어요",
                 "문의하신 내용에 새로운 답변이 도착했어요.",
                 "INQUIRY",
-                inquiryId
+                inquiryId,
+                "INQUIRY_REPLIED:INQUIRY:" + inquiryId
         ));
 
         emailService.sendInquiryResult(toMember.getEmail(), toMember.getNickname(), inquiry.getTitle());

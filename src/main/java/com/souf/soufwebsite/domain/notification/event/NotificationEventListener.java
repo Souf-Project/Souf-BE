@@ -12,21 +12,18 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @RequiredArgsConstructor
 public class NotificationEventListener {
 
-    private final MemberRepository memberRepository;
     private final NotificationFacade notificationFacade;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(NotificationEvent e) {
-        Member target = memberRepository.findById(e.targetMemberId()).orElse(null);
-        if (target == null) return;
-
-        notificationFacade.notify(
-                target,
+        notificationFacade.enqueue(
+                e.targetMemberId(),
                 e.type(),
                 e.title(),
                 e.body(),
                 e.refType(),
-                e.refId()
+                e.refId(),
+                e.dedupKey()
         );
     }
 }

@@ -1,6 +1,5 @@
-package com.souf.soufwebsite.domain.notification.repository;
+package com.souf.soufwebsite.domain.notification.outbox;
 
-import com.souf.soufwebsite.domain.notification.entity.NotificationOutbox;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

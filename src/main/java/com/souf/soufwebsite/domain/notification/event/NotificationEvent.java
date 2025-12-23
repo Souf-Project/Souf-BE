@@ -8,5 +8,10 @@ public record NotificationEvent(
         String title,
         String body,
         String refType,
-        Long refId
-) {}
+        Long refId,
+        String dedupKey
+) {
+    public static String defaultDedupKey(NotificationEvent e) {
+        return e.type() + ":" + e.refType() + ":" + e.refId() + ":" + e.targetMemberId();
+    }
+}

@@ -12,6 +12,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Set;
 
 @Slf4j
@@ -58,14 +60,17 @@ public class RecruitPublishAggregationScheduler {
                 String categoryName = (first != null ? first.getName() : "");
 
                 String body = String.format("%s 카테고리에 새로운 공고가 %d건 올라왔어요.", categoryName, count);
+                String hourBucket = LocalDateTime.now()
+                        .format(DateTimeFormatter.ofPattern("yyyyMMddHH"));
 
-                notificationFacade.notify(
-                        member,
+                notificationFacade.enqueue(
+                        member.getId(),
                         NotificationType.RECRUIT_PUBLISHED,
                         "관심 카테고리 새 공고 알림",
                         body,
                         "RECRUIT",
-                        null
+                        null,
+                        "RECRUIT_PUBLISHED_AGG:" + memberId + ":" + firstId + ":" + hourBucket
                 );
 
                 log.info("[Scheduler] 알림 발행 완료 → {}", key);

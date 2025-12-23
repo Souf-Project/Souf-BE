@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.notification.entity;
+package com.souf.soufwebsite.domain.notification.outbox;
 
 
 import jakarta.persistence.*;
@@ -18,15 +18,15 @@ public class NotificationOutbox {
     private Long id;
 
     @Column(name = "dedup_key", nullable = false, length = 200)
-    private String dedupKey; // ex) APPLICATION_REVIEWED:APPLICATION:123
+    private String dedupKey;
 
     @Lob
-    @Column(name = "payload", nullable = false)
-    private String payloadJson; // NotificationDto를 JSON으로 직렬화한 값
+    @Column(name = "payload_json", nullable = false)
+    private String payloadJson;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private OutboxStatus status;
+    private NotificationOutboxStatus status;
 
     @Column(nullable = false)
     private int retryCount;
@@ -49,14 +49,18 @@ public class NotificationOutbox {
     private NotificationOutbox(String dedupKey, String payloadJson, int maxRetries, LocalDateTime nextRetryAt) {
         this.dedupKey = dedupKey;
         this.payloadJson = payloadJson;
-        this.status = OutboxStatus.PENDING;
+        this.status = NotificationOutboxStatus.PENDING;
         this.retryCount = 0;
         this.maxRetries = maxRetries;
         this.nextRetryAt = nextRetryAt;
     }
 
+    public void markProcessing() {
+        this.status = NotificationOutboxStatus.PROCESSING;
+    }
+
     public void markSent() {
-        this.status = OutboxStatus.SENT;
+        this.status = NotificationOutboxStatus.SENT;
         this.sentAt = LocalDateTime.now();
         this.lastError = null;
     }
@@ -66,15 +70,15 @@ public class NotificationOutbox {
         this.lastError = truncate(err, 500);
 
         if (this.retryCount >= this.maxRetries) {
-            this.status = OutboxStatus.FAILED;
+            this.status = NotificationOutboxStatus.FAILED;
         } else {
-            this.status = OutboxStatus.PENDING;
+            this.status = NotificationOutboxStatus.PENDING;
             this.nextRetryAt = LocalDateTime.now().plusSeconds(backoffSeconds(this.retryCount));
         }
     }
 
     private static long backoffSeconds(int retryCount) {
-        // 1회 10s, 2회 30s, 3회 60s, 4회 120s ... (상한 10분)
+        // 1회 10s, 2회 30s, 3회 60s, 4회 120s, 5회 300s ... (상한 10분)
         long[] steps = {10, 30, 60, 120, 300, 600};
         return steps[Math.min(retryCount - 1, steps.length - 1)];
     }
