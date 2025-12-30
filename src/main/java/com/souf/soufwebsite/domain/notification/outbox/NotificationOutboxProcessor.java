@@ -45,7 +45,6 @@ public class NotificationOutboxProcessor {
                     continue;
                 }
 
-                // ✅ 실제 발송/저장 (기존 notify 로직이 여기로 옴)
                 notificationFacade.sendNow(
                         target,
                         payload.type(),

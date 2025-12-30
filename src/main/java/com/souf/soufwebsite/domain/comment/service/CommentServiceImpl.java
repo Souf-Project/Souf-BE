@@ -37,6 +37,7 @@ public class CommentServiceImpl implements CommentService {
     private final FileService fileService;
     private final ApplicationEventPublisher eventPublisher;
 
+    @Transactional
     @Override
     public void createComment(Long postId, CommentReqDto reqDto) {
 
@@ -65,6 +66,7 @@ public class CommentServiceImpl implements CommentService {
         log.info("{} 피드에 대한 댓글 생성 완료", feed.getId());
     }
 
+    @Transactional
     @Override
     public void createReply(Long postId, CommentReqDto reqDto) {
         Comment parentComment = findIfCommentExists(reqDto.parentId());
