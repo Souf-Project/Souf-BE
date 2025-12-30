@@ -9,11 +9,15 @@ import java.util.List;
 
 public interface NotificationOutboxRepository extends JpaRepository<NotificationOutbox, Long> {
 
-    @Query("""
-        select o from NotificationOutbox o
-        where o.status = 'PENDING'
-          and o.nextRetryAt <= :now
-        order by o.id asc
-    """)
+    @Query(
+            value = """
+              select *
+              from notification_outbox
+              where status = 'PENDING'
+              and next_retry_at <= :now
+              order by id
+              for update skip locked
+             """, nativeQuery = true
+    )
     List<NotificationOutbox> findDue(@Param("now") LocalDateTime now);
 }
