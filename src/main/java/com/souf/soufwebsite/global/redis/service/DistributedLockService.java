@@ -86,7 +86,8 @@ public class DistributedLockService {
             slackService.sendSlackMessage("스케줄링 작업 중 현재 스레드에서 오류가 발생했어요!", "error");
         } catch (Exception e) {
             log.error("스케줄 작업 중 예외 발생", e);
-            slackService.sendSlackMessage("스케줄 작업 중 오류가 발생했어요!", "error");
+            String msg = "스케줄 작업 오류 : " + e.getMessage();
+            slackService.sendSlackMessage(msg, "error");
             throw e;
         } finally {
             if (isLocked && lock.isHeldByCurrentThread()) {

@@ -12,6 +12,9 @@ services:
     depends_on:
       - redis
       - rabbitmq
+    volumes:
+      - /var/log/souf-app:/var/log/souf-app
+    restart: always
 
   redis:
     image: redis:7.2.4

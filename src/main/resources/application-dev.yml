@@ -20,3 +20,15 @@ spring:
         enabled: false
 
       host: redis-container
+
+logging:
+  level:
+    root: debug
+
+    org.apache.http.impl.conn.PoolingHttpClientConnectionManager: info
+
+    org.hibernate.internal.util.EntityPrinter: warn
+    org.hibernate.orm: info
+
+    io.lettuce.core.protocol.CommandHandler: info
+    io.lettuce.core: info
