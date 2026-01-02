@@ -19,7 +19,7 @@ spring:
       ssl:
         enabled: false
 
-      host: localhost
+      host: redis-container
 
 logging:
   level:

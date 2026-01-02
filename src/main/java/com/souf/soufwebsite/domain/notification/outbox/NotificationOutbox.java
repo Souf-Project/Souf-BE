@@ -42,9 +42,6 @@ public class NotificationOutbox {
     @Column(length = 500)
     private String lastError;
 
-    @Version
-    private Long version;
-
     @Builder
     private NotificationOutbox(String dedupKey, String payloadJson, int maxRetries, LocalDateTime nextRetryAt) {
         this.dedupKey = dedupKey;
