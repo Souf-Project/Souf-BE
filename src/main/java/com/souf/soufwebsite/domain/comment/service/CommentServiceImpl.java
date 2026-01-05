@@ -57,7 +57,7 @@ public class CommentServiceImpl implements CommentService {
                     NotificationType.FEED_COMMENT_CREATED,
                     "새 댓글 알림",
                     writer.getNickname() + " : " + trim(comment.getContent()),
-                    "FEED",
+                    "COMMENT",
                     feed.getId(),
                     "FEED_COMMENT_CREATED:COMMENT:" + comment.getId()
             ));
@@ -87,7 +87,7 @@ public class CommentServiceImpl implements CommentService {
                     NotificationType.FEED_REPLY_CREATED,
                     "대댓글 알림",
                     writer.getNickname() + " : " + trim(comment.getContent()),
-                    "COMMENT",
+                    "REPLY",
                     parentComment.getId(),
                     "FEED_REPLY_CREATED:COMMENT:" + comment.getId()
             ));
