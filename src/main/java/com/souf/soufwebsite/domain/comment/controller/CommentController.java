@@ -25,20 +25,22 @@ public class CommentController implements CommentApiSpecification{
 
     @PostMapping
     public SuccessResponse createComment(
+            @CurrentEmail String email,
             @PathVariable(name = "postId") Long postId,
             @Valid @RequestBody CommentReqDto reqDto) {
 
-        commentService.createComment(postId, reqDto);
+        commentService.createComment(email, postId, reqDto);
 
         return new SuccessResponse(CREATE_COMMENT_SUCCESS.getMessage());
     }
 
     @PostMapping("/reply")
     public SuccessResponse createReply(
+            @CurrentEmail String email,
             @PathVariable(name = "postId") Long postId,
             @Valid @RequestBody CommentReqDto reqDto) {
 
-        commentService.createReply(postId, reqDto);
+        commentService.createReply(email, postId, reqDto);
 
         return new SuccessResponse(CREATE_COMMENT_SUCCESS.getMessage());
     }

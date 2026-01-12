@@ -39,21 +39,20 @@ public class CommentServiceImpl implements CommentService {
 
     @Transactional
     @Override
-    public void createComment(Long postId, CommentReqDto reqDto) {
+    public void createComment(String email, Long postId, CommentReqDto reqDto) {
 
-        Member writer = findIfMemberExists(reqDto.writerId());
-        Member author = findIfMemberExists(reqDto.authorId());
-
+        Member writer = findIfEmailExists(email);
         Feed feed = findIfFeedExist(postId);
+        Long authorId = feed.getMember().getId();
 
         Long parent = commentRepository.nextCommentGroup(feed); // 다음 댓글 그룹을 지정
         Comment comment = new Comment(writer, reqDto.content(),
-                author.getId(), feed, parent);
+                authorId, feed, parent);
         commentRepository.save(comment);
 
-        if (!author.getId().equals(writer.getId())) {
+        if (!authorId.equals(writer.getId())) {
             eventPublisher.publishEvent(new NotificationEvent(
-                    author.getId(),
+                    authorId,
                     NotificationType.FEED_COMMENT_CREATED,
                     "새 댓글 알림",
                     writer.getNickname() + " : " + trim(comment.getContent()),
@@ -68,16 +67,15 @@ public class CommentServiceImpl implements CommentService {
 
     @Transactional
     @Override
-    public void createReply(Long postId, CommentReqDto reqDto) {
+    public void createReply(String email, Long postId, CommentReqDto reqDto) {
         Comment parentComment = findIfCommentExists(reqDto.parentId());
 
-        Member writer = findIfMemberExists(reqDto.writerId());
-        Member author = findIfMemberExists(reqDto.authorId());
-
+        Member writer = findIfEmailExists(email);
         Feed feed = findIfFeedExist(postId);
+        Long authorId = feed.getMember().getId();
 
         Comment comment = new Comment(writer, reqDto.content(),
-                author.getId(), feed, parentComment.getCommentGroup());
+                authorId, feed, parentComment.getCommentGroup());
         commentRepository.save(comment);
 
         Long parentWriterId = parentComment.getWriter().getId();

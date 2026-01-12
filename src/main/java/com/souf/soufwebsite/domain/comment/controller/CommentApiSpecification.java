@@ -19,12 +19,14 @@ public interface CommentApiSpecification {
     @Operation(summary = "댓글 생성", description = "게시글에 대한 댓글을 생성합니다.")
     @PostMapping
     SuccessResponse createComment(
+            @CurrentEmail String email,
             @PathVariable Long postId,
             @RequestBody CommentReqDto reqDto);
 
     @Operation(summary = "대댓글 생성", description = "게시글의 댓글에 댓글을 생성합니다.")
     @PostMapping("/reply")
     SuccessResponse createReply(
+            @CurrentEmail String email,
             @PathVariable(name = "postId") Long postId,
             @RequestBody CommentReqDto reqDto);
 
