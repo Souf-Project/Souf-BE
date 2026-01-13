@@ -5,7 +5,9 @@ import com.souf.soufwebsite.domain.comment.dto.CommentResDto;
 import com.souf.soufwebsite.domain.comment.dto.CommentUpdateReqDto;
 import com.souf.soufwebsite.domain.comment.entity.Comment;
 import com.souf.soufwebsite.domain.comment.exception.NotFoundCommentException;
+import com.souf.soufwebsite.domain.comment.exception.NotMatchedCommentAndFeedException;
 import com.souf.soufwebsite.domain.comment.exception.NotMatchedOwnerException;
+import com.souf.soufwebsite.domain.comment.exception.NotReplyToReplyException;
 import com.souf.soufwebsite.domain.comment.repository.CommentRepository;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.exception.NotFoundFeedException;
@@ -45,10 +47,10 @@ public class CommentServiceImpl implements CommentService {
         Feed feed = findIfFeedExist(postId);
         Long authorId = feed.getMember().getId();
 
-        Long parent = commentRepository.nextCommentGroup(feed); // 다음 댓글 그룹을 지정
         Comment comment = new Comment(writer, reqDto.content(),
-                authorId, feed, parent);
+                authorId, feed);
         commentRepository.save(comment);
+        comment.updateCommentGroup(comment.getId());
 
         if (!authorId.equals(writer.getId())) {
             eventPublisher.publishEvent(new NotificationEvent(
@@ -70,12 +72,16 @@ public class CommentServiceImpl implements CommentService {
     public void createReply(String email, Long postId, CommentReqDto reqDto) {
         Comment parentComment = findIfCommentExists(reqDto.parentId());
 
+        validateCommentAndFeed(parentComment.getFeed().getId(), postId);
+        validateReplyToReply(parentComment.getId(), parentComment.getCommentGroup());
+
         Member writer = findIfEmailExists(email);
-        Feed feed = findIfFeedExist(postId);
+        Feed feed = parentComment.getFeed();
         Long authorId = feed.getMember().getId();
 
         Comment comment = new Comment(writer, reqDto.content(),
-                authorId, feed, parentComment.getCommentGroup());
+                authorId, feed);
+        comment.updateCommentGroup(parentComment.getCommentGroup());
         commentRepository.save(comment);
 
         Long parentWriterId = parentComment.getWriter().getId();
@@ -116,6 +122,7 @@ public class CommentServiceImpl implements CommentService {
         comment.updateContent(reqDto.content());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Slice<CommentResDto> getComments(Long postId, Pageable pageable) {
         findIfFeedExist(postId);
@@ -135,32 +142,30 @@ public class CommentServiceImpl implements CommentService {
         );
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Page<CommentResDto> getReplyComments(Long postId, Long commentId, Pageable pageable) {
         Feed feed = findIfFeedExist(postId);
         Comment currentComment = findIfCommentExists(commentId);
 
+        validateCommentAndFeed(currentComment.getFeed().getId(), postId);
+
         Page<Comment> replyComments = commentRepository
-                .findByFeedAndCommentGroupOrderByCreatedTime(feed, currentComment.getCommentGroup(), pageable);
+                .findRepliesByFeedIdAndGroup(feed.getId(), currentComment.getCommentGroup(), pageable);
 
 
-        List<CommentResDto> commentResDtos = replyComments.stream().map(
-                comment -> {
+        List<CommentResDto> dtos = replyComments.getContent().stream()
+                .map(comment -> {
                     String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, comment.getWriter().getId());
                     return CommentResDto.from(comment, comment.getWriter(), mediaUrl);
-                }
-        ).toList();
+                }).toList();
 
-        return new PageImpl<>(commentResDtos, pageable, replyComments.getTotalPages());
+
+        return new PageImpl<>(dtos, pageable, replyComments.getTotalElements());
     }
-
 
     private Feed findIfFeedExist(Long id) {
         return feedRepository.findById(id).orElseThrow(NotFoundFeedException::new);
-    }
-
-    private Member findIfMemberExists(Long memberId) {
-        return memberRepository.findById(memberId).orElseThrow(NotFoundMemberException::new);
     }
 
     private Comment findIfCommentExists(Long commentId) {
@@ -169,6 +174,18 @@ public class CommentServiceImpl implements CommentService {
 
     private Member findIfEmailExists(String email) {
         return memberRepository.findByEmail(email).orElseThrow(NotFoundMemberException::new);
+    }
+
+    private void validateCommentAndFeed(Long feedIdByComment, Long feedId){
+        if(!feedIdByComment.equals(feedId)) {
+            throw new NotMatchedCommentAndFeedException();
+        }
+    }
+
+    private void validateReplyToReply(Long commentId, Long commentGroup){
+        if(!commentId.equals(commentGroup)) {
+            throw new NotReplyToReplyException();
+        }
     }
 
     private static void validatedIfCommentMine(Member member, Comment comment) {
