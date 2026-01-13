@@ -5,6 +5,7 @@ import com.souf.soufwebsite.domain.comment.dto.CommentResDto;
 import com.souf.soufwebsite.domain.comment.dto.CommentUpdateReqDto;
 import com.souf.soufwebsite.domain.comment.service.CommentService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
+import com.souf.soufwebsite.global.util.ApprovedOnly;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class CommentController implements CommentApiSpecification{
 
     private final CommentService commentService;
 
+    @ApprovedOnly
     @PostMapping
     public SuccessResponse createComment(
             @CurrentEmail String email,
@@ -34,6 +36,7 @@ public class CommentController implements CommentApiSpecification{
         return new SuccessResponse(CREATE_COMMENT_SUCCESS.getMessage());
     }
 
+    @ApprovedOnly
     @PostMapping("/reply")
     public SuccessResponse createReply(
             @CurrentEmail String email,
@@ -65,6 +68,7 @@ public class CommentController implements CommentApiSpecification{
         return new SuccessResponse<>(replyComments, READ_COMMENTS_SUCCESS.getMessage());
     }
 
+    @ApprovedOnly
     @PatchMapping
     public SuccessResponse updateComment(
             @CurrentEmail String email,
@@ -75,6 +79,7 @@ public class CommentController implements CommentApiSpecification{
         return new SuccessResponse(UPDATE_COMMENT_SUCCESS.getMessage());
     }
 
+    @ApprovedOnly
     @DeleteMapping("/{commentId}")
     public SuccessResponse deleteComment(
             @CurrentEmail String email,
