@@ -1,10 +1,12 @@
 package com.souf.soufwebsite.domain.application.controller;
 
+import com.souf.soufwebsite.domain.application.dto.req.ApplicationDecisionReqDto;
 import com.souf.soufwebsite.domain.application.dto.res.ApplicantResDto;
 import com.souf.soufwebsite.domain.application.service.ApplicationService;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.ApprovedOnly;
 import com.souf.soufwebsite.global.util.CurrentEmail;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -50,5 +52,16 @@ public class RecruitApplicationController implements RecruitApplicationApiSpecif
     ) {
         applicationService.reviewApplication(email, applicationId, false);
         return new SuccessResponse<>(APPLY_REJECT.getMessage());
+    }
+
+    @ApprovedOnly
+    @PatchMapping("/{applicationId}/decision")
+    public SuccessResponse<?> decideApplication(
+            @CurrentEmail String email,
+            @PathVariable Long applicationId,
+            @RequestBody @Valid ApplicationDecisionReqDto req
+    ) {
+        applicationService.decideApplication(email, applicationId, req);
+        return new SuccessResponse<>(APPLICATION_DECISION_SUCCESS.getMessage());
     }
 }

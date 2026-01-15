@@ -1,5 +1,7 @@
 package com.souf.soufwebsite.domain.application.service;
 
+import com.souf.soufwebsite.domain.application.dto.req.ApplicationDecision;
+import com.souf.soufwebsite.domain.application.dto.req.ApplicationDecisionReqDto;
 import com.souf.soufwebsite.domain.application.dto.req.ApplicationOfferReqDto;
 import com.souf.soufwebsite.domain.application.dto.res.ApplicantResDto;
 import com.souf.soufwebsite.domain.application.dto.res.MyApplicationResDto;
@@ -250,6 +252,53 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         notificationPublisher.publish(dto);
         emailService.announceRecruitResult(to, m.getNickname(), title);
+    }
+
+    @Override
+    @Transactional
+    public void decideApplication(String email, Long applicationId, ApplicationDecisionReqDto req) {
+        Member me = findIfEmailExists(email);
+
+        Application app = applicationRepository.findById(applicationId)
+                .orElseThrow(NotFoundApplicationException::new);
+
+        Recruit recruit = app.getRecruit();
+        if (recruit == null) {
+            throw new NotFoundRecruitException();
+        }
+
+        verifyOwner(recruit, me);
+
+        if (req.decision() == ApplicationDecision.APPROVE) {
+            app.accept();
+        } else {
+            app.reject();
+        }
+
+        try {
+            Member applicant = app.getMember();
+            String bodyMsg = "[" + recruit.getTitle() + "] 지원에 대한 결과가 등록되었습니다.";
+
+            NotificationDto dto = new NotificationDto(
+                    applicant.getEmail(),
+                    applicant.getId(),
+                    NotificationType.APPLICATION_REVIEWED,
+                    "지원 결과 안내",
+                    bodyMsg,
+                    "APPLICATION",
+                    app.getId(),
+                    LocalDateTime.now()
+            );
+            notificationPublisher.publish(dto);
+
+            emailService.announceRecruitResult(
+                    applicant.getEmail(),
+                    applicant.getNickname(),
+                    recruit.getTitle()
+            );
+        } catch (EntityNotFoundException ignored) {
+            log.warn("지원 결과 알림/메일 후처리 중 EntityNotFoundException. applicationId={}", applicationId);
+        }
     }
 
     private Member findIfEmailExists(String email) {
