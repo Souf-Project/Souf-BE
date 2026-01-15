@@ -15,6 +15,7 @@ public enum ApplicationSuccessMessage {
     /* ============================== RECRUIT ======================== */
     APPLY_ACCEPT("지원을 수락하였습니다."),
     APPLY_REJECT("지원을 거절하였습니다."),
+    APPLICATION_DECISION_SUCCESS("지원서 심사 결과를 반영하였습니다."),
     APPLICATION_READ_SUCCESS("지원서를 조회하였습니다.");
 
 
