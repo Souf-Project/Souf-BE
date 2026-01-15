@@ -90,17 +90,16 @@ public class ApplicationServiceImpl implements ApplicationService {
         emailService.sendApplyProgress(recruiter.getEmail(), recruiter.getNickname(), recruit.getTitle(), totalCount);
         log.info("공고문 아이디: {}, 지원 완료", recruit.getId());
 
-        // ✅ [추가] 지원자 생성 → 공고 작성자에게 즉시 알림
         Member owner = recruit.getMember();
         NotificationDto dto = new NotificationDto(
                 owner.getEmail(),
-                owner.getId(),                                // targetMemberId
-                NotificationType.APPLICANT_CREATED,           // type
-                "새 지원자 발생",                               // title
-                "[" + recruit.getTitle() + "]에 새 지원자가 도착했어요.", // body
-                "RECRUIT",                                    // refType
-                recruit.getId(),                              // refId
-                LocalDateTime.now()                          // createdAt
+                owner.getId(),
+                NotificationType.APPLICANT_CREATED,
+                "새 지원자 발생",
+                "[" + recruit.getTitle() + "]에 새 지원자가 도착했어요.",
+                "RECRUIT",
+                recruit.getId(),
+                LocalDateTime.now()
         );
         notificationPublisher.publish(dto);
     }
@@ -187,8 +186,6 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .orElseThrow(NotFoundRecruitException::new);
         verifyOwner(recruit, me);
 
-        String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, me.getId());
-
         return applicationRepository
                 .findByRecruit(recruit, pageable)
                 .map(app -> {
@@ -243,11 +240,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         NotificationDto dto = new NotificationDto(
                 m.getEmail(),
                 m.getId(),
-                NotificationType.APPLICATION_REVIEWED,   // 알림 타입
-                "지원 결과 안내",                           // 알림 제목
-                bodyMsg,                                 // 본문 내용
-                "APPLICATION",                           // 참조 타입
-                app.getId(),                             // 참조 PK
+                NotificationType.APPLICATION_REVIEWED,
+                "지원 결과 안내",
+                bodyMsg,
+                "APPLICATION",
+                app.getId(),
                 LocalDateTime.now()
         );
 
