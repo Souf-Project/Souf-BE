@@ -17,6 +17,7 @@ import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.notification.dto.NotificationDto;
 import com.souf.soufwebsite.domain.notification.entity.NotificationType;
+import com.souf.soufwebsite.domain.notification.event.NotificationEvent;
 import com.souf.soufwebsite.domain.notification.service.NotificationPublisher;
 import com.souf.soufwebsite.domain.recruit.entity.PricePolicy;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
@@ -28,12 +29,12 @@ import com.souf.soufwebsite.global.common.mail.SesMailService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -47,6 +48,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private final FileService fileService;
     private final MemberRepository memberRepository;
     private final NotificationPublisher notificationPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
     private void verifyOwner(Recruit recruit, Member member) {
         if (!recruit.getMember().getId().equals(member.getId())) {
@@ -93,17 +95,15 @@ public class ApplicationServiceImpl implements ApplicationService {
         log.info("공고문 아이디: {}, 지원 완료", recruit.getId());
 
         Member owner = recruit.getMember();
-        NotificationDto dto = new NotificationDto(
-                owner.getEmail(),
+        eventPublisher.publishEvent(new NotificationEvent(
                 owner.getId(),
                 NotificationType.APPLICANT_CREATED,
                 "새 지원자 발생",
                 "[" + recruit.getTitle() + "]에 새 지원자가 도착했어요.",
                 "RECRUIT",
                 recruit.getId(),
-                LocalDateTime.now()
-        );
-        notificationPublisher.publish(dto);
+                "APPLICANT_CREATED:APPLICATION:" + application.getId()
+        ));
     }
 
     @Override
@@ -232,26 +232,21 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (approve) app.accept();
         else        app.reject();
 
-        Member m = app.getMember();
-        String to = m.getEmail();
+        Member applicant = app.getMember();
+        String to = applicant.getEmail();
+        String nickname = applicant.getNickname();
         String title = app.getRecruit().getTitle();
 
-
-        String bodyMsg = "[" + recruit.getTitle() + "] 지원에 대한 결과가 등록되었습니다.";
-
-        NotificationDto dto = new NotificationDto(
-                m.getEmail(),
-                m.getId(),
+        eventPublisher.publishEvent(new NotificationEvent(
+                applicant.getId(),
                 NotificationType.APPLICATION_REVIEWED,
                 "지원 결과 안내",
-                bodyMsg,
+                "[" + recruit.getTitle() + "] 지원에 대한 결과가 등록되었습니다.",
                 "APPLICATION",
                 app.getId(),
-                LocalDateTime.now()
-        );
-
-        notificationPublisher.publish(dto);
-        emailService.announceRecruitResult(to, m.getNickname(), title);
+                "APPLICATION_REVIEWED:APPLICATION:" + app.getId()
+        ));
+        emailService.announceRecruitResult(to, nickname, title);
     }
 
     @Override
@@ -277,25 +272,20 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         try {
             Member applicant = app.getMember();
-            String bodyMsg = "[" + recruit.getTitle() + "] 지원에 대한 결과가 등록되었습니다.";
+            String to = applicant.getEmail();
+            String nickname = applicant.getNickname();
+            String title = app.getRecruit().getTitle();
 
-            NotificationDto dto = new NotificationDto(
-                    applicant.getEmail(),
+            eventPublisher.publishEvent(new NotificationEvent(
                     applicant.getId(),
                     NotificationType.APPLICATION_REVIEWED,
                     "지원 결과 안내",
-                    bodyMsg,
+                    "[" + recruit.getTitle() + "] 지원에 대한 결과가 등록되었습니다.",
                     "APPLICATION",
                     app.getId(),
-                    LocalDateTime.now()
-            );
-            notificationPublisher.publish(dto);
-
-            emailService.announceRecruitResult(
-                    applicant.getEmail(),
-                    applicant.getNickname(),
-                    recruit.getTitle()
-            );
+                    "APPLICATION_REVIEWED:APPLICATION:" + app.getId()
+            ));
+            emailService.announceRecruitResult(to, nickname, title);
         } catch (EntityNotFoundException ignored) {
             log.warn("지원 결과 알림/메일 후처리 중 EntityNotFoundException. applicationId={}", applicationId);
         }
