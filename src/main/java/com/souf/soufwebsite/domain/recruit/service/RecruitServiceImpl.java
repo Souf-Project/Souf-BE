@@ -414,7 +414,7 @@ public class RecruitServiceImpl implements RecruitService {
     private List<Long> extractFirstIds(RecruitReqDto reqDto) {
         if (reqDto.categoryDtos() == null) return List.of();
         return reqDto.categoryDtos().stream()
-                .map(cd -> cd.firstCategory())
+                .map(CategoryDto::firstCategory)
                 .filter(Objects::nonNull)
                 .distinct()
                 .toList();
