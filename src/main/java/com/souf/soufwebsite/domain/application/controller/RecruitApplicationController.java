@@ -35,26 +35,6 @@ public class RecruitApplicationController implements RecruitApplicationApiSpecif
     }
 
     @ApprovedOnly
-    @PostMapping("/{applicationId}/approve")
-    public SuccessResponse<?> approveApplication(
-            @CurrentEmail String email,
-            @PathVariable Long applicationId
-    ) {
-        applicationService.reviewApplication(email, applicationId, true);
-        return new SuccessResponse<>(APPLY_ACCEPT.getMessage());
-    }
-
-    @ApprovedOnly
-    @PostMapping("/{applicationId}/reject")
-    public SuccessResponse<?> rejectApplication(
-            @CurrentEmail String email,
-            @PathVariable Long applicationId
-    ) {
-        applicationService.reviewApplication(email, applicationId, false);
-        return new SuccessResponse<>(APPLY_REJECT.getMessage());
-    }
-
-    @ApprovedOnly
     @PatchMapping("/{applicationId}/decision")
     public SuccessResponse<?> decideApplication(
             @CurrentEmail String email,

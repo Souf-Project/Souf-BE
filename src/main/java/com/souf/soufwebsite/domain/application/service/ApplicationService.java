@@ -16,7 +16,5 @@ public interface ApplicationService {
 
     Page<ApplicantResDto> getApplicantsByRecruit(String email, Long recruitId, Pageable pageable);
 
-    void reviewApplication(String email, Long applicationId, boolean approve);
-
     void decideApplication(String email, Long applicationId, ApplicationDecisionReqDto reqDto);
 }

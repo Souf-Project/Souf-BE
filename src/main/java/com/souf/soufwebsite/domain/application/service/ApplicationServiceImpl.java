@@ -30,6 +30,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -47,7 +48,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     private final SesMailService emailService;
     private final FileService fileService;
     private final MemberRepository memberRepository;
-    private final NotificationPublisher notificationPublisher;
     private final ApplicationEventPublisher eventPublisher;
 
     private void verifyOwner(Recruit recruit, Member member) {
@@ -86,8 +86,13 @@ public class ApplicationServiceImpl implements ApplicationService {
             application = Application.applyOffer(member, recruit, reqDto.priceOffer(), reqDto.priceReason());
         }
 
+        try {
+            applicationRepository.saveAndFlush(application);
+        } catch (DataIntegrityViolationException e) {
+            throw new AlreadyAppliedException();
+        }
+
         recruit.increaseRecruitCount();
-        applicationRepository.save(application);
 
         Member recruiter = recruit.getMember();
         Long totalCount = applicationRepository.countByRecruit(recruit);
@@ -212,41 +217,6 @@ public class ApplicationServiceImpl implements ApplicationService {
                             app.getStatus().name()
                     );
                 });
-    }
-
-    @Override
-    @Transactional
-    public void reviewApplication(String email, Long applicationId, boolean approve) {
-        Member me = findIfEmailExists(email);
-
-        Application app = applicationRepository.findById(applicationId)
-                .orElseThrow(NotFoundApplicationException::new);
-
-        Recruit recruit = app.getRecruit();
-        if (recruit == null) {
-            throw new NotFoundRecruitException();
-        }
-
-        verifyOwner(recruit, me);
-
-        if (approve) app.accept();
-        else        app.reject();
-
-        Member applicant = app.getMember();
-        String to = applicant.getEmail();
-        String nickname = applicant.getNickname();
-        String title = app.getRecruit().getTitle();
-
-        eventPublisher.publishEvent(new NotificationEvent(
-                applicant.getId(),
-                NotificationType.APPLICATION_REVIEWED,
-                "지원 결과 안내",
-                "[" + recruit.getTitle() + "] 지원에 대한 결과가 등록되었습니다.",
-                "APPLICATION",
-                app.getId(),
-                "APPLICATION_REVIEWED:APPLICATION:" + app.getId()
-        ));
-        emailService.announceRecruitResult(to, nickname, title);
     }
 
     @Override
