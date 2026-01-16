@@ -30,7 +30,7 @@ public class Inquiry extends BaseEntity {
     @Column(nullable = false)
     private String title;
 
-    @NotNull
+    @NotBlank
     @Column(nullable = false)
     private String content;
 
