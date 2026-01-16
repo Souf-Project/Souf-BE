@@ -44,7 +44,7 @@ public class Inquiry extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private InquiryType inquiryType;
 
-    @Column(name = "inquriy_status", nullable = false)
+    @Column(name = "inquiry_status", nullable = false)
     @Enumerated(EnumType.STRING)
     private InquiryStatus inquiryStatus;
 
