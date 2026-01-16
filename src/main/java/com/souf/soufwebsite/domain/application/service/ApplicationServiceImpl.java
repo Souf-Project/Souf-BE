@@ -1,5 +1,7 @@
 package com.souf.soufwebsite.domain.application.service;
 
+import com.souf.soufwebsite.domain.application.dto.req.ApplicationDecision;
+import com.souf.soufwebsite.domain.application.dto.req.ApplicationDecisionReqDto;
 import com.souf.soufwebsite.domain.application.dto.req.ApplicationOfferReqDto;
 import com.souf.soufwebsite.domain.application.dto.res.ApplicantResDto;
 import com.souf.soufwebsite.domain.application.dto.res.MyApplicationResDto;
@@ -13,6 +15,7 @@ import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.domain.notification.dto.NotificationDto;
 import com.souf.soufwebsite.domain.notification.entity.NotificationType;
 import com.souf.soufwebsite.domain.notification.event.NotificationEvent;
 import com.souf.soufwebsite.domain.notification.service.NotificationPublisher;
@@ -27,6 +30,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -44,7 +48,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     private final SesMailService emailService;
     private final FileService fileService;
     private final MemberRepository memberRepository;
-    private final NotificationPublisher notificationPublisher;
     private final ApplicationEventPublisher eventPublisher;
 
     private void verifyOwner(Recruit recruit, Member member) {
@@ -83,8 +86,13 @@ public class ApplicationServiceImpl implements ApplicationService {
             application = Application.applyOffer(member, recruit, reqDto.priceOffer(), reqDto.priceReason());
         }
 
+        try {
+            applicationRepository.saveAndFlush(application);
+        } catch (DataIntegrityViolationException e) {
+            throw new AlreadyAppliedException();
+        }
+
         recruit.increaseRecruitCount();
-        applicationRepository.save(application);
 
         Member recruiter = recruit.getMember();
         Long totalCount = applicationRepository.countByRecruit(recruit);
@@ -185,8 +193,6 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .orElseThrow(NotFoundRecruitException::new);
         verifyOwner(recruit, me);
 
-        String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, me.getId());
-
         return applicationRepository
                 .findByRecruit(recruit, pageable)
                 .map(app -> {
@@ -215,7 +221,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public void reviewApplication(String email, Long applicationId, boolean approve) {
+    public void decideApplication(String email, Long applicationId, ApplicationDecisionReqDto req) {
         Member me = findIfEmailExists(email);
 
         Application app = applicationRepository.findById(applicationId)
@@ -228,24 +234,31 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         verifyOwner(recruit, me);
 
-        if (approve) app.accept();
-        else        app.reject();
+        if (req.decision() == ApplicationDecision.APPROVE) {
+            app.accept();
+        } else {
+            app.reject();
+        }
 
-        Member applicant = app.getMember();
-        String to = applicant.getEmail();
-        String nickname = applicant.getNickname();
-        String title = app.getRecruit().getTitle();
+        try {
+            Member applicant = app.getMember();
+            String to = applicant.getEmail();
+            String nickname = applicant.getNickname();
+            String title = app.getRecruit().getTitle();
 
-        eventPublisher.publishEvent(new NotificationEvent(
-                applicant.getId(),
-                NotificationType.APPLICATION_REVIEWED,
-                "지원 결과 안내",
-                "[" + recruit.getTitle() + "] 지원에 대한 결과가 등록되었습니다.",
-                "APPLICATION",
-                app.getId(),
-                "APPLICATION_REVIEWED:APPLICATION:" + app.getId()
-        ));
-        emailService.announceRecruitResult(to, nickname, title);
+            eventPublisher.publishEvent(new NotificationEvent(
+                    applicant.getId(),
+                    NotificationType.APPLICATION_REVIEWED,
+                    "지원 결과 안내",
+                    "[" + recruit.getTitle() + "] 지원에 대한 결과가 등록되었습니다.",
+                    "APPLICATION",
+                    app.getId(),
+                    "APPLICATION_REVIEWED:APPLICATION:" + app.getId()
+            ));
+            emailService.announceRecruitResult(to, nickname, title);
+        } catch (EntityNotFoundException ignored) {
+            log.warn("지원 결과 알림/메일 후처리 중 EntityNotFoundException. applicationId={}", applicationId);
+        }
     }
 
     private Member findIfEmailExists(String email) {

@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.application.service;
 
+import com.souf.soufwebsite.domain.application.dto.req.ApplicationDecisionReqDto;
 import com.souf.soufwebsite.domain.application.dto.req.ApplicationOfferReqDto;
 import com.souf.soufwebsite.domain.application.dto.res.ApplicantResDto;
 import com.souf.soufwebsite.domain.application.dto.res.MyApplicationResDto;
@@ -15,5 +16,5 @@ public interface ApplicationService {
 
     Page<ApplicantResDto> getApplicantsByRecruit(String email, Long recruitId, Pageable pageable);
 
-    void reviewApplication(String email, Long applicationId, boolean approve);
+    void decideApplication(String email, Long applicationId, ApplicationDecisionReqDto reqDto);
 }
