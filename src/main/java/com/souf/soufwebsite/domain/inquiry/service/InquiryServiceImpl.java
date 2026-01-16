@@ -64,18 +64,18 @@ public class InquiryServiceImpl implements InquiryService {
         fileService.uploadMetadata(mediaReqDto, PostType.INQUIRY, inquiry.getId());
     }
 
-    @Override
-    public void updateInquiry(String email, Long inquiryId, InquiryReqDto reqDto) {
-        Member currentMember = findIfMemberExists(email);
-        Inquiry inquiry = findIfInquiryExists(inquiryId);
-        verifyIfInquiryIsMine(inquiry, currentMember);
-
-        updateRemainingImages(reqDto, inquiry);
-        inquiry.updateInquiry(reqDto);
-
-        List<PresignedUrlResDto> inquiryPresignedUrls =
-                fileService.generatePresignedUrl("inquiry", reqDto.originalFileNames());
-    }
+//    @Override
+//    public void updateInquiry(String email, Long inquiryId, InquiryReqDto reqDto) {
+//        Member currentMember = findIfMemberExists(email);
+//        Inquiry inquiry = findIfInquiryExists(inquiryId);
+//        verifyIfInquiryIsMine(inquiry, currentMember);
+//
+//        updateRemainingImages(reqDto, inquiry);
+//        inquiry.updateInquiry(reqDto);
+//
+//        List<PresignedUrlResDto> inquiryPresignedUrls =
+//                fileService.generatePresignedUrl("inquiry", reqDto.originalFileNames());
+//    }
 
     @Override
     public void deleteInquiry(String email, Long inquiryId) {

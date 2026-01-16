@@ -72,11 +72,11 @@ public class Inquiry extends BaseEntity {
                 .build();
     }
 
-    public void updateInquiry(InquiryReqDto reqDto) {
-        this.title = reqDto.title();
-        this.content = reqDto.content();
-        this.inquiryType = reqDto.type();
-    }
+//    public void updateInquiry(InquiryReqDto reqDto) {
+//        this.title = reqDto.title();
+//        this.content = reqDto.content();
+//        this.inquiryType = reqDto.type();
+//    }
 
     public void updateAnswer(InquiryAnswerReqDto reqDto) {
         this.answer = reqDto.answer();
