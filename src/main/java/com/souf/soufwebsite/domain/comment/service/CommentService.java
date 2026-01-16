@@ -9,9 +9,9 @@ import org.springframework.data.domain.Slice;
 
 public interface CommentService {
 
-    void createComment(Long postId, CommentReqDto reqDto);
+    void createComment(String email, Long postId, CommentReqDto reqDto);
 
-    void createReply(Long postId, CommentReqDto reqDto);
+    void createReply(String email, Long postId, CommentReqDto reqDto);
 
     void deleteComment(String email, Long postId, Long commentId);
 
