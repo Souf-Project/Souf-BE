@@ -1,17 +1,16 @@
 package com.souf.soufwebsite.global.config;
 
-import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.domain.report.service.BanService;
-import com.souf.soufwebsite.global.jwt.BanCheckFilter;
-import com.souf.soufwebsite.global.jwt.JwtAuthenticationFilter;
+import com.souf.soufwebsite.global.jwt.RestAccessDeniedHandler;
+import com.souf.soufwebsite.global.jwt.RestAuthenticationEntryPoint;
+import com.souf.soufwebsite.global.jwt.filter.BanCheckFilter;
+import com.souf.soufwebsite.global.jwt.filter.JwtAuthenticationFilter;
 import com.souf.soufwebsite.global.jwt.JwtLogoutHandler;
-import com.souf.soufwebsite.global.jwt.JwtServiceImpl;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -46,18 +45,13 @@ public class SecurityConfig {
 //		);
 //	}
     private final JwtLogoutHandler jwtLogoutHandler;
-    private final MemberRepository memberRepository;
-    private final JwtServiceImpl jwtService;
-    private final RedisTemplate<String, String> redisTemplate;
-
+    private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+    private final RestAccessDeniedHandler restAccessDeniedHandler;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final BanService banService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
-        JwtAuthenticationFilter jwtAuthenticationFilter =
-                new JwtAuthenticationFilter(jwtService, memberRepository, redisTemplate);
-
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
@@ -71,19 +65,10 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(e -> e
-                        .authenticationEntryPoint((req, res, ex) -> { // 미인증
-                            res.setStatus(401);
-                            res.setContentType("application/json;charset=UTF-8");
-                            res.getWriter().write("{\"code\":\"UNAUTHENTICATED\"}");
-                        })
-                        .accessDeniedHandler((req, res, ex) -> {      // 권한 부족
-                            res.setStatus(403);
-                            res.setContentType("application/json;charset=UTF-8");
-                            res.getWriter().write("{\"code\":\"FORBIDDEN\"}");
-                        })
+                        .authenticationEntryPoint(restAuthenticationEntryPoint)
+                        .accessDeniedHandler(restAccessDeniedHandler)
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(new BanCheckFilter(banService), JwtAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         http
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
@@ -190,11 +175,6 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtService, memberRepository, redisTemplate);
     }
 
     @Bean

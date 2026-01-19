@@ -1,6 +1,12 @@
-package com.souf.soufwebsite.global.jwt;
+package com.souf.soufwebsite.global.jwt.filter;
 
+import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.domain.report.service.BanService;
+import com.souf.soufwebsite.global.jwt.exception.AuthErrorKey;
+import com.souf.soufwebsite.global.jwt.exception.BannedAuthenticationException;
+import com.souf.soufwebsite.global.jwt.exception.JwtAuthenticationException;
+import com.souf.soufwebsite.global.jwt.service.JwtService;
 import com.souf.soufwebsite.global.security.UserDetailsImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -13,16 +19,20 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Set;
 
+@Component
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final BanService banService;
     private final MemberRepository memberRepository;
     private final RedisTemplate<String, String> redisTemplate;
 
@@ -60,46 +70,54 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        if(accessToken == null) {
+        if (accessToken == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        if(!jwtService.isTokenValid(accessToken)) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json;charset=utf-8");
-            response.getWriter().write("EXPIRED OR INVALID TOKEN");
-            return;
-        }
+        jwtService.validateAccessTokenOrThrow(accessToken);
 
         log.info("Request URI: {}", request.getRequestURI());
-//        log.info("AccessToken: {}", accessToken);
-//        log.info("RefreshToken: {}", refreshToken);
 
         if (redisTemplate.opsForValue().get("blacklist:" + accessToken) != null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("this token is in blacklist");
-            return;
+            throw new JwtAuthenticationException(AuthErrorKey.TOKEN_BLACKLISTED);
         }
 
-        authenticateUser(accessToken);
+        Member member = authenticateUser(accessToken);
+
+        if (banService.isBanned(member.getId())) {
+            Duration remaining = banService.remaining(member.getId()).orElse(null);
+            throw new BannedAuthenticationException(remaining);
+        }
+
+
         filterChain.doFilter(request,response);
     }
 
     // 액세스 토큰으로 사용자 인증 처리
-    private void authenticateUser(String accessToken) {
-        jwtService.extractEmail(accessToken).ifPresent(
-                email -> memberRepository.findByEmail(email).ifPresent(
-                        user -> {
-                            UserDetailsImpl userDetails = new UserDetailsImpl(user);
-                            Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+    private Member authenticateUser(String accessToken) {
+        String email = jwtService.extractEmail(accessToken)
+                .orElseThrow(() -> new JwtAuthenticationException(AuthErrorKey.TOKEN_INVALID));
 
-                            SecurityContext context = SecurityContextHolder.createEmptyContext();
-                            context.setAuthentication(authentication);
-                            SecurityContextHolder.setContext(context);
-                        }
-                )
-        );
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new JwtAuthenticationException(AuthErrorKey.MEMBER_NOT_FOUND));
+
+        if (member.isDeleted()) {
+            throw new JwtAuthenticationException(AuthErrorKey.MEMBER_WITHDRAWN);
+        }
+
+        UserDetailsImpl userDetails = new UserDetailsImpl(member);
+
+        Authentication authentication =
+                new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities()
+                );
+
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
+
+        return member;
     }
 
 //    // 리프레시 토큰을 사용하여 새로운 액세스 토큰 발급

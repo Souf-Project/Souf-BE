@@ -35,7 +35,7 @@ import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.common.mail.SesMailService;
 import com.souf.soufwebsite.global.exception.AuthorizedException;
-import com.souf.soufwebsite.global.jwt.JwtService;
+import com.souf.soufwebsite.global.jwt.service.JwtService;
 import com.souf.soufwebsite.global.slack.service.SlackService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

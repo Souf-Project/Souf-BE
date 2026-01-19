@@ -21,7 +21,7 @@ import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
 import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
-import com.souf.soufwebsite.global.jwt.JwtService;
+import com.souf.soufwebsite.global.jwt.service.JwtService;
 import com.souf.soufwebsite.global.slack.service.SlackService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.redis.core.RedisTemplate;
