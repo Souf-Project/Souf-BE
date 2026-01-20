@@ -161,7 +161,11 @@ public class MemberServiceImpl implements MemberService {
 
         String accessToken = jwtService.createAccessToken(member);
         String refreshToken = jwtService.createRefreshToken(member);
-        redisTemplate.opsForValue().set("refresh:" + email, refreshToken, jwtService.getExpiration(refreshToken), TimeUnit.MILLISECONDS);
+
+        long exp = jwtService.getExpiration(refreshToken);
+        long ttl = Math.max(0, exp - System.currentTimeMillis());
+
+        redisTemplate.opsForValue().set("refresh:" + email, refreshToken, ttl, TimeUnit.MILLISECONDS);
 
         jwtService.sendAccessAndRefreshToken(response, accessToken, refreshToken);
 
@@ -203,7 +207,11 @@ public class MemberServiceImpl implements MemberService {
         Member requiredMember = findIfEmailExists(email);
         String accessToken = jwtService.createAccessToken(requiredMember);
         String newRefreshToken = jwtService.createRefreshToken(requiredMember);
-        redisTemplate.opsForValue().set("refresh:" + email, newRefreshToken, jwtService.getExpiration(newRefreshToken), TimeUnit.MILLISECONDS);
+
+        long exp = jwtService.getExpiration(newRefreshToken);
+        long ttl = Math.max(0, exp - System.currentTimeMillis());
+
+        redisTemplate.opsForValue().set("refresh:" + email, newRefreshToken, ttl, TimeUnit.MILLISECONDS);
         jwtService.sendAccessAndRefreshToken(res, accessToken, newRefreshToken);
 
         return new TokenDto(accessToken, requiredMember.getId(), requiredMember.getNickname(),
@@ -439,6 +447,8 @@ public class MemberServiceImpl implements MemberService {
         favoriteMemberRepository.deleteAllByFromMember(member);
         favoriteMemberRepository.deleteAllByToMember(member);
         likedFeedRepository.deleteAllByMemberId(memberId);
+
+        redisTemplate.delete("refresh:" + member.getEmail());
 
 //        indexEventPublisherHelper.publishIndexEvent(
 //                EntityType.MEMBER,
