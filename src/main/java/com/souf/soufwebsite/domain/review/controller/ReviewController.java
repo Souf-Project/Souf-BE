@@ -47,7 +47,7 @@ public class ReviewController implements ReviewApiSpecification {
 
     @PostMapping("/search")
     public SuccessResponse<Slice<ReviewSimpleResDto>> getReviews(
-            @RequestBody ReviewSearchReqDto searchReqDto,
+            @Valid @RequestBody ReviewSearchReqDto searchReqDto,
             @PageableDefault(size = 8) Pageable pageable) {
         return new SuccessResponse<>(reviewService.getReviews(searchReqDto, pageable), REVIEW_GET.getMessage());
     }

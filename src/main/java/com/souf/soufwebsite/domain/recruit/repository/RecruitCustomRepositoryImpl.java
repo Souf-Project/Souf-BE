@@ -308,7 +308,10 @@ public class RecruitCustomRepositoryImpl implements RecruitCustomRepository{
         }
 
         // AND 결합
-        return ands.stream().filter(Objects::nonNull).reduce(BooleanExpression::and).orElse(null);
+        return ands.stream()
+                .filter(Objects::nonNull)
+                .reduce(BooleanExpression::and)
+                .orElse(Expressions.TRUE);
     }
 
     /**
