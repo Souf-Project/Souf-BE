@@ -82,7 +82,6 @@ public class SecurityConfig {
                                         "/v3/api-docs/**",
                                         "/error"
                                 ).permitAll()
-
                                 .requestMatchers("/v1/normal/check").permitAll()
                                 .requestMatchers("/api/v1/auth/**").permitAll()
                                 .requestMatchers("/api/v1/social/**").permitAll()

@@ -41,7 +41,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/api/v1/auth/logout",
             "/api/v1/auth/refresh",
             "/ws",
-            "/actuator/health"
+            "/actuator/health",
+            "/favicon.ico",
+            "/swagger-ui",
+            "/v3/api-docs",
+            "/error"
     );
 
     @Override
