@@ -182,7 +182,8 @@ public class MemberServiceImpl implements MemberService {
                 .extractRefreshToken(req)
                 .filter(jwtService::isTokenValid)
                 .orElse(null);
-        if(refreshToken == null){
+
+        if (refreshToken == null){
             log.info("refresh token is null");
             throw new AuthorizedException();
         }
@@ -190,7 +191,11 @@ public class MemberServiceImpl implements MemberService {
         // 정보 추출과 Redis에 존재하는지 여부 확인
         String email = jwtService.extractEmail(refreshToken).orElseThrow(NotValidTokenException::new);
         String refreshInRedis = redisTemplate.opsForValue().get("refresh:" + email);
-        if(refreshInRedis == null){
+        if (refreshInRedis == null){
+            throw new NotValidTokenException();
+        }
+
+        if (!refreshToken.equals(refreshInRedis)) {
             throw new NotValidTokenException();
         }
 

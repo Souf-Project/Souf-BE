@@ -48,7 +48,6 @@ public class SecurityConfig {
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
     private final RestAccessDeniedHandler restAccessDeniedHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final BanService banService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
