@@ -20,7 +20,7 @@ public record ReviewReqDto(
         @NotNull(message = "매핑된 공고문 아이디를 기입해주세요.")
         Long recruitId,
 
-        @NotNull(message = "후기 작성에 필요한 파일은 하나 이상 필요합니다.")
+        //@NotNull(message = "후기 작성에 필요한 파일은 하나 이상 필요합니다.")
         List<String> originalFileNames,
 
         @Schema(description = "기존에 존재하는 파일 URL", example = "[\"review/original/...\", \"review/original/..\"]")
