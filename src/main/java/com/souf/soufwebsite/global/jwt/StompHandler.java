@@ -5,6 +5,7 @@ import com.souf.soufwebsite.domain.chat.service.ChatMessageService;
 import com.souf.soufwebsite.domain.chat.service.ChatRoomService;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
+import com.souf.soufwebsite.global.jwt.service.JwtService;
 import com.souf.soufwebsite.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

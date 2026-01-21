@@ -46,15 +46,15 @@ public class InquiryController implements InquiryApiSpecification {
         return new SuccessResponse<>(INQUIRY_FILE_METADATA_CREATE.getMessage());
     }
 
-    @PatchMapping("/{inquiryId}")
-    public SuccessResponse<?> updateInquiry(
-            @CurrentEmail String email,
-            @Valid @RequestBody InquiryReqDto reqDto,
-            @PathVariable(name = "inquiryId") Long inquiryId
-    ){
-      inquiryService.updateInquiry(email, inquiryId, reqDto);
-      return new SuccessResponse<>(INQUIRY_UPDATE.getMessage());
-    }
+//    @PatchMapping("/{inquiryId}")
+//    public SuccessResponse<?> updateInquiry(
+//            @CurrentEmail String email,
+//            @Valid @RequestBody InquiryReqDto reqDto,
+//            @PathVariable(name = "inquiryId") Long inquiryId
+//    ){
+//      inquiryService.updateInquiry(email, inquiryId, reqDto);
+//      return new SuccessResponse<>(INQUIRY_UPDATE.getMessage());
+//    }
 
     @DeleteMapping("/{inquiryId}")
     public SuccessResponse<?> deleteInquiry(

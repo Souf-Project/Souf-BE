@@ -6,7 +6,6 @@ import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,7 +29,7 @@ public class Inquiry extends BaseEntity {
     @Column(nullable = false)
     private String title;
 
-    @NotNull
+    @NotBlank
     @Column(nullable = false)
     private String content;
 
@@ -44,7 +43,7 @@ public class Inquiry extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private InquiryType inquiryType;
 
-    @Column(name = "inquriy_status", nullable = false)
+    @Column(name = "inquiry_status", nullable = false)
     @Enumerated(EnumType.STRING)
     private InquiryStatus inquiryStatus;
 
@@ -72,11 +71,11 @@ public class Inquiry extends BaseEntity {
                 .build();
     }
 
-    public void updateInquiry(InquiryReqDto reqDto) {
-        this.title = reqDto.title();
-        this.content = reqDto.content();
-        this.inquiryType = reqDto.type();
-    }
+//    public void updateInquiry(InquiryReqDto reqDto) {
+//        this.title = reqDto.title();
+//        this.content = reqDto.content();
+//        this.inquiryType = reqDto.type();
+//    }
 
     public void updateAnswer(InquiryAnswerReqDto reqDto) {
         this.answer = reqDto.answer();

@@ -1,7 +1,8 @@
-package com.souf.soufwebsite.global.jwt;
+package com.souf.soufwebsite.global.jwt.filter;
 
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.report.service.BanService;
+import com.souf.soufwebsite.global.jwt.exception.BannedAuthenticationException;
 import com.souf.soufwebsite.global.util.SecurityUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -13,7 +14,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -27,14 +27,9 @@ public class BanCheckFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         Member member = SecurityUtils.getCurrentMemberOrNull();
-        if(member != null && banService.isBanned(member.getId())) {
-            Optional<Duration> remaining = banService.remaining(member.getId());
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.setContentType("application/json;charset=utf-8");
-            response.getWriter().write("{\"code\":\"BANNED\",\"message\":\""
-                    + (remaining.map(duration -> "remaining=" + duration.toHours() + "h").orElse("permanent"))
-                    + "\"}");
-            return;
+        if (member != null && banService.isBanned(member.getId())) {
+            Duration remaining = banService.remaining(member.getId()).orElse(null);
+            throw new BannedAuthenticationException(remaining);
         }
         filterChain.doFilter(request, response);
     }
