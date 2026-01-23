@@ -14,7 +14,7 @@ public interface InquiryService {
 
     void uploadInquiryMedia(String email, MediaReqDto mediaReqDto);
 
-    void updateInquiry(String email, Long inquiryId, InquiryReqDto reqDto);
+//    void updateInquiry(String email, Long inquiryId, InquiryReqDto reqDto);
 
     void deleteInquiry(String email, Long inquiryId);
 

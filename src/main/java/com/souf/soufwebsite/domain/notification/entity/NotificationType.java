@@ -4,5 +4,7 @@ public enum NotificationType {
     APPLICANT_CREATED,   // 새 지원자 발생 → 작성자에게 즉시 SSE + 메일
     APPLICATION_REVIEWED,// 지원서 검토 완료 → 지원자에게 즉시 SSE + 메일
     INQUIRY_REPLIED,     // 문의 답변 등록 → 작성자에게 즉시 SSE + 메일
-    RECRUIT_PUBLISHED    // 관심 카테고리 공고 등록 → 1시간 묶음 SSE (메일 X)
+    RECRUIT_PUBLISHED,    // 관심 카테고리 공고 등록 → 1시간 묶음 SSE (메일 X)
+    FEED_COMMENT_CREATED, // 피드 댓글 등록 → 피드 작성자에게 즉시 SSE (메일 X)
+    FEED_REPLY_CREATED // 피드 대댓글 등록 → 피드 댓글 작성자에게 즉시 SSE (메일 X)
 }

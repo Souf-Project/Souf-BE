@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.global.jwt;
 
+import com.souf.soufwebsite.global.jwt.service.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

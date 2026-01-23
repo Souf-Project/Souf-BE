@@ -7,7 +7,6 @@ import com.souf.soufwebsite.domain.report.dto.ReportReqDto;
 import com.souf.soufwebsite.domain.report.entity.Reason;
 import com.souf.soufwebsite.domain.report.entity.Report;
 import com.souf.soufwebsite.domain.report.entity.ReportReasonMapping;
-import com.souf.soufwebsite.domain.report.exception.NotMatchedReportOwnerException;
 import com.souf.soufwebsite.domain.report.repository.ReasonRepository;
 import com.souf.soufwebsite.domain.report.repository.ReportRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,14 +30,9 @@ public class ReportServiceImpl implements ReportService {
     public void createReport(String email, ReportReqDto reqDto) {
         Member currentMember = findIfEmailExists(email);
 
-        Member reporter = findIfMemberExists(reqDto.reporterId());
         Member reportedMember = findIfMemberExists(reqDto.reportedMemberId());
 
-        if(!currentMember.getId().equals(reporter.getId())) {
-            throw new NotMatchedReportOwnerException();
-        }
-
-        Report report = new Report(reqDto.description(), reporter, reportedMember,
+        Report report = new Report(reqDto.description(), currentMember, reportedMember,
                 reqDto.postType(), reqDto.postId(), reqDto.title());
 
         List<Reason> reasons = reasonRepository.findByIdIn(reqDto.reasons());

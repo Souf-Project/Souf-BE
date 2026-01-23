@@ -1,7 +1,9 @@
-package com.souf.soufwebsite.global.jwt;
+package com.souf.soufwebsite.global.jwt.service;
 
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
+import com.souf.soufwebsite.global.jwt.exception.AuthErrorKey;
+import com.souf.soufwebsite.global.jwt.exception.JwtAuthenticationException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -129,6 +131,20 @@ public class JwtServiceImpl implements JwtService {
         } catch (JwtException e) {
             log.error("토큰 유효성 검사 실패: {}", e.getMessage());
             return false;
+        }
+    }
+
+    @Override
+    public void validateAccessTokenOrThrow(String token) {
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token);
+        } catch (ExpiredJwtException e) {
+            throw new JwtAuthenticationException(AuthErrorKey.TOKEN_EXPIRED);
+        } catch (JwtException e) {
+            throw new JwtAuthenticationException(AuthErrorKey.TOKEN_INVALID);
         }
     }
 

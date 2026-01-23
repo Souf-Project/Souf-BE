@@ -28,4 +28,13 @@ public class ExceptionResponse<T> {
                 .errorKey(errorKey)
                 .build();
     }
+
+    public static <T> ExceptionResponse<T> fail(int code, String message, String errorKey, T data) {
+        return ExceptionResponse.<T>builder()
+                .code(code)
+                .message(message)
+                .errorKey(errorKey)
+                .data(data)
+                .build();
+    }
 }

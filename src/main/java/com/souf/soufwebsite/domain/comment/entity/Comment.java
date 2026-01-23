@@ -34,12 +34,15 @@ public class Comment extends BaseEntity {
     @Column
     private Long commentGroup; // 대댓글을 위한 댓글 ID
 
-    public Comment(Member writer, String content, Long author, Feed feed, Long commentGroup) {
+    public Comment(Member writer, String content, Long author, Feed feed) {
         this.writer = writer;
         this.content = content;
         this.authorId = author;
         this.feed = feed;
-        this.commentGroup = commentGroup;
+    }
+
+    public void updateCommentGroup(Long groupId) {
+        this.commentGroup = groupId;
     }
 
     public void assignGroupToSelf() {

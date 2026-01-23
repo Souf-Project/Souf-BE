@@ -18,9 +18,6 @@ public record ReportReqDto(
         String title,
 
         @NotNull
-        @Schema(description = "신고하는 사용자의 아이디를 정의합니다.", example = "56")
-        Long reporterId,
-        @NotNull
         @Schema(description = "신고받는 사용자의 아이디를 정의합니다.", example = "26")
         Long reportedMemberId,
 
