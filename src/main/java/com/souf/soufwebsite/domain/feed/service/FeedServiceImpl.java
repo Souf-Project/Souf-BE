@@ -11,7 +11,7 @@ import com.souf.soufwebsite.domain.feed.exception.NotExistsFeedLikeException;
 import com.souf.soufwebsite.domain.feed.exception.NotFoundFeedException;
 import com.souf.soufwebsite.domain.feed.exception.NotValidAuthenticationException;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
-import com.souf.soufwebsite.domain.feed.repository.LikedFeedRepository;
+import com.souf.soufwebsite.domain.feed.repository.likedFeed.LikedFeedRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.dto.video.VideoDto;

@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.domain.member.service.general;
 
-import com.souf.soufwebsite.domain.feed.repository.LikedFeedRepository;
+import com.souf.soufwebsite.domain.feed.repository.likedFeed.LikedFeedRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.service.FileService;
