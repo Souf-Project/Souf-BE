@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.souf.soufwebsite.domain.feed.entity.QFeed.feed;
@@ -22,7 +22,7 @@ public class LikedFeedCustomRepositoryImpl implements LikedFeedCustomRepository 
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<CompetitionRankRowResDto> findTopAuthorsByLikedInPeriod(LocalDate start, LocalDate end) {
+    public List<CompetitionRankRowResDto> findTopAuthorsByLikedInPeriod(LocalDateTime start, LocalDateTime end) {
 
          return queryFactory
                 .select(Projections.constructor(
@@ -33,7 +33,7 @@ public class LikedFeedCustomRepositoryImpl implements LikedFeedCustomRepository 
                 )).from(likedFeed)
                 .join(feed).on(likedFeed.feedId.eq(feed.id))
                 .join(feed.member, member)
-                .where()
+                .where(likedFeed.createdTime.goe(start).and(likedFeed.createdTime.lt(end)))
                 .groupBy(member.id)
                 .orderBy(likedFeed.id.count().desc(), member.id.asc())
                 .limit(5)

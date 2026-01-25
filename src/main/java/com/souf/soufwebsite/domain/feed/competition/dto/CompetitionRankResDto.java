@@ -1,9 +1,9 @@
 package com.souf.soufwebsite.domain.feed.competition.dto;
 
 public record CompetitionRankResDto(
-        int rank,
-        long memberId,
+        Integer rank,
+        Long memberId,
         String nickname,
-        long totalLikes
+        Long totalLikes
 ) {
 }

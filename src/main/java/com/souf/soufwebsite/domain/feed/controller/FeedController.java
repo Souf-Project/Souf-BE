@@ -1,5 +1,7 @@
 package com.souf.soufwebsite.domain.feed.controller;
 
+import com.souf.soufwebsite.domain.feed.competition.dto.CompetitionRankResDto;
+import com.souf.soufwebsite.domain.feed.competition.service.CompetitionService;
 import com.souf.soufwebsite.domain.feed.dto.*;
 import com.souf.soufwebsite.domain.feed.service.FeedService;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
@@ -26,6 +28,7 @@ import static com.souf.soufwebsite.domain.feed.controller.FeedSuccessMessage.*;
 public class FeedController implements FeedApiSpecification{
 
     private final FeedService feedService;
+    private final CompetitionService competitionService;
 
     @ApprovedOnly
     @PostMapping
@@ -108,5 +111,13 @@ public class FeedController implements FeedApiSpecification{
     ){
         feedService.updateLikedCount(feedId, likeFeedReqDto);
         return new SuccessResponse<>(FEED_LIKE_UPDATE_SUCCESS.getMessage());
+    }
+
+    @GetMapping("/competition/ranking/top5")
+    public SuccessResponse<List<CompetitionRankResDto>> getCompetitionFeeds(){
+        log.info("경진대회 순위 리스트를 캐싱");
+        List<CompetitionRankResDto> result = competitionService.getCurrentCompetitionTop5();
+
+        return new SuccessResponse<>(result, COMPETITION_RANKING_GET_SUCCESS.getMessage());
     }
 }
