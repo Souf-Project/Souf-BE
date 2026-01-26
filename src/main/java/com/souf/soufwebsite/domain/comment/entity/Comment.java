@@ -45,10 +45,6 @@ public class Comment extends BaseEntity {
         this.commentGroup = groupId;
     }
 
-    public void assignGroupToSelf() {
-        this.commentGroup = this.id;
-    }
-
     public void updateContent(String content) {
         this.content = content;
     }

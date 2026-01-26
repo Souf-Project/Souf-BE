@@ -63,10 +63,6 @@ public class CommentServiceImpl implements CommentService {
             ));
         }
 
-        Comment parent = new Comment(writer, reqDto.content(), authorId, feed);
-        commentRepository.save(parent);
-
-        parent.assignGroupToSelf();
         feed.increaseCommentCount();
         log.info("{} 피드에 대한 댓글 생성 완료", feed.getId());
     }
@@ -83,8 +79,7 @@ public class CommentServiceImpl implements CommentService {
         Feed feed = parentComment.getFeed();
         Long authorId = feed.getMember().getId();
 
-        Comment comment = new Comment(writer, reqDto.content(),
-                authorId, feed);
+        Comment comment = new Comment(writer, reqDto.content(), authorId, feed);
         comment.updateCommentGroup(parentComment.getCommentGroup());
         commentRepository.save(comment);
 
