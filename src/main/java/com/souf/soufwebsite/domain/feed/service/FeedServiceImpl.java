@@ -262,13 +262,16 @@ public class FeedServiceImpl implements FeedService {
             likedFeedRepository.findByFeedIdAndMemberId(feedId, member.getId()).ifPresent(likedFeed -> {
                 throw new AlreadyExistsFeedLikeException();
             });
+
             LikedFeed likedFeed = new LikedFeed(member.getId(), feed.getId());
             likedFeedRepository.save(likedFeed);
-            feed.increaseLikedCount();
+
+            feedRepository.incrementLikedCount(feedId);
         } else { // 좋아요를 취소할 경우
             likedFeedRepository.findByFeedIdAndMemberId(feedId, member.getId()).orElseThrow(NotExistsFeedLikeException::new);
             likedFeedRepository.deleteByFeedIdAndMemberId(feedId, member.getId());
-            feed.decreaseLikedCount();
+
+            feedRepository.decrementLikedCount(feedId);
         }
     }
 

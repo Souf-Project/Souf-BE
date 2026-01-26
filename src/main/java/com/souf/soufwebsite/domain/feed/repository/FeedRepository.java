@@ -57,5 +57,13 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, FeedCustomRep
             @Param("nickname") String nickname,
             @Param("title") String title,
             Pageable pageable);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Feed f set f.likedCount = f.likedCount + 1 where f.id = :feedId")
+    void incrementLikedCount(Long feedId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Feed f set f.likedCount = f.likedCount - 1 where f.id = :feedId and f.likedCount > 0")
+    void decrementLikedCount(Long feedId);
 }
 

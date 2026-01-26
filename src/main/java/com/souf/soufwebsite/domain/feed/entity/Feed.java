@@ -91,14 +91,6 @@ public class Feed extends BaseEntity {
         this.viewCount += count;
     }
 
-    public void increaseLikedCount() {
-        this.likedCount++;
-    }
-
-    public void decreaseLikedCount() {
-        if (this.likedCount > 0) this.likedCount--;
-    }
-
     public void increaseCommentCount() {
         this.commentCount++;
     }
