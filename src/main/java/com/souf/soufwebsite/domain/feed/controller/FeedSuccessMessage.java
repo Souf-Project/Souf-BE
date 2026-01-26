@@ -18,7 +18,8 @@ public enum FeedSuccessMessage {
     FEED_LIKE_UPDATE_SUCCESS("피드 좋아요가 업데이트 되었습니다!"),
 
     /* ================================= Competition ================================ */
-    COMPETITION_RANKING_GET_SUCCESS("경진대회 순위를 조회하였습니다!");
+    COMPETITION_RANKING_GET_SUCCESS("경진대회 순위를 조회하였습니다!"),
+    COMPETITION_FEED_GET_SUCCESS("순위권의 멤버 피드를 조회하였습니다.");
 
     private final String message;
 
