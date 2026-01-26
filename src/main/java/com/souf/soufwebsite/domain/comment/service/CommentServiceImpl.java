@@ -48,22 +48,25 @@ public class CommentServiceImpl implements CommentService {
         Long authorId = feed.getMember().getId();
 
         Comment comment = new Comment(writer, reqDto.content(), authorId, feed);
-        commentRepository.save(comment);
-        comment.updateCommentGroup(comment.getId());
+        Comment saved = commentRepository.saveAndFlush(comment);
+        saved.updateCommentGroup(saved.getId());
 
         if (!authorId.equals(writer.getId())) {
             eventPublisher.publishEvent(new NotificationEvent(
                     authorId,
                     NotificationType.FEED_COMMENT_CREATED,
                     "새 댓글 알림",
-                    writer.getNickname() + " : " + trim(comment.getContent()),
+                    writer.getNickname() + " : " + trim(saved.getContent()),
                     "COMMENT",
                     feed.getId(),
-                    "FEED_COMMENT_CREATED:COMMENT:" + comment.getId()
+                    "FEED_COMMENT_CREATED:COMMENT:" + saved.getId()
             ));
         }
 
-        feed.increaseCommentCount();
+        int updated = feedRepository.incrementCommentCount(postId);
+        if (updated == 0) {
+            throw new NotFoundFeedException();
+        }
         log.info("{} 피드에 대한 댓글 생성 완료", feed.getId());
     }
 
@@ -81,7 +84,7 @@ public class CommentServiceImpl implements CommentService {
 
         Comment comment = new Comment(writer, reqDto.content(), authorId, feed);
         comment.updateCommentGroup(parentComment.getCommentGroup());
-        commentRepository.save(comment);
+        Comment saved = commentRepository.save(comment);
 
         Long parentWriterId = parentComment.getWriter().getId();
         if (!parentWriterId.equals(writer.getId())) {
@@ -89,14 +92,17 @@ public class CommentServiceImpl implements CommentService {
                     parentWriterId,
                     NotificationType.FEED_REPLY_CREATED,
                     "대댓글 알림",
-                    writer.getNickname() + " : " + trim(comment.getContent()),
+                    writer.getNickname() + " : " + trim(saved.getContent()),
                     "REPLY",
                     parentComment.getId(),
-                    "FEED_REPLY_CREATED:COMMENT:" + comment.getId()
+                    "FEED_REPLY_CREATED:COMMENT:" + saved.getId()
             ));
         }
 
-        feed.increaseCommentCount();
+        int updated = feedRepository.incrementCommentCount(postId);
+        if (updated == 0) {
+            throw new NotFoundFeedException();
+        }
         log.info("{}에 대한 대댓글 생성", reqDto.parentId());
     }
 
@@ -104,24 +110,37 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public void deleteComment(String email, Long postId, Long commentId) {
         Member member = findIfEmailExists(email);
-        Feed feed = findIfFeedExist(postId);
         Comment comment = findIfCommentExists(commentId);
 
         validatedIfCommentMine(member, comment); // 현재 사용자와 댓글 작성자의 아이디가 일치하지 않으면 예외 발생
+        validateCommentAndFeed(comment.getFeed().getId(), postId);
 
         Long group = comment.getCommentGroup();
         // 혹시 null일 경우(방어 코드)
         if (group == null) {
             commentRepository.delete(comment);
-            feed.decreaseCommentCount();
+            int updated = feedRepository.decrementCommentCount(postId);
+            if (updated == 0) {
+                log.warn("commentCount decrement skipped. feedId={}, commentId={}", postId, commentId);
+            }
             return;
         }
 
         // 같은 feed + 같은 commentGroup 전체 조회 후 삭제
-        List<Comment> groupComments = commentRepository.findByFeedAndCommentGroup(feed, group);
+        List<Comment> groupComments = commentRepository.findByFeedIdAndCommentGroup(postId, group);
+
+        int removedCount = groupComments.size();
+        if (removedCount == 0) return;
 
         commentRepository.deleteAll(groupComments);
-        feed.decreaseCommentCount(groupComments.size());
+
+        int updated = feedRepository.decrementCommentCountBy(postId, removedCount);
+        if (updated == 0) {
+            log.warn(
+                    "bulk commentCount decrement skipped. feedId={}, removedCount={}",
+                    postId, removedCount
+            );
+        }
     }
 
     @Transactional
@@ -131,6 +150,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = findIfCommentExists(reqDto.commentId());
 
         validatedIfCommentMine(member, comment); // 현재 사용자와 댓글 작성자의 아이디가 일치하지 않으면 예외 발생
+        validateCommentAndFeed(comment.getFeed().getId(), postId);
 
         comment.updateContent(reqDto.content());
     }

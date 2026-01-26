@@ -13,7 +13,6 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface FeedRepository extends JpaRepository<Feed, Long>, FeedCustomRepository {
-
     Page<Feed> findAllByMemberOrderByIdDesc(Member member, Pageable pageable);
 
     @Transactional
@@ -60,10 +59,29 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, FeedCustomRep
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("update Feed f set f.likedCount = f.likedCount + 1 where f.id = :feedId")
-    void incrementLikedCount(Long feedId);
+    int incrementLikedCount(Long feedId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("update Feed f set f.likedCount = f.likedCount - 1 where f.id = :feedId and f.likedCount > 0")
-    void decrementLikedCount(Long feedId);
+    int decrementLikedCount(Long feedId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Feed f set f.commentCount = f.commentCount + 1 where f.id = :feedId")
+    int incrementCommentCount(@Param("feedId") Long feedId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Feed f set f.commentCount = f.commentCount - 1 where f.id = :feedId and f.commentCount > 0")
+    int decrementCommentCount(@Param("feedId") Long feedId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+        update Feed f
+           set f.commentCount = case
+               when f.commentCount >= :count then f.commentCount - :count
+               else 0
+           end
+         where f.id = :feedId
+    """)
+    int decrementCommentCountBy(@Param("feedId") Long feedId, @Param("count") int count);
 }
 

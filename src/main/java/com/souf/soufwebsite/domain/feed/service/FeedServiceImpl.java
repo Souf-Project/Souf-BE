@@ -1,6 +1,5 @@
 package com.souf.soufwebsite.domain.feed.service;
 
-import com.souf.soufwebsite.domain.comment.repository.CommentRepository;
 import com.souf.soufwebsite.domain.feed.dto.*;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.entity.FeedCategoryMapping;
@@ -62,7 +61,6 @@ public class FeedServiceImpl implements FeedService {
 //    private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final SlackService slackService;
     private final LikedFeedRepository likedFeedRepository;
-    private final CommentRepository commentRepository;
 
     private final MediaCleanupPublisher mediaCleanupPublisher;
     private final MediaCleanupHelper mediaCleanupHelper;
@@ -254,24 +252,32 @@ public class FeedServiceImpl implements FeedService {
     @Transactional
     @Override
     public void updateLikedCount(Long feedId, LikeFeedReqDto likeFeedReqDto) {
-        Feed feed = findIfFeedExist(feedId);
-        Member member = findIfMemberIdExists(likeFeedReqDto.memberId());
+        Long memberId = likeFeedReqDto.memberId();
+
+        if (!feedRepository.existsById(feedId)) {
+            throw new NotFoundFeedException();
+        }
 
         // 좋아요를 누를 경우
         if(likeFeedReqDto.isLiked().equals(Boolean.TRUE)){
-            likedFeedRepository.findByFeedIdAndMemberId(feedId, member.getId()).ifPresent(likedFeed -> {
+            likedFeedRepository.findByFeedIdAndMemberId(feedId, memberId).ifPresent(likedFeed -> {
                 throw new AlreadyExistsFeedLikeException();
             });
 
-            LikedFeed likedFeed = new LikedFeed(member.getId(), feed.getId());
+            LikedFeed likedFeed = new LikedFeed(memberId, feedId);
             likedFeedRepository.save(likedFeed);
 
-            feedRepository.incrementLikedCount(feedId);
-        } else { // 좋아요를 취소할 경우
-            likedFeedRepository.findByFeedIdAndMemberId(feedId, member.getId()).orElseThrow(NotExistsFeedLikeException::new);
-            likedFeedRepository.deleteByFeedIdAndMemberId(feedId, member.getId());
+            int updated = feedRepository.incrementLikedCount(feedId);
+            if (updated == 0) throw new NotFoundFeedException();
 
-            feedRepository.decrementLikedCount(feedId);
+        } else { // 좋아요를 취소할 경우
+            likedFeedRepository.findByFeedIdAndMemberId(feedId, memberId).orElseThrow(NotExistsFeedLikeException::new);
+            likedFeedRepository.deleteByFeedIdAndMemberId(feedId, memberId);
+
+            int updated = feedRepository.decrementLikedCount(feedId);
+            if (updated == 0) {
+                log.warn("likedCount decrement skipped. feedId={}, memberId={}", feedId, memberId);
+            }
         }
     }
 
