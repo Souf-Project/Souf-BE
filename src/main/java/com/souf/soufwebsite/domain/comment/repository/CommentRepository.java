@@ -62,4 +62,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long>, Comment
     Optional<Long> countByFeed(Feed feed);
 
     List<Comment> findByFeedIdAndCommentGroup(Long feedId, Long commentGroup);
+
+    long countByFeedIdAndCommentGroup(Long feedId, Long commentGroup);
+
+    boolean existsByFeedIdAndCommentGroupAndIdNot(Long feedId, Long commentGroup, Long parentId);
 }

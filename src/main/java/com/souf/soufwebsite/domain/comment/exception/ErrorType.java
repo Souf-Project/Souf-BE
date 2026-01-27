@@ -12,7 +12,9 @@ public enum ErrorType {
     NOT_MATCHED_COMMENT_AND_FEED(404, "댓글을 소유한 피드의 아이디와 요청된 피드의 아이디가 일치하지 않습니다.", "CM404-3"),
 
     /* ====================================== 409 ====================================== */
-    NOT_REPLY_TO_REPLY(409, "대댓글에는 대댓글을 달 수 없습니다.", "CM409-1");
+    NOT_REPLY_TO_REPLY(409, "대댓글에는 대댓글을 달 수 없습니다.", "CM409-1"),
+
+    NOT_EXISTS_DELETED_COMMENT(409, "삭제된 댓글이 없습니다.", "CM409-2");
 
 
     private final int code;

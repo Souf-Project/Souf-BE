@@ -4,10 +4,7 @@ import com.souf.soufwebsite.domain.comment.dto.CommentReqDto;
 import com.souf.soufwebsite.domain.comment.dto.CommentResDto;
 import com.souf.soufwebsite.domain.comment.dto.CommentUpdateReqDto;
 import com.souf.soufwebsite.domain.comment.entity.Comment;
-import com.souf.soufwebsite.domain.comment.exception.NotFoundCommentException;
-import com.souf.soufwebsite.domain.comment.exception.NotMatchedCommentAndFeedException;
-import com.souf.soufwebsite.domain.comment.exception.NotMatchedOwnerException;
-import com.souf.soufwebsite.domain.comment.exception.NotReplyToReplyException;
+import com.souf.soufwebsite.domain.comment.exception.*;
 import com.souf.soufwebsite.domain.comment.repository.CommentRepository;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.exception.NotFoundFeedException;
@@ -117,29 +114,55 @@ public class CommentServiceImpl implements CommentService {
 
         Long group = comment.getCommentGroup();
         // 혹시 null일 경우(방어 코드)
-        if (group == null) {
+        if (group == null) { // 방어
             commentRepository.delete(comment);
-            int updated = feedRepository.decrementCommentCount(postId);
-            if (updated == 0) {
-                log.warn("commentCount decrement skipped. feedId={}, commentId={}", postId, commentId);
-            }
+            feedRepository.decrementCommentCount(postId);
             return;
         }
 
-        // 같은 feed + 같은 commentGroup 전체 조회 후 삭제
-        List<Comment> groupComments = commentRepository.findByFeedIdAndCommentGroup(postId, group);
+        boolean isParent = comment.getId().equals(group);
 
-        int removedCount = groupComments.size();
-        if (removedCount == 0) return;
+        if (isParent) {
+            // 부모 삭제
+            boolean hasReplies = commentRepository.existsByFeedIdAndCommentGroupAndIdNot(postId, group, comment.getId());
 
-        commentRepository.deleteAll(groupComments);
+            if (!hasReplies) {
+                // 대댓글 없으면 하드 삭제
+                commentRepository.delete(comment);
 
-        int updated = feedRepository.decrementCommentCountBy(postId, removedCount);
+                int updated = feedRepository.decrementCommentCount(postId);
+                if (updated == 0) {
+                    throw new NotExistsDeletedComment();
+                }
+                return;
+            }
+
+            // 대댓글 있으면 부모는 마스킹(soft delete)
+            comment.softDelete();
+            // count는 유지(정책)
+            return;
+        }
+
+        // 대댓글 삭제
+        commentRepository.delete(comment);
+
+        int updated = feedRepository.decrementCommentCount(postId);
         if (updated == 0) {
-            log.warn(
-                    "bulk commentCount decrement skipped. feedId={}, removedCount={}",
-                    postId, removedCount
-            );
+            throw new NotExistsDeletedComment();
+        }
+
+        // 대댓글 삭제 후 group에 부모만 남았고, 부모가 soft delete면 부모도 정리
+        long remain = commentRepository.countByFeedIdAndCommentGroup(postId, group);
+        if (remain == 1) {
+            Comment parent = commentRepository.findById(group).orElse(null);
+            if (parent != null && parent.isDeleted()) {
+                commentRepository.delete(parent);
+
+                int updated2 = feedRepository.decrementCommentCount(postId);
+                if (updated2 == 0) {
+                    throw new NotExistsDeletedComment();
+                }
+            }
         }
     }
 
