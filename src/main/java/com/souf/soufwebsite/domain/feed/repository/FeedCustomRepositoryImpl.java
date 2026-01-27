@@ -1,6 +1,9 @@
 package com.souf.soufwebsite.domain.feed.repository;
 
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.souf.soufwebsite.domain.feed.competition.dto.CompetitionFeedRowResDto;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,10 +12,12 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.souf.soufwebsite.domain.feed.entity.QFeed.feed;
 import static com.souf.soufwebsite.domain.feed.entity.QFeedCategoryMapping.feedCategoryMapping;
+import static com.souf.soufwebsite.domain.feed.entity.QLikedFeed.likedFeed;
 
 @Slf4j
 @Repository
@@ -46,6 +51,31 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
         boolean hasNextPage = feedIds.size() > pageable.getPageSize();
 
         return new SliceImpl<>(feeds, pageable, hasNextPage);
+    }
+
+    @Override
+    public List<CompetitionFeedRowResDto> findTop3ByMemberOrderByFeedLikes(Long mId, LocalDateTime s, LocalDateTime e) {
+
+        NumberExpression<Long> likeCnt = likedFeed.id.count();
+
+        return queryFactory
+                .select(
+                        Projections.constructor(
+                                CompetitionFeedRowResDto.class,
+                                feed.id,
+                                feed.topic,
+                                likeCnt
+                        )
+                ).from(feed)
+                .leftJoin(likedFeed).on(
+                        feed.id.eq(likedFeed.feedId),
+                        likedFeed.createdTime.goe(s),
+                        likedFeed.createdTime.lt(e))
+                .where(feed.member.id.eq(mId))
+                .groupBy(feed.id, feed.topic)
+                .orderBy(likeCnt.desc(), feed.id.asc())
+                .limit(3)
+                .fetch();
     }
 }
 

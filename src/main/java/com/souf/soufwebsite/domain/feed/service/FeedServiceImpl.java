@@ -11,7 +11,7 @@ import com.souf.soufwebsite.domain.feed.exception.NotExistsFeedLikeException;
 import com.souf.soufwebsite.domain.feed.exception.NotFoundFeedException;
 import com.souf.soufwebsite.domain.feed.exception.NotValidAuthenticationException;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
-import com.souf.soufwebsite.domain.feed.repository.LikedFeedRepository;
+import com.souf.soufwebsite.domain.feed.repository.likedFeed.LikedFeedRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
@@ -35,6 +35,7 @@ import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -258,6 +259,7 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Transactional
+    @CacheEvict(value = "competitionTop5", key = "'CURRENT'")
     @Override
     public void updateLikedCount(Long feedId, LikeFeedReqDto likeFeedReqDto) {
         Feed feed = findIfFeedExist(feedId);
