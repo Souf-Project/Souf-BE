@@ -56,6 +56,7 @@
         <logger name="org.springframework" level="INFO" />
         <logger name="io.awspring.cloud.sqs" level="INFO"/>
         <logger name="org.redisson.connection.DNSMonitor" level="INFO"/>
+        <logger name="org.hibernate.query.sqm.function.SqmFunctionRegistry" level="INFO"/>
     </springProfile>
 
     <springProfile name="prod">
@@ -79,5 +80,7 @@
         <logger name="io.awspring.cloud.sqs.listener.source" level="INFO"/>
 
         <logger name="org.redisson.connection.DNSMonitor" level="INFO"/>
+        <logger name="org.hibernate.query.sqm.function.SqmFunctionRegistry" level="INFO"/>
+
     </springProfile>
 </configuration>

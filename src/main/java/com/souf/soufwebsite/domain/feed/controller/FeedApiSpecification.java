@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.domain.feed.controller;
 
+import com.souf.soufwebsite.domain.feed.competition.dto.CompetitionRankResDto;
 import com.souf.soufwebsite.domain.feed.dto.*;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
@@ -72,4 +73,8 @@ public interface FeedApiSpecification {
             @PathVariable(name = "feedId") Long feedId,
             @RequestBody LikeFeedReqDto likeFeedReqDto
     );
+
+    @Operation(summary = "경진대회 순위 리스트", description = "경진대회 순위 리스트를 조회합니다.")
+    @GetMapping("/competition/ranking/top5")
+    SuccessResponse<List<CompetitionRankResDto>> getCompetitionFeeds();
 }
