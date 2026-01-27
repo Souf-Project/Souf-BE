@@ -184,6 +184,7 @@ public class FeedServiceImpl implements FeedService {
         return new FeedResDto(feed.getId(), presignedUrlResDtos, videoDto);
     }
 
+    @CacheEvict(value = "competitionTop5", key = "'CURRENT'")
     @Transactional
     @Override
     public void deleteFeed(String email, Long feedId) {
