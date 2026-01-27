@@ -49,9 +49,6 @@ public class Feed extends BaseEntity {
     @Column(nullable = false)
     private int commentCount = 0;
 
-    @Version
-    private Long version;
-
     @Column(nullable = false)
     private boolean isDeleted = false;
 
