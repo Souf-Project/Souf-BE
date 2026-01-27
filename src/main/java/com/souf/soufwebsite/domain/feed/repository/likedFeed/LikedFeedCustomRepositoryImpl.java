@@ -33,7 +33,7 @@ public class LikedFeedCustomRepositoryImpl implements LikedFeedCustomRepository 
                 )).from(likedFeed)
                 .join(feed).on(likedFeed.feedId.eq(feed.id))
                 .join(feed.member, member)
-                .where(likedFeed.createdTime.goe(start).and(likedFeed.createdTime.lt(end)))
+                .where(feed.createdTime.goe(start).and(feed.createdTime.lt(end)))
                 .groupBy(member.id)
                 .orderBy(likedFeed.id.count().desc(), member.id.asc())
                 .limit(5)
