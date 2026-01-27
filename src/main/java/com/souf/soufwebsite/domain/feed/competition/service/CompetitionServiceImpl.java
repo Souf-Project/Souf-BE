@@ -39,7 +39,7 @@ public class CompetitionServiceImpl implements CompetitionService {
     @Override
     public List<CompetitionRankResDto> getCurrentCompetitionTop5() {
         log.info("경진대회 순위 서비스 로직 실행");
-        LocalDate start = LocalDate.of(2025, 8, 2);
+        LocalDate start = LocalDate.of(2026, 2, 2);
         LocalDate end = LocalDate.of(2026, 2, 28);
         s = start.atStartOfDay();
         e = end.atStartOfDay();
