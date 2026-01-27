@@ -69,8 +69,8 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
                 ).from(feed)
                 .leftJoin(likedFeed).on(
                         feed.id.eq(likedFeed.feedId),
-                        likedFeed.createdTime.goe(s),
-                        likedFeed.createdTime.lt(e))
+                        feed.createdTime.goe(s),
+                        feed.createdTime.lt(e))
                 .where(feed.member.id.eq(mId))
                 .groupBy(feed.id, feed.topic)
                 .orderBy(likeCnt.desc(), feed.id.asc())
