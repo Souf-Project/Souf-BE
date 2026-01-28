@@ -132,6 +132,7 @@ public class CommentServiceImpl implements CommentService {
 
                 int updated = feedRepository.decrementCommentCount(postId);
                 if (updated == 0) {
+                    log.info("대댓글이 없는 댓글 삭제 실패: 피드 아이디 {}", postId);
                     throw new NotExistsDeletedComment();
                 }
                 return;
@@ -148,6 +149,7 @@ public class CommentServiceImpl implements CommentService {
 
         int updated = feedRepository.decrementCommentCount(postId);
         if (updated == 0) {
+            log.info("대댓글 삭제 실패: 피드 아이디 {}", postId);
             throw new NotExistsDeletedComment();
         }
 
@@ -160,6 +162,7 @@ public class CommentServiceImpl implements CommentService {
 
                 int updated2 = feedRepository.decrementCommentCount(postId);
                 if (updated2 == 0) {
+                    log.info("부모 댓글 정리 삭제 실패: 피드 아이디 {}", postId);
                     throw new NotExistsDeletedComment();
                 }
             }
