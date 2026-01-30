@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface CommentRepository extends JpaRepository<Comment, Long>, CommentCustomRepository {
@@ -17,9 +18,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long>, Comment
             value = """
     SELECT c
     FROM Comment c
-      JOIN FETCH c.feed f
       JOIN FETCH c.writer w
-    WHERE f.id = :postId
+    WHERE c.feed.id = :postId
       AND c.id = (
         SELECT MIN(c2.id)
         FROM Comment c2
@@ -39,8 +39,31 @@ public interface CommentRepository extends JpaRepository<Comment, Long>, Comment
             Pageable pageable
     );
 
-    // 여기 고치기
-    Page<Comment> findByFeedAndCommentGroupOrderByCreatedTime(Feed feed, Long commentGroup, Pageable pageable);
+    @Query(
+            value = """
+                SELECT c
+                FROM Comment c
+                JOIN FETCH c.writer w
+                WHERE c.feed.id = :feedId
+                AND c.commentGroup = :commentGroup
+                AND c.id <> c.commentGroup
+                ORDER BY c.createdTime ASC\s
+           \s""",
+            countQuery = """
+                SELECT COUNT(c)
+                FROM Comment c
+                WHERE c.feed.id = :feedId
+                    AND c.commentGroup = :commentGroup
+                    AND c.id <> c.commentGroup
+            """
+    )
+    Page<Comment> findRepliesByFeedIdAndGroup(@Param("feedId") Long feedId, @Param("commentGroup") Long commentGroup, Pageable pageable);
 
     Optional<Long> countByFeed(Feed feed);
+
+    List<Comment> findByFeedIdAndCommentGroup(Long feedId, Long commentGroup);
+
+    long countByFeedIdAndCommentGroup(Long feedId, Long commentGroup);
+
+    boolean existsByFeedIdAndCommentGroupAndIdNot(Long feedId, Long commentGroup, Long parentId);
 }

@@ -30,13 +30,13 @@ public interface InquiryApiSpecification {
             @Valid @RequestBody MediaReqDto reqDto
     );
 
-    @Operation(summary = "문의글 수정", description = "회원이 본인 소유의 문의글을 수정합니다.")
-    @PatchMapping("/{inquiryId}")
-    SuccessResponse<?> updateInquiry(
-            @CurrentEmail String email,
-            @RequestBody InquiryReqDto reqDto,
-            @PathVariable(name = "inquiryId") Long inquiryId
-    );
+//    @Operation(summary = "문의글 수정", description = "회원이 본인 소유의 문의글을 수정합니다.")
+//    @PatchMapping("/{inquiryId}")
+//    SuccessResponse<?> updateInquiry(
+//            @CurrentEmail String email,
+//            @RequestBody InquiryReqDto reqDto,
+//            @PathVariable(name = "inquiryId") Long inquiryId
+//    );
 
     @Operation(summary = "문의글 삭제", description = "회원이 본의 소유의 문의글을 삭제합니다.")
     @DeleteMapping("/{inquiryId}")

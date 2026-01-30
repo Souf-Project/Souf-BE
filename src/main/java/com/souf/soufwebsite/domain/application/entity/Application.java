@@ -19,6 +19,15 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor
+@Table(
+        name = "application",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_application_recruit_member",
+                        columnNames = {"recruit_id", "member_id"}
+                )
+        }
+)
 public class Application extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

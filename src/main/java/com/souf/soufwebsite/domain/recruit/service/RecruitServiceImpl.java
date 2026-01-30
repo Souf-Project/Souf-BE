@@ -4,6 +4,7 @@ import com.souf.soufwebsite.domain.city.entity.City;
 import com.souf.soufwebsite.domain.city.entity.CityDetail;
 import com.souf.soufwebsite.domain.city.exception.NotFoundCityDetailException;
 import com.souf.soufwebsite.domain.city.exception.NotFoundCityException;
+import com.souf.soufwebsite.domain.city.exception.NotMatchedCityDetailException;
 import com.souf.soufwebsite.domain.city.exception.RequiredCityDetailException;
 import com.souf.soufwebsite.domain.city.repository.CityDetailRepository;
 import com.souf.soufwebsite.domain.city.repository.CityRepository;
@@ -39,10 +40,8 @@ import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.common.viewCount.service.ViewCountService;
 import com.souf.soufwebsite.global.redis.util.RedisUtil;
 import com.souf.soufwebsite.global.slack.service.SlackService;
-import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -60,6 +59,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static com.souf.soufwebsite.global.util.SecurityUtils.getCurrentMember;
 
 @Slf4j
 @Service
@@ -88,11 +89,6 @@ public class RecruitServiceImpl implements RecruitService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ApplicationEventPublisher publisher;
 
-
-    public Member getCurrentMember() {
-        return SecurityUtils.getCurrentMemberOrNull();
-    }
-
     @Override
     @Transactional
     public RecruitCreateResDto createRecruit(String email, RecruitReqDto reqDto) {
@@ -105,7 +101,6 @@ public class RecruitServiceImpl implements RecruitService {
         Recruit recruit = Recruit.of(reqDto, member, city, cityDetail);
         injectCategories(reqDto, recruit);
         recruit = recruitRepository.save(recruit);
-        log.info("recruit created: {}", recruit.getId());
 
         List<Long> firstIds = extractFirstIds(reqDto);
         for (Long firstId : firstIds) {
@@ -384,14 +379,22 @@ public class RecruitServiceImpl implements RecruitService {
     }
 
     private CityDetail validateCityOrThrow(City city, Long cityDetailId) {
+
         if ("지역 무관".equals(city.getName())) {
             return null;
         }
         if (cityDetailId == null) {
             throw new RequiredCityDetailException();
         }
-        return cityDetailRepository.findById(cityDetailId)
+
+        CityDetail cityDetail = cityDetailRepository.findById(cityDetailId)
                 .orElseThrow(NotFoundCityDetailException::new);
+        // cityDetail과 city가 연관이 있는지 유효성 검사 추가
+        if(!cityDetail.getCity().getId().equals(city.getId())){
+            throw new NotMatchedCityDetailException();
+        }
+
+        return cityDetail;
     }
 
     private void updateRemainingImages(RecruitReqDto reqDto, Recruit recruit) {
@@ -411,7 +414,7 @@ public class RecruitServiceImpl implements RecruitService {
     private List<Long> extractFirstIds(RecruitReqDto reqDto) {
         if (reqDto.categoryDtos() == null) return List.of();
         return reqDto.categoryDtos().stream()
-                .map(cd -> cd.firstCategory())
+                .map(CategoryDto::firstCategory)
                 .filter(Objects::nonNull)
                 .distinct()
                 .toList();

@@ -55,7 +55,7 @@ public class ReviewServiceImpl implements ReviewService {
     public ReviewCreatedResDto createReview(String email, ReviewReqDto reviewReqDto) {
         Member currentMember = findIfMemberExists(email);
 
-        Recruit recruit = recruitRepository.findById(reviewReqDto.recruitId()).orElseThrow(NotFoundRecruitException::new);
+        Recruit recruit = findIfRecruitExists(reviewReqDto);
         if(!recruit.isTaskCompleted()){
             throw new NotCompletedTaskException();
         }
@@ -137,6 +137,10 @@ public class ReviewServiceImpl implements ReviewService {
         if(!review.getMember().getId().equals(member.getId())){
             throw new NotValidReviewAuthentication();
         }
+    }
+
+    private Recruit findIfRecruitExists(ReviewReqDto reviewReqDto) {
+        return recruitRepository.findById(reviewReqDto.recruitId()).orElseThrow(NotFoundRecruitException::new);
     }
 
     private Review findIfReviewExists(Long reviewId) {

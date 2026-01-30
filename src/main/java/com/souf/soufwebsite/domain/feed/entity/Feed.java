@@ -44,6 +44,12 @@ public class Feed extends BaseEntity {
     private Long weeklyViews;
 
     @Column(nullable = false)
+    private int likedCount = 0;
+
+    @Column(nullable = false)
+    private int commentCount = 0;
+
+    @Column(nullable = false)
     private boolean isDeleted = false;
 
     @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)

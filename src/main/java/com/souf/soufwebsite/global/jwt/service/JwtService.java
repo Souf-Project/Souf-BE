@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.global.jwt;
+package com.souf.soufwebsite.global.jwt.service;
 
 import com.souf.soufwebsite.domain.member.entity.Member;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +19,8 @@ public interface JwtService {
     Optional<String> extractEmail(String accessToken);
 
     boolean isTokenValid(String token);
+
+    void validateAccessTokenOrThrow(String token);
 
     long getExpiration(String token);
 

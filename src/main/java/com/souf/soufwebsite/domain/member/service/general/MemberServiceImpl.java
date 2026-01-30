@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.domain.member.service.general;
 
-import com.souf.soufwebsite.domain.feed.repository.LikedFeedRepository;
+import com.souf.soufwebsite.domain.feed.repository.likedFeed.LikedFeedRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.service.FileService;
@@ -35,7 +35,7 @@ import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.common.mail.SesMailService;
 import com.souf.soufwebsite.global.exception.AuthorizedException;
-import com.souf.soufwebsite.global.jwt.JwtService;
+import com.souf.soufwebsite.global.jwt.service.JwtService;
 import com.souf.soufwebsite.global.slack.service.SlackService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -161,7 +161,11 @@ public class MemberServiceImpl implements MemberService {
 
         String accessToken = jwtService.createAccessToken(member);
         String refreshToken = jwtService.createRefreshToken(member);
-        redisTemplate.opsForValue().set("refresh:" + email, refreshToken, jwtService.getExpiration(refreshToken), TimeUnit.MILLISECONDS);
+
+        long exp = jwtService.getExpiration(refreshToken);
+        long ttl = Math.max(0, exp - System.currentTimeMillis());
+
+        redisTemplate.opsForValue().set("refresh:" + email, refreshToken, ttl, TimeUnit.MILLISECONDS);
 
         jwtService.sendAccessAndRefreshToken(response, accessToken, refreshToken);
 
@@ -182,7 +186,8 @@ public class MemberServiceImpl implements MemberService {
                 .extractRefreshToken(req)
                 .filter(jwtService::isTokenValid)
                 .orElse(null);
-        if(refreshToken == null){
+
+        if (refreshToken == null){
             log.info("refresh token is null");
             throw new AuthorizedException();
         }
@@ -190,7 +195,11 @@ public class MemberServiceImpl implements MemberService {
         // 정보 추출과 Redis에 존재하는지 여부 확인
         String email = jwtService.extractEmail(refreshToken).orElseThrow(NotValidTokenException::new);
         String refreshInRedis = redisTemplate.opsForValue().get("refresh:" + email);
-        if(refreshInRedis == null){
+        if (refreshInRedis == null){
+            throw new NotValidTokenException();
+        }
+
+        if (!refreshToken.equals(refreshInRedis)) {
             throw new NotValidTokenException();
         }
 
@@ -198,7 +207,11 @@ public class MemberServiceImpl implements MemberService {
         Member requiredMember = findIfEmailExists(email);
         String accessToken = jwtService.createAccessToken(requiredMember);
         String newRefreshToken = jwtService.createRefreshToken(requiredMember);
-        redisTemplate.opsForValue().set("refresh:" + email, newRefreshToken, jwtService.getExpiration(newRefreshToken), TimeUnit.MILLISECONDS);
+
+        long exp = jwtService.getExpiration(newRefreshToken);
+        long ttl = Math.max(0, exp - System.currentTimeMillis());
+
+        redisTemplate.opsForValue().set("refresh:" + email, newRefreshToken, ttl, TimeUnit.MILLISECONDS);
         jwtService.sendAccessAndRefreshToken(res, accessToken, newRefreshToken);
 
         return new TokenDto(accessToken, requiredMember.getId(), requiredMember.getNickname(),
@@ -434,6 +447,8 @@ public class MemberServiceImpl implements MemberService {
         favoriteMemberRepository.deleteAllByFromMember(member);
         favoriteMemberRepository.deleteAllByToMember(member);
         likedFeedRepository.deleteAllByMemberId(memberId);
+
+        redisTemplate.delete("refresh:" + member.getEmail());
 
 //        indexEventPublisherHelper.publishIndexEvent(
 //                EntityType.MEMBER,

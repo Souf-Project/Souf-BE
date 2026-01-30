@@ -17,6 +17,8 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 @EnableCaching
@@ -47,8 +49,14 @@ public class CachingConfig {
                         .fromSerializer(serializer))
                 .entryTtl(Duration.ofMinutes(5));
 
+        Map<String, RedisCacheConfiguration> configs = new HashMap<>();
+        configs.put("competitionTop5",
+                config.entryTtl(Duration.ofMinutes(5))
+        );
+
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(config)
+                .withInitialCacheConfigurations(configs)
                 .build();
     }
 }

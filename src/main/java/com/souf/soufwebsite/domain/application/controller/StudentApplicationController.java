@@ -27,7 +27,8 @@ public class StudentApplicationController implements StudentApplicationApiSpecif
     public SuccessResponse<?> apply(
             @CurrentEmail String email,
             @PathVariable Long recruitId,
-            @RequestBody(required = false) ApplicationOfferReqDto reqDto) {
+            @RequestBody(required = false) ApplicationOfferReqDto reqDto
+    ) {
         applicationService.apply(email, recruitId, reqDto);
         return new SuccessResponse<>(APPLY_SUCCESS.getMessage());
     }

@@ -1,6 +1,5 @@
 package com.souf.soufwebsite.domain.feed.service;
 
-import com.souf.soufwebsite.domain.comment.repository.CommentRepository;
 import com.souf.soufwebsite.domain.feed.dto.*;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.entity.FeedCategoryMapping;
@@ -11,7 +10,7 @@ import com.souf.soufwebsite.domain.feed.exception.NotExistsFeedLikeException;
 import com.souf.soufwebsite.domain.feed.exception.NotFoundFeedException;
 import com.souf.soufwebsite.domain.feed.exception.NotValidAuthenticationException;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
-import com.souf.soufwebsite.domain.feed.repository.LikedFeedRepository;
+import com.souf.soufwebsite.domain.feed.repository.likedFeed.LikedFeedRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
@@ -35,6 +34,7 @@ import com.souf.soufwebsite.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -62,7 +62,6 @@ public class FeedServiceImpl implements FeedService {
 //    private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final SlackService slackService;
     private final LikedFeedRepository likedFeedRepository;
-    private final CommentRepository commentRepository;
 
     private final MediaCleanupPublisher mediaCleanupPublisher;
     private final MediaCleanupHelper mediaCleanupHelper;
@@ -136,18 +135,15 @@ public class FeedServiceImpl implements FeedService {
 
         Long totalViewCount = viewCountService.updateTotalViewCount(currentMember, PostType.FEED, feedId, feed.getViewCount(), ip, userAgent);
 
-        Long likedCount = likedFeedRepository.countByFeedId(feedId).orElse(0L);
         Boolean liked = false;
         if(currentMember != null) {
             liked = getLiked(currentMember.getId(), feedId);
         }
 
-        Long commentCount = commentRepository.countByFeed(feed).orElse(0L);
-
         List<Media> mediaList = fileService.getMediaList(PostType.FEED, feedId);
         String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-        return FeedDetailResDto.from(member, profileImageUrl, feed, totalViewCount, likedCount, liked, commentCount, mediaList);
+        return FeedDetailResDto.from(member, profileImageUrl, feed, totalViewCount, liked, mediaList);
     }
 
     @Transactional
@@ -188,6 +184,7 @@ public class FeedServiceImpl implements FeedService {
         return new FeedResDto(feed.getId(), presignedUrlResDtos, videoDto);
     }
 
+    @CacheEvict(value = "competitionTop5", key = "'CURRENT'")
     @Transactional
     @Override
     public void deleteFeed(String email, Long feedId) {
@@ -249,30 +246,41 @@ public class FeedServiceImpl implements FeedService {
                     Member member = feed.getMember();
                     String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-                    Long likedCount = likedFeedRepository.countByFeedId(feed.getId()).orElse(0L);
-                    Long commentCount = commentRepository.countByFeed(feed).orElse(0L);
-
-                    return FeedDetailResDto.from(feed.getMember(), profileImageUrl, feed, viewCount, likedCount, false, commentCount, mediaList);
+                    return FeedDetailResDto.from(feed.getMember(), profileImageUrl, feed, viewCount, false, mediaList);
                 }
         );
     }
 
     @Transactional
+    @CacheEvict(value = "competitionTop5", key = "'CURRENT'")
     @Override
     public void updateLikedCount(Long feedId, LikeFeedReqDto likeFeedReqDto) {
-        Feed feed = findIfFeedExist(feedId);
-        Member member = findIfMemberIdExists(likeFeedReqDto.memberId());
+        Long memberId = likeFeedReqDto.memberId();
+
+        if (!feedRepository.existsById(feedId)) {
+            throw new NotFoundFeedException();
+        }
 
         // 좋아요를 누를 경우
         if(likeFeedReqDto.isLiked().equals(Boolean.TRUE)){
-            likedFeedRepository.findByFeedIdAndMemberId(feedId, member.getId()).ifPresent(likedFeed -> {
+            likedFeedRepository.findByFeedIdAndMemberId(feedId, memberId).ifPresent(likedFeed -> {
                 throw new AlreadyExistsFeedLikeException();
             });
-            LikedFeed likedFeed = new LikedFeed(member.getId(), feed.getId());
+
+            LikedFeed likedFeed = new LikedFeed(memberId, feedId);
             likedFeedRepository.save(likedFeed);
+
+            int updated = feedRepository.incrementLikedCount(feedId);
+            if (updated == 0) throw new NotFoundFeedException();
+
         } else { // 좋아요를 취소할 경우
-            likedFeedRepository.findByFeedIdAndMemberId(feedId, member.getId()).orElseThrow(NotExistsFeedLikeException::new);
-            likedFeedRepository.deleteByFeedIdAndMemberId(feedId, member.getId());
+            likedFeedRepository.findByFeedIdAndMemberId(feedId, memberId).orElseThrow(NotExistsFeedLikeException::new);
+            likedFeedRepository.deleteByFeedIdAndMemberId(feedId, memberId);
+
+            int updated = feedRepository.decrementLikedCount(feedId);
+            if (updated == 0) {
+                log.warn("likedCount decrement skipped. feedId={}, memberId={}", feedId, memberId);
+            }
         }
     }
 
