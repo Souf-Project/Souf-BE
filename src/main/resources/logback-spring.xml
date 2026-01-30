@@ -13,7 +13,7 @@
 
     <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <customFields>{"app":"${APP_NAME}", "env":"${ENV}", "instanceId":"${INSTANCE_ID}"</customFields>
+            <customFields>{"app":"${APP_NAME}", "env":"${ENV}", "instanceId":"${INSTANCE_ID}"}</customFields>
         </encoder>
     </appender>
 
