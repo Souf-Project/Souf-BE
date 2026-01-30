@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface CommentRepository extends JpaRepository<Comment, Long>, CommentCustomRepository {
@@ -59,4 +60,10 @@ public interface CommentRepository extends JpaRepository<Comment, Long>, Comment
     Page<Comment> findRepliesByFeedIdAndGroup(@Param("feedId") Long feedId, @Param("commentGroup") Long commentGroup, Pageable pageable);
 
     Optional<Long> countByFeed(Feed feed);
+
+    List<Comment> findByFeedIdAndCommentGroup(Long feedId, Long commentGroup);
+
+    long countByFeedIdAndCommentGroup(Long feedId, Long commentGroup);
+
+    boolean existsByFeedIdAndCommentGroupAndIdNot(Long feedId, Long commentGroup, Long parentId);
 }
