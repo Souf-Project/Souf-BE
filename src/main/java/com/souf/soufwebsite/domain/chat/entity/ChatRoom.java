@@ -38,7 +38,7 @@ public class ChatRoom extends BaseEntity {
     @OneToMany(mappedBy = "chatRoom")
     private List<Contract> contracts = new ArrayList<>();
 
-    public ChatRoom(Member sender, Member receiver, Application application) {
+    public ChatRoom(Member sender, Member receiver) {
         this.sender = sender;
         this.receiver = receiver;
         this.status = ChatRoomStatus.ACTIVE;

@@ -48,10 +48,13 @@ public class ChatRoomService {
             return existingRoom;
         }
 
-        Application application = applicationRepository
-                .findByRecruitMemberIdAndMemberId(sender.getId(), receiver.getId()).orElseThrow(NotMyApplicantException::new);
+        boolean exists = applicationRepository.existsByRecruitMemberIdAndMemberId(sender.getId(), receiver.getId());
 
-        ChatRoom newRoom = chatRoomRepository.save(new ChatRoom(sender, receiver, application));
+        if (!exists) {
+            throw new NotMyApplicantException();
+        }
+
+        ChatRoom newRoom = chatRoomRepository.save(new ChatRoom(sender, receiver));
         chatParticipantRepository.save(ChatParticipant.of(newRoom, sender));
         chatParticipantRepository.save(ChatParticipant.of(newRoom, receiver));
 
