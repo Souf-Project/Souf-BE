@@ -34,7 +34,6 @@ import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
 import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
-import com.souf.soufwebsite.global.common.sort.dto.SortOption;
 import com.souf.soufwebsite.global.common.viewCount.service.ViewCountService;
 import com.souf.soufwebsite.global.slack.service.SlackService;
 import com.souf.soufwebsite.global.util.SecurityUtils;
@@ -241,6 +240,8 @@ public class FeedServiceImpl implements FeedService {
     @Transactional(readOnly = true)
     @Override
     public Page<FeedDetailResDto> getFeeds(FeedSearchReqDto reqDto, Pageable pageable) {
+        Member viewer = getCurrentMember();
+        Long viewerId = (viewer == null) ? null : viewer.getId();
 
         Page<Feed> feeds = feedRepository.getFeedList(reqDto, pageable);
 
@@ -271,13 +272,22 @@ public class FeedServiceImpl implements FeedService {
             viewCountById.put(f.getId(), viewCount);
         }
 
+        Set<Long> likedFeedIds = Collections.emptySet();
+        if (viewerId != null) {
+            List<Long> feedIds = feedList.stream().map(Feed::getId).toList();
+            likedFeedIds = new HashSet<>(likedFeedRepository.findLikedFeedIds(viewerId, feedIds));
+        }
+        final Set<Long> likedSet = likedFeedIds;
+
         List<FeedDetailResDto> content = feedList.stream()
                 .map(feed -> {
                     Long viewCount = viewCountById.getOrDefault(feed.getId(), 0L);
                     List<Media> mediaList = fileService.getMediaList(PostType.FEED, feed.getId());
-                    Member member = feed.getMember();
-                    String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
-                    return FeedDetailResDto.from(member, profileImageUrl, feed, viewCount, false, mediaList);
+                    Member writer = feed.getMember();
+                    String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, writer.getId());
+                    boolean isLiked = viewerId != null && likedSet.contains(feed.getId());
+
+                    return FeedDetailResDto.from(writer, profileImageUrl, feed, viewCount, isLiked, mediaList);
                 })
                 .toList();
 
