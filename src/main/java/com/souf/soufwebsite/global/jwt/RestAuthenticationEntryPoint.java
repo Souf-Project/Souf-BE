@@ -24,9 +24,19 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest req, HttpServletResponse res, AuthenticationException ex)
             throws IOException {
 
+        if(res.isCommitted())
+            return;
+        res.resetBuffer();
+
         AuthErrorKey errorKey = resolveErrorKey(ex);
 
+        if(isSse(req)){
+            res.sendError(errorKey.getHttpStatus());
+            return;
+        }
+
         res.setStatus(errorKey.getHttpStatus());
+        res.setCharacterEncoding("UTF-8");
         res.setContentType("application/json;charset=UTF-8");
 
         Object data = null;
@@ -43,7 +53,13 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
                 data
         );
 
-        res.getWriter().write(objectMapper.writeValueAsString(body));
+        objectMapper.writeValue(res.getOutputStream(), body);
+        res.flushBuffer();
+    }
+
+    private boolean isSse(HttpServletRequest req) {
+        String accept = req.getHeader("Accept");
+        return accept != null && accept.contains("text/event-stream");
     }
 
     private AuthErrorKey resolveErrorKey(AuthenticationException ex) {
