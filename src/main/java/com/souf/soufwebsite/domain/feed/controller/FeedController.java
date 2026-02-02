@@ -96,7 +96,7 @@ public class FeedController implements FeedApiSpecification{
 
     @GetMapping
     public SuccessResponse<Slice<FeedDetailResDto>> getFeedList(
-            @RequestParam(name = "firstCategory") Long first,
+            @RequestParam(name = "firstCategory", required = false) Long first,
             @PageableDefault(size = 12) Pageable pageable) {
         return new SuccessResponse<>(
                 feedService.getFeeds(first, pageable),
