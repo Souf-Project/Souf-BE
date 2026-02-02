@@ -44,10 +44,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.domain.*;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -243,12 +240,12 @@ public class FeedServiceImpl implements FeedService {
 
     @Transactional(readOnly = true)
     @Override
-    public Slice<FeedDetailResDto> getFeeds(FeedSearchReqDto reqDto, Pageable pageable) {
+    public Page<FeedDetailResDto> getFeeds(FeedSearchReqDto reqDto, Pageable pageable) {
 
-        Slice<Feed> feeds = feedRepository.getFeedList(reqDto, pageable);
+        Page<Feed> feeds = feedRepository.getFeedList(reqDto, pageable);
 
         if (feeds.isEmpty()) {
-            return new SliceImpl<>(List.of(), pageable, false);
+            return new PageImpl<>(List.of(), pageable, 0L);
         }
 
         List<Feed> feedList = feeds.getContent();
@@ -262,8 +259,8 @@ public class FeedServiceImpl implements FeedService {
 
         for (int i = 0; i < feedList.size(); i++) {
             Feed f = feedList.get(i);
+            Object v = (redisValues != null && i < redisValues.size()) ? redisValues.get(i) : null;
 
-            Object v = (redisValues == null) ? null : redisValues.get(i);
             Long viewCount = parseLongOrNull(v);
 
             if (viewCount == null) {
@@ -274,16 +271,17 @@ public class FeedServiceImpl implements FeedService {
             viewCountById.put(f.getId(), viewCount);
         }
 
-        return feeds.map(
-                feed -> {
+        List<FeedDetailResDto> content = feedList.stream()
+                .map(feed -> {
                     Long viewCount = viewCountById.getOrDefault(feed.getId(), 0L);
                     List<Media> mediaList = fileService.getMediaList(PostType.FEED, feed.getId());
                     Member member = feed.getMember();
                     String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
+                    return FeedDetailResDto.from(member, profileImageUrl, feed, viewCount, false, mediaList);
+                })
+                .toList();
 
-                    return FeedDetailResDto.from(feed.getMember(), profileImageUrl, feed, viewCount, false, mediaList);
-                }
-        );
+        return new PageImpl<>(content, pageable, feeds.getTotalElements());
     }
 
     @Transactional

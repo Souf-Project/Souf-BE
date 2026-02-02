@@ -20,8 +20,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
@@ -103,11 +103,11 @@ public class FeedController implements FeedApiSpecification{
     }
 
     @GetMapping
-    public SuccessResponse<Slice<FeedDetailResDto>> getFeedList(
+    public SuccessResponse<Page<FeedDetailResDto>> getFeedList(
             @RequestParam(required = false) Long firstCategory,
             @RequestParam(defaultValue = "RECENT") FeedSortKey sortKey,
             @RequestParam(defaultValue = "DESC") SortOption.SortDir sortDir,
-            @PageableDefault(size = 12) Pageable pageable
+            @PageableDefault(size = 20) Pageable pageable
     ) {
         FeedSearchReqDto reqDto = new FeedSearchReqDto(firstCategory, new SortOption<>(sortKey, sortDir));
         return new SuccessResponse<>(

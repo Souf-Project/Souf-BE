@@ -12,9 +12,7 @@ import com.souf.soufwebsite.domain.feed.entity.FeedSortKey;
 import com.souf.soufwebsite.global.common.sort.dto.SortOption;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -36,7 +34,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
 
 
     @Override
-    public Slice<Feed> getFeedList(FeedSearchReqDto req, Pageable pageable) {
+    public Page<Feed> getFeedList(FeedSearchReqDto req, Pageable pageable) {
 
         Long first = (req == null) ? null : req.firstCategory();
         SortOption<FeedSortKey> sortOption = (req == null || req.sortOption() == null)
@@ -47,14 +45,16 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
         SortOption.SortDir dir = sortOption.sortDirOrDefault();
         OrderSpecifier<?>[] orderSpecifiers = buildOrderSpecifiers(key, dir);
 
-        List<Long> feedIds = fetchPageIds(first, orderSpecifiers, pageable);
+        long totalCount = fetchTotalCount(first);
 
-        if (feedIds.isEmpty()) {
-            return new SliceImpl<>(List.of(), pageable, false);
+        if (totalCount == 0L) {
+            return new PageImpl<>(List.of(), pageable, 0L);
         }
 
-        boolean hasNext = feedIds.size() > pageable.getPageSize();
-        List<Long> pageIds = feedIds.subList(0, Math.min(feedIds.size(), pageable.getPageSize()));
+        List<Long> pageIds = fetchPageIds(first, orderSpecifiers, pageable);
+        if (pageIds.isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, totalCount);
+        }
 
         List<Feed> feeds = queryFactory
                 .selectFrom(feed).distinct()
@@ -62,15 +62,16 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
                 .where(feed.id.in(pageIds))
                 .fetch();
 
+
         Map<Long, Integer> order = new HashMap<>();
-        for (int i = 0; i < pageIds.size(); i++) {
+        for (int i = 0; i < pageIds.size(); i++)
             order.put(pageIds.get(i), i);
-        }
+
         feeds.sort(Comparator.comparingInt(
                 f -> order.getOrDefault(f.getId(), Integer.MAX_VALUE)
         ));
 
-        return new SliceImpl<>(feeds, pageable, hasNext);
+        return new PageImpl<>(feeds, pageable, totalCount);
     }
 
     @Override
@@ -115,7 +116,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
                     .from(feed)
                     .orderBy(orderSpecifiers)
                     .offset(pageable.getOffset())
-                    .limit(pageable.getPageSize() + 1)
+                    .limit(pageable.getPageSize())
                     .fetch();
         }
 
@@ -126,7 +127,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
                 .where(feedCategoryMapping.firstCategory.id.eq(first))
                 .orderBy(orderSpecifiers)
                 .offset(pageable.getOffset())
-                .limit(pageable.getPageSize() + 1)
+                .limit(pageable.getPageSize())
                 .fetch();
     }
 
@@ -148,6 +149,21 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
                     tie2
             };
         };
+    }
+
+    private long fetchTotalCount(Long first) {
+        if (first == null) {
+            Long total = queryFactory.select(feed.count()).from(feed).fetchOne();
+            return total == null ? 0L : total;
+        }
+
+        Long total = queryFactory
+                .select(feed.id.countDistinct())
+                .from(feed)
+                .join(feed.categories, feedCategoryMapping)
+                .where(feedCategoryMapping.firstCategory.id.eq(first))
+                .fetchOne();
+        return total == null ? 0L : total;
     }
 }
 

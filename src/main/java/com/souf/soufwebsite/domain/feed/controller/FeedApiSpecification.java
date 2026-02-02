@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.web.PageableDefault;
@@ -69,7 +70,7 @@ public interface FeedApiSpecification {
 
     @Operation(summary = "대학생 피드 조회", description = "피드들을 조회합니다.")
     @GetMapping
-    SuccessResponse<Slice<FeedDetailResDto>> getFeedList(
+    SuccessResponse<Page<FeedDetailResDto>> getFeedList(
             @RequestParam(required = false) Long firstCategory,
             @RequestParam(defaultValue = "RECENT") FeedSortKey sortKey,
             @RequestParam(defaultValue = "DESC") SortOption.SortDir sortDir,
