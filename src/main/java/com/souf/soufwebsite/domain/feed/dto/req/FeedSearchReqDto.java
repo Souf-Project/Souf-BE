@@ -1,13 +1,9 @@
 package com.souf.soufwebsite.domain.feed.dto.req;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import com.souf.soufwebsite.domain.feed.entity.FeedSortKey;
+import com.souf.soufwebsite.global.common.sort.dto.SortOption;
 
 public record FeedSearchReqDto(
-
-        @Schema(description = "제목을 입력해주세요.(String)")
-        String title,
-
-        @Schema(description = "내용을 입력해주세요.(String)")
-        String content
-) {
-}
+        Long firstCategory,
+        SortOption<FeedSortKey> sortOption
+) {}

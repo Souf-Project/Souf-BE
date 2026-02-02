@@ -7,7 +7,9 @@ import com.souf.soufwebsite.domain.feed.dto.res.FeedDetailResDto;
 import com.souf.soufwebsite.domain.feed.dto.res.FeedResDto;
 import com.souf.soufwebsite.domain.feed.dto.res.FeedSimpleResDto;
 import com.souf.soufwebsite.domain.feed.dto.res.MemberFeedResDto;
+import com.souf.soufwebsite.domain.feed.entity.FeedSortKey;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.global.common.sort.dto.SortOption;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
@@ -68,7 +70,9 @@ public interface FeedApiSpecification {
     @Operation(summary = "대학생 피드 조회", description = "피드들을 조회합니다.")
     @GetMapping
     SuccessResponse<Slice<FeedDetailResDto>> getFeedList(
-            @RequestParam(name = "firstCategory") Long first,
+            @RequestParam(required = false) Long firstCategory,
+            @RequestParam(defaultValue = "RECENT") FeedSortKey sortKey,
+            @RequestParam(defaultValue = "DESC") SortOption.SortDir sortDir,
             @PageableDefault(size = 12) Pageable pageable
     );
 

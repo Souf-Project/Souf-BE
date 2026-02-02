@@ -15,8 +15,6 @@ import java.util.List;
 public interface FeedRepository extends JpaRepository<Feed, Long>, FeedCustomRepository {
     Page<Feed> findAllByMemberOrderByIdDesc(Member member, Pageable pageable);
 
-    Page<Feed> findByOrderByCreatedTimeDesc(Pageable pageable);
-
     @Transactional
     @Modifying
     @Query("update Feed f set f.weeklyViews = 0")

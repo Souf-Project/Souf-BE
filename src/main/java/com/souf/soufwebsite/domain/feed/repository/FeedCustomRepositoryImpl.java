@@ -1,10 +1,15 @@
 package com.souf.soufwebsite.domain.feed.repository;
 
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.souf.soufwebsite.domain.feed.competition.dto.CompetitionFeedRowResDto;
+import com.souf.soufwebsite.domain.feed.dto.req.FeedSearchReqDto;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
+import com.souf.soufwebsite.domain.feed.entity.FeedSortKey;
+import com.souf.soufwebsite.global.common.sort.dto.SortOption;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -13,7 +18,10 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.souf.soufwebsite.domain.feed.entity.QFeed.feed;
 import static com.souf.soufwebsite.domain.feed.entity.QFeedCategoryMapping.feedCategoryMapping;
@@ -28,29 +36,50 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
 
 
     @Override
-    public Slice<Feed> findByFirstCategoryOrderByCreatedTimeDesc(Long first, Pageable pageable) {
+    public Slice<Feed> getFeedList(FeedSearchReqDto req, Pageable pageable) {
 
-        List<Long> feedIds = queryFactory
-                .select(feed.id)
-                .from(feed)
-                .join(feed.categories, feedCategoryMapping)
-                .where(first != null ? feedCategoryMapping.firstCategory.id.eq(first) : null)
-                .orderBy(feed.createdTime.desc(), feed.id.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize() + 1)
-                .fetch();
-        log.info("size: {}", feedIds.size());
+        Long first = (req == null) ? null : req.firstCategory();
+        SortOption<FeedSortKey> sortOption = (req == null || req.sortOption() == null)
+                ? new SortOption<>(FeedSortKey.RECENT, SortOption.SortDir.DESC)
+                : req.sortOption();
+
+        FeedSortKey key = sortOption.sortKeyOrDefault(FeedSortKey.RECENT);
+        SortOption.SortDir dir = sortOption.sortDirOrDefault();
+        OrderSpecifier<?>[] orderSpecifiers = buildOrderSpecifiers(key, dir);
+
+        List<Long> feedIds = fetchPageIds(first, orderSpecifiers, pageable);
+
+        if (feedIds.isEmpty()) {
+            return new SliceImpl<>(List.of(), pageable, false);
+        }
+
+        boolean hasNext = feedIds.size() > pageable.getPageSize();
+        List<Long> pageIds = feedIds.subList(0, Math.min(feedIds.size(), pageable.getPageSize()));
 
         List<Feed> feeds = queryFactory
-                .selectFrom(feed)
+                .selectFrom(feed).distinct()
                 .leftJoin(feed.categories, feedCategoryMapping).fetchJoin()
-                .where(feed.id.in(feedIds.subList(0, Math.min(feedIds.size(), pageable.getPageSize()))))
-                .orderBy(feed.createdTime.desc(), feed.id.desc())
+                .where(feed.id.in(pageIds))
                 .fetch();
 
-        boolean hasNextPage = feedIds.size() > pageable.getPageSize();
+        Map<Long, Integer> order = new HashMap<>();
+        for (int i = 0; i < pageIds.size(); i++) {
+            order.put(pageIds.get(i), i);
+        }
+        feeds.sort(Comparator.comparingInt(
+                f -> order.getOrDefault(f.getId(), Integer.MAX_VALUE)
+        ));
 
-        return new SliceImpl<>(feeds, pageable, hasNextPage);
+        return new SliceImpl<>(feeds, pageable, hasNext);
+    }
+
+    @Override
+    public Slice<Feed> findByFirstCategoryOrderByCreatedTimeDesc(Long first, Pageable pageable) {
+        FeedSearchReqDto req = new FeedSearchReqDto(
+                first,
+                new SortOption<>(FeedSortKey.RECENT, SortOption.SortDir.DESC)
+        );
+        return getFeedList(req, pageable);
     }
 
     @Override
@@ -76,6 +105,49 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
                 .orderBy(likeCnt.desc(), feed.id.asc())
                 .limit(3)
                 .fetch();
+    }
+
+    private List<Long> fetchPageIds(Long first, OrderSpecifier<?>[] orderSpecifiers, Pageable pageable) {
+
+        if (first == null) {
+            return queryFactory
+                    .select(feed.id)
+                    .from(feed)
+                    .orderBy(orderSpecifiers)
+                    .offset(pageable.getOffset())
+                    .limit(pageable.getPageSize() + 1)
+                    .fetch();
+        }
+
+        return queryFactory
+                .select(feed.id).distinct()
+                .from(feed)
+                .join(feed.categories, feedCategoryMapping)
+                .where(feedCategoryMapping.firstCategory.id.eq(first))
+                .orderBy(orderSpecifiers)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize() + 1)
+                .fetch();
+    }
+
+    private OrderSpecifier<?>[] buildOrderSpecifiers(FeedSortKey key, SortOption.SortDir dir) {
+        Order o = (dir == SortOption.SortDir.ASC) ? Order.ASC : Order.DESC;
+
+        OrderSpecifier<?> tie1 = new OrderSpecifier<>(Order.DESC, feed.createdTime);
+        OrderSpecifier<?> tie2 = new OrderSpecifier<>(Order.DESC, feed.id);
+
+        return switch (key) {
+            case RECENT -> new OrderSpecifier<?>[] {
+                    new OrderSpecifier<>(o, feed.createdTime),
+                    tie2
+            };
+
+            case VIEWS -> new OrderSpecifier<?>[] {
+                    new OrderSpecifier<>(o, feed.viewCount),
+                    tie1,
+                    tie2
+            };
+        };
     }
 }
 
