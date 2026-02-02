@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.feed.dto;
+package com.souf.soufwebsite.domain.feed.dto.res;
 
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.dto.video.VideoDto;

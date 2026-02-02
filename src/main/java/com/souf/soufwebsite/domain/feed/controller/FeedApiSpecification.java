@@ -1,7 +1,12 @@
 package com.souf.soufwebsite.domain.feed.controller;
 
 import com.souf.soufwebsite.domain.feed.competition.dto.CompetitionRankResDto;
-import com.souf.soufwebsite.domain.feed.dto.*;
+import com.souf.soufwebsite.domain.feed.dto.req.FeedReqDto;
+import com.souf.soufwebsite.domain.feed.dto.req.LikeFeedReqDto;
+import com.souf.soufwebsite.domain.feed.dto.res.FeedDetailResDto;
+import com.souf.soufwebsite.domain.feed.dto.res.FeedResDto;
+import com.souf.soufwebsite.domain.feed.dto.res.FeedSimpleResDto;
+import com.souf.soufwebsite.domain.feed.dto.res.MemberFeedResDto;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
