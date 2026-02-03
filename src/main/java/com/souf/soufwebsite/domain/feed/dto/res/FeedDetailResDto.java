@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.feed.dto;
+package com.souf.soufwebsite.domain.feed.dto.res;
 
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.entity.FeedCategoryMapping;
@@ -33,7 +33,7 @@ public record FeedDetailResDto(
         int commentCount,
         List<MediaResDto> mediaResDtos,
         List<CategoryDto> categoryDtos,
-        LocalDateTime lastModifiedTime
+        LocalDateTime createdTime
 ) {
     public static FeedDetailResDto from(Member member, String profileImageUrl, Feed feed, Long feedViewCount,
                                         Boolean liked, List<Media> mediaList) {
@@ -54,7 +54,7 @@ public record FeedDetailResDto(
                 feed.getCommentCount(),
                 convertToMediaResDto(mediaList),
                 convertToCategoryDto(feed.getCategories()),
-                feed.getLastModifiedTime());
+                feed.getCreatedTime());
     }
 
     private static List<MediaResDto> convertToMediaResDto(List<Media> mediaList){

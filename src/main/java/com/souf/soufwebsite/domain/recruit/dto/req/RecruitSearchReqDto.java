@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.domain.recruit.dto.req;
 
-import com.souf.soufwebsite.domain.recruit.dto.SortOption;
+import com.souf.soufwebsite.global.common.sort.dto.SortOption;
 import com.souf.soufwebsite.domain.recruit.entity.RecruitSortKey;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;

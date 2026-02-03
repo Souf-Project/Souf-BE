@@ -1,7 +1,7 @@
 package com.souf.soufwebsite.domain.feed.entity;
 
 import com.souf.soufwebsite.domain.comment.entity.Comment;
-import com.souf.soufwebsite.domain.feed.dto.FeedReqDto;
+import com.souf.soufwebsite.domain.feed.dto.req.FeedReqDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.global.common.BaseEntity;
 import jakarta.persistence.*;

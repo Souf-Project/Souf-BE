@@ -11,7 +11,7 @@ public record CommentResDto(
         String nickname,
         String content,
         String profileUrl,
-        LocalDateTime lastModifiedTime
+        LocalDateTime createdTime
 ) {
     public static CommentResDto from(Comment comment, Member writer, String mediaUrl) {
         return new CommentResDto(
@@ -20,7 +20,7 @@ public record CommentResDto(
                 writer.getNickname(),
                 comment.getContent(),
                 mediaUrl,
-                comment.getLastModifiedTime()
+                comment.getCreatedTime()
         );
     }
 }

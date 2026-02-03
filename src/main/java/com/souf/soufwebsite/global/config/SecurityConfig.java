@@ -1,11 +1,9 @@
 package com.souf.soufwebsite.global.config;
 
-import com.souf.soufwebsite.domain.report.service.BanService;
+import com.souf.soufwebsite.global.jwt.JwtLogoutHandler;
 import com.souf.soufwebsite.global.jwt.RestAccessDeniedHandler;
 import com.souf.soufwebsite.global.jwt.RestAuthenticationEntryPoint;
-import com.souf.soufwebsite.global.jwt.filter.BanCheckFilter;
 import com.souf.soufwebsite.global.jwt.filter.JwtAuthenticationFilter;
-import com.souf.soufwebsite.global.jwt.JwtLogoutHandler;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +20,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -67,7 +65,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint(restAuthenticationEntryPoint)
                         .accessDeniedHandler(restAccessDeniedHandler)
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, AuthorizationFilter.class);
 
         http
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->

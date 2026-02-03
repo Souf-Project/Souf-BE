@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.domain.feed.service;
 
-import com.souf.soufwebsite.domain.feed.dto.FeedSimpleResDto;
+import com.souf.soufwebsite.domain.feed.dto.res.FeedSimpleResDto;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;

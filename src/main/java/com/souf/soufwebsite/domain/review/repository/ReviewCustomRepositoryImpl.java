@@ -6,7 +6,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.souf.soufwebsite.domain.file.service.FileService;
-import com.souf.soufwebsite.domain.recruit.dto.SortOption;
+import com.souf.soufwebsite.global.common.sort.dto.SortOption;
 import com.souf.soufwebsite.domain.review.dto.ReviewSearchReqDto;
 import com.souf.soufwebsite.domain.review.dto.ReviewSimpleResDto;
 import com.souf.soufwebsite.domain.review.entity.Review;
