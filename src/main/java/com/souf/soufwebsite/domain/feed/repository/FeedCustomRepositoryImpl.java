@@ -126,10 +126,11 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
         }
 
         return queryFactory
-                .select(feed.id).distinct()
+                .select(feed.id)
                 .from(feed)
                 .join(feed.categories, feedCategoryMapping)
                 .where(feedCategoryMapping.firstCategory.id.eq(first))
+                .groupBy(feed.id, feed.createdTime, feed.viewCount)
                 .orderBy(orderSpecifiers)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
