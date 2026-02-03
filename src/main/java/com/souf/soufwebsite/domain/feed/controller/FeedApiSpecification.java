@@ -1,14 +1,22 @@
 package com.souf.soufwebsite.domain.feed.controller;
 
 import com.souf.soufwebsite.domain.feed.competition.dto.CompetitionRankResDto;
-import com.souf.soufwebsite.domain.feed.dto.*;
+import com.souf.soufwebsite.domain.feed.dto.req.FeedReqDto;
+import com.souf.soufwebsite.domain.feed.dto.req.LikeFeedReqDto;
+import com.souf.soufwebsite.domain.feed.dto.res.FeedDetailResDto;
+import com.souf.soufwebsite.domain.feed.dto.res.FeedResDto;
+import com.souf.soufwebsite.domain.feed.dto.res.FeedSimpleResDto;
+import com.souf.soufwebsite.domain.feed.dto.res.MemberFeedResDto;
+import com.souf.soufwebsite.domain.feed.entity.FeedSortKey;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.global.common.sort.dto.SortOption;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.CurrentEmail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.web.PageableDefault;
@@ -62,8 +70,10 @@ public interface FeedApiSpecification {
 
     @Operation(summary = "대학생 피드 조회", description = "피드들을 조회합니다.")
     @GetMapping
-    SuccessResponse<Slice<FeedDetailResDto>> getFeedList(
-            @RequestParam(name = "firstCategory") Long first,
+    SuccessResponse<Page<FeedDetailResDto>> getFeedList(
+            @RequestParam(required = false) Long firstCategory,
+            @RequestParam(defaultValue = "RECENT") FeedSortKey sortKey,
+            @RequestParam(defaultValue = "DESC") SortOption.SortDir sortDir,
             @PageableDefault(size = 12) Pageable pageable
     );
 

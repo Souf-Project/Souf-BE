@@ -1,7 +1,14 @@
 package com.souf.soufwebsite.domain.feed.service;
 
-import com.souf.soufwebsite.domain.feed.dto.*;
+import com.souf.soufwebsite.domain.feed.dto.req.FeedReqDto;
+import com.souf.soufwebsite.domain.feed.dto.req.FeedSearchReqDto;
+import com.souf.soufwebsite.domain.feed.dto.req.LikeFeedReqDto;
+import com.souf.soufwebsite.domain.feed.dto.res.FeedDetailResDto;
+import com.souf.soufwebsite.domain.feed.dto.res.FeedResDto;
+import com.souf.soufwebsite.domain.feed.dto.res.FeedSimpleResDto;
+import com.souf.soufwebsite.domain.feed.dto.res.MemberFeedResDto;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
@@ -23,7 +30,7 @@ public interface FeedService {
 
     List<FeedSimpleResDto> getPopularFeeds();
 
-    Slice<FeedDetailResDto> getFeeds(Long first, Pageable pageable);
+    Page<FeedDetailResDto> getFeeds(FeedSearchReqDto reqDto, Pageable pageable);
 
     void updateLikedCount(Long feedId, LikeFeedReqDto likeFeedReqDto);
 }

@@ -2,9 +2,17 @@ package com.souf.soufwebsite.domain.feed.controller;
 
 import com.souf.soufwebsite.domain.feed.competition.dto.CompetitionRankResDto;
 import com.souf.soufwebsite.domain.feed.competition.service.CompetitionService;
-import com.souf.soufwebsite.domain.feed.dto.*;
+import com.souf.soufwebsite.domain.feed.dto.req.FeedReqDto;
+import com.souf.soufwebsite.domain.feed.dto.req.FeedSearchReqDto;
+import com.souf.soufwebsite.domain.feed.dto.req.LikeFeedReqDto;
+import com.souf.soufwebsite.domain.feed.dto.res.FeedDetailResDto;
+import com.souf.soufwebsite.domain.feed.dto.res.FeedResDto;
+import com.souf.soufwebsite.domain.feed.dto.res.FeedSimpleResDto;
+import com.souf.soufwebsite.domain.feed.dto.res.MemberFeedResDto;
+import com.souf.soufwebsite.domain.feed.entity.FeedSortKey;
 import com.souf.soufwebsite.domain.feed.service.FeedService;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.global.common.sort.dto.SortOption;
 import com.souf.soufwebsite.global.success.SuccessResponse;
 import com.souf.soufwebsite.global.util.ApprovedOnly;
 import com.souf.soufwebsite.global.util.CurrentEmail;
@@ -12,8 +20,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
@@ -95,11 +103,15 @@ public class FeedController implements FeedApiSpecification{
     }
 
     @GetMapping
-    public SuccessResponse<Slice<FeedDetailResDto>> getFeedList(
-            @RequestParam(name = "firstCategory") Long first,
-            @PageableDefault(size = 12) Pageable pageable) {
+    public SuccessResponse<Page<FeedDetailResDto>> getFeedList(
+            @RequestParam(required = false) Long firstCategory,
+            @RequestParam(defaultValue = "RECENT") FeedSortKey sortKey,
+            @RequestParam(defaultValue = "DESC") SortOption.SortDir sortDir,
+            @PageableDefault(size = 20) Pageable pageable
+    ) {
+        FeedSearchReqDto reqDto = new FeedSearchReqDto(firstCategory, new SortOption<>(sortKey, sortDir));
         return new SuccessResponse<>(
-                feedService.getFeeds(first, pageable),
+                feedService.getFeeds(reqDto, pageable),
                 FEED_GET.getMessage()
         );
     }

@@ -12,7 +12,7 @@ import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.member.entity.Member;
-import com.souf.soufwebsite.domain.recruit.dto.SortOption;
+import com.souf.soufwebsite.global.common.sort.dto.SortOption;
 import com.souf.soufwebsite.domain.recruit.dto.req.MyRecruitReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.req.RecruitSearchReqDto;
 import com.souf.soufwebsite.domain.recruit.dto.res.MyRecruitResDto;

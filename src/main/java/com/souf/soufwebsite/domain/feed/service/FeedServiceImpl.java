@@ -1,6 +1,12 @@
 package com.souf.soufwebsite.domain.feed.service;
 
-import com.souf.soufwebsite.domain.feed.dto.*;
+import com.souf.soufwebsite.domain.feed.dto.req.FeedReqDto;
+import com.souf.soufwebsite.domain.feed.dto.req.FeedSearchReqDto;
+import com.souf.soufwebsite.domain.feed.dto.req.LikeFeedReqDto;
+import com.souf.soufwebsite.domain.feed.dto.res.FeedDetailResDto;
+import com.souf.soufwebsite.domain.feed.dto.res.FeedResDto;
+import com.souf.soufwebsite.domain.feed.dto.res.FeedSimpleResDto;
+import com.souf.soufwebsite.domain.feed.dto.res.MemberFeedResDto;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.entity.FeedCategoryMapping;
 import com.souf.soufwebsite.domain.feed.entity.LikedFeed;
@@ -37,16 +43,15 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.*;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -234,21 +239,59 @@ public class FeedServiceImpl implements FeedService {
 
     @Transactional(readOnly = true)
     @Override
-    public Slice<FeedDetailResDto> getFeeds(Long first, Pageable pageable) {
+    public Page<FeedDetailResDto> getFeeds(FeedSearchReqDto reqDto, Pageable pageable) {
+        Member viewer = getCurrentMember();
+        Long viewerId = (viewer == null) ? null : viewer.getId();
 
-        Slice<Feed> feeds = feedRepository.findByFirstCategoryOrderByCreatedTimeDesc(first, pageable);
+        Page<Feed> feeds = feedRepository.getFeedList(reqDto, pageable);
 
-        return feeds.map(
-                feed -> {
-                    Object viewCountFromRedis = stringRedisTemplate.opsForHash().get(TOTAL_HASH, String.valueOf(feed.getId()));
-                    Long viewCount = (viewCountFromRedis == null) ? 0L : Long.parseLong((String) viewCountFromRedis);
+        if (feeds.isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, 0L);
+        }
+
+        List<Feed> feedList = feeds.getContent();
+        Collection<Object> keys = feedList.stream()
+                .map(f -> String.valueOf(f.getId()))
+                .collect(Collectors.toList());
+
+        List<Object> redisValues = stringRedisTemplate.opsForHash().multiGet(TOTAL_HASH, keys);
+
+        Map<Long, Long> viewCountById = new HashMap<>(feedList.size() * 2);
+
+        for (int i = 0; i < feedList.size(); i++) {
+            Feed f = feedList.get(i);
+            Object v = (redisValues != null && i < redisValues.size()) ? redisValues.get(i) : null;
+
+            Long viewCount = parseLongOrNull(v);
+
+            if (viewCount == null) {
+                Long db = f.getViewCount();
+                viewCount = (db == null) ? 0L : db;
+            }
+
+            viewCountById.put(f.getId(), viewCount);
+        }
+
+        Set<Long> likedFeedIds = Collections.emptySet();
+        if (viewerId != null) {
+            List<Long> feedIds = feedList.stream().map(Feed::getId).toList();
+            likedFeedIds = new HashSet<>(likedFeedRepository.findLikedFeedIds(viewerId, feedIds));
+        }
+        final Set<Long> likedSet = likedFeedIds;
+
+        List<FeedDetailResDto> content = feedList.stream()
+                .map(feed -> {
+                    Long viewCount = viewCountById.getOrDefault(feed.getId(), 0L);
                     List<Media> mediaList = fileService.getMediaList(PostType.FEED, feed.getId());
-                    Member member = feed.getMember();
-                    String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
+                    Member writer = feed.getMember();
+                    String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, writer.getId());
+                    boolean isLiked = viewerId != null && likedSet.contains(feed.getId());
 
-                    return FeedDetailResDto.from(feed.getMember(), profileImageUrl, feed, viewCount, false, mediaList);
-                }
-        );
+                    return FeedDetailResDto.from(writer, profileImageUrl, feed, viewCount, isLiked, mediaList);
+                })
+                .toList();
+
+        return new PageImpl<>(content, pageable, feeds.getTotalElements());
     }
 
     @Transactional
@@ -329,6 +372,21 @@ public class FeedServiceImpl implements FeedService {
         if (!removed.isEmpty()) {
             mediaCleanupPublisher.publishUrls(PostType.FEED, feed.getId(), removed);
         }
+    }
+
+    private Long parseLongOrNull(Object v) {
+        if (v == null) return null;
+        if (v instanceof String s) {
+            try {
+                return Long.parseLong(s);
+            } catch (NumberFormatException ignored) {
+                return null;
+            }
+        }
+
+        if (v instanceof Long l) return l;
+        if (v instanceof Integer i) return i.longValue();
+        return null;
     }
 
     @NotNull
