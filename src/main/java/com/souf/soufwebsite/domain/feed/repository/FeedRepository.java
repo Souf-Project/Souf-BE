@@ -38,18 +38,19 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, FeedCustomRep
     // 관리자 페이지 피드 조회
     @Query(
             value = """
-                SELECT f
-                FROM Feed f
-                    JOIN FETCH f.member m
-                WHERE (:nickname is null or m.nickname = :nickname)
-                      and (:title is null or f.topic = :title)
+              SELECT f
+              FROM Feed f
+                JOIN FETCH f.member m
+              WHERE (:nickname IS NULL OR m.nickname = :nickname)
+                AND (:title IS NULL OR f.topic = :title)
+              ORDER BY f.createdTime DESC, f.id DESC
         """,
             countQuery = """
         SELECT COUNT(f)
         FROM Feed f
-        JOIN f.member m
-         WHERE (:nickname is null or m.nickname = :nickname)
-                      and (:title is null or f.topic = :title)
+          JOIN f.member m
+        WHERE (:nickname is null or m.nickname = :nickname)
+          AND (:title is null or f.topic = :title)
         """
     )
     Page<Feed> findByMemberAndTopic(
