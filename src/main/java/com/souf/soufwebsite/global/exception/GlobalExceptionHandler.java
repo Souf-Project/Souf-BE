@@ -1,14 +1,17 @@
 package com.souf.soufwebsite.global.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import static software.amazon.awssdk.http.HttpStatusCode.FORBIDDEN;
+import static software.amazon.awssdk.http.HttpStatusCode.UNAUTHORIZED;
 
 @RestControllerAdvice
 @Slf4j
@@ -41,6 +44,20 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(BAD_REQUEST)
+                .body(response);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ExceptionResponse<Void>> handle(AuthenticationException e) {
+        String msg = "이메일 또는 비밀번호가 올바르지 않습니다.";
+        log.warn("Authentication failed: {}", e.getClass().getSimpleName());
+
+        ExceptionResponse<Void> response =
+                ExceptionResponse.fail(UNAUTHORIZED, msg, "INVALID_CREDENTIALS");
+
+        return ResponseEntity
+                .status(UNAUTHORIZED)
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(response);
     }
 

@@ -7,6 +7,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ErrorType {
 
+    NOT_VALID_EMAIL_PASSWORD(401, "이메일 또는 비밀번호가 유효하지 않습니다.", "G401"),
+
     NOT_AUTHORIZED(403, "유효하지 않은 사용자입니다.", "G403"),
 
     /* ================================== JWT ================================== */
