@@ -47,20 +47,6 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ExceptionResponse<Void>> handle(AuthenticationException e) {
-        String msg = "이메일 또는 비밀번호가 올바르지 않습니다.";
-        log.warn("Authentication failed: {}", e.getClass().getSimpleName());
-
-        ExceptionResponse<Void> response =
-                ExceptionResponse.fail(UNAUTHORIZED, msg, "INVALID_CREDENTIALS");
-
-        return ResponseEntity
-                .status(UNAUTHORIZED)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(response);
-    }
-
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ExceptionResponse<Void>> handle(AccessDeniedException e) {
         String msg = "해당 API에 접근할 권한이 없습니다.";
