@@ -35,6 +35,7 @@ import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
 import com.souf.soufwebsite.global.common.mail.SesMailService;
 import com.souf.soufwebsite.global.exception.AuthorizedException;
+import com.souf.soufwebsite.domain.member.exception.NotValidEmailPasswordException;
 import com.souf.soufwebsite.global.jwt.service.JwtService;
 import com.souf.soufwebsite.global.slack.service.SlackService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -47,6 +48,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -147,13 +149,19 @@ public class MemberServiceImpl implements MemberService {
 
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(reqDto.email(), reqDto.password());
 
-        Authentication authentication = authenticationManager.authenticate(token);
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(token);
+        } catch (AuthenticationException e) {
+            throw new NotValidEmailPasswordException();
+        }
+
         String email = authentication.getName();
 
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(NotFoundMemberException::new);
 
-        if(banService.isBanned(member.getId())){
+        if (banService.isBanned(member.getId())) {
             Optional<Duration> remaining = banService.remaining(member.getId());
             String msg = remaining.map(duration -> "remaining: " + duration.toHours() + "h").orElse("permanent");
             throw new DeclaredMemberException(msg);
@@ -443,12 +451,13 @@ public class MemberServiceImpl implements MemberService {
         String redisKey = "email:withdraw:" + member.getEmail();
         redisTemplate.opsForValue().set(redisKey, "CanNotSignedUpFor7Days", 7, TimeUnit.DAYS);
 //        memberRepository.delete(member); // 탈퇴하면 삭제가 아닌 개인정보 들만 교체
+
+        redisTemplate.delete("refresh:" + member.getEmail());
         member.softDelete();
         favoriteMemberRepository.deleteAllByFromMember(member);
         favoriteMemberRepository.deleteAllByToMember(member);
         likedFeedRepository.deleteAllByMemberId(memberId);
 
-        redisTemplate.delete("refresh:" + member.getEmail());
 
 //        indexEventPublisherHelper.publishIndexEvent(
 //                EntityType.MEMBER,

@@ -15,6 +15,8 @@ public enum ErrorType {
     NOT_VALID_ROLE_TYPE(400, "유효하지 않은 권한입니다.", "M400-8"),
     NOT_APPROVED_ACCOUNT(400, "인증되지 않은 유저입니다.", "M400-9"),
 
+    NOT_VALID_EMAIL_PASSWORD(401, "이메일 또는 비밀번호가 유효하지 않습니다.", "M401-1"),
+
     // ----------------------------------- Favorite --------------------------------
 
     NOT_FOUND_FAVORITE(404, "즐겨찾기 목록에서 찾을 수 없습니다.", "M404-2"),
