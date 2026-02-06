@@ -451,12 +451,13 @@ public class MemberServiceImpl implements MemberService {
         String redisKey = "email:withdraw:" + member.getEmail();
         redisTemplate.opsForValue().set(redisKey, "CanNotSignedUpFor7Days", 7, TimeUnit.DAYS);
 //        memberRepository.delete(member); // 탈퇴하면 삭제가 아닌 개인정보 들만 교체
+
+        redisTemplate.delete("refresh:" + member.getEmail());
         member.softDelete();
         favoriteMemberRepository.deleteAllByFromMember(member);
         favoriteMemberRepository.deleteAllByToMember(member);
         likedFeedRepository.deleteAllByMemberId(memberId);
 
-        redisTemplate.delete("refresh:" + member.getEmail());
 
 //        indexEventPublisherHelper.publishIndexEvent(
 //                EntityType.MEMBER,
