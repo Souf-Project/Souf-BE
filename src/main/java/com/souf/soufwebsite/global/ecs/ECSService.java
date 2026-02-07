@@ -25,7 +25,7 @@ public class ECSService {
     private String securityGroup;
 
     public void triggerThumbnailJob(String videoUrl, String prefix){
-        ecsClient.runTask(r -> r
+        RunTaskResponse resp = ecsClient.runTask(r -> r
                 .cluster(clusterName)
                 .taskDefinition(taskDefinition)
                 .launchType(LaunchType.FARGATE)
@@ -43,5 +43,13 @@ public class ECSService {
                                 .build())
                         .build())
         );
+
+        if (resp.hasFailures() && !resp.failures().isEmpty()) {
+            throw new RuntimeException("ECS runTask 실패: " + resp.failures());
+        }
+
+        if (resp.tasks().isEmpty()) {
+            throw new RuntimeException("ECS가 task를 반환하지 않습니다.");
+        }
     }
 }
