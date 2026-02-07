@@ -14,6 +14,14 @@ public record MediaResDto(
 
     public static MediaResDto fromFeedDetail(Media media){
         String originalUrl = media.getOriginalUrl();
+        MediaType type = media.getMediaType();
+
+        if (type.needsThumbnail()) {
+            String url = (media.getThumbnailUrl() != null && !media.getThumbnailUrl().isBlank())
+                    ? media.getThumbnailUrl()
+                    : media.getOriginalUrl();
+            return new MediaResDto(media.getFileName(), url);
+        }
 
         return new MediaResDto(
                 media.getFileName(),
