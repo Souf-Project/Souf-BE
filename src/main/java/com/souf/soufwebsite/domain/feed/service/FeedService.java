@@ -3,20 +3,16 @@ package com.souf.soufwebsite.domain.feed.service;
 import com.souf.soufwebsite.domain.feed.dto.req.FeedReqDto;
 import com.souf.soufwebsite.domain.feed.dto.req.FeedSearchReqDto;
 import com.souf.soufwebsite.domain.feed.dto.req.LikeFeedReqDto;
-import com.souf.soufwebsite.domain.feed.dto.res.FeedDetailResDto;
-import com.souf.soufwebsite.domain.feed.dto.res.FeedResDto;
-import com.souf.soufwebsite.domain.feed.dto.res.FeedSimpleResDto;
-import com.souf.soufwebsite.domain.feed.dto.res.MemberFeedResDto;
+import com.souf.soufwebsite.domain.feed.dto.res.*;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 
 import java.util.List;
 
 public interface FeedService {
 
-    FeedResDto createFeed(String email, FeedReqDto reqDto);
+    FeedCreatedResDto createFeed(String email, FeedReqDto reqDto);
 
     void uploadFeedMedia(MediaReqDto mediaReqDto);
 
@@ -24,13 +20,13 @@ public interface FeedService {
 
     FeedDetailResDto getFeedById(Long memberId, Long feedId, String ip, String userAgent);
 
-    FeedResDto updateFeed(String email, Long feedId, FeedReqDto reqDto);
+    FeedCreatedResDto updateFeed(String email, Long feedId, FeedReqDto reqDto);
 
     void deleteFeed(String email, Long feedId);
 
-    List<FeedSimpleResDto> getPopularFeeds();
+    List<PopularFeedResDto> getPopularFeeds();
 
-    Page<FeedDetailResDto> getFeeds(FeedSearchReqDto reqDto, Pageable pageable);
+    Page<FeedSimpleResDto> getFeeds(FeedSearchReqDto reqDto, Pageable pageable);
 
     void updateLikedCount(Long feedId, LikeFeedReqDto likeFeedReqDto);
 }

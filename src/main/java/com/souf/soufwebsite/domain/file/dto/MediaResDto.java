@@ -12,7 +12,7 @@ public record MediaResDto(
         String fileUrl
 ) {
 
-    public static MediaResDto fromFeedDetail(Media media){
+    public static MediaResDto fromFeedList(Media media) {
         String originalUrl = media.getOriginalUrl();
         MediaType type = media.getMediaType();
 
@@ -22,6 +22,13 @@ public record MediaResDto(
                     : media.getOriginalUrl();
             return new MediaResDto(media.getFileName(), url);
         }
+
+        return new MediaResDto(media.getFileName(), originalUrl);
+    }
+
+    public static MediaResDto fromFeedDetail(Media media){
+        String originalUrl = media.getOriginalUrl();
+        MediaType type = media.getMediaType();
 
         return new MediaResDto(
                 media.getFileName(),
