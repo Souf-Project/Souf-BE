@@ -3,10 +3,7 @@ package com.souf.soufwebsite.domain.feed.service;
 import com.souf.soufwebsite.domain.feed.dto.req.FeedReqDto;
 import com.souf.soufwebsite.domain.feed.dto.req.FeedSearchReqDto;
 import com.souf.soufwebsite.domain.feed.dto.req.LikeFeedReqDto;
-import com.souf.soufwebsite.domain.feed.dto.res.FeedDetailResDto;
-import com.souf.soufwebsite.domain.feed.dto.res.FeedResDto;
-import com.souf.soufwebsite.domain.feed.dto.res.FeedSimpleResDto;
-import com.souf.soufwebsite.domain.feed.dto.res.MemberFeedResDto;
+import com.souf.soufwebsite.domain.feed.dto.res.*;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.entity.FeedCategoryMapping;
 import com.souf.soufwebsite.domain.feed.entity.LikedFeed;
@@ -43,7 +40,9 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,7 +82,7 @@ public class FeedServiceImpl implements FeedService {
 
     @Override
     @Transactional
-    public FeedResDto createFeed(String email, FeedReqDto reqDto) {
+    public FeedCreatedResDto createFeed(String email, FeedReqDto reqDto) {
         Member member = findIfEmailExists(email);
 
         Feed feed = Feed.of(reqDto, member);
@@ -105,7 +104,7 @@ public class FeedServiceImpl implements FeedService {
                 "https://www.souf.co.kr/feedDetails/" + feed.getId().toString() + "\n" +
                 member.getNickname() + " 님을 다같이 환영해보아요:)";
         slackService.sendSlackMessage(slackMsg, "post");
-        return new FeedResDto(feed.getId(), presignedUrlResDtos, videoDto);
+        return new FeedCreatedResDto(feed.getId(), presignedUrlResDtos, videoDto);
     }
 
 
@@ -120,7 +119,7 @@ public class FeedServiceImpl implements FeedService {
     public MemberFeedResDto getStudentFeeds(Long memberId, Pageable pageable) {
         Member member = findIfMemberIdExists(memberId);
         String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
-        Page<FeedSimpleResDto> feedSimpleResDtos = feedRepository.findAllByMemberOrderByIdDesc(member, pageable)
+        Page<PopularFeedResDto> feedSimpleResDtos = feedRepository.findAllByMemberOrderByIdDesc(member, pageable)
                 .map(feedConverter::getFeedSimpleResDto);
 
         MemberResDto memberResDto = MemberResDto.from(member, member.getCategories(), mediaUrl, false);
@@ -153,7 +152,7 @@ public class FeedServiceImpl implements FeedService {
 
     @Transactional
     @Override
-    public FeedResDto updateFeed(String email, Long feedId, FeedReqDto reqDto) {
+    public FeedCreatedResDto updateFeed(String email, Long feedId, FeedReqDto reqDto) {
         Member member = findIfEmailExists(email);
         Feed feed = findIfFeedExist(feedId);
         verifyIfFeedIsMine(feed, member);
@@ -186,7 +185,7 @@ public class FeedServiceImpl implements FeedService {
             }
         });
 
-        return new FeedResDto(feed.getId(), presignedUrlResDtos, videoDto);
+        return new FeedCreatedResDto(feed.getId(), presignedUrlResDtos, videoDto);
     }
 
     @CacheEvict(value = "competitionTop5", key = "'CURRENT'")
@@ -228,7 +227,7 @@ public class FeedServiceImpl implements FeedService {
     @Transactional(readOnly = true)
     @Cacheable(value = "popularFeeds",
             key = "'feed:popular'")
-    public List<FeedSimpleResDto> getPopularFeeds() {
+    public List<PopularFeedResDto> getPopularFeeds() {
         List<Feed> popularFeeds = feedRepository.findTop6ByOrderByWeeklyViewCountDesc();
 
         log.info("피드 서비스 로직 실행");
@@ -239,7 +238,7 @@ public class FeedServiceImpl implements FeedService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<FeedDetailResDto> getFeeds(FeedSearchReqDto reqDto, Pageable pageable) {
+    public Page<FeedSimpleResDto> getFeeds(FeedSearchReqDto reqDto, Pageable pageable) {
         Member viewer = getCurrentMember();
         Long viewerId = (viewer == null) ? null : viewer.getId();
 
@@ -279,15 +278,18 @@ public class FeedServiceImpl implements FeedService {
         }
         final Set<Long> likedSet = likedFeedIds;
 
-        List<FeedDetailResDto> content = feedList.stream()
+        List<FeedSimpleResDto> content = feedList.stream()
                 .map(feed -> {
-                    Long viewCount = viewCountById.getOrDefault(feed.getId(), 0L);
                     List<Media> mediaList = fileService.getMediaList(PostType.FEED, feed.getId());
+                    Media m = null;
+                    if(!mediaList.isEmpty()){
+                        m = mediaList.get(0);
+                    }
                     Member writer = feed.getMember();
                     String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, writer.getId());
                     boolean isLiked = viewerId != null && likedSet.contains(feed.getId());
 
-                    return FeedDetailResDto.from(writer, profileImageUrl, feed, viewCount, isLiked, mediaList);
+                    return FeedSimpleResDto.from(writer, profileImageUrl, feed, isLiked, m);
                 })
                 .toList();
 

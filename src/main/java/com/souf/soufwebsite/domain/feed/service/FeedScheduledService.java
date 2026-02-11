@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.domain.feed.service;
 
-import com.souf.soufwebsite.domain.feed.dto.res.FeedSimpleResDto;
+import com.souf.soufwebsite.domain.feed.dto.res.PopularFeedResDto;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import lombok.RequiredArgsConstructor;
@@ -93,15 +93,15 @@ public class FeedScheduledService {
         Cache.ValueWrapper wrapper = cache.get("feed:popular");
         if (wrapper == null) { feedCacheService.refreshPopularFeeds(); return; }
 
-        List<FeedSimpleResDto> cached = (List<FeedSimpleResDto>) wrapper.get();
+        List<PopularFeedResDto> cached = (List<PopularFeedResDto>) wrapper.get();
         if (cached == null || cached.isEmpty()) { feedCacheService.refreshPopularFeeds(); return; }
 
         Feed updated = feedRepository.findById(feedId).orElse(null);
         if (updated == null) { feedCacheService.refreshPopularFeeds(); return; }
 
-        FeedSimpleResDto newDto = feedConverter.getFeedSimpleResDto(updated);
+        PopularFeedResDto newDto = feedConverter.getFeedSimpleResDto(updated);
 
-        List<FeedSimpleResDto> patched = cached.stream()
+        List<PopularFeedResDto> patched = cached.stream()
                 .map(d -> d.feedId().equals(feedId) ? newDto : d)
                 .toList();
 
@@ -116,7 +116,7 @@ public class FeedScheduledService {
         Cache.ValueWrapper w = cache.get("feed:popular");
         if (w == null || w.get() == null) return false;
 
-        List<FeedSimpleResDto> list = (List<FeedSimpleResDto>) w.get();
+        List<PopularFeedResDto> list = (List<PopularFeedResDto>) w.get();
         return list != null && list.stream().anyMatch(d -> d.feedId().equals(feedId));
     }
 }

@@ -5,7 +5,7 @@ import org.springframework.data.domain.Page;
 
 public record MemberFeedResDto(
         MemberResDto memberResDto,
-        Page<FeedSimpleResDto> feedSimpleResDtoPage
+        Page<PopularFeedResDto> feedSimpleResDtoPage
 ) {
 
 }
