@@ -21,7 +21,15 @@ public class ThumbnailEventListener {
     @SqsListener("souf-thumbnail-created-queue")
     public void handleThumbnailEvent(String message) {
         try {
+            log.info("RAW SQS MESSAGE: {}", message);
+
             S3EventNotification notification = S3EventNotification.parseJson(message);
+
+            if(notification.getRecords() == null || notification.getRecords().isEmpty()) {
+                log.error("No S3 records.");
+                return;
+            }
+
             for (S3EventNotification.S3EventNotificationRecord record : notification.getRecords()) {
                 String s3Key = record.getS3().getObject().getKey();
                 String fileName = Paths.get(s3Key).getFileName().toString(); // 183a-1asjk-...mp4.png
@@ -31,7 +39,7 @@ public class ThumbnailEventListener {
                     continue;
                 }
 
-                String originalFileName = fileName.replace(".png", ""); // 183a-1asjk-..mp4
+                String originalFileName = fileName.substring(0, fileName.length()-4); // 183a-1asjk-..mp4
 
                 log.info("S3 Event Key: {}, fileName: {}", s3Key, fileName);
 

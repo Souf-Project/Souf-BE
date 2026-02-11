@@ -3,10 +3,7 @@ package com.souf.soufwebsite.domain.feed.controller;
 import com.souf.soufwebsite.domain.feed.competition.dto.CompetitionRankResDto;
 import com.souf.soufwebsite.domain.feed.dto.req.FeedReqDto;
 import com.souf.soufwebsite.domain.feed.dto.req.LikeFeedReqDto;
-import com.souf.soufwebsite.domain.feed.dto.res.FeedDetailResDto;
-import com.souf.soufwebsite.domain.feed.dto.res.FeedResDto;
-import com.souf.soufwebsite.domain.feed.dto.res.FeedSimpleResDto;
-import com.souf.soufwebsite.domain.feed.dto.res.MemberFeedResDto;
+import com.souf.soufwebsite.domain.feed.dto.res.*;
 import com.souf.soufwebsite.domain.feed.entity.FeedSortKey;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.global.common.sort.dto.SortOption;
@@ -18,7 +15,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +25,7 @@ public interface FeedApiSpecification {
 
     @Operation(summary = "피드 생성", description = "학생 권한을 가진 사용자가 피드를 생성합니다.")
     @PostMapping
-    SuccessResponse<FeedResDto> createFeed(
+    SuccessResponse<FeedCreatedResDto> createFeed(
             @CurrentEmail String email,
             @RequestBody @Valid FeedReqDto feedReqDto);
 
@@ -53,7 +49,7 @@ public interface FeedApiSpecification {
 
     @Operation(summary = "특정 피드 수정", description = "사용자 본인이 소유한 피드에 대해 수정합니다.")
     @PatchMapping("/{feedId}")
-    SuccessResponse<FeedResDto> updateFeed(
+    SuccessResponse<FeedCreatedResDto> updateFeed(
             @CurrentEmail String email,
             @PathVariable(name = "feedId") Long feedId,
             @RequestBody @Valid FeedReqDto reqDto);
@@ -66,11 +62,11 @@ public interface FeedApiSpecification {
 
     @Operation(summary = "인기있는 피드 조회", description = "인기있는 피드를 조회합니다.")
     @GetMapping("/popular")
-    SuccessResponse<List<FeedSimpleResDto>> getPopularFeeds();
+    SuccessResponse<List<PopularFeedResDto>> getPopularFeeds();
 
     @Operation(summary = "대학생 피드 조회", description = "피드들을 조회합니다.")
     @GetMapping
-    SuccessResponse<Page<FeedDetailResDto>> getFeedList(
+    SuccessResponse<Page<FeedSimpleResDto>> getFeedList(
             @RequestParam(required = false) Long firstCategory,
             @RequestParam(defaultValue = "RECENT") FeedSortKey sortKey,
             @RequestParam(defaultValue = "DESC") SortOption.SortDir sortDir,

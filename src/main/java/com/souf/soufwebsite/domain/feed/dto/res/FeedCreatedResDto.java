@@ -5,7 +5,7 @@ import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
 
 import java.util.List;
 
-public record FeedResDto(
+public record FeedCreatedResDto(
         Long feedId,
         List<PresignedUrlResDto> dtoList,
         VideoDto videoDto

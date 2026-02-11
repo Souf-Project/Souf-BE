@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.domain.feed.service;
 
-import com.souf.soufwebsite.domain.feed.dto.res.FeedSimpleResDto;
+import com.souf.soufwebsite.domain.feed.dto.res.PopularFeedResDto;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class FeedCacheService {
         }
 
         List<Feed> popularFeeds = feedRepository.findTop6ByOrderByWeeklyViewCountDesc();
-        List<FeedSimpleResDto> result = popularFeeds.stream()
+        List<PopularFeedResDto> result = popularFeeds.stream()
                 .map(feedConverter::getFeedSimpleResDto)
                 .toList();
         cache.put("feed:popular", result);

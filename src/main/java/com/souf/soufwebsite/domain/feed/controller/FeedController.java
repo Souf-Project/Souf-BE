@@ -5,10 +5,7 @@ import com.souf.soufwebsite.domain.feed.competition.service.CompetitionService;
 import com.souf.soufwebsite.domain.feed.dto.req.FeedReqDto;
 import com.souf.soufwebsite.domain.feed.dto.req.FeedSearchReqDto;
 import com.souf.soufwebsite.domain.feed.dto.req.LikeFeedReqDto;
-import com.souf.soufwebsite.domain.feed.dto.res.FeedDetailResDto;
-import com.souf.soufwebsite.domain.feed.dto.res.FeedResDto;
-import com.souf.soufwebsite.domain.feed.dto.res.FeedSimpleResDto;
-import com.souf.soufwebsite.domain.feed.dto.res.MemberFeedResDto;
+import com.souf.soufwebsite.domain.feed.dto.res.*;
 import com.souf.soufwebsite.domain.feed.entity.FeedSortKey;
 import com.souf.soufwebsite.domain.feed.service.FeedService;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
@@ -40,12 +37,12 @@ public class FeedController implements FeedApiSpecification{
 
     @ApprovedOnly
     @PostMapping
-    public SuccessResponse<FeedResDto> createFeed(
+    public SuccessResponse<FeedCreatedResDto> createFeed(
             @CurrentEmail String email,
             @RequestBody @Valid FeedReqDto feedReqDto) {
-        FeedResDto feedResDto = feedService.createFeed(email, feedReqDto);
+        FeedCreatedResDto feedCreatedResDto = feedService.createFeed(email, feedReqDto);
 
-        return new SuccessResponse<>(feedResDto, FEED_CREATE.getMessage());
+        return new SuccessResponse<>(feedCreatedResDto, FEED_CREATE.getMessage());
     }
 
     @ApprovedOnly
@@ -78,12 +75,12 @@ public class FeedController implements FeedApiSpecification{
     }
 
     @PatchMapping("/{feedId}")
-    public SuccessResponse<FeedResDto> updateFeed(
+    public SuccessResponse<FeedCreatedResDto> updateFeed(
             @CurrentEmail String email,
             @PathVariable(name = "feedId") Long feedId,
             @RequestBody @Valid FeedReqDto reqDto) {
-        FeedResDto feedResDto = feedService.updateFeed(email, feedId, reqDto);
-        return new SuccessResponse<>(feedResDto, FEED_UPDATE.getMessage());
+        FeedCreatedResDto feedCreatedResDto = feedService.updateFeed(email, feedId, reqDto);
+        return new SuccessResponse<>(feedCreatedResDto, FEED_UPDATE.getMessage());
     }
 
     @DeleteMapping("/{feedId}")
@@ -95,7 +92,7 @@ public class FeedController implements FeedApiSpecification{
     }
 
     @GetMapping("/popular")
-    public SuccessResponse<List<FeedSimpleResDto>> getPopularFeeds(){
+    public SuccessResponse<List<PopularFeedResDto>> getPopularFeeds(){
 
         log.info("피드 캐싱 조회");
         return new SuccessResponse<>(feedService.getPopularFeeds(),
@@ -103,7 +100,7 @@ public class FeedController implements FeedApiSpecification{
     }
 
     @GetMapping
-    public SuccessResponse<Page<FeedDetailResDto>> getFeedList(
+    public SuccessResponse<Page<FeedSimpleResDto>> getFeedList(
             @RequestParam(required = false) Long firstCategory,
             @RequestParam(defaultValue = "RECENT") FeedSortKey sortKey,
             @RequestParam(defaultValue = "DESC") SortOption.SortDir sortDir,
