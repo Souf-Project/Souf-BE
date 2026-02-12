@@ -26,21 +26,22 @@ public interface RecruitRepository extends JpaRepository<Recruit, Long>, Recruit
 
     List<Recruit> findByRecruitableTrue();
 
-    // 관리자 페이지 피드 조회
+    // 관리자 페이지 공고문 조회
     @Query(
             value = """
                 SELECT r
                 FROM Recruit r
-                    JOIN FETCH r.member m
-                 WHERE (:nickname is null or m.nickname = :nickname)
-                      and (:title is null or r.title = :title)
+                JOIN FETCH r.member m
+                WHERE (:nickname IS NULL OR m.nickname = :nickname)
+                    AND (:title IS NULL OR r.title = :title)
+                ORDER BY r.createdTime DESC, r.id DESC
             """,
             countQuery = """
                 SELECT COUNT(r)
                 FROM Recruit r
-                    JOIN r.member m
-                WHERE (:nickname is null or m.nickname = :nickname)
-                      and (:title is null or r.title = :title)
+                JOIN r.member m
+                WHERE (:nickname IS NULL OR m.nickname = :nickname)
+                    AND (:title IS NULL OR r.title = :title)
             """
     )
     Page<Recruit> findByMemberAndTopic(
