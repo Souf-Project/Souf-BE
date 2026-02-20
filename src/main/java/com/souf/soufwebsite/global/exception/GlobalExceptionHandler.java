@@ -1,5 +1,6 @@
 package com.souf.soufwebsite.global.exception;
 
+import com.souf.soufwebsite.domain.member.exception.NotApprovedAccountException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,6 +21,14 @@ public class GlobalExceptionHandler {
     //private static final String LOG_FORMAT = "Class : {}, Code : {}, Message : {}";
     private static final int BAD_REQUEST = 400;
     private static final int SERVER_ERROR_CODE = 500;
+
+
+    @ExceptionHandler(NotApprovedAccountException.class)
+    public ResponseEntity<?> notApprovedAccountException(NotApprovedAccountException e) {
+        return ResponseEntity.status(e.getCode())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ExceptionResponse.fail(e.getCode(), e.getMessage(), e.getErrorKey()));
+    }
 
     @ExceptionHandler(BaseErrorException.class)
     public ResponseEntity<ExceptionResponse<Void>> handle(BaseErrorException e) {

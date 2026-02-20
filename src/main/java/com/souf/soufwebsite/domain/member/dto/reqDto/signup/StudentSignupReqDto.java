@@ -7,7 +7,10 @@ import com.souf.soufwebsite.domain.member.entity.profile.EducationType;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 import java.util.List;
@@ -96,12 +99,6 @@ public final class StudentSignupReqDto implements SignupReqDto {
     @Override
     public Boolean isMarketingAgreed() {
         return common.isMarketingAgreed();
-    }
-
-    @AssertTrue(message = "학생(STUDENT) 가입은 .ac.kr 이메일만 가능합니다.")
-    public boolean isStudentEmailValid() {
-        if (roleType() != RoleType.STUDENT) return true;
-        return schoolEmail.toLowerCase().endsWith(".ac.kr");
     }
 }
 
