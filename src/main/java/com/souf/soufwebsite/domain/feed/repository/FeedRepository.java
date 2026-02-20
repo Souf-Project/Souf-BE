@@ -5,6 +5,7 @@ import com.souf.soufwebsite.domain.member.entity.Member;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -36,22 +37,15 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, FeedCustomRep
     List<Feed> findTop3ByMemberOrderByViewCountDesc(Member member);
 
     // 관리자 페이지 피드 조회
-    @Query(
-            value = """
-                SELECT f
-                FROM Feed f
-                    JOIN FETCH f.member m
-                WHERE (:nickname is null or m.nickname = :nickname)
-                      and (:title is null or f.topic = :title)
-        """,
-            countQuery = """
-        SELECT COUNT(f)
+    @EntityGraph(attributePaths = "member")
+    @Query("""
+        SELECT f
         FROM Feed f
         JOIN f.member m
-         WHERE (:nickname is null or m.nickname = :nickname)
-                      and (:title is null or f.topic = :title)
-        """
-    )
+        WHERE (:nickname IS NULL OR m.nickname = :nickname)
+          AND (:title IS NULL OR f.topic = :title)
+        ORDER BY f.createdTime DESC, f.id DESC
+    """)
     Page<Feed> findByMemberAndTopic(
             @Param("nickname") String nickname,
             @Param("title") String title,
