@@ -52,6 +52,12 @@ public class Feed extends BaseEntity {
     @Column(nullable = false)
     private boolean isDeleted = false;
 
+    @Column(name = "backup_topic")
+    private String backupTopic;
+
+    @Column(name = "backup_content", length = 300)
+    private String backupContent;
+
     @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
@@ -104,5 +110,35 @@ public class Feed extends BaseEntity {
         this.topic = "삭제된 게시글";
         this.content = "탈퇴한 회원의 게시글입니다.";
         this.clearCategories();
+    }
+
+    public void softDeleteByAdmin(String reason) {
+        if (this.isDeleted) return;
+
+        // 원문 백업 (1회만)
+        this.backupTopic = this.topic;
+        this.backupContent = this.content;
+
+        // 화면에는 삭제 문구
+        this.isDeleted = true;
+        this.topic = "관리자에 의해 삭제된 게시글";
+        this.content = (reason == null || reason.isBlank())
+                ? "운영 정책에 의해 삭제된 게시글입니다."
+                : "운영 정책에 의해 삭제된 게시글입니다.\n사유: " + reason;
+
+        this.clearCategories();
+    }
+
+    public void restoreByAdmin() {
+        if (!this.isDeleted) return;
+
+        // 백업이 있으면 원문 복구
+        if (this.backupTopic != null) this.topic = this.backupTopic;
+        if (this.backupContent != null) this.content = this.backupContent;
+
+        // 상태 복구 + 백업 제거
+        this.isDeleted = false;
+        this.backupTopic = null;
+        this.backupContent = null;
     }
 }
