@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.member.dto.reqDto;
+package com.souf.soufwebsite.domain.member.dto.reqDto.admin;
 
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryStatus;
 
