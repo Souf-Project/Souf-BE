@@ -12,12 +12,11 @@ import com.souf.soufwebsite.domain.inquiry.entity.InquiryStatus;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryType;
 import com.souf.soufwebsite.domain.inquiry.exception.NotFoundInquiryException;
 import com.souf.soufwebsite.domain.inquiry.repository.InquiryRepository;
+import com.souf.soufwebsite.domain.member.dto.reqDto.admin.BulkDeleteReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.admin.BulkRestoreReqDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.admin.InquiryAnswerReqDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.admin.ResubmitReasonReqDto;
-import com.souf.soufwebsite.domain.member.dto.resDto.admin.AdminMemberResDto;
-import com.souf.soufwebsite.domain.member.dto.resDto.admin.AdminPostResDto;
-import com.souf.soufwebsite.domain.member.dto.resDto.admin.AdminReportResDto;
-import com.souf.soufwebsite.domain.member.dto.resDto.admin.ProfileResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.admin.*;
 import com.souf.soufwebsite.domain.member.dto.resDto.info.MemberInfo;
 import com.souf.soufwebsite.domain.member.dto.resDto.info.MemberInfoResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.info.MemberResAssembler;
@@ -64,6 +63,9 @@ public class AdminServiceImpl implements AdminService {
     private final SesMailService emailService;
     private final MediaCleanupPublisher mediaCleanupPublisher;
     private final ApplicationEventPublisher eventPublisher;
+
+    private final AdminFeedBulkService adminFeedBulkService;
+    private final AdminRecruitBulkService adminRecruitBulkService;
 
     @Override
     @Transactional(readOnly = true)
@@ -169,6 +171,30 @@ public class AdminServiceImpl implements AdminService {
 
             memberRepository.delete(member);
         }
+    }
+
+    @Override
+    @Transactional
+    public BulkResultResDto bulkDeletePosts(PostType postType, BulkDeleteReqDto reqDto) {
+        if (postType == PostType.FEED) {
+            return adminFeedBulkService.bulkSoftDelete(reqDto);
+        }
+        if (postType == PostType.RECRUIT) {
+            return adminRecruitBulkService.bulkSoftDelete(reqDto);
+        }
+        throw new IllegalArgumentException("Unsupported postType: " + postType);
+    }
+
+    @Override
+    @Transactional
+    public BulkResultResDto bulkRestorePosts(PostType postType, BulkRestoreReqDto reqDto) {
+        if (postType == PostType.FEED) {
+            return adminFeedBulkService.bulkRestore(reqDto);
+        }
+        if (postType == PostType.RECRUIT) {
+            return adminRecruitBulkService.bulkRestore(reqDto);
+        }
+        throw new IllegalArgumentException("Unsupported postType: " + postType);
     }
 
     private Report findIfReportExists(Long reportId) {

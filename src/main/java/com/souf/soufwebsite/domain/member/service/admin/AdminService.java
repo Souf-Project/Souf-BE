@@ -3,12 +3,11 @@ package com.souf.soufwebsite.domain.member.service.admin;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryResDto;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryStatus;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryType;
+import com.souf.soufwebsite.domain.member.dto.reqDto.admin.BulkDeleteReqDto;
+import com.souf.soufwebsite.domain.member.dto.reqDto.admin.BulkRestoreReqDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.admin.InquiryAnswerReqDto;
 import com.souf.soufwebsite.domain.member.dto.reqDto.admin.ResubmitReasonReqDto;
-import com.souf.soufwebsite.domain.member.dto.resDto.admin.AdminMemberResDto;
-import com.souf.soufwebsite.domain.member.dto.resDto.admin.AdminPostResDto;
-import com.souf.soufwebsite.domain.member.dto.resDto.admin.AdminReportResDto;
-import com.souf.soufwebsite.domain.member.dto.resDto.admin.ProfileResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.admin.*;
 import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.report.entity.ReportStatus;
@@ -35,4 +34,8 @@ public interface AdminService {
     void updateReportStatus(Long reportId, ReportStatus reportStatus);
 
     void updateApprovedStatus(Long memberId, ApprovedStatus approvedStatus, ResubmitReasonReqDto resubmitReasonReqDto);
+
+    BulkResultResDto bulkDeletePosts(PostType postType, BulkDeleteReqDto reqDto);
+
+    BulkResultResDto bulkRestorePosts(PostType postType, BulkRestoreReqDto reqDto);
 }
