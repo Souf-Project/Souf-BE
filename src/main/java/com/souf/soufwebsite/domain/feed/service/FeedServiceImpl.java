@@ -43,6 +43,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -119,11 +120,14 @@ public class FeedServiceImpl implements FeedService {
     public MemberFeedResDto getStudentFeeds(Long memberId, Pageable pageable) {
         Member member = findIfMemberIdExists(memberId);
         String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
-        Page<PopularFeedResDto> feedSimpleResDtos = feedRepository.findAllByMemberOrderByIdDesc(member, pageable)
-                .map(feedConverter::getFeedSimpleResDto);
+        Slice<Feed> slice = feedRepository.findAllByMemberOrderByIdDesc(member, pageable);
+
+        List<PopularFeedResDto> items = slice.getContent().stream()
+                .map(feedConverter::getFeedSimpleResDto)
+                .toList();
 
         MemberResDto memberResDto = MemberResDto.from(member, member.getCategories(), mediaUrl, false);
-        return new MemberFeedResDto(memberResDto, feedSimpleResDtos);
+        return new MemberFeedResDto(memberResDto, items, slice.hasNext());
     }
 
     @Transactional(readOnly = true)

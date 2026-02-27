@@ -9,5 +9,4 @@ public record MemberFeedResDto(
         List<PopularFeedResDto> items,
         boolean hasNext
 ) {
-
 }
