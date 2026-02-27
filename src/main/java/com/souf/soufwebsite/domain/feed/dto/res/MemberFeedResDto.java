@@ -1,11 +1,13 @@
 package com.souf.soufwebsite.domain.feed.dto.res;
 
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
-import org.springframework.data.domain.Page;
+
+import java.util.List;
 
 public record MemberFeedResDto(
         MemberResDto memberResDto,
-        Page<PopularFeedResDto> feedSimpleResDtoPage
+        List<PopularFeedResDto> items,
+        boolean hasNext
 ) {
 
 }
