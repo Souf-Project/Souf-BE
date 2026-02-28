@@ -35,12 +35,16 @@ public record FeedDetailResDto(
         List<CategoryDto> categoryDtos,
         LocalDateTime createdTime
 ) {
-    public static FeedDetailResDto from(Member member, String profileImageUrl, Feed feed, Long feedViewCount,
-                                        Boolean liked, List<Media> mediaList) {
+    public static FeedDetailResDto from(FeedDetailBaseResDto resDto,
+                                        Boolean liked) {
+
+        Member member = resDto.m();
+        Feed feed = resDto.f();
+
         return new FeedDetailResDto(
                 member.getId(),
                 member.getNickname(),
-                profileImageUrl,
+                resDto.profileUrl(),
                 member.getIntro(),
                 member.getTemperature(),
                 convertToMemberCategoryDto(member.getCategories()),
@@ -48,11 +52,11 @@ public record FeedDetailResDto(
                 feed.getId(),
                 feed.getTopic(),
                 feed.getContent(),
-                feed.getViewCount() + feedViewCount,
+                feed.getViewCount() + resDto.totalViewCount(),
                 feed.getLikedCount(),
                 liked,
                 feed.getCommentCount(),
-                convertToMediaResDto(mediaList),
+                convertToMediaResDto(resDto.mediaList()),
                 convertToCategoryDto(feed.getCategories()),
                 feed.getCreatedTime());
     }

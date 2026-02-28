@@ -39,6 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -62,6 +63,7 @@ public class FeedServiceImpl implements FeedService {
     private final CategoryService categoryService;
     private final FileService fileService;
     private final ViewCountService viewCountService;
+    private final FeedCacheService feedCacheService;
     private final FeedConverter feedConverter;
 //    private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final SlackService slackService;
@@ -74,6 +76,8 @@ public class FeedServiceImpl implements FeedService {
 
     private final ApplicationEventPublisher publisher;
 
+    private static final String CACHE_FEED_LIST = "feedList";
+    private static final String CACHE_FEED_DETAIL = "feedDetail";
     public static final String TOTAL_HASH = "feed:views:total:";
 
     public Member getCurrentMember() {
@@ -82,6 +86,10 @@ public class FeedServiceImpl implements FeedService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = CACHE_FEED_LIST, allEntries = true),
+            @CacheEvict(value = CACHE_FEED_DETAIL, allEntries = true),
+    })
     public FeedCreatedResDto createFeed(String email, FeedReqDto reqDto) {
         Member member = findIfEmailExists(email);
 
@@ -133,24 +141,23 @@ public class FeedServiceImpl implements FeedService {
         // 현재 사용자
         Member currentMember = getCurrentMember();
 
-        // 피드 소유자
-        Member member = findIfMemberIdExists(memberId);
-        Feed feed = findIfFeedExist(feedId);
+        FeedDetailBaseResDto base = feedCacheService.getFeedDetailBase(currentMember, memberId, feedId, ip, userAgent);
 
-        Long totalViewCount = viewCountService.updateTotalViewCount(currentMember, PostType.FEED, feedId, feed.getViewCount(), ip, userAgent);
 
         Boolean liked = false;
         if(currentMember != null) {
             liked = getLiked(currentMember.getId(), feedId);
         }
 
-        List<Media> mediaList = fileService.getMediaList(PostType.FEED, feedId);
-        String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
-
-        return FeedDetailResDto.from(member, profileImageUrl, feed, totalViewCount, liked, mediaList);
+        return FeedDetailResDto.from(base, liked);
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = CACHE_FEED_LIST, allEntries = true),
+            @CacheEvict(value = CACHE_FEED_DETAIL, allEntries = true),
+            @CacheEvict(value = "competitionTop5", key = "'CURRENT'")
+    })
     @Override
     public FeedCreatedResDto updateFeed(String email, Long feedId, FeedReqDto reqDto) {
         Member member = findIfEmailExists(email);
@@ -188,8 +195,12 @@ public class FeedServiceImpl implements FeedService {
         return new FeedCreatedResDto(feed.getId(), presignedUrlResDtos, videoDto);
     }
 
-    @CacheEvict(value = "competitionTop5", key = "'CURRENT'")
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = CACHE_FEED_LIST, allEntries = true),
+            @CacheEvict(value = CACHE_FEED_DETAIL, allEntries = true),
+            @CacheEvict(value = "competitionTop5", key = "'CURRENT'")
+    })
     @Override
     public void deleteFeed(String email, Long feedId) {
         Member member = findIfEmailExists(email);
@@ -237,6 +248,11 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(
+            value = CACHE_FEED_LIST,
+            key = "T(java.util.Objects).hash(#reqDto, #pageable.pageNumber, #pageable.pageSize, #pageable.sort, #root.target.currentMemberIdOrNull())",
+            unless = "#result == null"
+    )
     @Override
     public Page<FeedSimpleResDto> getFeeds(FeedSearchReqDto reqDto, Pageable pageable) {
         Member viewer = getCurrentMember();
@@ -259,7 +275,7 @@ public class FeedServiceImpl implements FeedService {
 
         for (int i = 0; i < feedList.size(); i++) {
             Feed f = feedList.get(i);
-            Object v = (redisValues != null && i < redisValues.size()) ? redisValues.get(i) : null;
+            Object v = i < redisValues.size() ? redisValues.get(i) : null;
 
             Long viewCount = parseLongOrNull(v);
 
@@ -297,7 +313,11 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Transactional
-    @CacheEvict(value = "competitionTop5", key = "'CURRENT'")
+    @Caching(evict = {
+            @CacheEvict(value = CACHE_FEED_LIST, allEntries = true),
+            @CacheEvict(value = CACHE_FEED_DETAIL, allEntries = true),
+            @CacheEvict(value = "competitionTop5", key = "'CURRENT'")
+    })
     @Override
     public void updateLikedCount(Long feedId, LikeFeedReqDto likeFeedReqDto) {
         Long memberId = likeFeedReqDto.memberId();
