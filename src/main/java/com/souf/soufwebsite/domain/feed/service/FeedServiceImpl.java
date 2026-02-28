@@ -15,10 +15,12 @@ import com.souf.soufwebsite.domain.feed.exception.NotValidAuthenticationExceptio
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import com.souf.soufwebsite.domain.feed.repository.likedFeed.LikedFeedRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.event.MediaCleanupHelper;
+import com.souf.soufwebsite.domain.file.repository.MediaRepository;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.file.service.MediaCleanupPublisher;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
@@ -60,20 +62,22 @@ public class FeedServiceImpl implements FeedService {
 
     private final FeedRepository feedRepository;
     private final MemberRepository memberRepository;
+    private final LikedFeedRepository likedFeedRepository;
+    private final MediaRepository mediaRepository;
+
     private final CategoryService categoryService;
     private final FileService fileService;
     private final ViewCountService viewCountService;
     private final FeedConverter feedConverter;
-//    private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final SlackService slackService;
-    private final LikedFeedRepository likedFeedRepository;
 
     private final MediaCleanupPublisher mediaCleanupPublisher;
-    private final MediaCleanupHelper mediaCleanupHelper;
+    private final ApplicationEventPublisher publisher;
 
+    private final MediaCleanupHelper mediaCleanupHelper;
     private final StringRedisTemplate stringRedisTemplate;
 
-    private final ApplicationEventPublisher publisher;
+//    private final IndexEventPublisherHelper indexEventPublisherHelper;
 
     public static final String TOTAL_HASH = "feed:views:total:";
 
@@ -122,8 +126,27 @@ public class FeedServiceImpl implements FeedService {
         String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
         Slice<Feed> slice = feedRepository.findAllByMemberOrderByIdDesc(member, pageable);
 
+        List<Long> feedIds = slice.getContent().stream()
+                .map(Feed::getId)
+                .toList();
+
+        List<Media> mediaList = mediaRepository.findByPostTypeAndPostIdIn(PostType.FEED, feedIds);
+
+        Map<Long, Media> mediaMap = mediaList.stream()
+                .collect(Collectors.toMap(
+                        Media::getPostId,
+                        m -> m,
+                        (existing, replacement) -> existing
+                ));
+
         List<PopularFeedResDto> items = slice.getContent().stream()
-                .map(feedConverter::getFeedSimpleResDto)
+                .map(feed -> {
+                    Media media = mediaMap.get(feed.getId());
+                    return PopularFeedResDto.from(
+                            feed,
+                            media == null ? null : MediaResDto.fromMedia(media)
+                    );
+                })
                 .toList();
 
         MemberResDto memberResDto = MemberResDto.from(member, member.getCategories(), mediaUrl, false);
