@@ -1,17 +1,13 @@
 package com.souf.soufwebsite.domain.feed.dto.res;
 
-import com.souf.soufwebsite.domain.feed.entity.Feed;
-import com.souf.soufwebsite.domain.feed.entity.FeedCategoryMapping;
+import com.souf.soufwebsite.domain.feed.dto.FeedSummaryDto;
 import com.souf.soufwebsite.domain.file.dto.MediaResDto;
-import com.souf.soufwebsite.domain.file.entity.Media;
-import com.souf.soufwebsite.domain.member.entity.Member;
-import com.souf.soufwebsite.domain.member.entity.MemberCategoryMapping;
+import com.souf.soufwebsite.domain.member.dto.resDto.MemberSummaryDto;
 import com.souf.soufwebsite.global.common.category.dto.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public record FeedDetailResDto(
 
@@ -38,50 +34,26 @@ public record FeedDetailResDto(
     public static FeedDetailResDto from(FeedDetailBaseResDto resDto,
                                         Boolean liked) {
 
-        Member member = resDto.m();
-        Feed feed = resDto.f();
+        MemberSummaryDto member = resDto.m();
+        FeedSummaryDto feed = resDto.feedSummaryDto();
 
         return new FeedDetailResDto(
-                member.getId(),
-                member.getNickname(),
+                member.id(),
+                member.nickname(),
                 resDto.profileUrl(),
-                member.getIntro(),
-                member.getTemperature(),
-                convertToMemberCategoryDto(member.getCategories()),
+                member.intro(),
+                member.temperature(),
+                member.memberCategories(),
 
-                feed.getId(),
-                feed.getTopic(),
-                feed.getContent(),
-                feed.getViewCount() + resDto.totalViewCount(),
-                feed.getLikedCount(),
+                feed.feedId(),
+                feed.topic(),
+                feed.content(),
+                feed.viewCount() + resDto.totalViewCount(),
+                feed.likedCount(),
                 liked,
-                feed.getCommentCount(),
-                convertToMediaResDto(resDto.mediaList()),
-                convertToCategoryDto(feed.getCategories()),
-                feed.getCreatedTime());
-    }
-
-    private static List<MediaResDto> convertToMediaResDto(List<Media> mediaList){
-        return mediaList.stream().map(
-                MediaResDto::fromFeedDetail
-        ).collect(Collectors.toList());
-    }
-
-    private static List<CategoryDto> convertToMemberCategoryDto(List<MemberCategoryMapping> mappings){
-        return mappings.stream().map(
-                m -> new CategoryDto(
-                        m.getFirstCategory().getId(),
-                        m.getSecondCategory() != null ? m.getSecondCategory().getId() : null,
-                        m.getThirdCategory() != null ? m.getThirdCategory().getId() : null
-                )).collect(Collectors.toList());
-    }
-
-    private static List<CategoryDto> convertToCategoryDto(List<FeedCategoryMapping> mappings){
-        return mappings.stream().map(
-                m -> new CategoryDto(
-                        m.getFirstCategory().getId(),
-                        m.getSecondCategory() != null ? m.getSecondCategory().getId() : null,
-                        m.getThirdCategory() != null ? m.getThirdCategory().getId() : null
-        )).collect(Collectors.toList());
+                feed.commentCount(),
+                resDto.mediaList(),
+                feed.feedCategoryDtos(),
+                feed.createTime());
     }
 }

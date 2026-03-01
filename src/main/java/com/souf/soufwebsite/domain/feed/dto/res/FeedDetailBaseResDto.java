@@ -1,20 +1,22 @@
 package com.souf.soufwebsite.domain.feed.dto.res;
 
-import com.souf.soufwebsite.domain.feed.entity.Feed;
-import com.souf.soufwebsite.domain.file.entity.Media;
-import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.feed.dto.FeedSummaryDto;
+import com.souf.soufwebsite.domain.file.dto.MediaResDto;
+import com.souf.soufwebsite.domain.member.dto.resDto.MemberSummaryDto;
 
 import java.util.List;
 
 public record FeedDetailBaseResDto(
-        Member m,
+        MemberSummaryDto m,
         String profileUrl,
-        Feed f,
+
+        FeedSummaryDto feedSummaryDto,
+
         Long totalViewCount,
-        List<Media> mediaList
+        List<MediaResDto> mediaList
 ) {
 
-    public static FeedDetailBaseResDto from(Member currentMember, String profileUrl, Feed f, Long totalViewCount, List<Media> mediaList) {
-        return new FeedDetailBaseResDto(currentMember, profileUrl, f, totalViewCount, mediaList);
+    public static FeedDetailBaseResDto from(MemberSummaryDto memberSummaryDto, String profileUrl, FeedSummaryDto feedSummaryDto, Long totalViewCount, List<MediaResDto> mediaList) {
+        return new FeedDetailBaseResDto(memberSummaryDto, profileUrl, feedSummaryDto, totalViewCount, mediaList);
     }
 }

@@ -1,12 +1,15 @@
 package com.souf.soufwebsite.domain.feed.service;
 
+import com.souf.soufwebsite.domain.feed.dto.FeedSummaryDto;
 import com.souf.soufwebsite.domain.feed.dto.res.FeedDetailBaseResDto;
 import com.souf.soufwebsite.domain.feed.dto.res.PopularFeedResDto;
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.feed.exception.NotFoundFeedException;
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
+import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.service.FileService;
+import com.souf.soufwebsite.domain.member.dto.resDto.MemberSummaryDto;
 import com.souf.soufwebsite.domain.member.entity.Member;
 import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
@@ -21,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -66,12 +70,19 @@ public class FeedCacheService {
         Member member = findIfMemberIdExists(memberId);
         Feed feed = findIfFeedExist(feedId);
 
+        MemberSummaryDto memberSummaryDto = MemberSummaryDto.of(member);
+        FeedSummaryDto feedSummaryDto = FeedSummaryDto.from(feed);
+
         Long totalViewCount = viewCountService.updateTotalViewCount(currentM, PostType.FEED, feedId, feed.getViewCount(), ip, userAgent);
 
         List<Media> mediaList = fileService.getMediaList(PostType.FEED, feedId);
+        List<MediaResDto> mediaResDtos = mediaList.stream().map(
+                MediaResDto::fromFeedDetail
+        ).collect(Collectors.toList());
+
         String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-        return FeedDetailBaseResDto.from(member, profileImageUrl, feed, totalViewCount, mediaList);
+        return FeedDetailBaseResDto.from(memberSummaryDto, profileImageUrl, feedSummaryDto, totalViewCount, mediaResDtos);
     }
 
     private Feed findIfFeedExist(Long id) {
@@ -81,4 +92,6 @@ public class FeedCacheService {
     private Member findIfMemberIdExists(Long memberId) {
         return memberRepository.findById(memberId).orElseThrow(NotFoundMemberException::new);
     }
+
+
 }
