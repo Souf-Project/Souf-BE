@@ -17,7 +17,6 @@ import com.souf.soufwebsite.domain.feed.repository.likedFeed.LikedFeedRepository
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
-import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.event.MediaCleanupHelper;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.file.service.MediaCleanupPublisher;
@@ -31,6 +30,7 @@ import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
 import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
+import com.souf.soufwebsite.global.common.sort.dto.CachePage;
 import com.souf.soufwebsite.global.common.viewCount.service.ViewCountService;
 import com.souf.soufwebsite.global.slack.service.SlackService;
 import com.souf.soufwebsite.global.util.SecurityUtils;
@@ -44,14 +44,15 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -72,13 +73,11 @@ public class FeedServiceImpl implements FeedService {
     private final MediaCleanupPublisher mediaCleanupPublisher;
     private final MediaCleanupHelper mediaCleanupHelper;
 
-    private final StringRedisTemplate stringRedisTemplate;
 
     private final ApplicationEventPublisher publisher;
 
     private static final String CACHE_FEED_LIST = "feedList";
     private static final String CACHE_FEED_DETAIL = "feedDetail";
-    public static final String TOTAL_HASH = "feed:views:total:";
 
     public Member getCurrentMember() {
         return SecurityUtils.getCurrentMemberOrNull();
@@ -248,68 +247,30 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(
-            value = CACHE_FEED_LIST,
-            key = "T(java.util.Objects).hash(#reqDto, #pageable.pageNumber, #pageable.pageSize, #pageable.sort, #root.target.currentMemberIdOrNull())",
-            unless = "#result == null"
-    )
     @Override
     public Page<FeedSimpleResDto> getFeeds(FeedSearchReqDto reqDto, Pageable pageable) {
         Member viewer = getCurrentMember();
         Long viewerId = (viewer == null) ? null : viewer.getId();
 
-        Page<Feed> feeds = feedRepository.getFeedList(reqDto, pageable);
-
-        if (feeds.isEmpty()) {
-            return new PageImpl<>(List.of(), pageable, 0L);
-        }
-
-        List<Feed> feedList = feeds.getContent();
-        Collection<Object> keys = feedList.stream()
-                .map(f -> String.valueOf(f.getId()))
-                .collect(Collectors.toList());
-
-        List<Object> redisValues = stringRedisTemplate.opsForHash().multiGet(TOTAL_HASH, keys);
-
-        Map<Long, Long> viewCountById = new HashMap<>(feedList.size() * 2);
-
-        for (int i = 0; i < feedList.size(); i++) {
-            Feed f = feedList.get(i);
-            Object v = i < redisValues.size() ? redisValues.get(i) : null;
-
-            Long viewCount = parseLongOrNull(v);
-
-            if (viewCount == null) {
-                Long db = f.getViewCount();
-                viewCount = (db == null) ? 0L : db;
-            }
-
-            viewCountById.put(f.getId(), viewCount);
-        }
+        CachePage<FeedSimpleBaseResDto> base = feedCacheService.getFeedsBase(reqDto, pageable);
+        List<FeedSimpleBaseResDto> feedList = base.content();
 
         Set<Long> likedFeedIds = Collections.emptySet();
         if (viewerId != null) {
-            List<Long> feedIds = feedList.stream().map(Feed::getId).toList();
+            List<Long> feedIds = feedList.stream().map(FeedSimpleBaseResDto::feedId).toList();
             likedFeedIds = new HashSet<>(likedFeedRepository.findLikedFeedIds(viewerId, feedIds));
         }
         final Set<Long> likedSet = likedFeedIds;
 
         List<FeedSimpleResDto> content = feedList.stream()
                 .map(feed -> {
-                    List<Media> mediaList = fileService.getMediaList(PostType.FEED, feed.getId());
-                    Media m = null;
-                    if(!mediaList.isEmpty()){
-                        m = mediaList.get(0);
-                    }
-                    Member writer = feed.getMember();
-                    String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, writer.getId());
-                    boolean isLiked = viewerId != null && likedSet.contains(feed.getId());
+                    boolean isLiked = viewerId != null && likedSet.contains(feed.feedId());
 
-                    return FeedSimpleResDto.from(writer, profileImageUrl, feed, isLiked, m);
+                    return FeedSimpleResDto.from(feed, isLiked);
                 })
                 .toList();
 
-        return new PageImpl<>(content, pageable, feeds.getTotalElements());
+        return new PageImpl<>(content, pageable, base.totalElements());
     }
 
     @Transactional
@@ -394,21 +355,6 @@ public class FeedServiceImpl implements FeedService {
         if (!removed.isEmpty()) {
             mediaCleanupPublisher.publishUrls(PostType.FEED, feed.getId(), removed);
         }
-    }
-
-    private Long parseLongOrNull(Object v) {
-        if (v == null) return null;
-        if (v instanceof String s) {
-            try {
-                return Long.parseLong(s);
-            } catch (NumberFormatException ignored) {
-                return null;
-            }
-        }
-
-        if (v instanceof Long l) return l;
-        if (v instanceof Integer i) return i.longValue();
-        return null;
     }
 
     @NotNull
