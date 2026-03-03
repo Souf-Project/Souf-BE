@@ -1,9 +1,9 @@
 package com.souf.soufwebsite.domain.member.service.admin;
 
 import com.souf.soufwebsite.domain.file.service.MediaCleanupPublisher;
-import com.souf.soufwebsite.domain.member.dto.reqDto.admin.BulkDeleteReqDto;
-import com.souf.soufwebsite.domain.member.dto.reqDto.admin.BulkRestoreReqDto;
-import com.souf.soufwebsite.domain.member.dto.resDto.admin.BulkResultResDto;
+import com.souf.soufwebsite.domain.member.dto.admin.reqDto.BulkDeleteReqDto;
+import com.souf.soufwebsite.domain.member.dto.admin.reqDto.BulkRestoreReqDto;
+import com.souf.soufwebsite.domain.member.dto.admin.resDto.BulkResultResDto;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;
 import com.souf.soufwebsite.domain.recruit.event.RecruitChangedEvent;
 import com.souf.soufwebsite.domain.recruit.repository.RecruitRepository;

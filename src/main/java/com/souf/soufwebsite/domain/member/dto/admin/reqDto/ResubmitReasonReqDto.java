@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.member.dto.reqDto.admin;
+package com.souf.soufwebsite.domain.member.dto.admin.reqDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;

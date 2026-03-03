@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.member.dto.resDto.admin;
+package com.souf.soufwebsite.domain.member.dto.admin.resDto;
 
 import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
 import com.souf.soufwebsite.domain.member.entity.RoleType;

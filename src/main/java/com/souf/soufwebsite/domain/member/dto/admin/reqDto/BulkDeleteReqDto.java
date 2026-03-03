@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.member.dto.reqDto.admin;
+package com.souf.soufwebsite.domain.member.dto.admin.reqDto;
 
 import java.util.List;
 
