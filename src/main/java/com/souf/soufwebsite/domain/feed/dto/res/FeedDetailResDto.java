@@ -32,6 +32,7 @@ public record FeedDetailResDto(
         LocalDateTime createdTime
 ) {
     public static FeedDetailResDto from(FeedDetailBaseResDto resDto,
+                                        Long totalViewCount,
                                         Boolean liked) {
 
         MemberSummaryDto member = resDto.m();
@@ -48,7 +49,7 @@ public record FeedDetailResDto(
                 feed.feedId(),
                 feed.topic(),
                 feed.content(),
-                feed.viewCount() + resDto.totalViewCount(),
+                totalViewCount,
                 feed.likedCount(),
                 liked,
                 feed.commentCount(),

@@ -17,7 +17,6 @@ import com.souf.soufwebsite.domain.member.exception.NotFoundMemberException;
 import com.souf.soufwebsite.domain.member.repository.MemberRepository;
 import com.souf.soufwebsite.global.common.PostType;
 import com.souf.soufwebsite.global.common.sort.dto.CachePage;
-import com.souf.soufwebsite.global.common.viewCount.service.ViewCountService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
@@ -48,7 +47,6 @@ public class FeedCacheService {
 
     private final StringRedisTemplate stringRedisTemplate;
 
-    private final ViewCountService viewCountService;
     private final FileService fileService;
 
     private static final String CACHE_FEED_LIST = "feedList";
@@ -78,7 +76,7 @@ public class FeedCacheService {
             key = "'feedId:' + #feedId",
             unless = "#result == null"
     )
-    public FeedDetailBaseResDto getFeedDetailBase(Member currentM, Long memberId, Long feedId, String ip, String userAgent) {
+    public FeedDetailBaseResDto getFeedDetailBase(Long memberId, Long feedId) {
 
         // 피드 소유자
         Member member = findIfMemberIdExists(memberId);
@@ -87,8 +85,6 @@ public class FeedCacheService {
         MemberSummaryDto memberSummaryDto = MemberSummaryDto.of(member);
         FeedSummaryDto feedSummaryDto = FeedSummaryDto.from(feed);
 
-        Long totalViewCount = viewCountService.updateTotalViewCount(currentM, PostType.FEED, feedId, feed.getViewCount(), ip, userAgent);
-
         List<Media> mediaList = fileService.getMediaList(PostType.FEED, feedId);
         List<MediaResDto> mediaResDtos = mediaList.stream().map(
                 MediaResDto::fromFeedDetail
@@ -96,7 +92,7 @@ public class FeedCacheService {
 
         String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
 
-        return FeedDetailBaseResDto.from(memberSummaryDto, profileImageUrl, feedSummaryDto, totalViewCount, mediaResDtos);
+        return FeedDetailBaseResDto.from(memberSummaryDto, profileImageUrl, feedSummaryDto, mediaResDtos);
     }
 
     @Transactional(readOnly = true)

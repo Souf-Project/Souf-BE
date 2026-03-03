@@ -12,11 +12,10 @@ public record FeedDetailBaseResDto(
 
         FeedSummaryDto feedSummaryDto,
 
-        Long totalViewCount,
         List<MediaResDto> mediaList
 ) {
 
-    public static FeedDetailBaseResDto from(MemberSummaryDto memberSummaryDto, String profileUrl, FeedSummaryDto feedSummaryDto, Long totalViewCount, List<MediaResDto> mediaList) {
-        return new FeedDetailBaseResDto(memberSummaryDto, profileUrl, feedSummaryDto, totalViewCount, mediaList);
+    public static FeedDetailBaseResDto from(MemberSummaryDto memberSummaryDto, String profileUrl, FeedSummaryDto feedSummaryDto, List<MediaResDto> mediaList) {
+        return new FeedDetailBaseResDto(memberSummaryDto, profileUrl, feedSummaryDto, mediaList);
     }
 }

@@ -140,7 +140,9 @@ public class FeedServiceImpl implements FeedService {
         // 현재 사용자
         Member currentMember = getCurrentMember();
 
-        FeedDetailBaseResDto base = feedCacheService.getFeedDetailBase(currentMember, memberId, feedId, ip, userAgent);
+        FeedDetailBaseResDto base = feedCacheService.getFeedDetailBase(memberId, feedId);
+        Feed feed = findIfFeedExist(base.feedSummaryDto().feedId());
+        Long totalViewCount = viewCountService.updateTotalViewCount(currentMember, PostType.FEED, feedId, feed.getViewCount(), ip, userAgent);
 
 
         Boolean liked = false;
@@ -148,7 +150,7 @@ public class FeedServiceImpl implements FeedService {
             liked = getLiked(currentMember.getId(), feedId);
         }
 
-        return FeedDetailResDto.from(base, liked);
+        return FeedDetailResDto.from(base, totalViewCount, liked);
     }
 
     @Transactional
