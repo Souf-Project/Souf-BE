@@ -17,7 +17,6 @@ import com.souf.soufwebsite.domain.feed.repository.likedFeed.LikedFeedRepository
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
-import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.event.MediaCleanupHelper;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.file.service.MediaCleanupPublisher;
@@ -31,6 +30,7 @@ import com.souf.soufwebsite.global.common.category.entity.FirstCategory;
 import com.souf.soufwebsite.global.common.category.entity.SecondCategory;
 import com.souf.soufwebsite.global.common.category.entity.ThirdCategory;
 import com.souf.soufwebsite.global.common.category.service.CategoryService;
+import com.souf.soufwebsite.global.common.sort.dto.CachePage;
 import com.souf.soufwebsite.global.common.viewCount.service.ViewCountService;
 import com.souf.soufwebsite.global.slack.service.SlackService;
 import com.souf.soufwebsite.global.util.SecurityUtils;
@@ -39,18 +39,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -62,6 +64,7 @@ public class FeedServiceImpl implements FeedService {
     private final CategoryService categoryService;
     private final FileService fileService;
     private final ViewCountService viewCountService;
+    private final FeedCacheService feedCacheService;
     private final FeedConverter feedConverter;
 //    private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final SlackService slackService;
@@ -70,11 +73,11 @@ public class FeedServiceImpl implements FeedService {
     private final MediaCleanupPublisher mediaCleanupPublisher;
     private final MediaCleanupHelper mediaCleanupHelper;
 
-    private final StringRedisTemplate stringRedisTemplate;
 
     private final ApplicationEventPublisher publisher;
 
-    public static final String TOTAL_HASH = "feed:views:total:";
+    private static final String CACHE_FEED_LIST = "feedList";
+    private static final String CACHE_FEED_DETAIL = "feedDetail";
 
     public Member getCurrentMember() {
         return SecurityUtils.getCurrentMemberOrNull();
@@ -82,6 +85,10 @@ public class FeedServiceImpl implements FeedService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = CACHE_FEED_LIST, allEntries = true),
+            @CacheEvict(value = CACHE_FEED_DETAIL, allEntries = true),
+    })
     public FeedCreatedResDto createFeed(String email, FeedReqDto reqDto) {
         Member member = findIfEmailExists(email);
 
@@ -133,24 +140,25 @@ public class FeedServiceImpl implements FeedService {
         // 현재 사용자
         Member currentMember = getCurrentMember();
 
-        // 피드 소유자
-        Member member = findIfMemberIdExists(memberId);
-        Feed feed = findIfFeedExist(feedId);
-
+        FeedDetailBaseResDto base = feedCacheService.getFeedDetailBase(memberId, feedId);
+        Feed feed = findIfFeedExist(base.feedSummaryDto().feedId());
         Long totalViewCount = viewCountService.updateTotalViewCount(currentMember, PostType.FEED, feedId, feed.getViewCount(), ip, userAgent);
+
 
         Boolean liked = false;
         if(currentMember != null) {
             liked = getLiked(currentMember.getId(), feedId);
         }
 
-        List<Media> mediaList = fileService.getMediaList(PostType.FEED, feedId);
-        String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
-
-        return FeedDetailResDto.from(member, profileImageUrl, feed, totalViewCount, liked, mediaList);
+        return FeedDetailResDto.from(base, totalViewCount, liked);
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = CACHE_FEED_LIST, allEntries = true),
+            @CacheEvict(value = CACHE_FEED_DETAIL, allEntries = true),
+            @CacheEvict(value = "competitionTop5", key = "'CURRENT'")
+    })
     @Override
     public FeedCreatedResDto updateFeed(String email, Long feedId, FeedReqDto reqDto) {
         Member member = findIfEmailExists(email);
@@ -188,8 +196,12 @@ public class FeedServiceImpl implements FeedService {
         return new FeedCreatedResDto(feed.getId(), presignedUrlResDtos, videoDto);
     }
 
-    @CacheEvict(value = "competitionTop5", key = "'CURRENT'")
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = CACHE_FEED_LIST, allEntries = true),
+            @CacheEvict(value = CACHE_FEED_DETAIL, allEntries = true),
+            @CacheEvict(value = "competitionTop5", key = "'CURRENT'")
+    })
     @Override
     public void deleteFeed(String email, Long feedId) {
         Member member = findIfEmailExists(email);
@@ -242,62 +254,33 @@ public class FeedServiceImpl implements FeedService {
         Member viewer = getCurrentMember();
         Long viewerId = (viewer == null) ? null : viewer.getId();
 
-        Page<Feed> feeds = feedRepository.getFeedList(reqDto, pageable);
-
-        if (feeds.isEmpty()) {
-            return new PageImpl<>(List.of(), pageable, 0L);
-        }
-
-        List<Feed> feedList = feeds.getContent();
-        Collection<Object> keys = feedList.stream()
-                .map(f -> String.valueOf(f.getId()))
-                .collect(Collectors.toList());
-
-        List<Object> redisValues = stringRedisTemplate.opsForHash().multiGet(TOTAL_HASH, keys);
-
-        Map<Long, Long> viewCountById = new HashMap<>(feedList.size() * 2);
-
-        for (int i = 0; i < feedList.size(); i++) {
-            Feed f = feedList.get(i);
-            Object v = (redisValues != null && i < redisValues.size()) ? redisValues.get(i) : null;
-
-            Long viewCount = parseLongOrNull(v);
-
-            if (viewCount == null) {
-                Long db = f.getViewCount();
-                viewCount = (db == null) ? 0L : db;
-            }
-
-            viewCountById.put(f.getId(), viewCount);
-        }
+        CachePage<FeedSimpleBaseResDto> base = feedCacheService.getFeedsBase(reqDto, pageable);
+        List<FeedSimpleBaseResDto> feedList = base.content();
 
         Set<Long> likedFeedIds = Collections.emptySet();
         if (viewerId != null) {
-            List<Long> feedIds = feedList.stream().map(Feed::getId).toList();
+            List<Long> feedIds = feedList.stream().map(FeedSimpleBaseResDto::feedId).toList();
             likedFeedIds = new HashSet<>(likedFeedRepository.findLikedFeedIds(viewerId, feedIds));
         }
         final Set<Long> likedSet = likedFeedIds;
 
         List<FeedSimpleResDto> content = feedList.stream()
                 .map(feed -> {
-                    List<Media> mediaList = fileService.getMediaList(PostType.FEED, feed.getId());
-                    Media m = null;
-                    if(!mediaList.isEmpty()){
-                        m = mediaList.get(0);
-                    }
-                    Member writer = feed.getMember();
-                    String profileImageUrl = fileService.getMediaUrl(PostType.PROFILE, writer.getId());
-                    boolean isLiked = viewerId != null && likedSet.contains(feed.getId());
+                    boolean isLiked = viewerId != null && likedSet.contains(feed.feedId());
 
-                    return FeedSimpleResDto.from(writer, profileImageUrl, feed, isLiked, m);
+                    return FeedSimpleResDto.from(feed, isLiked);
                 })
                 .toList();
 
-        return new PageImpl<>(content, pageable, feeds.getTotalElements());
+        return new PageImpl<>(content, pageable, base.totalElements());
     }
 
     @Transactional
-    @CacheEvict(value = "competitionTop5", key = "'CURRENT'")
+    @Caching(evict = {
+            @CacheEvict(value = CACHE_FEED_LIST, allEntries = true),
+            @CacheEvict(value = CACHE_FEED_DETAIL, allEntries = true),
+            @CacheEvict(value = "competitionTop5", key = "'CURRENT'")
+    })
     @Override
     public void updateLikedCount(Long feedId, LikeFeedReqDto likeFeedReqDto) {
         Long memberId = likeFeedReqDto.memberId();
@@ -374,21 +357,6 @@ public class FeedServiceImpl implements FeedService {
         if (!removed.isEmpty()) {
             mediaCleanupPublisher.publishUrls(PostType.FEED, feed.getId(), removed);
         }
-    }
-
-    private Long parseLongOrNull(Object v) {
-        if (v == null) return null;
-        if (v instanceof String s) {
-            try {
-                return Long.parseLong(s);
-            } catch (NumberFormatException ignored) {
-                return null;
-            }
-        }
-
-        if (v instanceof Long l) return l;
-        if (v instanceof Integer i) return i.longValue();
-        return null;
     }
 
     @NotNull
