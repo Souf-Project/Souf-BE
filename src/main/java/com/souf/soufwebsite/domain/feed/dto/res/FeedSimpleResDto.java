@@ -1,9 +1,7 @@
 package com.souf.soufwebsite.domain.feed.dto.res;
 
-import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.file.dto.MediaResDto;
-import com.souf.soufwebsite.domain.file.entity.Media;
-import com.souf.soufwebsite.domain.member.entity.Member;
+import com.souf.soufwebsite.domain.member.dto.resDto.MemberSummaryDto;
 
 import java.time.LocalDateTime;
 
@@ -24,29 +22,22 @@ public record FeedSimpleResDto(
         LocalDateTime createdTime
 ) {
 
-    public static FeedSimpleResDto from(Member member, String profileImageUrl, Feed feed, Boolean liked, Media feedMedia) {
+    public static FeedSimpleResDto from(FeedSimpleBaseResDto resDto, Boolean liked) {
+
+        MemberSummaryDto writer = resDto.writer();
 
         return new FeedSimpleResDto(
-                member.getId(),
-                member.getNickname(),
-                profileImageUrl,
-                member.getTemperature(),
-                feed.getId(),
-                feed.getTopic(),
-                feed.getContent(),
-                feed.getLikedCount(),
+                writer.id(),
+                writer.nickname(),
+                resDto.writerProfileUrl(),
+                writer.temperature(),
+                resDto.feedId(),
+                resDto.topic(),
+                resDto.content(),
+                resDto.likedCount(),
                 liked,
-                convertToMediaResDto(feedMedia),
-                feed.getCreatedTime()
+                resDto.mediaResDto(),
+                resDto.createdAt()
         );
-    }
-
-    private static MediaResDto convertToMediaResDto(Media media){
-
-        if(media == null){
-            return null;
-        }
-
-        return MediaResDto.fromFeedList(media);
     }
 }

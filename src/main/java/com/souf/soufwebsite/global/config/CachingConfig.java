@@ -53,6 +53,12 @@ public class CachingConfig {
         configs.put("competitionTop5",
                 config.entryTtl(Duration.ofMinutes(5))
         );
+        configs.put("feedDetail",
+                config.entryTtl(Duration.ofMinutes(1))
+        );
+        configs.put("feedList",
+                config.entryTtl(Duration.ofMinutes(1))
+        );
 
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(config)

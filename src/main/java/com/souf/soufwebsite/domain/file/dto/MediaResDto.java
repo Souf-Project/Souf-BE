@@ -4,6 +4,7 @@ import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.entity.MediaType;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.souf.soufwebsite.domain.file.entity.MediaType.*;
 
@@ -64,5 +65,11 @@ public record MediaResDto(
                 media.getFileName(),
                 originalUrl
         );
+    }
+
+    private static List<MediaResDto> convertToMediaResDto(List<Media> mediaList){
+        return mediaList.stream().map(
+                MediaResDto::fromFeedDetail
+        ).collect(Collectors.toList());
     }
 }
