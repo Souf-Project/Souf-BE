@@ -3,12 +3,11 @@ package com.souf.soufwebsite.domain.member.controller.admin;
 import com.souf.soufwebsite.domain.inquiry.dto.InquiryResDto;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryStatus;
 import com.souf.soufwebsite.domain.inquiry.entity.InquiryType;
-import com.souf.soufwebsite.domain.member.dto.reqDto.InquiryAnswerReqDto;
-import com.souf.soufwebsite.domain.member.dto.reqDto.signup.ResubmitReasonReqDto;
-import com.souf.soufwebsite.domain.member.dto.resDto.AdminMemberResDto;
-import com.souf.soufwebsite.domain.member.dto.resDto.AdminPostResDto;
-import com.souf.soufwebsite.domain.member.dto.resDto.AdminReportResDto;
-import com.souf.soufwebsite.domain.member.dto.resDto.ProfileResDto;
+import com.souf.soufwebsite.domain.member.dto.admin.reqDto.BulkDeleteReqDto;
+import com.souf.soufwebsite.domain.member.dto.admin.reqDto.BulkRestoreReqDto;
+import com.souf.soufwebsite.domain.member.dto.admin.reqDto.InquiryAnswerReqDto;
+import com.souf.soufwebsite.domain.member.dto.admin.reqDto.ResubmitReasonReqDto;
+import com.souf.soufwebsite.domain.member.dto.admin.resDto.*;
 import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
 import com.souf.soufwebsite.domain.member.entity.RoleType;
 import com.souf.soufwebsite.domain.member.service.admin.AdminService;
@@ -127,5 +126,19 @@ public class AdminController implements AdminApiSpecification{
 
         adminService.updateApprovedStatus(memberId, approvedStatus, reqDto);
         return new SuccessResponse<>(MEMBER_APPROVED_STATUS_UPDATE_SUCCESS.getMessage());
+    }
+
+    @PatchMapping("/posts/delete")
+    public BulkResultResDto bulkDelete(
+            @RequestParam PostType postType,
+            @RequestBody BulkDeleteReqDto reqDto) {
+        return adminService.bulkDeletePosts(postType, reqDto);
+    }
+
+    @PatchMapping("/posts/restore")
+    public BulkResultResDto bulkRestore(
+            @RequestParam PostType postType,
+            @RequestBody BulkRestoreReqDto reqDto) {
+        return adminService.bulkRestorePosts(postType, reqDto);
     }
 }

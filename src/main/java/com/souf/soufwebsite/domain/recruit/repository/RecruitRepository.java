@@ -55,4 +55,16 @@ public interface RecruitRepository extends JpaRepository<Recruit, Long>, Recruit
         List<Long> top5 = findTopIds(now, PageRequest.of(0, 5));
         return top5.contains(id);
     }
+
+    @Query("select r.id from Recruit r where r.id in :ids")
+    List<Long> findExistingIdsIncludingDeleted(@Param("ids") List<Long> ids);
+
+    @Query("select r.id from Recruit r where r.id in :ids and r.isDeleted = true")
+    List<Long> findDeletedIds(@Param("ids") List<Long> ids);
+
+    @Query("select r.id from Recruit r where r.id in :ids and r.isDeleted = false")
+    List<Long> findNotDeletedIds(@Param("ids") List<Long> ids);
+
+    @Query("select r from Recruit r where r.id in :ids")
+    List<Recruit> findAllByIdsIncludingDeleted(@Param("ids") List<Long> ids);
 }

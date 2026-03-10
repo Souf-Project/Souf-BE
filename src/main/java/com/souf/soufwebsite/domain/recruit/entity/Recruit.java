@@ -99,6 +99,12 @@ public class Recruit extends BaseEntity {
     @Column(nullable = false)
     private boolean isDeleted = false;
 
+    @Column(name = "backup_title", length = 50)
+    private String backupTitle;
+
+    @Column(name = "backup_content", length = 3000)
+    private String backupContent;
+
     @Builder.Default
     @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
     List<RecruitCategoryMapping> categories = new ArrayList<>();
@@ -182,6 +188,32 @@ public class Recruit extends BaseEntity {
         this.title = "삭제된 게시글";
         this.content = "탈퇴한 회원의 게시글입니다.";
         this.clearCategories();
+    }
+
+    public void softDeleteByAdmin(String reason) {
+        if (this.isDeleted) return;
+
+        this.backupTitle = this.title;
+        this.backupContent = this.content;
+
+        this.isDeleted = true;
+        this.title = "관리자에 의해 삭제된 게시글";
+        this.content = (reason == null || reason.isBlank())
+                ? "운영 정책에 의해 삭제된 게시글입니다."
+                : "운영 정책에 의해 삭제된 게시글입니다.\n사유: " + reason;
+
+        this.clearCategories();
+    }
+
+    public void restoreByAdmin() {
+        if (!this.isDeleted) return;
+
+        if (this.backupTitle != null) this.title = this.backupTitle;
+        if (this.backupContent != null) this.content = this.backupContent;
+
+        this.isDeleted = false;
+        this.backupTitle = null;
+        this.backupContent = null;
     }
 
     // ====== 정책 검증 ======
