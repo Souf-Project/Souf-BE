@@ -1,6 +1,6 @@
 package com.souf.soufwebsite.domain.member.repository;
 
-import com.souf.soufwebsite.domain.member.dto.resDto.AdminMemberResDto;
+import com.souf.soufwebsite.domain.member.dto.admin.resDto.AdminMemberResDto;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberSimpleResDto;
 import com.souf.soufwebsite.domain.member.entity.ApprovedStatus;
 import com.souf.soufwebsite.domain.member.entity.RoleType;

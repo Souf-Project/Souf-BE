@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.member.dto.resDto;
+package com.souf.soufwebsite.domain.member.dto.admin.resDto;
 
 import com.souf.soufwebsite.domain.report.entity.ReportStatus;
 import com.souf.soufwebsite.global.common.PostType;

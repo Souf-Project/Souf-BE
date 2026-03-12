@@ -1,4 +1,4 @@
-package com.souf.soufwebsite.domain.member.dto.resDto;
+package com.souf.soufwebsite.domain.member.dto.admin.resDto;
 
 import com.souf.soufwebsite.domain.feed.entity.Feed;
 import com.souf.soufwebsite.domain.recruit.entity.Recruit;

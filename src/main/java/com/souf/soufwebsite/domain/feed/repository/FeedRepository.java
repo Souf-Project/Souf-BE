@@ -78,5 +78,17 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, FeedCustomRep
          where f.id = :feedId
     """)
     int decrementCommentCountBy(@Param("feedId") Long feedId, @Param("count") int count);
+
+    @Query("select f.id from Feed f where f.id in :ids")
+    List<Long> findExistingIdsIncludingDeleted(@Param("ids") List<Long> ids);
+
+    @Query("select f.id from Feed f where f.id in :ids and f.isDeleted = true")
+    List<Long> findDeletedIds(@Param("ids") List<Long> ids);
+
+    @Query("select f.id from Feed f where f.id in :ids and f.isDeleted = false")
+    List<Long> findNotDeletedIds(@Param("ids") List<Long> ids);
+
+    @Query("select f from Feed f where f.id in :ids")
+    List<Feed> findAllByIdsIncludingDeleted(@Param("ids") List<Long> ids);
 }
 
