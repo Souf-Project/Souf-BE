@@ -15,9 +15,12 @@ import com.souf.soufwebsite.domain.feed.exception.NotValidAuthenticationExceptio
 import com.souf.soufwebsite.domain.feed.repository.FeedRepository;
 import com.souf.soufwebsite.domain.feed.repository.likedFeed.LikedFeedRepository;
 import com.souf.soufwebsite.domain.file.dto.MediaReqDto;
+import com.souf.soufwebsite.domain.file.dto.MediaResDto;
 import com.souf.soufwebsite.domain.file.dto.PresignedUrlResDto;
 import com.souf.soufwebsite.domain.file.dto.video.VideoDto;
+import com.souf.soufwebsite.domain.file.entity.Media;
 import com.souf.soufwebsite.domain.file.event.MediaCleanupHelper;
+import com.souf.soufwebsite.domain.file.repository.MediaRepository;
 import com.souf.soufwebsite.domain.file.service.FileService;
 import com.souf.soufwebsite.domain.file.service.MediaCleanupPublisher;
 import com.souf.soufwebsite.domain.member.dto.resDto.MemberResDto;
@@ -44,15 +47,15 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -61,20 +64,24 @@ public class FeedServiceImpl implements FeedService {
 
     private final FeedRepository feedRepository;
     private final MemberRepository memberRepository;
+    private final LikedFeedRepository likedFeedRepository;
+    private final MediaRepository mediaRepository;
+
     private final CategoryService categoryService;
     private final FileService fileService;
     private final ViewCountService viewCountService;
     private final FeedCacheService feedCacheService;
     private final FeedConverter feedConverter;
-//    private final IndexEventPublisherHelper indexEventPublisherHelper;
     private final SlackService slackService;
-    private final LikedFeedRepository likedFeedRepository;
 
     private final MediaCleanupPublisher mediaCleanupPublisher;
+    private final ApplicationEventPublisher publisher;
+
     private final MediaCleanupHelper mediaCleanupHelper;
 
+    private final StringRedisTemplate stringRedisTemplate;
 
-    private final ApplicationEventPublisher publisher;
+//    private final IndexEventPublisherHelper indexEventPublisherHelper;
 
     private static final String CACHE_FEED_LIST = "feedList";
     private static final String CACHE_FEED_DETAIL = "feedDetail";
@@ -126,11 +133,33 @@ public class FeedServiceImpl implements FeedService {
     public MemberFeedResDto getStudentFeeds(Long memberId, Pageable pageable) {
         Member member = findIfMemberIdExists(memberId);
         String mediaUrl = fileService.getMediaUrl(PostType.PROFILE, member.getId());
-        Page<PopularFeedResDto> feedSimpleResDtos = feedRepository.findAllByMemberOrderByIdDesc(member, pageable)
-                .map(feedConverter::getFeedSimpleResDto);
+        Slice<Feed> slice = feedRepository.findAllByMemberOrderByIdDesc(member, pageable);
+
+        List<Long> feedIds = slice.getContent().stream()
+                .map(Feed::getId)
+                .toList();
+
+        List<Media> mediaList = mediaRepository.findByPostTypeAndPostIdIn(PostType.FEED, feedIds);
+
+        Map<Long, Media> mediaMap = mediaList.stream()
+                .collect(Collectors.toMap(
+                        Media::getPostId,
+                        m -> m,
+                        (existing, replacement) -> existing
+                ));
+
+        List<PopularFeedResDto> items = slice.getContent().stream()
+                .map(feed -> {
+                    Media media = mediaMap.get(feed.getId());
+                    return PopularFeedResDto.from(
+                            feed,
+                            media == null ? null : MediaResDto.fromMedia(media)
+                    );
+                })
+                .toList();
 
         MemberResDto memberResDto = MemberResDto.from(member, member.getCategories(), mediaUrl, false);
-        return new MemberFeedResDto(memberResDto, feedSimpleResDtos);
+        return new MemberFeedResDto(memberResDto, items, slice.hasNext());
     }
 
     @Transactional(readOnly = true)
